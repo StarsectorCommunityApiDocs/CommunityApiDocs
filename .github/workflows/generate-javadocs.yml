@@ -11,58 +11,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repository with submodules
         uses: actions/checkout@v3
-
-      - name: Authenticate with GitHub Packages
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
-
-      - name: Fetch and Download JARs from GitHub Packages
-        run: |
-          echo "Fetching package list from the organization..."
-          response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
-
-          if [ -z "$response" ] || [ "$response" == "null" ]; then
-            echo "Error: API response is empty or null. Exiting..."
-            exit 1
-          fi
-
-          packages=$(echo "$response" | jq -r '.[].name' || echo "")
-
-          if [ -z "$packages" ]; then
-            echo "No packages found. Exiting..."
-            exit 1
-          fi
-
-          echo "Packages found: $packages"
-
-          mkdir -p lib
-
-          for package in $packages; do
-            echo "Fetching versions for package $package..."
-            response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
-
-            if [ -z "$response" ] || [ "$response" == "null" ]; then
-              echo "No versions found for package $package. Skipping..."
-              continue
-            fi
-
-            # Extract the latest version (first in the list)
-            latest_version=$(echo "$response" | jq -r '.[0].metadata.container.tags[0]' || echo "")
-
-            if [ -z "$latest_version" ]; then
-              echo "No tags found for package $package. Skipping..."
-              continue
-            fi
-
-            echo "Downloading JAR for $package version $latest_version..."
-            curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              -o lib/${package}-${latest_version}.jar \
-              https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$latest_version/$package-$latest_version.jar
-          done
-
+        with:
+          submodules: recursive
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Java
         uses: actions/setup-java@v3
@@ -75,7 +28,7 @@ jobs:
           mkdir -p javadocs
           javadoc -encoding ISO-8859-1 -docencoding UTF-8 -charset UTF-8 \
             -d javadocs -sourcepath src -subpackages com.fs.starfarer.api \
-            -classpath "lib/*" -quiet -Xdoclint:none
+            -classpath "StarsectorJarsPrivate/*" -quiet -Xdoclint:none
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
