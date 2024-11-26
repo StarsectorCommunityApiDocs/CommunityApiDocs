@@ -20,7 +20,7 @@ jobs:
       - name: Fetch and Download JARs from GitHub Packages
         run: |
           echo "Fetching package list from the organization..."
-          response=$(curl -s -H "Authorization: ${{ secrets.GITHUB_TOKEN }}" \
+          response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
 
           if [ -z "$response" ] || [ "$response" == "null" ]; then
@@ -28,7 +28,6 @@ jobs:
             exit 1
           fi
 
-          echo "API Response: $response"
           packages=$(echo "$response" | jq -r '.[].name' || echo "")
 
           if [ -z "$packages" ]; then
@@ -42,29 +41,1659 @@ jobs:
 
           for package in $packages; do
             echo "Fetching versions for package $package..."
-            response=$(curl -s -H "Authorization: ${{ secrets.GITHUB_TOKEN }}" \
+            response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
               "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
 
             if [ -z "$response" ] || [ "$response" == "null" ]; then
-              echo "Failed to fetch versions for $package. Skipping..."
+              echo "No versions found for package $package. Skipping..."
               continue
             fi
 
-            echo "API Response: $response"
-            versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' || echo "")
+            versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
 
             if [ -z "$versions" ]; then
-              echo "No versions found for package $package. Skipping..."
+              echo "No tags found for package $package. Skipping..."
               continue
             fi
 
             for version in $versions; do
               echo "Downloading JAR for $package version $version..."
-              curl -H "Authorization: ${{ secrets.GITHUB_TOKEN }}" \
+              curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                 -o lib/${package}-${version}.jar \
                 https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
             done
           done
+
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
+          echo "Fetching package list from the organization..."
+response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+  "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+if [ -z "$response" ] || [ "$response" == "null" ]; then
+  echo "Error: API response is empty or null. Exiting..."
+  exit 1
+fi
+
+packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+if [ -z "$packages" ]; then
+  echo "No packages found. Exiting..."
+  exit 1
+fi
+
+echo "Packages found: $packages"
+
+mkdir -p lib
+
+for package in $packages; do
+  echo "Fetching versions for package $package..."
+  response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+    "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+  if [ -z "$response" ] || [ "$response" == "null" ]; then
+    echo "No versions found for package $package. Skipping..."
+    continue
+  fi
+
+  versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+
+  if [ -z "$versions" ]; then
+    echo "No tags found for package $package. Skipping..."
+    continue
+  fi
+
+  for version in $versions; do
+    echo "Downloading JAR for $package version $version..."
+    curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      -o lib/${package}-${version}.jar \
+      https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
+  done
+done
+
 
       - name: Set up Java
         uses: actions/setup-java@v3
