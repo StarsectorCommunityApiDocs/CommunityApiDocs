@@ -24,6 +24,7 @@ jobs:
           mkdir -p javadocs
           javadoc -encoding ISO-8859-1 -docencoding UTF-8 -charset UTF-8 \
             -d javadocs -sourcepath src -subpackages com.fs.starfarer.api \
+            -exclude com.thoughtworks.xstream,org.lwjgl,org.json \
             -quiet -Xdoclint:none
 
       - name: Deploy to GitHub Pages
