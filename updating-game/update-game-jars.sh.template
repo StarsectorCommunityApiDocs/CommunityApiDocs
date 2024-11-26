@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# To use:
+# 1. Go to https://github.com/settings/tokens and create a new *classic* Personal Access Token with "write:packages".
+# 2. Copy this file to `update-game-jars.sh`, so you don't accidentally commit your access token.
+# 3. Close this file, open the new one.
+# 4. Replace USERNAME and TOKEN with your GitHub username and personal access token
+# 5. Clear out `game-jars`, then copy in all the jars in starsector-core.
+# 6. Run this script.
+
+USERNAME="YOUR_USERNAME"
+TOKEN="YOUR_TOKEN"
+
+
+OWNER="StarsectorCommunityApiDocs"
+REPO="CommunityApiDocs"
+
+# Folder containing the JAR files
+JAR_FOLDER="game-jars"
+
+# Loop through all JAR files in the specified folder
+for JAR_FILE in "$JAR_FOLDER"/*.jar; do
+    if [[ -f "$JAR_FILE" ]]; then
+        # Extract the JAR file name without the extension
+        JAR_NAME=$(basename "$JAR_FILE" .jar)
+        
+        # Define the package version (you can customize this)
+        VERSION="1.0"
+
+        # Upload the JAR file to GitHub Packages
+        echo "Uploading $JAR_FILE..."
+        curl -u "$USERNAME:$TOKEN" \
+            -X PUT \
+            -H "Content-Type: application/java-archive" \
+            --data-binary @"$JAR_FILE" \
+            "https://maven.pkg.github.com/$OWNER/$REPO/$JAR_NAME/$VERSION/$JAR_NAME-$VERSION.jar"
+
+        # Check for success
+        if [[ $? -eq 0 ]]; then
+            echo "Uploaded $JAR_FILE successfully."
+        else
+            echo "Failed to upload $JAR_FILE."
+        fi
+    else
+        echo "No JAR files found in $JAR_FOLDER."
+    fi
+done

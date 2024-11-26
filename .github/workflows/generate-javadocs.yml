@@ -1,0 +1,48 @@
+name: Generate Javadocs
+
+on:
+  push:
+    branches:
+      - main
+      - ci
+
+permissions:
+  contents: write  # Needed to update the gh-pages branch
+
+jobs:
+  generate-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v3
+        with:
+          submodules: false
+
+      - name: Checkout submodule with custom token
+        run: |
+          # Update the submodule URL to use the custom token
+          git config --file=.gitmodules submodule.StarsectorJarsPrivate.url https://x-access-token:${{ secrets.PRIVATE_REPO_PAT }}@github.com/StarsectorCommunityApiDocs/StarsectorJarsPrivate.git
+
+          # Initialize and update the submodule
+          git submodule sync
+          git submodule update --init --recursive
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "8"
+
+      - name: Generate Javadocs
+        run: |
+          mkdir -p javadocs
+          javadoc -encoding ISO-8859-1 -docencoding UTF-8 -charset UTF-8 \
+            -d javadocs -sourcepath src -subpackages com.fs.starfarer.api \
+            -classpath "StarsectorJarsPrivate/*" -quiet -Xdoclint:none
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: javadocs

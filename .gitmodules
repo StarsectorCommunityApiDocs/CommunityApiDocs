@@ -1,0 +1,3 @@
+[submodule "StarsectorJarsPrivate"]
+	path = StarsectorJarsPrivate
+	url = https://github.com/StarsectorCommunityApiDocs/StarsectorJarsPrivate.git
