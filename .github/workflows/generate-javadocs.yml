@@ -49,20 +49,20 @@ jobs:
               continue
             fi
 
-            versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' 2>/dev/null || echo "")
+            # Extract the latest version (first in the list)
+            latest_version=$(echo "$response" | jq -r '.[0].metadata.container.tags[0]' || echo "")
 
-            if [ -z "$versions" ]; then
+            if [ -z "$latest_version" ]; then
               echo "No tags found for package $package. Skipping..."
               continue
             fi
 
-            for version in $versions; do
-              echo "Downloading JAR for $package version $version..."
-              curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                -o lib/${package}-${version}.jar \
-                https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
-            done
+            echo "Downloading JAR for $package version $latest_version..."
+            curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              -o lib/${package}-${latest_version}.jar \
+              https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$latest_version/$package-$latest_version.jar
           done
+
 
       - name: Set up Java
         uses: actions/setup-java@v3
