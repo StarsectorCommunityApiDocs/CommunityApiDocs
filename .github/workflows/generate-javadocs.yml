@@ -20,8 +20,8 @@ jobs:
       - name: Fetch and Download JARs from GitHub Packages
         run: |
           echo "Fetching package list from the organization..."
-          packages=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                    "https://api.github.com/orgs/${{ github.repository_owner }}/packages?package_type=maven" | jq -r '.[].name')
+          packages=$(curl -s -H "Authorization: ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/orgs/${{ github.repository_owner }}/packages?package_type=maven" | jq -r '.[].name')
 
           echo "Packages found: $packages"
 
@@ -29,16 +29,35 @@ jobs:
 
           for package in $packages; do
             echo "Fetching versions for package $package..."
-            versions=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                      "https://api.github.com/orgs/${{ github.repository_owner }}/packages/maven/$package/versions" | jq -r '.[].metadata.container.tags[]')
+            retries=2
+            while [ $retries -gt 0 ]; do
+              response=$(curl -s -H "Authorization: ${{ secrets.GITHUB_TOKEN }}" \
+                "https://api.github.com/orgs/${{ github.repository_owner }}/packages/maven/$package/versions") && break
+              retries=$((retries - 1))
+              echo "Retrying API call for $package..."
+              sleep 5
+            done
+            if [ $retries -eq 0 ]; then
+              echo "Failed to fetch versions for $package after multiple attempts. Skipping..."
+              continue
+            fi
+
+            echo "API Response: $response"
+            versions=$(echo "$response" | jq -r '.[].metadata.container.tags[]' || echo "")
+
+            if [ -z "$versions" ]; then
+              echo "No versions found for package $package. Skipping..."
+              continue
+            fi
 
             for version in $versions; do
               echo "Downloading JAR for $package version $version..."
-              curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                   -o lib/${package}-${version}.jar \
-                   https://maven.pkg.github.com/${{ github.repository_owner }}/$package/$package/$version/$package-$version.jar
+              curl -H "Authorization: ${{ secrets.GITHUB_TOKEN }}" \
+                -o lib/${package}-${version}.jar \
+                https://maven.pkg.github.com/${{ github.repository_owner }}/$package/$package/$version/$package-$version.jar
             done
           done
+
 
       - name: Set up Java
         uses: actions/setup-java@v3
