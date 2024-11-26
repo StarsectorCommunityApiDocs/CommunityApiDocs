@@ -1,0 +1,30 @@
+name: Generate Javadocs
+
+on:
+  push:
+    branches:
+      - main  # Adjust if your default branch is different
+
+jobs:
+  generate-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'  # Specify your Java version
+
+      - name: Generate Javadocs
+        run: |
+          mkdir -p javadocs
+          javadoc -d javadocs -sourcepath src -subpackages com.fs.starfarer.api
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: javadocs
