@@ -20,8 +20,21 @@ jobs:
       - name: Fetch and Download JARs from GitHub Packages
         run: |
           echo "Fetching package list from the organization..."
-          packages=$(curl -s -H "Authorization: ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/orgs/${{ github.repository_owner }}/packages?package_type=maven" | jq -r '.[].name')
+          response=$(curl -s -H "Authorization: ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages?package_type=maven")
+
+          if [ -z "$response" ] || [ "$response" == "null" ]; then
+            echo "Error: API response is empty or null. Exiting..."
+            exit 1
+          fi
+
+          echo "API Response: $response"
+          packages=$(echo "$response" | jq -r '.[].name' || echo "")
+
+          if [ -z "$packages" ]; then
+            echo "No packages found. Exiting..."
+            exit 1
+          fi
 
           echo "Packages found: $packages"
 
@@ -29,16 +42,11 @@ jobs:
 
           for package in $packages; do
             echo "Fetching versions for package $package..."
-            retries=2
-            while [ $retries -gt 0 ]; do
-              response=$(curl -s -H "Authorization: ${{ secrets.GITHUB_TOKEN }}" \
-                "https://api.github.com/orgs/${{ github.repository_owner }}/packages/maven/$package/versions") && break
-              retries=$((retries - 1))
-              echo "Retrying API call for $package..."
-              sleep 5
-            done
-            if [ $retries -eq 0 ]; then
-              echo "Failed to fetch versions for $package after multiple attempts. Skipping..."
+            response=$(curl -s -H "Authorization: ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/orgs/StarsectorCommunityApiDocs/packages/maven/$package/versions")
+
+            if [ -z "$response" ] || [ "$response" == "null" ]; then
+              echo "Failed to fetch versions for $package. Skipping..."
               continue
             fi
 
@@ -54,10 +62,9 @@ jobs:
               echo "Downloading JAR for $package version $version..."
               curl -H "Authorization: ${{ secrets.GITHUB_TOKEN }}" \
                 -o lib/${package}-${version}.jar \
-                https://maven.pkg.github.com/${{ github.repository_owner }}/$package/$package/$version/$package-$version.jar
+                https://maven.pkg.github.com/StarsectorCommunityApiDocs/$package/$package/$version/$package-$version.jar
             done
           done
-
 
       - name: Set up Java
         uses: actions/setup-java@v3
