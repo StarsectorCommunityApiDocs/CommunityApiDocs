@@ -3,29 +3,55 @@ name: Generate Javadocs
 on:
   push:
     branches:
-      - main # Adjust if your default branch is different
+      - main
       - ci
 
 jobs:
   generate-docs:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      - name: Authenticate with GitHub Packages
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+
+      - name: Fetch and Download JARs from GitHub Packages
+        run: |
+          echo "Fetching package list from the organization..."
+          packages=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                    "https://api.github.com/orgs/${{ github.repository_owner }}/packages?package_type=maven" | jq -r '.[].name')
+
+          echo "Packages found: $packages"
+
+          mkdir -p lib
+
+          for package in $packages; do
+            echo "Fetching versions for package $package..."
+            versions=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                      "https://api.github.com/orgs/${{ github.repository_owner }}/packages/maven/$package/versions" | jq -r '.[].metadata.container.tags[]')
+
+            for version in $versions; do
+              echo "Downloading JAR for $package version $version..."
+              curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                   -o lib/${package}-${version}.jar \
+                   https://maven.pkg.github.com/${{ github.repository_owner }}/$package/$package/$version/$package-$version.jar
+            done
+          done
 
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
           distribution: "temurin"
-          java-version: "17" # Specify your Java version
+          java-version: "17"
 
       - name: Generate Javadocs
         run: |
           mkdir -p javadocs
           javadoc -encoding ISO-8859-1 -docencoding UTF-8 -charset UTF-8 \
             -d javadocs -sourcepath src -subpackages com.fs.starfarer.api \
-            -exclude com.thoughtworks.xstream,org.lwjgl,org.json \
-            -quiet -Xdoclint:none
+            -classpath "lib/*" -quiet -Xdoclint:none
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
