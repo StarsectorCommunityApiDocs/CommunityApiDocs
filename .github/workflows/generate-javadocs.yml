@@ -20,10 +20,11 @@ jobs:
           java-version: "17" # Specify your Java version
 
       - name: Generate Javadocs
-        # Ignore missing libraries and other warnings/errors.
         run: |
           mkdir -p javadocs
-          javadoc -encoding ISO-8859-1 -docencoding UTF-8 -charset UTF-8 -d javadocs -sourcepath src -subpackages com.fs.starfarer.api -quiet -Xdoclint:none  
+          javadoc -encoding ISO-8859-1 -docencoding UTF-8 -charset UTF-8 \
+            -d javadocs -sourcepath src -subpackages com.fs.starfarer.api \
+            -quiet -Xdoclint:none
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
