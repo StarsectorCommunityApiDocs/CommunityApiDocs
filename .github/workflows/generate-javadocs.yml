@@ -6,6 +6,9 @@ on:
       - main
       - ci
 
+permissions:
+  contents: write  # Needed to update the gh-pages branch
+
 jobs:
   generate-docs:
     runs-on: ubuntu-latest
