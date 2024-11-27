@@ -40,7 +40,8 @@ jobs:
           javadoc -encoding ISO-8859-1 -docencoding UTF-8 -charset UTF-8 \
             -d javadocs -sourcepath src -subpackages com.fs.starfarer.api \
             -classpath "StarsectorJarsPrivate/*" -quiet -Xdoclint:none \
-            -footer "<p class="legalCopy"><small><i>Copyright © 2013 Fractal Softworks, LLC. All Rights Reserved.</i></small></p>"
+            -footer "<p class="legalCopy"><small><i>Copyright © 2013 Fractal Softworks, LLC. All Rights Reserved.</i></small></p>" \
+            --add-stylesheet dracula-javadoc8.css
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3

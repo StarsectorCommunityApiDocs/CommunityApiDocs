@@ -63,3 +63,33 @@ PAT for the Actions runner to clone it.
 1. Go to <https://github.com/StarsectorCommunityApiDocs/StarsectorJarsPrivate>.
 2. Remove those and replace them with the ones in your own starsector-core folder (sort by: type, scroll to jars).
 3. Re-run the Actions script to update the docs.
+
+## Attributions
+
+Dracula-javadoc was used to achieve a dark theme
+
+Dracula-javadoc is licensed unter the MIT License
+
+### MIT License
+
+MIT License
+
+Copyright (c) 2019 Allan Im
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
