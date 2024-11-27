@@ -37,6 +37,39 @@ instructions for other IDEs.
     4. When you make changes, you'll see them show up in the IntelliJ `Commit` tab (found on the left side of IntelliJ
        by default).
 
+#### Gradle
+
+This part is only relevant if you are using **gradle** as a build system.
+
+In order for your IDE to find the source files and allow you to navigate to them, you can add them as a dependency.
+To do so, in the dependencies section of your, add the following:
+
+```kotlin
+    compileOnly(fileTree("$projectDir/CommunityApiDocs/src/com/fs/starfarer/api"){
+        include("*.java")
+    })
+```
+
+Double-check the path to make sure it matches the submodule path.
+
+Note that this might not be the optimal or most canonical solution, but it did work for me.
+
+#### Git CLI
+
+This part is only relevant if you use the **git command line interface**.
+
+To easily be able to use the git CLI, make sure to add the submodule via SSH rather than HTTP:
+
+```shell
+git submodule add git@github.com:StarsectorCommunityApiDocs/CommunityApiDocs.git
+```
+
+If you haven't already, generate an [ssh-key for Github](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
+to be able to push without needing to enter credentials.
+
+If you want to commit/push your changes, simply navigate into the CommunityApiDocs folder and follow your 
+usual workflow for commiting/pushing. No additional steps are required.
+
 ## Maintainers
 
 ### Tasks
