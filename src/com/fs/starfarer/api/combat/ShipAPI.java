@@ -547,6 +547,13 @@ public interface ShipAPI extends CombatEntityAPI {
 	float getTurnAcceleration();
 	float getTurnDeceleration();
 	float getDeceleration();
+	/**
+	 * This does not return the actual current acceleration of the ship.
+	 * Instead, it returns the possible acceleration of the ship, if it were accelerating forward.
+	 * Lateral/backward acceleration is modified based on the ship size and maneuverability
+	 * Note that physics in Starsector is pseudo-newtonian. There is a hard limit on velocity and no limit on possible jerk.
+	 * @return the potential acceleration of the ship in question in su/s²
+	 */
 	float getAcceleration();
 	float getMaxSpeed();
 	float getFluxLevel();
