@@ -18,7 +18,7 @@ instructions for other IDEs.
     2. Within IntelliJ, open the Terminal (icon is in the bottom-left by default).
     3. Optionally, make a new folder for the docs and `cd` into it. Otherwise, it will go into a new folder called
        `CommunityApiDocs` in your project.
-    4. Type `git submodule add https://github.com/StarsectorCommunityApiDocs/CommunityApiDocs`.
+    4. Type `git submodule add git@github.com:StarsectorCommunityApiDocs/CommunityApiDocs.git`.
 3. Add the git submodule to IntelliJ: 
     1. Open the IntelliJ settings and navigate to `Version Control -> Directory Mappings`.
     2. Click the `+` and add the `CommunityApiDocs` folder that was just created.
