@@ -17,8 +17,12 @@ instructions for other IDEs._
 2. Go to `Modules -> Dependencies`.
 3. Find your existing dependency on `starsector-core`. 
 4. Click "Edit", then "Add Documentation URL".
+    1. Enter `https://starsectorcommunityapidocs.github.io/CommunityApiDocs`.
+
+Steps 1-3:
    ![Select and edit the Starsector API dependency.](readme_files/intellij-usage-dependency.png "Select and edit the Starsector API dependency.")
-   ![Add API url.](readme_files/intellij-usage-docs.png "Add API url.")
+Step 4:
+ ![Add API url.](readme_files/intellij-usage-docs.png "Add API url.")
 
 ## To Contribute
 
