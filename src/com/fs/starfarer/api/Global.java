@@ -21,7 +21,16 @@ public class Global {
 	public static GameState getCurrentState() {
 		return settingsAPI.getCurrentState();
 	}
-	
+
+	/**
+	 * Creates a new {@link Logger} that will add the given class to all log messages it produces.
+	 * {@snippet :
+	 *   Logger log = Global.getLogger(MyClass.class);
+	 *  log.info("Hello, world!");
+	 *}
+	 *
+	 * @param c the class to add to the log messages
+	 */
 	@SuppressWarnings("unchecked")
 	public static Logger getLogger(Class c) {
 		Logger log = Logger.getLogger(c);
