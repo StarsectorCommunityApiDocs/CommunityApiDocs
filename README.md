@@ -34,7 +34,7 @@ Step 4:
 _This guide is for **IntelliJ**, but should be easy enough to adapt to other IDEs (or none). Please feel free to add
 instructions for other IDEs._
 
-1. Request to join the Team here: <https://github.com/orgs/StarsectorCommunityApiDocs/teams/contributor>.
+1. Request to join the Team here: <https://github.com/orgs/StarsectorCommunityApiDocs/teams> (search for "Contributor").
    1. Unfortunately, there is no way to automatically add you to the team, so you will need to wait for a maintainer to
       approve your request (if someone knows a way, please let us know).
 2. Add the git submodule to your mod:
