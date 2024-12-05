@@ -22,6 +22,8 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.fleet.FleetMemberType;
 
 /**
+ * Provides methods for creating various entities, such as fleets, markets, orbits, cargo, and more.
+ *
  * @author Alex Mosolov
  *
  * Copyright 2012 Fractal Softworks, LLC
