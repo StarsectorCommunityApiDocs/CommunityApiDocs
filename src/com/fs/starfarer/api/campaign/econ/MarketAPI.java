@@ -275,6 +275,13 @@ public interface MarketAPI extends HasMemory {
 	boolean isInEconomy();
 	
 	List<Industry> getIndustries();
+
+	/**
+	 * Set industry string id to add an industry to market.
+	 * Example: Industries.MINING or "mining".
+	 *
+	 * @param id
+	 */
 	void addIndustry(String id);
 	
 	/**
