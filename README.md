@@ -17,8 +17,15 @@ instructions for other IDEs._
 2. Go to `Modules -> Dependencies`.
 3. Find your existing dependency on `starsector-core`. 
 4. Click "Edit", then "Add Documentation URL".
+    1. Enter `https://starsectorcommunityapidocs.github.io/CommunityApiDocs`.
+
+Steps 1-3:
+
    ![Select and edit the Starsector API dependency.](readme_files/intellij-usage-dependency.png "Select and edit the Starsector API dependency.")
-   ![Add API url.](readme_files/intellij-usage-docs.png "Add API url.")
+
+Step 4:
+
+ ![Add API url.](readme_files/intellij-usage-docs.png "Add API url.")
 
 ## To Contribute
 
@@ -27,36 +34,61 @@ instructions for other IDEs._
 _This guide is for **IntelliJ**, but should be easy enough to adapt to other IDEs (or none). Please feel free to add
 instructions for other IDEs._
 
-1. Request to join the Team here: <https://github.com/orgs/StarsectorCommunityApiDocs/teams/contributor>.
-   1. Unfortunately, there is no way to automatically add you to the team, so you will need to wait for a maintainer to
+_If you are setting up a new mod and have already followed these steps for a different mod, skip to step 4 (add git root)._
+
+1. Request to join the Team here: <https://github.com/orgs/StarsectorCommunityApiDocs/teams> (search for "Contributor").
+   1. If that doesn't work, ping an owner on Discord or something.
+   2. Unfortunately, there is no way to automatically add you to the team, so you will need to wait for a maintainer to
       approve your request (if someone knows a way, please let us know).
-2. Add the git submodule to your mod:
+3. Clone the repo:
     1. If you haven't already, connect IntelliJ to your GitHub account by going to `File -> Settings -> Version Control
        -> GitHub` and adding your account there.
-    2. Within IntelliJ, open the Terminal (icon is in the bottom-left by default) or follow the [Git CLI](#Git-CLI) section.
-    3. Optionally, make a new folder to contain the docs and `cd` into it. Otherwise, it will go into a new folder called
-       `CommunityApiDocs` in your project.
-    4. Type `git submodule add git@github.com:StarsectorCommunityApiDocs/CommunityApiDocs.git`.
-3. Add the git submodule to IntelliJ: 
+    2. Within IntelliJ, with a project open (e.g. your mod), go to `File -> Open -> Get from Version Control` .
+    3. First, choose a Directory. This should be wherever you put your coding projects, such as next to your mod folder (but not within it).
+    4. Then, enter `git@github.com:StarsectorCommunityApiDocs/CommunityApiDocs.git` for the URL.
+    5. Hit `Clone`.
+4. Add the git root to IntelliJ, making it easy to update and commit your doc edits: 
     1. If you use Gradle, follow the [Gradle](#Gradle) section instead of this step. If you don't know what that is or don't use it, continue here. 
     2. Open the IntelliJ settings and navigate to `Version Control -> Directory Mappings`.
-    3. Click the `+` and add the `CommunityApiDocs` folder that was just created.
-4. Set your mod's dependency to be on the new git submodule.
+    3. Click the `+`, then navigate to and add the `CommunityApiDocs` folder that was just created.
+5. Set your mod's dependency to be on the new git submodule.
     1. Open the Project Structure (`File -> Project Structure`).
     2. Go to `Modules -> Dependencies`.
     3. Find your existing dependency on `starsector-core`.
-    4. Edit it, leaving all _Classes_ the same, but adding/changing the _Sources_ to your new `CommunityApiDocs/src`
-       folder.
-        1. You should now have a _Sources_ entry that looks like `<your mod path>/CommunityApiDocs/src`.
-        2. Note! If you have previously added a **URL** for documentation on `starsector-core`, you should remove it, otherwise you won't see your own changes until they're pushed and built.
-5. All done!
+    4. Edit it, leaving all _Classes_ the same, but adding/changing the _Sources_ to the `CommunityApiDocs/src`
+       folder (so, the `src` folder inside the `CommunityApiDocs` folder that you cloned in step 3).
+        1. You should now have a _Sources_ entry that looks like `<folder path>/CommunityApiDocs/src`.
+        2. Note! If there is a **URL** for documentation on `starsector-core`, you should remove it, otherwise you won't see your own changes until they're online. You want to see them as soon as you make them, before you push them online.
+6. All done!
     1. Now, when you navigate to vanilla source code, it will open up the Community API Docs instead, which you can
        edit.
     2. You'll also see the documentation from the Community API Docs in the tooltips and quick documentation.
-    3. Make sure to update the submodule every so often to get the latest changes.
+    3. Make sure to update the `CommunityApiDocs` every so often to get the latest changes. The default hotkey for this is `Control-T` on Windows/Linux.
     4. When you make changes, you'll see them show up in the IntelliJ `Commit` tab (found on the left side of IntelliJ
        by default).
 
+#### GitHub ssh-key
+This step is needed to use `git` on the command line. If you use it only through IntelliJ buttons, it shouldn't be required.
+
+If you haven't already, generate an [ssh-key for Github](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent).
+
+Otherwise, adding a submodule or pushing via ssh won't work.
+
+Expand the section below if you want to verify that your ssh-key is set up correctly.
+
+<details>
+On GitHub, got to "Settings":
+
+![github settings](readme_files/github-settings.png "Github Settings")
+
+Then go to "SSH and GPG keys" and make sure that there is an active ssh key for your account:
+
+![ssh and gpg keys](readme_files/github-sshkeys.png "ssh and gpg keys")
+
+Lastly, open a file explorer (WIN+E) and go to your user folder (e.g. C:/Users/myName) and make sure that there is a
+folder called .ssh. Inside that folder, there should be one or more files ending in .pub. Make sure that the contents of
+one of those files match the key displayed in GitHub. If not, create a new key, following the tutorial linked above.
+</details>
 
 #### Git CLI
 <details>
@@ -68,9 +100,6 @@ To easily be able to use the git CLI, make sure to add the submodule via SSH rat
 ```shell
 git submodule add git@github.com:StarsectorCommunityApiDocs/CommunityApiDocs.git
 ```
-
-If you haven't already, generate an [ssh-key for Github](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
-to be able to push without needing to enter credentials.
 
 If you want to commit/push your changes, simply navigate into the CommunityApiDocs folder and follow your
 usual workflow for commiting/pushing. No additional steps are required.
