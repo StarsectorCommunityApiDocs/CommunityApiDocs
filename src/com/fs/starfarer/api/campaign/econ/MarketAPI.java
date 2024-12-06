@@ -181,6 +181,14 @@ public interface MarketAPI extends HasMemory {
 	List<SubmarketAPI> getSubmarketsCopy();
 	void removeSubmarket(String specId);
 	SubmarketAPI getSubmarket(String specId);
+
+	/**
+	 * Sets the ownership of the market to a faction.
+	 * Example: "Factions.PIRATES" from Factions class or "pirates" from pirates.faction.
+	 * An entry in the factions.csv is needed to point the game to correct .faction file.
+	 *
+	 * @param factionId String id of faction.
+	 */
 	void setFactionId(String factionId);
 	
 	
@@ -280,7 +288,7 @@ public interface MarketAPI extends HasMemory {
 	 * Set industry string id to add an industry to market.
 	 * Example: "Industries.MINING" from Industries class or "mining" from industries.csv.
 	 *
-	 * @param id
+	 * @param id String id of industry
 	 */
 	void addIndustry(String id);
 	
