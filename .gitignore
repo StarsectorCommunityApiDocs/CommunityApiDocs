@@ -1,4 +1,7 @@
-
-updating-game/game-jars/
-
-updating-game/update-game-jars.sh
+/*
+/*/
+!/src/
+!/README.md
+!/readme_files/
+!/.github/
+!/dracula-javadoc8.css
