@@ -34,6 +34,8 @@ Step 4:
 _This guide is for **IntelliJ**, but should be easy enough to adapt to other IDEs (or none). Please feel free to add
 instructions for other IDEs._
 
+_If you are setting up a new mod and have already followed these steps for a different mod, skip to step 4 (add git root)._
+
 1. Request to join the Team here: <https://github.com/orgs/StarsectorCommunityApiDocs/teams> (search for "Contributor").
    1. If that doesn't work, ping an owner on Discord or something.
    2. Unfortunately, there is no way to automatically add you to the team, so you will need to wait for a maintainer to
@@ -45,7 +47,7 @@ instructions for other IDEs._
     3. First, choose a Directory. This should be wherever you put your coding projects, such as next to your mod folder (but not within it).
     4. Then, enter `git@github.com:StarsectorCommunityApiDocs/CommunityApiDocs.git` for the URL.
     5. Hit `Clone`.
-4. Add the git root to IntelliJ: 
+4. Add the git root to IntelliJ, making it easy to update and commit your doc edits: 
     1. If you use Gradle, follow the [Gradle](#Gradle) section instead of this step. If you don't know what that is or don't use it, continue here. 
     2. Open the IntelliJ settings and navigate to `Version Control -> Directory Mappings`.
     3. Click the `+`, then navigate to and add the `CommunityApiDocs` folder that was just created.
