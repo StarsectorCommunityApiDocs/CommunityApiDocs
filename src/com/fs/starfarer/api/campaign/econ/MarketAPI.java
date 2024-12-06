@@ -278,7 +278,7 @@ public interface MarketAPI extends HasMemory {
 
 	/**
 	 * Set industry string id to add an industry to market.
-	 * Example: Industries.MINING or "mining".
+	 * Example: "Industries.MINING" from Industries class or "mining" from industries.csv.
 	 *
 	 * @param id
 	 */
