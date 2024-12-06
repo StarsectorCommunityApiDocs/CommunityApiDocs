@@ -31,6 +31,28 @@ Step 4:
 
 ### Setup guide
 
+#### GitHub ssh-key
+
+If you haven't already, generate an [ssh-key for Github](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent).
+
+Otherwise, adding a submodule or pushing via ssh won't work.
+
+Expand the section below if you want to verify that your ssh-key is set up correctly.
+
+<details>
+On GitHub, got to "Settings":
+
+![github settings](readme_files/github-settings.png "Github Settings")
+
+Then go to "SSH and GPG keys" and make sure that there is an active ssh key for your account:
+
+![ssh and gpg keys](readme_files/github-sshkeys.png "ssh and gpg keys")
+
+Lastly, open a file explorer (WIN+E) and go to your user folder (e.g. C:/Users/myName) and make sure that there is a
+folder called .ssh. Inside that folder, there should be one or more files ending in .pub. Make sure that the contents of
+one of those files match the key displayed in GitHub. If not, create a new key, following the tutorial linked above.
+</details>
+
 _This guide is for **IntelliJ**, but should be easy enough to adapt to other IDEs (or none). Please feel free to add
 instructions for other IDEs._
 
@@ -75,9 +97,6 @@ To easily be able to use the git CLI, make sure to add the submodule via SSH rat
 ```shell
 git submodule add git@github.com:StarsectorCommunityApiDocs/CommunityApiDocs.git
 ```
-
-If you haven't already, generate an [ssh-key for Github](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
-to be able to push without needing to enter credentials.
 
 If you want to commit/push your changes, simply navigate into the CommunityApiDocs folder and follow your
 usual workflow for commiting/pushing. No additional steps are required.
