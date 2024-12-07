@@ -1,0 +1,43 @@
+name: Generate Javadocs (Doxygen)
+
+on:
+  push:
+    branches:
+      - main
+      - ci
+
+permissions:
+  contents: write  # Needed to update the gh-pages branch
+
+jobs:
+  generate-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v3
+        with:
+          submodules: false
+
+      - name: Checkout submodule with custom token
+        run: |
+          # Update the submodule URL to use the custom token
+          git config --file=.gitmodules submodule.StarsectorJarsPrivate.url https://x-access-token:${{ secrets.PRIVATE_REPO_PAT }}@github.com/StarsectorCommunityApiDocs/StarsectorJarsPrivate.git
+
+          # Initialize and update the submodule
+          git submodule sync
+          git submodule update --init --recursive
+
+      - uses: mattnotmitt/doxygen-action@v1
+        with:
+          # Path to Doxyfile
+          doxyfile-path: "./Doxyfile"
+          # Working directory
+          working-directory: "."
+          # Generate latex documentation
+          enable-latex: false
+
+      - uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: javadocs

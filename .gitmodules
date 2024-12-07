@@ -1,3 +1,6 @@
 [submodule "StarsectorJarsPrivate"]
 	path = StarsectorJarsPrivate
 	url = https://github.com/StarsectorCommunityApiDocs/StarsectorJarsPrivate.git
+[submodule "doxygen-awesome-css"]
+	path = doxygen-awesome-css
+	url = https://github.com/jothepro/doxygen-awesome-css.git
