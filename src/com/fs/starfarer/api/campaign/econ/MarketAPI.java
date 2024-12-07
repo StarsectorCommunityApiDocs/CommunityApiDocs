@@ -64,9 +64,9 @@ public interface MarketAPI extends HasMemory {
 
 	List<MarketConditionAPI> getConditions();
 	/**
-	 * Returns token which can be used to remove this specific condition.
-	 * @param id
-	 * @return
+	 * Adds market condition to specified MarketAPI object.
+	 * Example: String "ORE_MODERATE" from Conditions class or "ore_moderate" id from market_conditions.csv.
+	 * @param id String id of condition.
 	 */
 	String addCondition(String id);
 	
