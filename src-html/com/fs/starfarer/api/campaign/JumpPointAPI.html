@@ -1,0 +1,203 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.campaign;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.util.List;<a name="line.3"></a>
+<span class="sourceLineNo">004</span><a name="line.4"></a>
+<span class="sourceLineNo">005</span><a name="line.5"></a>
+<span class="sourceLineNo">006</span>public interface JumpPointAPI extends SectorEntityToken {<a name="line.6"></a>
+<span class="sourceLineNo">007</span>        <a name="line.7"></a>
+<span class="sourceLineNo">008</span>        public static class JumpDestination {<a name="line.8"></a>
+<span class="sourceLineNo">009</span>                private SectorEntityToken destination;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>                private String labelInInteractionDialog;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>                <a name="line.11"></a>
+<span class="sourceLineNo">012</span>                private float minDistFromToken = 0;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>                private float maxDistFromToken = 0;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>                <a name="line.14"></a>
+<span class="sourceLineNo">015</span>                public JumpDestination(SectorEntityToken destination, String labelInInteractionDialog) {<a name="line.15"></a>
+<span class="sourceLineNo">016</span>                        this.destination = destination;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>                        this.labelInInteractionDialog = labelInInteractionDialog;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>                }<a name="line.18"></a>
+<span class="sourceLineNo">019</span>                <a name="line.19"></a>
+<span class="sourceLineNo">020</span>                public SectorEntityToken getDestination() {<a name="line.20"></a>
+<span class="sourceLineNo">021</span>                        return destination;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>                }<a name="line.22"></a>
+<span class="sourceLineNo">023</span>                public void setDestination(SectorEntityToken destination) {<a name="line.23"></a>
+<span class="sourceLineNo">024</span>                        this.destination = destination;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>                }<a name="line.25"></a>
+<span class="sourceLineNo">026</span>                public String getLabelInInteractionDialog() {<a name="line.26"></a>
+<span class="sourceLineNo">027</span>                        return labelInInteractionDialog;<a name="line.27"></a>
+<span class="sourceLineNo">028</span>                }<a name="line.28"></a>
+<span class="sourceLineNo">029</span>                public void setLabelInInteractionDialog(String labelInInteractionDialog) {<a name="line.29"></a>
+<span class="sourceLineNo">030</span>                        this.labelInInteractionDialog = labelInInteractionDialog;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>                }<a name="line.31"></a>
+<span class="sourceLineNo">032</span>                public float getMinDistFromToken() {<a name="line.32"></a>
+<span class="sourceLineNo">033</span>                        return minDistFromToken;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>                }<a name="line.34"></a>
+<span class="sourceLineNo">035</span>                public void setMinDistFromToken(float minDistFromToken) {<a name="line.35"></a>
+<span class="sourceLineNo">036</span>                        this.minDistFromToken = minDistFromToken;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>                }<a name="line.37"></a>
+<span class="sourceLineNo">038</span>                public float getMaxDistFromToken() {<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                        return maxDistFromToken;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                }<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                public void setMaxDistFromToken(float maxDistFromToken) {<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                        this.maxDistFromToken = maxDistFromToken;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                }<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        }<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        <a name="line.45"></a>
+<span class="sourceLineNo">046</span>        void setRadius(float radius);<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        <a name="line.47"></a>
+<span class="sourceLineNo">048</span>        void addDestination(JumpDestination destination);<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        void clearDestinations();<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        void removeDestination(SectorEntityToken destination);<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        List&lt;JumpDestination&gt; getDestinations();<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        <a name="line.52"></a>
+<span class="sourceLineNo">053</span>        <a name="line.53"></a>
+<span class="sourceLineNo">054</span>        /**<a name="line.54"></a>
+<span class="sourceLineNo">055</span>         * Also automatically sets the jump point size.<a name="line.55"></a>
+<span class="sourceLineNo">056</span>         * @param category in settings.json<a name="line.56"></a>
+<span class="sourceLineNo">057</span>         * @param id under category in settings.json<a name="line.57"></a>
+<span class="sourceLineNo">058</span>         * @param entity can be null or a star/planet. Entity will be displayed at the end of the wormhole, above the background.<a name="line.58"></a>
+<span class="sourceLineNo">059</span>         */<a name="line.59"></a>
+<span class="sourceLineNo">060</span>        void setDestinationVisual(String category, String id, SectorEntityToken entity);<a name="line.60"></a>
+<span class="sourceLineNo">061</span>        void setStandardWormholeToStarOrPlanetVisual(SectorEntityToken entity);<a name="line.61"></a>
+<span class="sourceLineNo">062</span>        void setStandardWormholeToHyperspaceVisual();<a name="line.62"></a>
+<span class="sourceLineNo">063</span>        void setStandardWormholeToStarfieldVisual();<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        void setStandardWormholeToNothingVisual();<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        <a name="line.65"></a>
+<span class="sourceLineNo">066</span>        boolean isAutoCreateEntranceFromHyperspace();<a name="line.66"></a>
+<span class="sourceLineNo">067</span>        <a name="line.67"></a>
+<span class="sourceLineNo">068</span>        /**<a name="line.68"></a>
+<span class="sourceLineNo">069</span>         * @return Whether the jump point leads to a star.<a name="line.69"></a>
+<span class="sourceLineNo">070</span>         */<a name="line.70"></a>
+<span class="sourceLineNo">071</span>        boolean isStarAnchor();<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        <a name="line.72"></a>
+<span class="sourceLineNo">073</span>        /**<a name="line.73"></a>
+<span class="sourceLineNo">074</span>         * @return Whether the jump point leads to a gas giant.<a name="line.74"></a>
+<span class="sourceLineNo">075</span>         */<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        boolean isGasGiantAnchor();<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        <a name="line.77"></a>
+<span class="sourceLineNo">078</span>        void setAutoCreateEntranceFromHyperspace(boolean autoCreateEntrance);<a name="line.78"></a>
+<span class="sourceLineNo">079</span><a name="line.79"></a>
+<span class="sourceLineNo">080</span>        SectorEntityToken getDestinationVisualEntity();<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        <a name="line.81"></a>
+<span class="sourceLineNo">082</span>        <a name="line.82"></a>
+<span class="sourceLineNo">083</span>        SectorEntityToken getRelatedPlanet();<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        <a name="line.84"></a>
+<span class="sourceLineNo">085</span>        /**<a name="line.85"></a>
+<span class="sourceLineNo">086</span>         * This planet will be displayed by auto-generated jump points using this jump point as an exit.<a name="line.86"></a>
+<span class="sourceLineNo">087</span>         * Should only be set for a jump point in the same location as the planet; only used for visuals.<a name="line.87"></a>
+<span class="sourceLineNo">088</span>         * ONLY necessary if StatSystemAPI.autogenerateHyperspaceJumpPoints() is subsequently called.<a name="line.88"></a>
+<span class="sourceLineNo">089</span>         * @param relatedPlanet<a name="line.89"></a>
+<span class="sourceLineNo">090</span>         */<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        void setRelatedPlanet(SectorEntityToken relatedPlanet);<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        <a name="line.92"></a>
+<span class="sourceLineNo">093</span>        <a name="line.93"></a>
+<span class="sourceLineNo">094</span>        /**<a name="line.94"></a>
+<span class="sourceLineNo">095</span>         * May only be called after this jump point was added to the system, and also after<a name="line.95"></a>
+<span class="sourceLineNo">096</span>         * StarSystemAPI.autogenerateHyperspaceAnchors() was called for the system, OR initStar() was called<a name="line.96"></a>
+<span class="sourceLineNo">097</span>         * with the "location in hyperspace" parameters (which auto-generates the main hyperspace anchor).<a name="line.97"></a>
+<span class="sourceLineNo">098</span>         * @param entity<a name="line.98"></a>
+<span class="sourceLineNo">099</span>         * @param radius<a name="line.99"></a>
+<span class="sourceLineNo">100</span>         */<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        void autoUpdateHyperJumpPointLocationBasedOnInSystemEntityAtRadius(SectorEntityToken entity, float radius);<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        <a name="line.102"></a>
+<span class="sourceLineNo">103</span>        <a name="line.103"></a>
+<span class="sourceLineNo">104</span>        /**<a name="line.104"></a>
+<span class="sourceLineNo">105</span>         * Purely visual.<a name="line.105"></a>
+<span class="sourceLineNo">106</span>         */<a name="line.106"></a>
+<span class="sourceLineNo">107</span>        void open();<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        <a name="line.108"></a>
+<span class="sourceLineNo">109</span>        /**<a name="line.109"></a>
+<span class="sourceLineNo">110</span>         * Purely visual.<a name="line.110"></a>
+<span class="sourceLineNo">111</span>         */<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        void close();<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        <a name="line.113"></a>
+<span class="sourceLineNo">114</span>        /**<a name="line.114"></a>
+<span class="sourceLineNo">115</span>         * Skips animation.<a name="line.115"></a>
+<span class="sourceLineNo">116</span>         */<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        void forceOpen();<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        <a name="line.118"></a>
+<span class="sourceLineNo">119</span>        /**<a name="line.119"></a>
+<span class="sourceLineNo">120</span>         * Skips animation.<a name="line.120"></a>
+<span class="sourceLineNo">121</span>         */<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        void forceClose();<a name="line.122"></a>
+<span class="sourceLineNo">123</span><a name="line.123"></a>
+<span class="sourceLineNo">124</span>        StarSystemAPI getDestinationStarSystem();<a name="line.124"></a>
+<span class="sourceLineNo">125</span><a name="line.125"></a>
+<span class="sourceLineNo">126</span>        boolean isWormhole();<a name="line.126"></a>
+<span class="sourceLineNo">127</span><a name="line.127"></a>
+<span class="sourceLineNo">128</span><a name="line.128"></a>
+<span class="sourceLineNo">129</span>}<a name="line.129"></a>
+<span class="sourceLineNo">130</span><a name="line.130"></a>
+<span class="sourceLineNo">131</span><a name="line.131"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

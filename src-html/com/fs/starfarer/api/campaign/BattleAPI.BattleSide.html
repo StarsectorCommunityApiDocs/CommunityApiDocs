@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.campaign;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.util.List;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import java.util.Map;<a name="line.4"></a>
+<span class="sourceLineNo">005</span><a name="line.5"></a>
+<span class="sourceLineNo">006</span>import org.lwjgl.util.vector.Vector2f;<a name="line.6"></a>
+<span class="sourceLineNo">007</span><a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.fleet.FleetMemberAPI;<a name="line.8"></a>
+<span class="sourceLineNo">009</span><a name="line.9"></a>
+<span class="sourceLineNo">010</span>public interface BattleAPI {<a name="line.10"></a>
+<span class="sourceLineNo">011</span>        <a name="line.11"></a>
+<span class="sourceLineNo">012</span>        public static enum BattleSide {<a name="line.12"></a>
+<span class="sourceLineNo">013</span>                ONE,<a name="line.13"></a>
+<span class="sourceLineNo">014</span>                TWO,<a name="line.14"></a>
+<span class="sourceLineNo">015</span>                NO_JOIN,<a name="line.15"></a>
+<span class="sourceLineNo">016</span>        }<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span>        void genCombined();<a name="line.18"></a>
+<span class="sourceLineNo">019</span>        void genCombinedDoNotRemoveEmpty();<a name="line.19"></a>
+<span class="sourceLineNo">020</span>        void uncombine();<a name="line.20"></a>
+<span class="sourceLineNo">021</span>        CampaignFleetAPI getCombinedOne();<a name="line.21"></a>
+<span class="sourceLineNo">022</span>        CampaignFleetAPI getCombinedTwo();<a name="line.22"></a>
+<span class="sourceLineNo">023</span>        boolean canJoin(CampaignFleetAPI fleet);<a name="line.23"></a>
+<span class="sourceLineNo">024</span>        BattleSide pickSide(CampaignFleetAPI fleet);<a name="line.24"></a>
+<span class="sourceLineNo">025</span>        boolean join(CampaignFleetAPI fleet);<a name="line.25"></a>
+<span class="sourceLineNo">026</span>        boolean isPlayerInvolved();<a name="line.26"></a>
+<span class="sourceLineNo">027</span>        List&lt;CampaignFleetAPI&gt; getFleetsFor(EngagementResultForFleetAPI side);<a name="line.27"></a>
+<span class="sourceLineNo">028</span>        boolean isPlayerSide(EngagementResultForFleetAPI side);<a name="line.28"></a>
+<span class="sourceLineNo">029</span>        CampaignFleetAPI getCombinedFor(CampaignFleetAPI participantOrCombined);<a name="line.29"></a>
+<span class="sourceLineNo">030</span>        CampaignFleetAPI getSourceFleet(FleetMemberAPI member);<a name="line.30"></a>
+<span class="sourceLineNo">031</span>        List&lt;CampaignFleetAPI&gt; getSideFor(CampaignFleetAPI participantOrCombined);<a name="line.31"></a>
+<span class="sourceLineNo">032</span>        CampaignFleetAPI getPrimary(List&lt;CampaignFleetAPI&gt; side);<a name="line.32"></a>
+<span class="sourceLineNo">033</span>        boolean isPlayerSide(List&lt;CampaignFleetAPI&gt; side);<a name="line.33"></a>
+<span class="sourceLineNo">034</span>        List&lt;CampaignFleetAPI&gt; getPlayerSide();<a name="line.34"></a>
+<span class="sourceLineNo">035</span>        //void finish();<a name="line.35"></a>
+<span class="sourceLineNo">036</span>        void removeEmptyFleets();<a name="line.36"></a>
+<span class="sourceLineNo">037</span>        boolean isPlayerPrimary();<a name="line.37"></a>
+<span class="sourceLineNo">038</span>        //void setPlayerPrimary(boolean playerPrimary);<a name="line.38"></a>
+<span class="sourceLineNo">039</span>        <a name="line.39"></a>
+<span class="sourceLineNo">040</span>        <a name="line.40"></a>
+<span class="sourceLineNo">041</span>        boolean isDone();<a name="line.41"></a>
+<span class="sourceLineNo">042</span>        List&lt;CampaignFleetAPI&gt; getSideOne();<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        List&lt;CampaignFleetAPI&gt; getSideTwo();<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        List&lt;CampaignFleetAPI&gt; getNonPlayerSide();<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        CampaignFleetAPI getPlayerCombined();<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        CampaignFleetAPI getNonPlayerCombined();<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        CampaignFleetAPI getCombined(BattleSide side);<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        CampaignFleetAPI getOtherSideCombined(BattleSide side);<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        void leave(CampaignFleetAPI fleet, boolean engagedInHostilities);<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        List&lt;CampaignFleetAPI&gt; getSide(BattleSide side);<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        List&lt;CampaignFleetAPI&gt; getOtherSide(BattleSide side);<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        <a name="line.52"></a>
+<span class="sourceLineNo">053</span>        boolean knowsWhoPlayerIs(List&lt;CampaignFleetAPI&gt; side);<a name="line.53"></a>
+<span class="sourceLineNo">054</span>        BattleSide pickSide(CampaignFleetAPI fleet, boolean considerPlayerTransponderStatus);<a name="line.54"></a>
+<span class="sourceLineNo">055</span>        void takeSnapshots();<a name="line.55"></a>
+<span class="sourceLineNo">056</span>        List&lt;CampaignFleetAPI&gt; getSnapshotSideOne();<a name="line.56"></a>
+<span class="sourceLineNo">057</span>        List&lt;CampaignFleetAPI&gt; getSnapshotSideTwo();<a name="line.57"></a>
+<span class="sourceLineNo">058</span>        List&lt;CampaignFleetAPI&gt; getSnapshotSideFor(CampaignFleetAPI participantOrCombined);<a name="line.58"></a>
+<span class="sourceLineNo">059</span>        List&lt;CampaignFleetAPI&gt; getSnapshotFor(List&lt;CampaignFleetAPI&gt; side);<a name="line.59"></a>
+<span class="sourceLineNo">060</span>        List&lt;CampaignFleetAPI&gt; getBothSides();<a name="line.60"></a>
+<span class="sourceLineNo">061</span>        List&lt;CampaignFleetAPI&gt; getSnapshotBothSides();<a name="line.61"></a>
+<span class="sourceLineNo">062</span>        List&lt;CampaignFleetAPI&gt; getOtherSideFor(CampaignFleetAPI participantOrCombined);<a name="line.62"></a>
+<span class="sourceLineNo">063</span>        boolean isOnPlayerSide(CampaignFleetAPI participantOrCombined);<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        List&lt;CampaignFleetAPI&gt; getOtherSideSnapshotFor(<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                        CampaignFleetAPI participantOrCombined);<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        <a name="line.66"></a>
+<span class="sourceLineNo">067</span>        <a name="line.67"></a>
+<span class="sourceLineNo">068</span>        /**<a name="line.68"></a>
+<span class="sourceLineNo">069</span>         * Snapshot before the battle, containing any fleets that may have been eliminated during.<a name="line.69"></a>
+<span class="sourceLineNo">070</span>         * @return<a name="line.70"></a>
+<span class="sourceLineNo">071</span>         */<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        List&lt;CampaignFleetAPI&gt; getPlayerSideSnapshot();<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        <a name="line.73"></a>
+<span class="sourceLineNo">074</span>        /**<a name="line.74"></a>
+<span class="sourceLineNo">075</span>         * Snapshot before the battle, containing any fleets that may have been eliminated during.<a name="line.75"></a>
+<span class="sourceLineNo">076</span>         * @return<a name="line.76"></a>
+<span class="sourceLineNo">077</span>         */<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        List&lt;CampaignFleetAPI&gt; getNonPlayerSideSnapshot();<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        <a name="line.79"></a>
+<span class="sourceLineNo">080</span>        <a name="line.80"></a>
+<span class="sourceLineNo">081</span>        boolean isInvolved(CampaignFleetAPI test);<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        float getPlayerInvolvementFraction();<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        boolean hasSnapshots();<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        void applyVisibilityMod(CampaignFleetAPI fleet);<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        boolean onSameSide(CampaignFleetAPI one, CampaignFleetAPI two);<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        boolean onPlayerSide(CampaignFleetAPI fleet);<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        CampaignFleetAPI getClosestInvolvedFleetTo(CampaignFleetAPI fleet);<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        //void finish(boolean engagedInHostilities);<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        void finish(BattleSide winner);<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        void finish(BattleSide winner, boolean engagedInHostilities);<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        boolean isPlayerInvolvedAtStart();<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        void setPlayerInvolvedAtStart(boolean playerInvolvedAtStart);<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        void setPlayerInvolvementFraction(float playerInvolvementFraction);<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        CampaignFleetAPI getPrimary(List&lt;CampaignFleetAPI&gt; side, boolean nonPlayer);<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        Map&lt;FleetMemberAPI, CampaignFleetAPI&gt; getMemberSourceMap();<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        long getSeed();<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        Vector2f computeCenterOfMass();<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        boolean isStationInvolved();<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        boolean isStationInvolvedOnPlayerSide();<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        boolean isStationInvolved(List&lt;CampaignFleetAPI&gt; side);<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        List&lt;CampaignFleetAPI&gt; getStationSide();<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        void genCombined(boolean withStation);<a name="line.102"></a>
+<span class="sourceLineNo">103</span>        boolean join(CampaignFleetAPI fleet, BattleSide side);<a name="line.103"></a>
+<span class="sourceLineNo">104</span>}<a name="line.104"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

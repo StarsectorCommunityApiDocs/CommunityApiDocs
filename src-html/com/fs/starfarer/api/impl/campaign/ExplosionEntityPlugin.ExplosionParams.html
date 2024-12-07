@@ -1,0 +1,534 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import java.util.ArrayList;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import java.util.LinkedHashSet;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import java.util.List;<a name="line.6"></a>
+<span class="sourceLineNo">007</span><a name="line.7"></a>
+<span class="sourceLineNo">008</span>import org.lwjgl.util.vector.Vector2f;<a name="line.8"></a>
+<span class="sourceLineNo">009</span><a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.Global;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.campaign.CampaignEngineLayers;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.campaign.CampaignFleetAPI;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.campaign.LocationAPI;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.campaign.SectorEntityToken;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.combat.ViewportAPI;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.fleet.FleetMemberAPI;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.graphics.SpriteAPI;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import com.fs.starfarer.api.impl.campaign.ids.Stats;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import com.fs.starfarer.api.impl.campaign.terrain.HyperspaceTerrainPlugin;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import com.fs.starfarer.api.impl.campaign.terrain.ShoveFleetScript;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import com.fs.starfarer.api.util.Misc;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import com.fs.starfarer.api.util.WeightedRandomPicker;<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span>public class ExplosionEntityPlugin extends BaseCustomEntityPlugin {<a name="line.24"></a>
+<span class="sourceLineNo">025</span><a name="line.25"></a>
+<span class="sourceLineNo">026</span>        public static enum ExplosionFleetDamage {<a name="line.26"></a>
+<span class="sourceLineNo">027</span>                NONE,<a name="line.27"></a>
+<span class="sourceLineNo">028</span>                LOW,<a name="line.28"></a>
+<span class="sourceLineNo">029</span>                MEDIUM,<a name="line.29"></a>
+<span class="sourceLineNo">030</span>                HIGH,<a name="line.30"></a>
+<span class="sourceLineNo">031</span>                EXTREME,<a name="line.31"></a>
+<span class="sourceLineNo">032</span>        }<a name="line.32"></a>
+<span class="sourceLineNo">033</span>        public static class ExplosionParams {<a name="line.33"></a>
+<span class="sourceLineNo">034</span>                public Color color;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>                public ExplosionFleetDamage damage = ExplosionFleetDamage.NONE;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>                public float radius;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>                public float durationMult = 1f;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>                public Vector2f loc;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                public LocationAPI where;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                public ExplosionParams(Color color, LocationAPI where, Vector2f loc, float radius, float durationMult) {<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                        this.color = color;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                        this.where = where;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                        this.loc = loc;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>                        this.radius = radius;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>                        this.durationMult = durationMult;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                }<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        }<a name="line.47"></a>
+<span class="sourceLineNo">048</span><a name="line.48"></a>
+<span class="sourceLineNo">049</span>        <a name="line.49"></a>
+<span class="sourceLineNo">050</span>        public static class ParticleData {<a name="line.50"></a>
+<span class="sourceLineNo">051</span>                public Vector2f offset = new Vector2f();<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                public Vector2f vel = new Vector2f();<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                public float scale = 1f;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                public float scaleDelta = 1f;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                public float turnDir = 1f;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                public float angle = 1f;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                public float size;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                <a name="line.58"></a>
+<span class="sourceLineNo">059</span>                public float maxDur;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                public float elapsed;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                public float swImpact = 1f;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                <a name="line.62"></a>
+<span class="sourceLineNo">063</span>                public int i;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                public int j;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                <a name="line.65"></a>
+<span class="sourceLineNo">066</span>                public Color color;<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                <a name="line.67"></a>
+<span class="sourceLineNo">068</span>                public ParticleData(Color color, float size, float maxDur, float endScale) {<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                        i = Misc.random.nextInt(4);<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                        j = Misc.random.nextInt(4);<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                        <a name="line.71"></a>
+<span class="sourceLineNo">072</span>                        this.color = color;<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                        this.size = size;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                        angle = (float) Math.random() * 360f;<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                        <a name="line.75"></a>
+<span class="sourceLineNo">076</span>                        this.maxDur = maxDur;<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                        scaleDelta = (endScale - 1f) / maxDur;<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                        scale = 1f;<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                        <a name="line.79"></a>
+<span class="sourceLineNo">080</span>                        turnDir = Math.signum((float) Math.random() - 0.5f) * 10f * (float) Math.random();<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                        <a name="line.81"></a>
+<span class="sourceLineNo">082</span>                        //turnDir = 0f;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                }<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                <a name="line.84"></a>
+<span class="sourceLineNo">085</span>                public void setVelocity(float direction, float minSpeed, float maxSpeed) {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                        vel = Misc.getUnitVectorAtDegreeAngle(direction);<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                        vel.scale(minSpeed + (maxSpeed - minSpeed) * (float) Math.random());<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                }<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                <a name="line.89"></a>
+<span class="sourceLineNo">090</span>                public void setOffset(float direction, float minDist, float maxDist) {<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                        offset = Misc.getUnitVectorAtDegreeAngle(direction);<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                        offset.scale(minDist + (maxDist - minDist) * (float) Math.random());<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                }<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                <a name="line.94"></a>
+<span class="sourceLineNo">095</span>                public void advance(float amount) {<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                        scale += scaleDelta * amount;<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                        if (scale &lt; 0) scale = 0f;<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                        <a name="line.98"></a>
+<span class="sourceLineNo">099</span>                        offset.x += vel.x * amount;<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                        offset.y += vel.y * amount;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                        <a name="line.101"></a>
+<span class="sourceLineNo">102</span>                        angle += turnDir * amount;<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                        <a name="line.103"></a>
+<span class="sourceLineNo">104</span>                        elapsed += amount;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                }<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                <a name="line.106"></a>
+<span class="sourceLineNo">107</span>                public float getBrightness() {<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                        float b = 1f - (elapsed / maxDur);<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                        if (b &lt; 0) b = 0;<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                        if (b &gt; 1) b = 1;<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                        return b;<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                }<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        }       <a name="line.113"></a>
+<span class="sourceLineNo">114</span>        <a name="line.114"></a>
+<span class="sourceLineNo">115</span>        <a name="line.115"></a>
+<span class="sourceLineNo">116</span>        protected ExplosionParams params;<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        protected List&lt;ParticleData&gt; particles = new ArrayList&lt;ParticleData&gt;();<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        <a name="line.118"></a>
+<span class="sourceLineNo">119</span>        transient protected SpriteAPI sprite;<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        <a name="line.120"></a>
+<span class="sourceLineNo">121</span>        protected float shockwaveRadius;<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        protected float shockwaveWidth;<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        protected float shockwaveSpeed;<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        protected float shockwaveDuration;<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        protected float shockwaveAccel;<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        <a name="line.126"></a>
+<span class="sourceLineNo">127</span>        protected float maxParticleSize;<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        <a name="line.128"></a>
+<span class="sourceLineNo">129</span>        <a name="line.129"></a>
+<span class="sourceLineNo">130</span>        public void init(SectorEntityToken entity, Object pluginParams) {<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                super.init(entity, pluginParams);<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                readResolve();<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                <a name="line.133"></a>
+<span class="sourceLineNo">134</span>                params = (ExplosionParams) pluginParams;<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                <a name="line.135"></a>
+<span class="sourceLineNo">136</span>                <a name="line.136"></a>
+<span class="sourceLineNo">137</span>                if (params.where.isCurrentLocation()) {<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                        Global.getSoundPlayer().playSound("gate_explosion", 1f, 1f, params.loc, Misc.ZERO);<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                }<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                <a name="line.140"></a>
+<span class="sourceLineNo">141</span>                float baseSize = params.radius * 0.08f;<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                maxParticleSize = baseSize * 2f;<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                <a name="line.143"></a>
+<span class="sourceLineNo">144</span>                float fullArea = (float) (Math.PI * params.radius * params.radius);<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                float particleArea = (float) (Math.PI * baseSize * baseSize);<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                <a name="line.146"></a>
+<span class="sourceLineNo">147</span>                int count = (int) Math.round(fullArea / particleArea * 1f);<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                <a name="line.148"></a>
+<span class="sourceLineNo">149</span>                float durMult = 2f;<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                durMult = params.durationMult;<a name="line.150"></a>
+<span class="sourceLineNo">151</span><a name="line.151"></a>
+<span class="sourceLineNo">152</span>                //baseSize *= 0.5f;<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                for (int i = 0; i &lt; count; i++) {<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                        float size = baseSize * (1f + (float) Math.random());<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                        <a name="line.155"></a>
+<span class="sourceLineNo">156</span>                        Color randomColor = new Color(Misc.random.nextInt(256), <a name="line.156"></a>
+<span class="sourceLineNo">157</span>                                                Misc.random.nextInt(256), Misc.random.nextInt(256), params.color.getAlpha());                   <a name="line.157"></a>
+<span class="sourceLineNo">158</span>                        Color adjustedColor = Misc.interpolateColor(params.color, randomColor, 0.2f);<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                        adjustedColor = params.color;<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                        ParticleData data = new ParticleData(adjustedColor, size, <a name="line.160"></a>
+<span class="sourceLineNo">161</span>                                                (0.25f + (float) Math.random()) * 2f * durMult, 3f);<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                        <a name="line.162"></a>
+<span class="sourceLineNo">163</span>                        float r = (float) Math.random();<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                        float dist = params.radius * 0.2f * (0.1f + r * 0.9f);<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                        float dir = (float) Math.random() * 360f;<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                        data.setOffset(dir, dist, dist);<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                        <a name="line.167"></a>
+<span class="sourceLineNo">168</span>                        dir = Misc.getAngleInDegrees(data.offset);<a name="line.168"></a>
+<span class="sourceLineNo">169</span>//                      data.setVelocity(dir, baseSize * 0.25f, baseSize * 0.5f);<a name="line.169"></a>
+<span class="sourceLineNo">170</span>//                      data.vel.scale(1f / durMult);<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                        <a name="line.171"></a>
+<span class="sourceLineNo">172</span>                        data.swImpact = (float) Math.random();<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                        if (i &gt; count / 2) data.swImpact = 1;<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                        <a name="line.174"></a>
+<span class="sourceLineNo">175</span>                        particles.add(data);<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                }<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                <a name="line.177"></a>
+<span class="sourceLineNo">178</span>                Vector2f loc = new Vector2f(params.loc);<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                loc.x -= params.radius * 0.01f;<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                loc.y += params.radius * 0.01f;<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                <a name="line.181"></a>
+<span class="sourceLineNo">182</span>                float b = 1f;<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                params.where.addHitParticle(loc, new Vector2f(), params.radius * 1f, b, 1f * durMult, params.color);<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                loc = new Vector2f(params.loc);<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                params.where.addHitParticle(loc, new Vector2f(), params.radius * 0.4f, 0.5f, 1f * durMult, Color.white);<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                <a name="line.186"></a>
+<span class="sourceLineNo">187</span>                shockwaveAccel = baseSize * 70f / durMult;<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                //shockwaveRadius = -1500f;<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                shockwaveRadius = 0f;<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                shockwaveRadius = -params.radius * 0.5f;<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                shockwaveSpeed = params.radius * 2f / durMult;<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                shockwaveDuration = params.radius * 2f / shockwaveSpeed;<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                shockwaveWidth = params.radius * 0.5f;<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                <a name="line.194"></a>
+<span class="sourceLineNo">195</span>//              shockwaveAccel = baseSize * 1500f / durMult;<a name="line.195"></a>
+<span class="sourceLineNo">196</span>//              //shockwaveRadius = -1500f;<a name="line.196"></a>
+<span class="sourceLineNo">197</span>//              shockwaveRadius = 0f;<a name="line.197"></a>
+<span class="sourceLineNo">198</span>//              shockwaveSpeed = params.radius * 4f / durMult;<a name="line.198"></a>
+<span class="sourceLineNo">199</span>//              shockwaveDuration = params.radius * 2f / shockwaveSpeed;<a name="line.199"></a>
+<span class="sourceLineNo">200</span>//              shockwaveWidth = params.radius * 0.5f;<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                <a name="line.201"></a>
+<span class="sourceLineNo">202</span>//              shockwaveAccel = baseSize * 10f / durMult;<a name="line.202"></a>
+<span class="sourceLineNo">203</span>//              //shockwaveRadius = -1500f;<a name="line.203"></a>
+<span class="sourceLineNo">204</span>//              shockwaveRadius = 0f;<a name="line.204"></a>
+<span class="sourceLineNo">205</span>//              shockwaveSpeed = params.radius * 0.2f / durMult;<a name="line.205"></a>
+<span class="sourceLineNo">206</span>//              shockwaveDuration = params.radius * 2f / shockwaveSpeed;<a name="line.206"></a>
+<span class="sourceLineNo">207</span>//              shockwaveWidth = params.radius * 0.4f;<a name="line.207"></a>
+<span class="sourceLineNo">208</span>        }<a name="line.208"></a>
+<span class="sourceLineNo">209</span>        <a name="line.209"></a>
+<span class="sourceLineNo">210</span>        Object readResolve() {<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                sprite = Global.getSettings().getSprite("misc", "nebula_particles");<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                return this;<a name="line.212"></a>
+<span class="sourceLineNo">213</span>        }<a name="line.213"></a>
+<span class="sourceLineNo">214</span>        <a name="line.214"></a>
+<span class="sourceLineNo">215</span><a name="line.215"></a>
+<span class="sourceLineNo">216</span>        public void advance(float amount) {<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                for (ParticleData p : new ArrayList&lt;ParticleData&gt;(particles)) {<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                        p.advance(amount);<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                        if (p.elapsed &gt;= p.maxDur) {<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                                particles.remove(p);<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                        }<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                }<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                if (particles.isEmpty()) {<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                        entity.setExpired(true);<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                }<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                <a name="line.226"></a>
+<span class="sourceLineNo">227</span>                applyDamageToFleets();<a name="line.227"></a>
+<span class="sourceLineNo">228</span><a name="line.228"></a>
+<span class="sourceLineNo">229</span>                if (shockwaveDuration &gt; 0) {<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                        shockwaveRadius += shockwaveSpeed * amount;<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                        //shockwaveSpeed -= amount * shockwaveSpeed * 5f;<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                        if (shockwaveSpeed &lt; 0) shockwaveSpeed = 0;<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                        shockwaveDuration -= amount;<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                        for (ParticleData p : particles) {<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                                float dist = p.offset.length();<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                                <a name="line.236"></a>
+<span class="sourceLineNo">237</span>                                float impact = 0f;<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                                if (dist &lt; shockwaveRadius &amp;&amp; dist &gt; shockwaveRadius - shockwaveWidth) {<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                                        impact = 1f - (shockwaveRadius - dist) / shockwaveWidth;<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                                        impact = -impact;<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                                } else if (dist &gt; shockwaveRadius &amp;&amp; dist &lt; shockwaveRadius + shockwaveWidth) {<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                                        impact = 1f - (dist - shockwaveRadius) / shockwaveWidth;<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                                }<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                                <a name="line.244"></a>
+<span class="sourceLineNo">245</span>                                float speed = p.vel.length();<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                                float dot = Vector2f.dot(p.offset, p.vel);<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                                float threshold = shockwaveSpeed * 0.5f;<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                                if (speed &gt; threshold) {// &amp;&amp; dot &gt; 0) {<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                                        impact *= threshold / speed;<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                                }<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                                if (dot &lt; 0) {<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                                        impact *= 0.2f;<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                                }<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                                //impact *= 0.1f + 0.9f * (1f - p.size / maxParticleSize);<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                                impact *= p.swImpact;<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                                <a name="line.256"></a>
+<span class="sourceLineNo">257</span>                                Vector2f accel = Misc.getUnitVectorAtDegreeAngle(Misc.getAngleInDegrees(p.offset));<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                                accel.scale(impact * shockwaveAccel);<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                                p.vel.x += accel.x * amount;<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                                p.vel.y += accel.y * amount;<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                        }<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                }<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                <a name="line.263"></a>
+<span class="sourceLineNo">264</span>        }<a name="line.264"></a>
+<span class="sourceLineNo">265</span>        <a name="line.265"></a>
+<span class="sourceLineNo">266</span><a name="line.266"></a>
+<span class="sourceLineNo">267</span>        public float getRenderRange() {<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                float extra = 2000f;<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                if (params != null) extra = params.radius * 3;<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                return entity.getRadius() + extra;<a name="line.270"></a>
+<span class="sourceLineNo">271</span>        }<a name="line.271"></a>
+<span class="sourceLineNo">272</span><a name="line.272"></a>
+<span class="sourceLineNo">273</span>        public void render(CampaignEngineLayers layer, ViewportAPI viewport) {<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                float alphaMult = viewport.getAlphaMult();<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                alphaMult *= entity.getSensorFaderBrightness();<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                alphaMult *= entity.getSensorContactFaderBrightness();<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                if (alphaMult &lt;= 0) return;<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                <a name="line.278"></a>
+<span class="sourceLineNo">279</span>                float x = entity.getLocation().x;<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                float y = entity.getLocation().y;<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                <a name="line.281"></a>
+<span class="sourceLineNo">282</span>                //Color color = params.color;<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                //color = Misc.setAlpha(color, 30);<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                float b = alphaMult;<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                <a name="line.285"></a>
+<span class="sourceLineNo">286</span>                sprite.setTexWidth(0.25f);<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                sprite.setTexHeight(0.25f);<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                sprite.setAdditiveBlend();<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                <a name="line.289"></a>
+<span class="sourceLineNo">290</span>                for (ParticleData p : particles) {<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                        float size = p.size;<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                        size *= p.scale;<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                        <a name="line.293"></a>
+<span class="sourceLineNo">294</span>                        Vector2f loc = new Vector2f(x + p.offset.x, y + p.offset.y);<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                        <a name="line.295"></a>
+<span class="sourceLineNo">296</span>                        float a = 1f;<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                        a = 0.33f;<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                        <a name="line.298"></a>
+<span class="sourceLineNo">299</span>                        sprite.setTexX(p.i * 0.25f);<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                        sprite.setTexY(p.j * 0.25f);<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                        <a name="line.301"></a>
+<span class="sourceLineNo">302</span>                        sprite.setAngle(p.angle);<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                        sprite.setSize(size, size);<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                        sprite.setAlphaMult(b * a * p.getBrightness());<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                        sprite.setColor(p.color);<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                        sprite.renderAtCenter(loc.x, loc.y);<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                }<a name="line.307"></a>
+<span class="sourceLineNo">308</span>        }<a name="line.308"></a>
+<span class="sourceLineNo">309</span>        <a name="line.309"></a>
+<span class="sourceLineNo">310</span>        protected LinkedHashSet&lt;String&gt; damagedAlready = new LinkedHashSet&lt;String&gt;();<a name="line.310"></a>
+<span class="sourceLineNo">311</span>        public void applyDamageToFleets() {<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                if (params.damage == null || params.damage == ExplosionFleetDamage.NONE) {<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                        return;<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                }<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                <a name="line.315"></a>
+<span class="sourceLineNo">316</span>                float shockwaveDist = 0f;<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                for (ParticleData p : particles) {<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                        shockwaveDist = Math.max(shockwaveDist, p.offset.length());<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                }<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                <a name="line.320"></a>
+<span class="sourceLineNo">321</span>                for (CampaignFleetAPI fleet : entity.getContainingLocation().getFleets()) {<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                        String id = fleet.getId();<a name="line.322"></a>
+<span class="sourceLineNo">323</span>                        if (damagedAlready.contains(id)) continue;<a name="line.323"></a>
+<span class="sourceLineNo">324</span>                        float dist = Misc.getDistance(fleet, entity);<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                        if (dist &lt; shockwaveDist) {<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                                float damageMult = 1f - (dist / params.radius);<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                                if (damageMult &gt; 1f) damageMult = 1f;<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                                if (damageMult &lt; 0.1f) damageMult = 0.1f;<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                                if (dist &lt; entity.getRadius() + params.radius * 0.1f) damageMult = 1f;<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                                <a name="line.330"></a>
+<span class="sourceLineNo">331</span>                                damagedAlready.add(id);<a name="line.331"></a>
+<span class="sourceLineNo">332</span>                                applyDamageToFleet(fleet, damageMult);<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                        }<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                }<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                <a name="line.335"></a>
+<span class="sourceLineNo">336</span>        }<a name="line.336"></a>
+<span class="sourceLineNo">337</span>        <a name="line.337"></a>
+<span class="sourceLineNo">338</span>        public void applyDamageToFleet(CampaignFleetAPI fleet, float damageMult) {<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                <a name="line.339"></a>
+<span class="sourceLineNo">340</span>                List&lt;FleetMemberAPI&gt; members = fleet.getFleetData().getMembersListCopy();<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                if (members.isEmpty()) return;<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                <a name="line.342"></a>
+<span class="sourceLineNo">343</span>                float totalValue = 0;<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                for (FleetMemberAPI member : members) {<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                        totalValue += member.getStats().getSuppliesToRecover().getModifiedValue();<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                }<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                if (totalValue &lt;= 0) return;<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                <a name="line.348"></a>
+<span class="sourceLineNo">349</span>                <a name="line.349"></a>
+<span class="sourceLineNo">350</span>                float damageFraction = 0f;<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                switch (params.damage) {<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                case NONE:<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                        return;<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                case LOW:<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                        damageFraction = 0.1f;<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                        break;<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                case MEDIUM:<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                        damageFraction = 0.3f;<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                        break;<a name="line.359"></a>
+<span class="sourceLineNo">360</span>                case HIGH:<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                        damageFraction = 0.6f;<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                        break;<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                case EXTREME:<a name="line.363"></a>
+<span class="sourceLineNo">364</span>                        damageFraction = 0.9f;<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                        break;<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                }<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                <a name="line.367"></a>
+<span class="sourceLineNo">368</span>                damageFraction *= damageMult;<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                <a name="line.369"></a>
+<span class="sourceLineNo">370</span>                float shoveDir = Misc.getAngleInDegrees(entity.getLocation(), fleet.getLocation());<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                fleet.addScript(new ShoveFleetScript(fleet, shoveDir, damageFraction));<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                <a name="line.372"></a>
+<span class="sourceLineNo">373</span>                if (fleet.isInCurrentLocation()) {<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                        float dist = Misc.getDistance(fleet, Global.getSector().getPlayerFleet());<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                        if (dist &lt; HyperspaceTerrainPlugin.STORM_STRIKE_SOUND_RANGE) {<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                                float volumeMult = 0.5f + 0.5f * damageFraction;<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                                Global.getSoundPlayer().playSound("gate_explosion_fleet_impact", 1f, volumeMult, fleet.getLocation(), Misc.ZERO);<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                        }<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                }<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                <a name="line.380"></a>
+<span class="sourceLineNo">381</span>                //float strikeValue = totalValue * damageFraction * (0.5f + (float) Math.random() * 0.5f);<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                <a name="line.382"></a>
+<span class="sourceLineNo">383</span>                WeightedRandomPicker&lt;FleetMemberAPI&gt; picker = new WeightedRandomPicker&lt;FleetMemberAPI&gt;();<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                for (FleetMemberAPI member : members) {<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                        float w = 1f;<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                        if (member.isFrigate()) w *= 0.1f;<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                        if (member.isDestroyer()) w *= 0.2f;<a name="line.387"></a>
+<span class="sourceLineNo">388</span>                        if (member.isCruiser()) w *= 0.5f;<a name="line.388"></a>
+<span class="sourceLineNo">389</span>                        picker.add(member, w);<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                }<a name="line.390"></a>
+<span class="sourceLineNo">391</span>                <a name="line.391"></a>
+<span class="sourceLineNo">392</span>                int numStrikes = picker.getItems().size();<a name="line.392"></a>
+<span class="sourceLineNo">393</span>                <a name="line.393"></a>
+<span class="sourceLineNo">394</span>                for (int i = 0; i &lt; numStrikes; i++) {<a name="line.394"></a>
+<span class="sourceLineNo">395</span>                        FleetMemberAPI member = picker.pick();<a name="line.395"></a>
+<span class="sourceLineNo">396</span>                        if (member == null) return;<a name="line.396"></a>
+<span class="sourceLineNo">397</span>                        <a name="line.397"></a>
+<span class="sourceLineNo">398</span>                        float crPerDep = member.getDeployCost();<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                        //if (crPerDep &lt;= 0) continue;                  <a name="line.399"></a>
+<span class="sourceLineNo">400</span>                        float suppliesPerDep = member.getStats().getSuppliesToRecover().getModifiedValue();<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                        if (suppliesPerDep &lt;= 0 || crPerDep &lt;= 0) return;<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                        float suppliesPer100CR = suppliesPerDep * 1f / Math.max(0.01f, crPerDep);<a name="line.402"></a>
+<span class="sourceLineNo">403</span><a name="line.403"></a>
+<span class="sourceLineNo">404</span>                        // half flat damage, half scaled based on ship supply cost cost<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                        float strikeSupplies = (250f + suppliesPer100CR) * 0.5f * damageFraction;  <a name="line.405"></a>
+<span class="sourceLineNo">406</span>                        //strikeSupplies = suppliesPerDep * 0.5f * damageFraction;  <a name="line.406"></a>
+<span class="sourceLineNo">407</span>                        <a name="line.407"></a>
+<span class="sourceLineNo">408</span>                        float strikeDamage = strikeSupplies / suppliesPer100CR * (0.75f + (float) Math.random() * 0.5f);<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                        <a name="line.409"></a>
+<span class="sourceLineNo">410</span>                        //float strikeDamage = damageFraction * (0.75f + (float) Math.random() * 0.5f);<a name="line.410"></a>
+<span class="sourceLineNo">411</span>                        <a name="line.411"></a>
+<span class="sourceLineNo">412</span>                        float resistance = member.getStats().getDynamic().getValue(Stats.CORONA_EFFECT_MULT);<a name="line.412"></a>
+<span class="sourceLineNo">413</span>                        strikeDamage *= resistance;<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                        <a name="line.414"></a>
+<span class="sourceLineNo">415</span>                        if (strikeDamage &gt; HyperspaceTerrainPlugin.STORM_MAX_STRIKE_DAMAGE) {<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                                strikeDamage = HyperspaceTerrainPlugin.STORM_MAX_STRIKE_DAMAGE;<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                        }<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                        <a name="line.418"></a>
+<span class="sourceLineNo">419</span>                        if (strikeDamage &gt; 0) {<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                                float currCR = member.getRepairTracker().getBaseCR();<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                                float crDamage = Math.min(currCR, strikeDamage);<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                                <a name="line.422"></a>
+<span class="sourceLineNo">423</span>                                if (crDamage &gt; 0) {<a name="line.423"></a>
+<span class="sourceLineNo">424</span>                                        member.getRepairTracker().applyCREvent(-crDamage, "explosion_" + entity.getId(),<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                                                                                                                "Damaged by explosion");<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                                }<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                                <a name="line.427"></a>
+<span class="sourceLineNo">428</span>                                float hitStrength = member.getStats().getArmorBonus().computeEffective(member.getHullSpec().getArmorRating());<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                                //hitStrength *= strikeDamage / crPerDep;<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                                int numHits = (int) (strikeDamage / 0.1f);<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                                if (numHits &lt; 1) numHits = 1;<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                                for (int j = 0; j &lt; numHits; j++) {<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                                        member.getStatus().applyDamage(hitStrength);<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                                }<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                                //member.getStatus().applyHullFractionDamage(1f);<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                                if (member.getStatus().getHullFraction() &lt; 0.01f) {<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                                        member.getStatus().setHullFraction(0.01f);<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                                        picker.remove(member);<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                                } else {<a name="line.439"></a>
+<span class="sourceLineNo">440</span>                                        float w = picker.getWeight(member);<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                                        picker.setWeight(picker.getItems().indexOf(member), w * 0.5f);<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                                }<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                        }<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                        //picker.remove(member);<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                }<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                <a name="line.446"></a>
+<span class="sourceLineNo">447</span>                if (fleet.isPlayerFleet()) {<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                        Global.getSector().getCampaignUI().addMessage(<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                                        "Your fleet suffers damage from being caught in an explosion", Misc.getNegativeHighlightColor());<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                }<a name="line.450"></a>
+<span class="sourceLineNo">451</span>        }<a name="line.451"></a>
+<span class="sourceLineNo">452</span><a name="line.452"></a>
+<span class="sourceLineNo">453</span>}<a name="line.453"></a>
+<span class="sourceLineNo">454</span><a name="line.454"></a>
+<span class="sourceLineNo">455</span><a name="line.455"></a>
+<span class="sourceLineNo">456</span><a name="line.456"></a>
+<span class="sourceLineNo">457</span><a name="line.457"></a>
+<span class="sourceLineNo">458</span><a name="line.458"></a>
+<span class="sourceLineNo">459</span><a name="line.459"></a>
+<span class="sourceLineNo">460</span><a name="line.460"></a>
+<span class="sourceLineNo">461</span><a name="line.461"></a>
+<span class="sourceLineNo">462</span><a name="line.462"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

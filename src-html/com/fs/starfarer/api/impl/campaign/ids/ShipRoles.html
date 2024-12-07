@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.ids;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>public class ShipRoles {<a name="line.3"></a>
+<span class="sourceLineNo">004</span><a name="line.4"></a>
+<span class="sourceLineNo">005</span>        public static final String MARKET_RANDOM_SHIPS = "marketRandom";<a name="line.5"></a>
+<span class="sourceLineNo">006</span>        <a name="line.6"></a>
+<span class="sourceLineNo">007</span>        <a name="line.7"></a>
+<span class="sourceLineNo">008</span>        /**<a name="line.8"></a>
+<span class="sourceLineNo">009</span>         * Excludes ships that are annoying to fight in low numbers - Omen, Hyperion, <a name="line.9"></a>
+<span class="sourceLineNo">010</span>         * long-range beam/kiting loadouts, etc. Anything that's extremely likely to only end <a name="line.10"></a>
+<span class="sourceLineNo">011</span>         * after full CR drain.<a name="line.11"></a>
+<span class="sourceLineNo">012</span>         * <a name="line.12"></a>
+<span class="sourceLineNo">013</span>         * Phase ships are in their own roles so not included here either (and there's other logic<a name="line.13"></a>
+<span class="sourceLineNo">014</span>         * to not add them to small fleets).<a name="line.14"></a>
+<span class="sourceLineNo">015</span>         * <a name="line.15"></a>
+<span class="sourceLineNo">016</span>         * Also should not include escort/support type variants. <a name="line.16"></a>
+<span class="sourceLineNo">017</span>         */<a name="line.17"></a>
+<span class="sourceLineNo">018</span>        public static final String COMBAT_SMALL_FOR_SMALL_FLEET = "combatSmallForSmallFleet";<a name="line.18"></a>
+<span class="sourceLineNo">019</span>        <a name="line.19"></a>
+<span class="sourceLineNo">020</span>        public static final String COMBAT_SMALL = "combatSmall";<a name="line.20"></a>
+<span class="sourceLineNo">021</span>        public static final String COMBAT_MEDIUM = "combatMedium";<a name="line.21"></a>
+<span class="sourceLineNo">022</span>        public static final String COMBAT_LARGE = "combatLarge";<a name="line.22"></a>
+<span class="sourceLineNo">023</span>        public static final String COMBAT_CAPITAL = "combatCapital";<a name="line.23"></a>
+<span class="sourceLineNo">024</span>        public static final String COMBAT_FREIGHTER_SMALL = "combatFreighterSmall";<a name="line.24"></a>
+<span class="sourceLineNo">025</span>        public static final String COMBAT_FREIGHTER_MEDIUM = "combatFreighterMedium";<a name="line.25"></a>
+<span class="sourceLineNo">026</span>        public static final String COMBAT_FREIGHTER_LARGE = "combatFreighterLarge";<a name="line.26"></a>
+<span class="sourceLineNo">027</span>        <a name="line.27"></a>
+<span class="sourceLineNo">028</span>        public static final String CIV_RANDOM = "civilianRandom";<a name="line.28"></a>
+<span class="sourceLineNo">029</span>        <a name="line.29"></a>
+<span class="sourceLineNo">030</span>        public static final String PHASE_SMALL = "phaseSmall";<a name="line.30"></a>
+<span class="sourceLineNo">031</span>        public static final String PHASE_MEDIUM = "phaseMedium";<a name="line.31"></a>
+<span class="sourceLineNo">032</span>        public static final String PHASE_LARGE = "phaseLarge";<a name="line.32"></a>
+<span class="sourceLineNo">033</span>                <a name="line.33"></a>
+<span class="sourceLineNo">034</span>        public static final String PHASE_CAPITAL = "phaseCapital";<a name="line.34"></a>
+<span class="sourceLineNo">035</span>                <a name="line.35"></a>
+<span class="sourceLineNo">036</span>        public static final String CARRIER_SMALL = "carrierSmall";<a name="line.36"></a>
+<span class="sourceLineNo">037</span>        public static final String CARRIER_MEDIUM = "carrierMedium";<a name="line.37"></a>
+<span class="sourceLineNo">038</span>        public static final String CARRIER_LARGE = "carrierLarge";<a name="line.38"></a>
+<span class="sourceLineNo">039</span>        public static final String FREIGHTER_SMALL = "freighterSmall";<a name="line.39"></a>
+<span class="sourceLineNo">040</span>        public static final String FREIGHTER_MEDIUM = "freighterMedium";<a name="line.40"></a>
+<span class="sourceLineNo">041</span>        public static final String FREIGHTER_LARGE = "freighterLarge";<a name="line.41"></a>
+<span class="sourceLineNo">042</span>        public static final String TANKER_SMALL = "tankerSmall";<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        public static final String TANKER_MEDIUM = "tankerMedium";<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        public static final String TANKER_LARGE = "tankerLarge";<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        public static final String PERSONNEL_SMALL = "personnelSmall";<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        public static final String PERSONNEL_MEDIUM = "personnelMedium";<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        public static final String PERSONNEL_LARGE = "personnelLarge";<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        public static final String LINER_SMALL = "linerSmall";<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        public static final String LINER_MEDIUM = "linerMedium";<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        public static final String LINER_LARGE = "linerLarge";<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        public static final String TUG = "tug";<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        public static final String CRIG = "crig";<a name="line.52"></a>
+<span class="sourceLineNo">053</span>        public static final String UTILITY = "utility";<a name="line.53"></a>
+<span class="sourceLineNo">054</span>        <a name="line.54"></a>
+<span class="sourceLineNo">055</span>        <a name="line.55"></a>
+<span class="sourceLineNo">056</span><a name="line.56"></a>
+<span class="sourceLineNo">057</span>        @Deprecated public static final String FAST_ATTACK = "fastAttack";<a name="line.57"></a>
+<span class="sourceLineNo">058</span>        @Deprecated public static final String ESCORT_SMALL = "escortSmall";<a name="line.58"></a>
+<span class="sourceLineNo">059</span>        @Deprecated public static final String ESCORT_MEDIUM = "escortMedium";<a name="line.59"></a>
+<span class="sourceLineNo">060</span>}<a name="line.60"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

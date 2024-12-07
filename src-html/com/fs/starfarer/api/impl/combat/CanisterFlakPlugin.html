@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.combat;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import com.fs.starfarer.api.combat.CombatEngineAPI;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import com.fs.starfarer.api.combat.DamagingProjectileAPI;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import com.fs.starfarer.api.combat.MissileAPI;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import com.fs.starfarer.api.combat.OnFireEffectPlugin;<a name="line.6"></a>
+<span class="sourceLineNo">007</span>import com.fs.starfarer.api.combat.WeaponAPI;<a name="line.7"></a>
+<span class="sourceLineNo">008</span><a name="line.8"></a>
+<span class="sourceLineNo">009</span>public class CanisterFlakPlugin implements OnFireEffectPlugin {<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span>        public CanisterFlakPlugin() {<a name="line.11"></a>
+<span class="sourceLineNo">012</span>        }<a name="line.12"></a>
+<span class="sourceLineNo">013</span><a name="line.13"></a>
+<span class="sourceLineNo">014</span>        public void onFire(DamagingProjectileAPI projectile, WeaponAPI weapon, CombatEngineAPI engine) {<a name="line.14"></a>
+<span class="sourceLineNo">015</span>                float speedMult = 0.25f + 0.75f * (float) Math.random();<a name="line.15"></a>
+<span class="sourceLineNo">016</span>                projectile.getVelocity().scale(speedMult);<a name="line.16"></a>
+<span class="sourceLineNo">017</span>                <a name="line.17"></a>
+<span class="sourceLineNo">018</span>                float angVel = (float) (Math.signum((float) Math.random() - 0.5f) * <a name="line.18"></a>
+<span class="sourceLineNo">019</span>                                                (0.5f + Math.random()) * 720f);<a name="line.19"></a>
+<span class="sourceLineNo">020</span>                projectile.setAngularVelocity(angVel);<a name="line.20"></a>
+<span class="sourceLineNo">021</span>                <a name="line.21"></a>
+<span class="sourceLineNo">022</span>                if (projectile instanceof MissileAPI) {<a name="line.22"></a>
+<span class="sourceLineNo">023</span>                        MissileAPI missile = (MissileAPI) projectile;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>                        float flightTimeMult = 0.25f + 0.75f * (float) Math.random();<a name="line.24"></a>
+<span class="sourceLineNo">025</span>                        missile.setMaxFlightTime(missile.getMaxFlightTime() * flightTimeMult);<a name="line.25"></a>
+<span class="sourceLineNo">026</span>                }<a name="line.26"></a>
+<span class="sourceLineNo">027</span>                <a name="line.27"></a>
+<span class="sourceLineNo">028</span>                if (weapon != null) {<a name="line.28"></a>
+<span class="sourceLineNo">029</span>                        float delay = 0.25f + 0.75f * (float) Math.random();<a name="line.29"></a>
+<span class="sourceLineNo">030</span>                        weapon.setRefireDelay(delay);<a name="line.30"></a>
+<span class="sourceLineNo">031</span>                }<a name="line.31"></a>
+<span class="sourceLineNo">032</span>                <a name="line.32"></a>
+<span class="sourceLineNo">033</span>        }<a name="line.33"></a>
+<span class="sourceLineNo">034</span>}<a name="line.34"></a>
+<span class="sourceLineNo">035</span><a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

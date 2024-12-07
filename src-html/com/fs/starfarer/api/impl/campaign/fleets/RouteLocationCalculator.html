@@ -1,0 +1,559 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.fleets;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.util.List;<a name="line.3"></a>
+<span class="sourceLineNo">004</span><a name="line.4"></a>
+<span class="sourceLineNo">005</span>import org.lwjgl.util.vector.Vector2f;<a name="line.5"></a>
+<span class="sourceLineNo">006</span><a name="line.6"></a>
+<span class="sourceLineNo">007</span>import com.fs.starfarer.api.Global;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.campaign.CampaignFleetAPI;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.campaign.FactionAPI;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.campaign.JumpPointAPI;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.campaign.LocationAPI;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.campaign.SectorEntityToken;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.campaign.StarSystemAPI;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.campaign.econ.MarketAPI;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.impl.campaign.JumpPointInteractionDialogPluginImpl;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.impl.campaign.shared.WormholeManager;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.util.Misc;<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span>public class RouteLocationCalculator {<a name="line.19"></a>
+<span class="sourceLineNo">020</span>        <a name="line.20"></a>
+<span class="sourceLineNo">021</span>        <a name="line.21"></a>
+<span class="sourceLineNo">022</span>        public static enum IntervalType {<a name="line.22"></a>
+<span class="sourceLineNo">023</span>                DAYS,<a name="line.23"></a>
+<span class="sourceLineNo">024</span>                TRAVEL_TIME,<a name="line.24"></a>
+<span class="sourceLineNo">025</span>                FRACTION_OF_REMAINING<a name="line.25"></a>
+<span class="sourceLineNo">026</span>        }<a name="line.26"></a>
+<span class="sourceLineNo">027</span>        <a name="line.27"></a>
+<span class="sourceLineNo">028</span>        public static class TaskInterval {<a name="line.28"></a>
+<span class="sourceLineNo">029</span>                public IntervalType type;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>                public float value;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>                <a name="line.31"></a>
+<span class="sourceLineNo">032</span>                public TaskInterval(IntervalType type, float value) {<a name="line.32"></a>
+<span class="sourceLineNo">033</span>                        this.type = type;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>                        this.value = value;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>                }<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>                public TaskInterval(IntervalType type) {<a name="line.37"></a>
+<span class="sourceLineNo">038</span>                        super();<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                        this.type = type;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                }<a name="line.40"></a>
+<span class="sourceLineNo">041</span><a name="line.41"></a>
+<span class="sourceLineNo">042</span><a name="line.42"></a>
+<span class="sourceLineNo">043</span>                public static TaskInterval days(float days) {<a name="line.43"></a>
+<span class="sourceLineNo">044</span>                        return new TaskInterval(IntervalType.DAYS, days);<a name="line.44"></a>
+<span class="sourceLineNo">045</span>                }<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                public static TaskInterval travel() {<a name="line.46"></a>
+<span class="sourceLineNo">047</span>                        return new TaskInterval(IntervalType.TRAVEL_TIME, 0f);<a name="line.47"></a>
+<span class="sourceLineNo">048</span>                }<a name="line.48"></a>
+<span class="sourceLineNo">049</span>                public static TaskInterval remaining(float fraction) {<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                        return new TaskInterval(IntervalType.FRACTION_OF_REMAINING, fraction);<a name="line.50"></a>
+<span class="sourceLineNo">051</span>                }<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        }<a name="line.52"></a>
+<span class="sourceLineNo">053</span>        <a name="line.53"></a>
+<span class="sourceLineNo">054</span>        public static float getTravelDays(SectorEntityToken from, SectorEntityToken to) {<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                float dist = 0f;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                if (from.getContainingLocation() != to.getContainingLocation()) {<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                        dist = Misc.getDistance(from.getLocationInHyperspace(), to.getLocationInHyperspace());<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                        if (!from.isInHyperspace()) {<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                                dist += 5000; // random guess at distance to/from jump-point<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                        }<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                        if (!to.isInHyperspace()) {<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                                dist += 5000; // random guess at distance to/from jump-point<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                        }<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                } else {<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                        dist = Misc.getDistance(from, to);<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                        if (from.isSystemCenter() || to.isSystemCenter()) dist = 0f;<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                }<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                <a name="line.68"></a>
+<span class="sourceLineNo">069</span>                <a name="line.69"></a>
+<span class="sourceLineNo">070</span>                float travelTime = dist / 1500f;<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                return travelTime;<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        }<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        <a name="line.73"></a>
+<span class="sourceLineNo">074</span>        public static void computeIntervalsAndSetLocation(CampaignFleetAPI fleet, float daysElapsed, float maxDays,<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                                                                                        boolean onlyComputeIntervals,<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                                                                                        TaskInterval [] intervals,<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                                                                                        SectorEntityToken ... sequence) {<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                <a name="line.78"></a>
+<span class="sourceLineNo">079</span>                float totalDays = 0f;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                float totalFraction = 0f;<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                for (int i = 0; i &lt; intervals.length; i++) {<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                        TaskInterval t = intervals[i];<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                        if (t.type == IntervalType.TRAVEL_TIME) {<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                                SectorEntityToken from = sequence[i];<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                                SectorEntityToken to = sequence[i + 1];<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                                <a name="line.86"></a>
+<span class="sourceLineNo">087</span>                                float travelTime = getTravelDays(from, to);<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                                t.value = travelTime;<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                        }<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                        <a name="line.90"></a>
+<span class="sourceLineNo">091</span>                        if (t.type == IntervalType.FRACTION_OF_REMAINING) {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                                totalFraction += t.value;<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                        } else {<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                                totalDays += t.value;<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                        }<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                }<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                <a name="line.97"></a>
+<span class="sourceLineNo">098</span>                if (totalFraction &gt; 0) {<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                        float remaining = maxDays - totalDays;<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                        for (TaskInterval t : intervals) {<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                                if (t.type == IntervalType.FRACTION_OF_REMAINING) {<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                                        t.value = Math.max(0.1f, t.value / totalFraction * remaining);<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                                }<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                        }<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                }<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                <a name="line.106"></a>
+<span class="sourceLineNo">107</span>                totalDays = 0f;<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                for (TaskInterval t : intervals) {<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                        totalDays += t.value;<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                }<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                <a name="line.111"></a>
+<span class="sourceLineNo">112</span>                if (totalDays &gt; maxDays) {<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                        for (TaskInterval t : intervals) {<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                                t.value *= maxDays / totalDays;<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                        }<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                }<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                <a name="line.117"></a>
+<span class="sourceLineNo">118</span>                float soFar = 0f;<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                float progress = 0f;<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                int index = 0;<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                SectorEntityToken from = null;<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                SectorEntityToken to = null;<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                //for (float curr : intervals) {<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                for (int i = 0; i &lt; intervals.length; i++) {<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                        float curr = intervals[i].value;<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                        if (curr &lt; 0) curr = 0;<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                        <a name="line.127"></a>
+<span class="sourceLineNo">128</span>                        if (soFar + curr &gt; daysElapsed &amp;&amp; curr &gt; 0) {<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                                progress = (daysElapsed - soFar) / curr;<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                                if (progress &lt; 0) progress = 0;<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                                if (progress &gt; 1) progress = 1;<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                                <a name="line.132"></a>
+<span class="sourceLineNo">133</span>                                from = sequence[index];<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                                to = sequence[index + 1];<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                                intervals[i].value *= (1f - progress);<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                                break;<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                        }<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                        soFar += curr;<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                        intervals[i].value = 0;<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                        index++;<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                }<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                if (from == null) {<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                        index = intervals.length - 1;<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                        from = sequence[sequence.length - 2];<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                        to = sequence[sequence.length - 1];<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                        progress = 1f;<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                }<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                <a name="line.148"></a>
+<span class="sourceLineNo">149</span>                if (onlyComputeIntervals) {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                        return;<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                }<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                <a name="line.152"></a>
+<span class="sourceLineNo">153</span>                setLocation(fleet, progress, from, to);<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        }<a name="line.154"></a>
+<span class="sourceLineNo">155</span>        <a name="line.155"></a>
+<span class="sourceLineNo">156</span><a name="line.156"></a>
+<span class="sourceLineNo">157</span>        /**<a name="line.157"></a>
+<span class="sourceLineNo">158</span>         * Used to assign a reasonable location to a fleet that was just spawned by RouteManager.<a name="line.158"></a>
+<span class="sourceLineNo">159</span>         * <a name="line.159"></a>
+<span class="sourceLineNo">160</span>         * Will normalize the intervals array to not exceed maxDays total, and will then set<a name="line.160"></a>
+<span class="sourceLineNo">161</span>         * its values to the days remaining for each section.<a name="line.161"></a>
+<span class="sourceLineNo">162</span>         * <a name="line.162"></a>
+<span class="sourceLineNo">163</span>         * <a name="line.163"></a>
+<span class="sourceLineNo">164</span>         * @param fleet<a name="line.164"></a>
+<span class="sourceLineNo">165</span>         * @param daysElapsed<a name="line.165"></a>
+<span class="sourceLineNo">166</span>         * @param intervals<a name="line.166"></a>
+<span class="sourceLineNo">167</span>         * @param sequence Must have length = intervals.length + 1.<a name="line.167"></a>
+<span class="sourceLineNo">168</span>         */<a name="line.168"></a>
+<span class="sourceLineNo">169</span>        public static int setLocation(CampaignFleetAPI fleet,<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                                                                   float daysElapsed, float maxDays, int overflowIndex, <a name="line.170"></a>
+<span class="sourceLineNo">171</span>                                                                   boolean onlyAdjustIntervals,<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                                                                   float [] intervals, SectorEntityToken ... sequence) {<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                <a name="line.173"></a>
+<span class="sourceLineNo">174</span>                float total = 0f;<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                for (float curr : intervals) {<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                        total += curr;<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                }<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                <a name="line.178"></a>
+<span class="sourceLineNo">179</span>                // either add/subtract any extra days to the overflow interval, or scale all if there isn't one<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                // e.g. treat intervals as weights if there is no overflow interval specified<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                if (total != maxDays) {<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                        if (overflowIndex &gt;= 0) {<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                                float extra = total - maxDays;<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                                intervals[overflowIndex] -= extra;<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                                if (intervals[overflowIndex] &lt;= 0) {<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                                        total = maxDays - intervals[overflowIndex];<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                                        intervals[overflowIndex] = 0;<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                                        for (int i = 0; i &lt; intervals.length; i++) {<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                                                intervals[i] *= maxDays / total;<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                                        }<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                                }<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                        } else {<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                                for (int i = 0; i &lt; intervals.length; i++) {<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                                        intervals[i] *= maxDays / total;<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                                }               <a name="line.195"></a>
+<span class="sourceLineNo">196</span>                        }<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                }<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                <a name="line.198"></a>
+<span class="sourceLineNo">199</span>                <a name="line.199"></a>
+<span class="sourceLineNo">200</span>                float soFar = 0f;<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                float progress = 0f;<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                int index = 0;<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                SectorEntityToken from = null;<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                SectorEntityToken to = null;<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                //for (float curr : intervals) {<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                for (int i = 0; i &lt; intervals.length; i++) {<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                        float curr = intervals[i];<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                        if (curr &lt; 0) curr = 0;<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                        <a name="line.209"></a>
+<span class="sourceLineNo">210</span>                        if (soFar + curr &gt; daysElapsed &amp;&amp; curr &gt; 0) {<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                                progress = (daysElapsed - soFar) / curr;<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                                if (progress &lt; 0) progress = 0;<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                                if (progress &gt; 1) progress = 1;<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                                <a name="line.214"></a>
+<span class="sourceLineNo">215</span>                                from = sequence[index];<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                                to = sequence[index + 1];<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                                intervals[i] *= (1f - progress);<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                                break;<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                        }<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                        soFar += curr;<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                        intervals[i] = 0;<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                        index++;<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                }<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                if (from == null) {<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                        index = intervals.length - 1;<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                        from = sequence[sequence.length - 2];<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                        to = sequence[sequence.length - 1];<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                        progress = 1f;<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                }<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                <a name="line.230"></a>
+<span class="sourceLineNo">231</span>                <a name="line.231"></a>
+<span class="sourceLineNo">232</span>                if (onlyAdjustIntervals) {<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                        return index;<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                }<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                <a name="line.235"></a>
+<span class="sourceLineNo">236</span>                setLocation(fleet, progress, from, to);<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                <a name="line.237"></a>
+<span class="sourceLineNo">238</span>                return index;<a name="line.238"></a>
+<span class="sourceLineNo">239</span>        }<a name="line.239"></a>
+<span class="sourceLineNo">240</span>        <a name="line.240"></a>
+<span class="sourceLineNo">241</span>        public static void setLocation(CampaignFleetAPI fleet,<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                                                                   float progress, SectorEntityToken from, SectorEntityToken to) {<a name="line.242"></a>
+<span class="sourceLineNo">243</span>//              Cases to handle:<a name="line.243"></a>
+<span class="sourceLineNo">244</span>//              from/to are same<a name="line.244"></a>
+<span class="sourceLineNo">245</span>//              hyper - hyper<a name="line.245"></a>
+<span class="sourceLineNo">246</span>//              system - system<a name="line.246"></a>
+<span class="sourceLineNo">247</span>//              system - hyper<a name="line.247"></a>
+<span class="sourceLineNo">248</span>//              hyper - system<a name="line.248"></a>
+<span class="sourceLineNo">249</span>//              system - other_system<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                <a name="line.250"></a>
+<span class="sourceLineNo">251</span>//              Subcase: <a name="line.251"></a>
+<span class="sourceLineNo">252</span>//              one end is system center - spawn "somewhere in system" in that case<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                <a name="line.253"></a>
+<span class="sourceLineNo">254</span>                if (progress &lt; 0) progress = 0;<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                if (progress &gt; 1) progress = 1;<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                <a name="line.256"></a>
+<span class="sourceLineNo">257</span>                if (to == null) to = from;<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                if (from == null) from = to;<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                <a name="line.259"></a>
+<span class="sourceLineNo">260</span>                if (from == null &amp;&amp; to == null) return;<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                <a name="line.261"></a>
+<span class="sourceLineNo">262</span>                float varianceMult = getVarianceMult(progress);<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                <a name="line.263"></a>
+<span class="sourceLineNo">264</span>                SectorEntityToken forSystemCenterCheck = null;<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                LocationAPI conLoc = null;<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                Vector2f loc = null;<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                if (from == to) {<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                        conLoc = from.getContainingLocation();<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                        forSystemCenterCheck = from;<a name="line.269"></a>
+<span class="sourceLineNo">270</span><a name="line.270"></a>
+<span class="sourceLineNo">271</span>                        if (!conLoc.isHyperspace()) {<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                                if (progress &gt; 0.03f) {<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                                        // at a typical orbiting radius<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                                        loc = Misc.getPointAtRadius(from.getLocation(), from.getRadius() + 100f + (float) Math.random() * 100f);<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                                } else {<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                                        loc = new Vector2f(from.getLocation());<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                                }<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                        } else {<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                                loc = Misc.getPointWithinRadius(from.getLocation(), 100f + 900f * varianceMult);<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                        }<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                }<a name="line.281"></a>
+<span class="sourceLineNo">282</span>                // hyper to hyper<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                else if (from.isInHyperspace() &amp;&amp; to.isInHyperspace()) {<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                        conLoc = from.getContainingLocation();<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                        loc = Misc.interpolateVector(from.getLocation(),<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                                                                                 to.getLocation(),<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                                                                                 progress);<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                        loc = Misc.getPointWithinRadius(loc, 100f + 900f * varianceMult);<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                }<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                // different locations in same system (not hyper)<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                else if (from.getContainingLocation() == to.getContainingLocation()) {<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                        conLoc = from.getContainingLocation();<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                        if (from.isSystemCenter()) forSystemCenterCheck = from;<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                        if (to.isSystemCenter()) forSystemCenterCheck = to;<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                        <a name="line.295"></a>
+<span class="sourceLineNo">296</span>                        loc = Misc.interpolateVector(from.getLocation(),<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                                                                                to.getLocation(),<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                                                                                progress);<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                        if (conLoc instanceof StarSystemAPI &amp;&amp; <a name="line.299"></a>
+<span class="sourceLineNo">300</span>                                        Misc.getDistance(loc, new Vector2f()) &lt; 2000) { // quick hack to avoid primary star<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                                loc = Misc.getPointAtRadius(new Vector2f(), 2000f);<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                        } else {<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                                loc = Misc.getPointWithinRadius(loc, 100f + 900f * varianceMult);<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                        }<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                }<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                // one in hyper, one isn't<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                else if (from.isInHyperspace() != to.isInHyperspace()) {<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                        SectorEntityToken inSystem = from;<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                        SectorEntityToken inHyper = to;<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                        float p = progress;<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                        if (from.isInHyperspace()) {<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                                inSystem = to;<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                                inHyper = from;<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                                p = 1f - progress;<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                        }<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                        <a name="line.316"></a>
+<span class="sourceLineNo">317</span>                        JumpPointAPI jp = findJumpPointToUse(fleet, inSystem);<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                        if (jp == null) return;<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                        float d1 = Misc.getDistance(inSystem, jp);<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                        float d2 = Misc.getDistance(jp.getLocationInHyperspace(), inHyper.getLocation());<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                        if (d1 &lt; 1) d1 = 1;<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                        if (d2 &lt; 1) d2 = 1;<a name="line.322"></a>
+<span class="sourceLineNo">323</span>                        <a name="line.323"></a>
+<span class="sourceLineNo">324</span>                        float t = d1 / (d1 + d2);<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                        if (p &lt; t) { // in system on way to jump-point<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                                conLoc = inSystem.getContainingLocation();<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                                forSystemCenterCheck = inSystem;<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                                <a name="line.328"></a>
+<span class="sourceLineNo">329</span>                                loc = Misc.interpolateVector(inSystem.getLocation(),<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                                                                                        jp.getLocation(),<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                                                                                        p / t);<a name="line.331"></a>
+<span class="sourceLineNo">332</span>                                varianceMult = getVarianceMult(p / t);<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                        } else { // in hyper on way from jump-point to location<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                                conLoc = inHyper.getContainingLocation();<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                                loc = Misc.interpolateVector(Misc.getSystemJumpPointHyperExitLocation(jp),<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                                                                                        inHyper.getLocation(),<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                                                                                        (p - t) / (1f - t));<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                                varianceMult = getVarianceMult((p - t) / (1f - t));<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                        }<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                        loc = Misc.getPointWithinRadius(loc, 100f + 900f * varianceMult);<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                }<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                // from one system to a different system<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                else if (from.getContainingLocation() != to.getContainingLocation()) {<a name="line.343"></a>
+<span class="sourceLineNo">344</span>//                      JumpPointAPI jp1 = Misc.findNearestJumpPointTo(from);<a name="line.344"></a>
+<span class="sourceLineNo">345</span>//                      JumpPointAPI jp2 = Misc.findNearestJumpPointTo(to);<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                        JumpPointAPI jp1 = findJumpPointToUse(fleet, from);<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                        JumpPointAPI jp2 = findJumpPointToUse(fleet, to);<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                        if (jp1 == null || jp2 == null) return;<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                        float d1 = Misc.getDistance(from, jp1);<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                        float d2 = Misc.getDistance(Misc.getSystemJumpPointHyperExitLocation(jp1),<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                                                                                Misc.getSystemJumpPointHyperExitLocation(jp1));<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                        float d3 = Misc.getDistance(jp2, to);<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                        if (d1 &lt; 1) d1 = 1;<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                        if (d2 &lt; 1) d2 = 1;<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                        if (d3 &lt; 1) d3 = 1;<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                        <a name="line.356"></a>
+<span class="sourceLineNo">357</span>                        float t1 = d1 / (d1 + d2 + d3);                 <a name="line.357"></a>
+<span class="sourceLineNo">358</span>                        float t2 = (d1 + d2) / (d1 + d2 + d3);<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                        <a name="line.359"></a>
+<span class="sourceLineNo">360</span>                        if (progress &lt; t1) { // from "from" to jump-point<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                                conLoc = from.getContainingLocation();<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                                forSystemCenterCheck = from;<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                                <a name="line.363"></a>
+<span class="sourceLineNo">364</span>                                loc = Misc.interpolateVector(from.getLocation(),<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                                                                                         jp1.getLocation(),<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                                                                                         progress / t1);<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                                varianceMult = getVarianceMult(progress / t1);<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                        } else if (progress &lt; t2) { // in hyperspace, traveling between systems<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                                conLoc = Global.getSector().getHyperspace();<a name="line.369"></a>
+<span class="sourceLineNo">370</span>                                loc = Misc.interpolateVector(Misc.getSystemJumpPointHyperExitLocation(jp1),<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                                                                                         Misc.getSystemJumpPointHyperExitLocation(jp2),<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                                                                                    (progress - t1) / (t2 - t1));<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                                varianceMult = getVarianceMult((progress - t1) / (t2 - t1));<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                        } else { // in the "to" system, going from jp2 to to<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                                conLoc = to.getContainingLocation();<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                                forSystemCenterCheck = to;<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                                <a name="line.377"></a>
+<span class="sourceLineNo">378</span>                                loc = Misc.interpolateVector(jp2.getLocation(),<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                                                                                         to.getLocation(),<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                                                                                         (progress - t2) / (1f - t2));<a name="line.380"></a>
+<span class="sourceLineNo">381</span>                                varianceMult = getVarianceMult((progress - t2) / (1f - t2));<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                        }<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                        loc = Misc.getPointWithinRadius(loc, 100f + 900f * varianceMult);<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                }<a name="line.384"></a>
+<span class="sourceLineNo">385</span><a name="line.385"></a>
+<span class="sourceLineNo">386</span>                <a name="line.386"></a>
+<span class="sourceLineNo">387</span>                if (forSystemCenterCheck != null &amp;&amp; forSystemCenterCheck.isSystemCenter() &amp;&amp;<a name="line.387"></a>
+<span class="sourceLineNo">388</span>                                conLoc == forSystemCenterCheck.getContainingLocation()) {<a name="line.388"></a>
+<span class="sourceLineNo">389</span>                        loc = Misc.getPointAtRadius(forSystemCenterCheck.getLocation(), forSystemCenterCheck.getRadius() + 3000f + (float) Math.random() * 2000f);<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                }<a name="line.390"></a>
+<span class="sourceLineNo">391</span>                <a name="line.391"></a>
+<span class="sourceLineNo">392</span>//              loc = Misc.getPointWithinRadius(loc, <a name="line.392"></a>
+<span class="sourceLineNo">393</span>//                              route.getMarket().getPrimaryEntity().getRadius() + 100 + (float) Math.random() * 100f);<a name="line.393"></a>
+<span class="sourceLineNo">394</span>                <a name="line.394"></a>
+<span class="sourceLineNo">395</span>                // failsafes<a name="line.395"></a>
+<span class="sourceLineNo">396</span>                if (conLoc == null) conLoc = from.getContainingLocation();<a name="line.396"></a>
+<span class="sourceLineNo">397</span>                if (loc == null) loc = new Vector2f(from.getLocation());<a name="line.397"></a>
+<span class="sourceLineNo">398</span>                <a name="line.398"></a>
+<span class="sourceLineNo">399</span>                <a name="line.399"></a>
+<span class="sourceLineNo">400</span>                if (fleet.getContainingLocation() != conLoc) {<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                        if (fleet.getContainingLocation() != null) {<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                                fleet.getContainingLocation().removeEntity(fleet);<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                        }<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                        conLoc.addEntity(fleet);<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                }<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                fleet.setLocation(loc.x, loc.y);<a name="line.406"></a>
+<span class="sourceLineNo">407</span>        }<a name="line.407"></a>
+<span class="sourceLineNo">408</span>        <a name="line.408"></a>
+<span class="sourceLineNo">409</span>        <a name="line.409"></a>
+<span class="sourceLineNo">410</span>        public static float getVarianceMult(float p) {<a name="line.410"></a>
+<span class="sourceLineNo">411</span>                float varianceMult = 1f;<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                if (p &lt; 0.1f) {<a name="line.412"></a>
+<span class="sourceLineNo">413</span>                        varianceMult = p / 0.1f;<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                } else if (p &gt; 0.9f) {<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                        varianceMult = (1f - p) / 0.1f;<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                }<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                return varianceMult;<a name="line.417"></a>
+<span class="sourceLineNo">418</span>        }<a name="line.418"></a>
+<span class="sourceLineNo">419</span>        <a name="line.419"></a>
+<span class="sourceLineNo">420</span>        <a name="line.420"></a>
+<span class="sourceLineNo">421</span>        public static JumpPointAPI findJumpPointToUse(CampaignFleetAPI fleet, SectorEntityToken from) {<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                return findJumpPointToUse(fleet.getFaction(), from);<a name="line.422"></a>
+<span class="sourceLineNo">423</span>        }<a name="line.423"></a>
+<span class="sourceLineNo">424</span>        public static JumpPointAPI findJumpPointToUse(FactionAPI faction, SectorEntityToken from) {<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                float min = Float.MAX_VALUE;<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                JumpPointAPI result = null;<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                float fringeMax = 0;<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                JumpPointAPI fringe = null;<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                <a name="line.429"></a>
+<span class="sourceLineNo">430</span>                LocationAPI location = from.getContainingLocation();<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                List&lt;JumpPointAPI&gt; points = location.getEntities(JumpPointAPI.class);<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                <a name="line.432"></a>
+<span class="sourceLineNo">433</span>                <a name="line.433"></a>
+<span class="sourceLineNo">434</span>                for (JumpPointAPI curr : points) {<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                        if (curr.getMemoryWithoutUpdate().getBoolean(JumpPointInteractionDialogPluginImpl.UNSTABLE_KEY)) {<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                                continue;<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                        }<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                        if (curr.getMemoryWithoutUpdate().getBoolean(WormholeManager.WORMHOLE)) {<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                                continue;<a name="line.439"></a>
+<span class="sourceLineNo">440</span>                        }<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                        <a name="line.441"></a>
+<span class="sourceLineNo">442</span>                        float dist = Misc.getDistance(from.getLocation(), curr.getLocation());<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                        if (dist &lt; min) {<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                                min = dist;<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                                result = curr;<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                        }<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                        dist = Misc.getDistance(new Vector2f(), curr.getLocation());<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                        if (dist &gt; fringeMax) {<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                                fringe = curr;<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                                fringeMax = dist;<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                        }<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                }<a name="line.452"></a>
+<span class="sourceLineNo">453</span>                <a name="line.453"></a>
+<span class="sourceLineNo">454</span>                if (from.getContainingLocation() instanceof StarSystemAPI) {<a name="line.454"></a>
+<span class="sourceLineNo">455</span>                        StarSystemAPI system = (StarSystemAPI) from.getContainingLocation();<a name="line.455"></a>
+<span class="sourceLineNo">456</span>                        boolean useFringeOnly = !isInControlOfSystemOrEven(faction, system);<a name="line.456"></a>
+<span class="sourceLineNo">457</span>                        if (useFringeOnly &amp;&amp; fringe != null) {<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                                return fringe;<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                        }<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                }<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                <a name="line.461"></a>
+<span class="sourceLineNo">462</span>                return result;<a name="line.462"></a>
+<span class="sourceLineNo">463</span>        }<a name="line.463"></a>
+<span class="sourceLineNo">464</span>        <a name="line.464"></a>
+<span class="sourceLineNo">465</span>        public static boolean isInControlOfSystemOrEven(FactionAPI faction, StarSystemAPI system) {<a name="line.465"></a>
+<span class="sourceLineNo">466</span>                List&lt;MarketAPI&gt; markets = Misc.getMarketsInLocation(system);<a name="line.466"></a>
+<span class="sourceLineNo">467</span>                int hostileMax = 0;<a name="line.467"></a>
+<span class="sourceLineNo">468</span>                int ourMax = 0;<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                for (MarketAPI market : markets) {<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                        if (market.getFaction().isHostileTo(faction)) {<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                                hostileMax = Math.max(hostileMax, market.getSize());<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                        } else if (market.getFaction() == faction) {<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                                ourMax = Math.max(ourMax, market.getSize());<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                        }<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                }<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                boolean inControl = ourMax &gt;= hostileMax;<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                return inControl;<a name="line.477"></a>
+<span class="sourceLineNo">478</span>        }<a name="line.478"></a>
+<span class="sourceLineNo">479</span>}<a name="line.479"></a>
+<span class="sourceLineNo">480</span><a name="line.480"></a>
+<span class="sourceLineNo">481</span><a name="line.481"></a>
+<span class="sourceLineNo">482</span><a name="line.482"></a>
+<span class="sourceLineNo">483</span><a name="line.483"></a>
+<span class="sourceLineNo">484</span><a name="line.484"></a>
+<span class="sourceLineNo">485</span><a name="line.485"></a>
+<span class="sourceLineNo">486</span><a name="line.486"></a>
+<span class="sourceLineNo">487</span><a name="line.487"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

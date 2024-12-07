@@ -1,0 +1,240 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.eventide;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import java.util.List;<a name="line.4"></a>
+<span class="sourceLineNo">005</span><a name="line.5"></a>
+<span class="sourceLineNo">006</span>import org.lwjgl.opengl.GL11;<a name="line.6"></a>
+<span class="sourceLineNo">007</span><a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.campaign.BaseCustomUIPanelPlugin;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.campaign.CustomVisualDialogDelegate.DialogCallbacks;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.campaign.InteractionDialogAPI;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.input.InputEventAPI;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.ui.CustomPanelAPI;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.ui.LabelAPI;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.ui.PositionAPI;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.ui.TooltipMakerAPI;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.util.FaderUtil;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.util.Misc;<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span>public class DuelTutorialPanel extends BaseCustomUIPanelPlugin {<a name="line.19"></a>
+<span class="sourceLineNo">020</span><a name="line.20"></a>
+<span class="sourceLineNo">021</span>        public static enum TutStage {<a name="line.21"></a>
+<span class="sourceLineNo">022</span>                INIT,<a name="line.22"></a>
+<span class="sourceLineNo">023</span>                MOVE_FORWARD,<a name="line.23"></a>
+<span class="sourceLineNo">024</span>                MOVE_BACK,<a name="line.24"></a>
+<span class="sourceLineNo">025</span>                ATTACK,<a name="line.25"></a>
+<span class="sourceLineNo">026</span>                BLOCK,<a name="line.26"></a>
+<span class="sourceLineNo">027</span>                LEAVE;<a name="line.27"></a>
+<span class="sourceLineNo">028</span>                <a name="line.28"></a>
+<span class="sourceLineNo">029</span>                private static TutStage [] vals = values();<a name="line.29"></a>
+<span class="sourceLineNo">030</span>                public TutStage next() {<a name="line.30"></a>
+<span class="sourceLineNo">031</span>                        int index = this.ordinal() + 1;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>                        if (index &gt;= vals.length) index = vals.length - 1;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>                        return vals[index];<a name="line.33"></a>
+<span class="sourceLineNo">034</span>                }<a name="line.34"></a>
+<span class="sourceLineNo">035</span>        }<a name="line.35"></a>
+<span class="sourceLineNo">036</span>        <a name="line.36"></a>
+<span class="sourceLineNo">037</span>        protected InteractionDialogAPI dialog;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>        protected DialogCallbacks callbacks;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>        protected CustomPanelAPI panel;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>        protected PositionAPI p;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>        <a name="line.41"></a>
+<span class="sourceLineNo">042</span>        protected TutStage curr = null;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        protected TooltipMakerAPI info;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        protected float untilNext = 0f;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        protected boolean triggeredNext = false;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        protected FaderUtil flash = new FaderUtil(0f, 0.125f, 0.5f, false, true);<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        <a name="line.47"></a>
+<span class="sourceLineNo">048</span>        public DuelTutorialPanel() {<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        }<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        <a name="line.50"></a>
+<span class="sourceLineNo">051</span>        public void init(CustomPanelAPI panel, DialogCallbacks callbacks, InteractionDialogAPI dialog) {<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                this.panel = panel;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                this.callbacks = callbacks;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                this.dialog = dialog;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                curr = TutStage.INIT;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                showNext();<a name="line.56"></a>
+<span class="sourceLineNo">057</span>        }<a name="line.57"></a>
+<span class="sourceLineNo">058</span>        <a name="line.58"></a>
+<span class="sourceLineNo">059</span>        public void showNext() {<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                if (curr == TutStage.LEAVE) return;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                curr = curr.next();<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                if (info != null) {<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                        panel.removeComponent(info);<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                }<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                float opad = 10f;<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                Color h = Misc.getHighlightColor();<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                info = panel.createUIElement(p.getWidth() - 20f, 1000f, false);<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                info.setParaInsigniaLarge();<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                <a name="line.69"></a>
+<span class="sourceLineNo">070</span>                if (curr == TutStage.MOVE_FORWARD) {<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                        info.addPara("Press RIGHT to move forward.", 0f, h, "RIGHT");<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                } else if (curr == TutStage.MOVE_BACK) {<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                        info.addPara("Press LEFT to move backwards.", 0f, h, "LEFT");<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                } else if (curr == TutStage.ATTACK) {<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                        info.addPara("Press SPACE to attack.", 0f, h, "SPACE");<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                } else if (curr == TutStage.BLOCK) {<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                        LabelAPI label = info.addPara("Press UP to block or parry. "<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                                        + "A skilled fighter can also execute a quick attack, or a \"riposte\", by attacking immediately after deflecting their opponent's attack.", 0f, h, "UP");<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                        label.setHighlightColors(h, Misc.getStoryOptionColor());<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                        label.setHighlight("UP", "skilled fighter");<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                } else if (curr == TutStage.LEAVE) {<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                        info.addPara("Your health is in the top left of the screen.\n\n"<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                                        + "Make a few practice moves, then press ESCAPE to continue.", 0f, h, "ESCAPE");<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                }<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                <a name="line.85"></a>
+<span class="sourceLineNo">086</span>                panel.addUIElement(info).inTL(opad, opad);<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                flash.fadeIn();<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        }<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        <a name="line.89"></a>
+<span class="sourceLineNo">090</span>        public void reportAction(String actionId) {<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                boolean triggered = false;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                triggered |= curr == TutStage.MOVE_FORWARD &amp;&amp; Actions.MOVE_FORWARD.equals(actionId);<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                triggered |= curr == TutStage.MOVE_BACK &amp;&amp; Actions.MOVE_BACK.equals(actionId);<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                triggered |= curr == TutStage.ATTACK &amp;&amp; Actions.ATTACK.equals(actionId);<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                triggered |= curr == TutStage.BLOCK &amp;&amp; Actions.BLOCK.equals(actionId);<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                if (triggered) {<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                        triggeredNext = true;<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                        untilNext = 1f;<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                }<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        }<a name="line.100"></a>
+<span class="sourceLineNo">101</span><a name="line.101"></a>
+<span class="sourceLineNo">102</span>        public CustomPanelAPI getPanel() {<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                return panel;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        }<a name="line.104"></a>
+<span class="sourceLineNo">105</span><a name="line.105"></a>
+<span class="sourceLineNo">106</span>        public PositionAPI getPosition() {<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                return p;<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        }<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        <a name="line.109"></a>
+<span class="sourceLineNo">110</span>        public void positionChanged(PositionAPI position) {<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                this.p = position;<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        }<a name="line.112"></a>
+<span class="sourceLineNo">113</span><a name="line.113"></a>
+<span class="sourceLineNo">114</span>        public void render(float alphaMult) {<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                <a name="line.115"></a>
+<span class="sourceLineNo">116</span>        }<a name="line.116"></a>
+<span class="sourceLineNo">117</span><a name="line.117"></a>
+<span class="sourceLineNo">118</span>        public void renderBelow(float alphaMult) {<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                if (p == null) return;<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                float x = p.getX();<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                float y = p.getY();<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                float cx = p.getCenterX();<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                float cy = p.getCenterY();<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                float w = p.getWidth();<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                float h = p.getHeight();<a name="line.125"></a>
+<span class="sourceLineNo">126</span><a name="line.126"></a>
+<span class="sourceLineNo">127</span>                GL11.glDisable(GL11.GL_TEXTURE_2D);<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                GL11.glEnable(GL11.GL_BLEND);<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                <a name="line.130"></a>
+<span class="sourceLineNo">131</span>                Color c = Misc.getBasePlayerColor();<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                float a = alphaMult;<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                Misc.renderQuad(x, y, w, 1, c, a);<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                Misc.renderQuad(x, y + h - 1, w, 1, c, a);<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                Misc.renderQuad(x, y + 1, 1, h - 2, c, a);<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                Misc.renderQuad(x + w - 1, y + 1, 1, h - 2, c, a);<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                <a name="line.137"></a>
+<span class="sourceLineNo">138</span>                Misc.renderQuad(x + w, y - 1, 1, h, Color.black, a);<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                Misc.renderQuad(x + 1, y - 1, w - 1, 1, Color.black, a);<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                <a name="line.140"></a>
+<span class="sourceLineNo">141</span>                Misc.renderQuad(x + 1, y + 1, w - 2, h - 2, Color.black, a * 0.67f);<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                <a name="line.142"></a>
+<span class="sourceLineNo">143</span>                GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                Misc.renderQuad(x + 1, y + 1, w - 2, h - 2, Misc.getBrightPlayerColor(), a * 0.25f * flash.getBrightness());<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        }<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        <a name="line.146"></a>
+<span class="sourceLineNo">147</span><a name="line.147"></a>
+<span class="sourceLineNo">148</span>        public void advance(float amount) {<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                if (p == null) return;<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                if (triggeredNext) {<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                        untilNext -= amount;<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                        if (untilNext &lt;= 0f) {<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                                triggeredNext = false;<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                                showNext();<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                        }<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                }<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                flash.advance(amount);<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        }<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        <a name="line.159"></a>
+<span class="sourceLineNo">160</span>        public void processInput(List&lt;InputEventAPI&gt; events) {<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                if (p == null) return;<a name="line.161"></a>
+<span class="sourceLineNo">162</span><a name="line.162"></a>
+<span class="sourceLineNo">163</span>        }<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        <a name="line.164"></a>
+<span class="sourceLineNo">165</span>}<a name="line.165"></a>
+<span class="sourceLineNo">166</span><a name="line.166"></a>
+<span class="sourceLineNo">167</span><a name="line.167"></a>
+<span class="sourceLineNo">168</span><a name="line.168"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

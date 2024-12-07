@@ -1,0 +1,316 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.missions.cb;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import java.util.ArrayList;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import java.util.List;<a name="line.5"></a>
+<span class="sourceLineNo">006</span><a name="line.6"></a>
+<span class="sourceLineNo">007</span>import com.fs.starfarer.api.Global;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.campaign.CampaignFleetAPI;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.campaign.FactionAPI;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.campaign.TextPanelAPI;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.campaign.econ.Industry;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.campaign.econ.MarketAPI;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.characters.PersonAPI;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.fleet.FleetMemberAPI;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.fleet.FleetMemberType;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.impl.campaign.DebugFlags;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.impl.campaign.econ.impl.OrbitalStation;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import com.fs.starfarer.api.impl.campaign.ids.Conditions;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import com.fs.starfarer.api.impl.campaign.ids.Industries;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import com.fs.starfarer.api.impl.campaign.missions.cb.BaseCustomBounty.Stage;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import com.fs.starfarer.api.impl.campaign.missions.hub.HubMissionWithBarEvent;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import com.fs.starfarer.api.ui.TooltipMakerAPI;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>import com.fs.starfarer.api.util.Misc;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>import com.fs.starfarer.api.util.WeightedRandomPicker;<a name="line.24"></a>
+<span class="sourceLineNo">025</span><a name="line.25"></a>
+<span class="sourceLineNo">026</span>public class CBEnemyStation extends BaseCustomBountyCreator {<a name="line.26"></a>
+<span class="sourceLineNo">027</span><a name="line.27"></a>
+<span class="sourceLineNo">028</span>        @Override<a name="line.28"></a>
+<span class="sourceLineNo">029</span>        public float getBountyDays() {<a name="line.29"></a>
+<span class="sourceLineNo">030</span>                return CBStats.ENEMY_STATION_DAYS;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>        }<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span>        @Override<a name="line.33"></a>
+<span class="sourceLineNo">034</span>        public float getFrequency(HubMissionWithBarEvent mission, int difficulty) {<a name="line.34"></a>
+<span class="sourceLineNo">035</span>                if (getStations(mission, difficulty).isEmpty()) return 0f;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>                return super.getFrequency(mission, difficulty) * CBStats.ENEMY_STATION_FREQ;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>        }<a name="line.37"></a>
+<span class="sourceLineNo">038</span>        <a name="line.38"></a>
+<span class="sourceLineNo">039</span>        public void addIntelAssessment(TextPanelAPI text, HubMissionWithBarEvent mission, CustomBountyData data) {<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                float opad = 10f;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                List&lt;FleetMemberAPI&gt; list = new ArrayList&lt;FleetMemberAPI&gt;();<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                List&lt;FleetMemberAPI&gt; members = data.fleet.getFleetData().getMembersListCopy();<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                int max = 7;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>                int cols = 7;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>                float iconSize = 440 / cols;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                Color h = Misc.getHighlightColor();<a name="line.46"></a>
+<span class="sourceLineNo">047</span>                <a name="line.47"></a>
+<span class="sourceLineNo">048</span>                for (FleetMemberAPI member : members) {<a name="line.48"></a>
+<span class="sourceLineNo">049</span>                        if (list.size() &gt;= max) break;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                        <a name="line.50"></a>
+<span class="sourceLineNo">051</span>                        if (member.isFighterWing()) continue;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                        <a name="line.52"></a>
+<span class="sourceLineNo">053</span>                        FleetMemberAPI copy = Global.getFactory().createFleetMember(FleetMemberType.SHIP, member.getVariant());<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                        if (member.isFlagship()) {<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                                copy.setCaptain(data.fleet.getCommander());<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                        }<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                        list.add(copy);<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                }<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                <a name="line.59"></a>
+<span class="sourceLineNo">060</span>                if (!list.isEmpty()) {<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                        TooltipMakerAPI info = text.beginTooltip();<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                        info.setParaSmallInsignia();<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                        info.addPara(Misc.ucFirst(mission.getPerson().getHeOrShe()) + " taps a data pad, and " +<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                                                 "an intel assessment shows up on your tripad.", 0f);<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                        info.addShipList(cols, 1, iconSize, data.fleet.getFaction().getBaseUIColor(), list, opad);<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                        <a name="line.66"></a>
+<span class="sourceLineNo">067</span>                        FactionAPI f = data.fleet.getFaction();<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                        info.addPara("The station is controlled by " + f.getDisplayNameWithArticle() + " and is likely to " +<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                                        "be supported by a number of patrols.",<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                                        opad, f.getBaseUIColor(),<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                                        f.getDisplayNameWithArticleWithoutArticle());<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                        text.addTooltip();<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                }<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                return;<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        }<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        <a name="line.76"></a>
+<span class="sourceLineNo">077</span>        <a name="line.77"></a>
+<span class="sourceLineNo">078</span>        public void addFleetDescription(TooltipMakerAPI info, float width, float height, HubMissionWithBarEvent mission, CustomBountyData data) {<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                PersonAPI person = data.fleet.getCommander();<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                FactionAPI faction = person.getFaction();<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                int cols = 7;<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                float iconSize = width / cols;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                float opad = 10f;<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                Color h = Misc.getHighlightColor();<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                <a name="line.85"></a>
+<span class="sourceLineNo">086</span>                if (DebugFlags.PERSON_BOUNTY_DEBUG_INFO) {<a name="line.86"></a>
+<span class="sourceLineNo">087</span><a name="line.87"></a>
+<span class="sourceLineNo">088</span>                }<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                boolean deflate = false;<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                if (!data.fleet.isInflated()) {<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                        data.fleet.inflateIfNeeded();<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                        deflate = true;<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                }<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                <a name="line.94"></a>
+<span class="sourceLineNo">095</span>                List&lt;FleetMemberAPI&gt; list = new ArrayList&lt;FleetMemberAPI&gt;();<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                <a name="line.96"></a>
+<span class="sourceLineNo">097</span>                List&lt;FleetMemberAPI&gt; members = data.fleet.getFleetData().getMembersListCopy();<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                int max = 7;<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                for (FleetMemberAPI member : members) {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                        if (list.size() &gt;= max) break;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                        <a name="line.101"></a>
+<span class="sourceLineNo">102</span>                        if (member.isFighterWing()) continue;<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                        <a name="line.103"></a>
+<span class="sourceLineNo">104</span>                        FleetMemberAPI copy = Global.getFactory().createFleetMember(FleetMemberType.SHIP, member.getVariant());<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                        if (member.isFlagship()) {<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                                copy.setCaptain(person);<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                        }<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                        list.add(copy);<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                }<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                <a name="line.110"></a>
+<span class="sourceLineNo">111</span>                if (!list.isEmpty()) {<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                        info.addPara("The bounty posting contains partial intel about the station.", opad);<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                        info.addShipList(cols, 1, iconSize, faction.getBaseUIColor(), list, opad);<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                        <a name="line.114"></a>
+<span class="sourceLineNo">115</span>                        int num = members.size() - list.size();<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                        //num = Math.round((float)num * (1f + random.nextFloat() * 0.5f));<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                        <a name="line.117"></a>
+<span class="sourceLineNo">118</span>                        if (num &lt; 5) num = 0;<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                        else if (num &lt; 10) num = 5;<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                        else if (num &lt; 20) num = 10;<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                        else num = 20;<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                        <a name="line.122"></a>
+<span class="sourceLineNo">123</span>                        FactionAPI f = data.fleet.getFaction();<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                        info.addPara("The station is controlled by " + f.getDisplayNameWithArticle() + " and is likely to " +<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                                        "be supported by a number of patrols.",<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                                        opad, f.getBaseUIColor(),<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                                        f.getDisplayNameWithArticleWithoutArticle());<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                }<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                <a name="line.129"></a>
+<span class="sourceLineNo">130</span>                if (deflate) {<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                        data.fleet.deflate();<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                }<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        }<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        <a name="line.134"></a>
+<span class="sourceLineNo">135</span>        <a name="line.135"></a>
+<span class="sourceLineNo">136</span>        public List&lt;CampaignFleetAPI&gt; getStations(HubMissionWithBarEvent mission, int difficulty) {<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                List&lt;CampaignFleetAPI&gt; stations = new ArrayList&lt;CampaignFleetAPI&gt;();<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                String faction = mission.getPerson().getFaction().getId();<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                for (MarketAPI market : Global.getSector().getEconomy().getMarketsCopy()) {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                        if (market.isHidden()) continue;<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                        if (market.isPlayerOwned()) continue;<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                        if (market.hasCondition(Conditions.DECIVILIZED)) continue;<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                        if (!market.getFaction().isHostileTo(faction)) continue;<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                        <a name="line.144"></a>
+<span class="sourceLineNo">145</span>                        Industry ind = Misc.getStationIndustry(market);<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                        <a name="line.146"></a>
+<span class="sourceLineNo">147</span>                        if (!(ind instanceof OrbitalStation)) continue;<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                        OrbitalStation os = (OrbitalStation) ind;<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                        if (os.getDisruptedDays() &gt; 0) continue;<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                        <a name="line.150"></a>
+<span class="sourceLineNo">151</span>                        boolean battlestation = os.getSpec().hasTag(Industries.TAG_BATTLESTATION);<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                        boolean starfortress = os.getSpec().hasTag(Industries.TAG_STARFORTRESS);<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                        <a name="line.153"></a>
+<span class="sourceLineNo">154</span>                        if (difficulty == 10 &amp;&amp; !starfortress) continue;<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                        if ((difficulty == 8 || difficulty == 9) &amp;&amp; !battlestation) continue;<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                        if (!battlestation &amp;&amp; !starfortress &amp;&amp; difficulty &gt;= 8) continue;<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                        <a name="line.157"></a>
+<span class="sourceLineNo">158</span>                        CampaignFleetAPI fleet = Misc.getStationFleet(market);<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                        if (fleet != null) {<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                                stations.add(fleet);<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                        }<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                }<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                return stations;<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        }<a name="line.164"></a>
+<span class="sourceLineNo">165</span>        <a name="line.165"></a>
+<span class="sourceLineNo">166</span>        public String getBountyNamePostfix(HubMissionWithBarEvent mission, CustomBountyData data) {<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                return " - " + data.fleet.getName();<a name="line.167"></a>
+<span class="sourceLineNo">168</span>        }<a name="line.168"></a>
+<span class="sourceLineNo">169</span>        <a name="line.169"></a>
+<span class="sourceLineNo">170</span>        <a name="line.170"></a>
+<span class="sourceLineNo">171</span>        @Override<a name="line.171"></a>
+<span class="sourceLineNo">172</span>        public CustomBountyData createBounty(MarketAPI createdAt, HubMissionWithBarEvent mission, int difficulty, Object bountyStage) {<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                CustomBountyData data = new CustomBountyData();<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                data.difficulty = difficulty;<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                <a name="line.175"></a>
+<span class="sourceLineNo">176</span>                <a name="line.176"></a>
+<span class="sourceLineNo">177</span>                WeightedRandomPicker&lt;CampaignFleetAPI&gt; picker = new WeightedRandomPicker&lt;CampaignFleetAPI&gt;(mission.getGenRandom());<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                picker.addAll(getStations(mission, difficulty));<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                <a name="line.179"></a>
+<span class="sourceLineNo">180</span>                <a name="line.180"></a>
+<span class="sourceLineNo">181</span>                data.fleet = picker.pick();<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                if (data.fleet == null) return null;<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                <a name="line.183"></a>
+<span class="sourceLineNo">184</span>                MarketAPI market = Misc.getStationMarket(data.fleet);<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                if (market == null) return null;<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                <a name="line.186"></a>
+<span class="sourceLineNo">187</span>                data.market = market;<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                data.custom2 = bountyStage;<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                <a name="line.189"></a>
+<span class="sourceLineNo">190</span>                data.system = data.fleet.getStarSystem();<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                if (data.system == null) return null;<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                <a name="line.192"></a>
+<span class="sourceLineNo">193</span>                setRepChangesBasedOnDifficulty(data, difficulty);<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                data.baseReward = CBStats.getBaseBounty(difficulty, CBStats.ENEMY_STATION_MULT, mission);<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                <a name="line.195"></a>
+<span class="sourceLineNo">196</span>                return data;<a name="line.196"></a>
+<span class="sourceLineNo">197</span>        }<a name="line.197"></a>
+<span class="sourceLineNo">198</span>        <a name="line.198"></a>
+<span class="sourceLineNo">199</span>        @Override<a name="line.199"></a>
+<span class="sourceLineNo">200</span>        public void notifyAccepted(MarketAPI createdAt, HubMissionWithBarEvent mission, CustomBountyData data) {<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                MarketAPI market = data.market;<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                Object stage = data.custom2;<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                <a name="line.203"></a>
+<span class="sourceLineNo">204</span>                if (data.difficulty &lt;= 7) {<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                        mission.triggerCreateLargePatrolAroundMarket(market, stage, 0f);<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                        mission.triggerCreateSmallPatrolAroundMarket(market, stage, 0f);<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                } else if (data.difficulty &lt;= 9) {<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                        mission.triggerCreateLargePatrolAroundMarket(market, stage, 0f);<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                        mission.triggerCreateMediumPatrolAroundMarket(market, stage, 0f);<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                        mission.triggerCreateSmallPatrolAroundMarket(market, stage, 0f);<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                } else {<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                        mission.triggerCreateLargePatrolAroundMarket(market, stage, 0f);<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                        mission.triggerCreateLargePatrolAroundMarket(market, stage, 0f);<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                        mission.triggerCreateMediumPatrolAroundMarket(market, stage, 0f);<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                        mission.triggerCreateSmallPatrolAroundMarket(market, stage, 0f);<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                }<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                <a name="line.217"></a>
+<span class="sourceLineNo">218</span>                mission.connectWithHostilitiesEnded(Stage.BOUNTY, Stage.FAILED_NO_PENALTY, mission.getPerson(), market);<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                mission.setStageOnHostilitiesEnded(Stage.FAILED_NO_PENALTY, mission.getPerson(), market);<a name="line.219"></a>
+<span class="sourceLineNo">220</span>        }<a name="line.220"></a>
+<span class="sourceLineNo">221</span>        <a name="line.221"></a>
+<span class="sourceLineNo">222</span>        @Override<a name="line.222"></a>
+<span class="sourceLineNo">223</span>        public String getIconName() {<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                return Global.getSettings().getSpriteName("campaignMissions", "station_bounty");<a name="line.224"></a>
+<span class="sourceLineNo">225</span>        }<a name="line.225"></a>
+<span class="sourceLineNo">226</span>        <a name="line.226"></a>
+<span class="sourceLineNo">227</span><a name="line.227"></a>
+<span class="sourceLineNo">228</span>        @Override<a name="line.228"></a>
+<span class="sourceLineNo">229</span>        public int getMaxDifficulty() {<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                return super.getMaxDifficulty();<a name="line.230"></a>
+<span class="sourceLineNo">231</span>        }<a name="line.231"></a>
+<span class="sourceLineNo">232</span><a name="line.232"></a>
+<span class="sourceLineNo">233</span>        @Override<a name="line.233"></a>
+<span class="sourceLineNo">234</span>        public int getMinDifficulty() {<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                return 6;<a name="line.235"></a>
+<span class="sourceLineNo">236</span>        }<a name="line.236"></a>
+<span class="sourceLineNo">237</span><a name="line.237"></a>
+<span class="sourceLineNo">238</span>}<a name="line.238"></a>
+<span class="sourceLineNo">239</span><a name="line.239"></a>
+<span class="sourceLineNo">240</span><a name="line.240"></a>
+<span class="sourceLineNo">241</span><a name="line.241"></a>
+<span class="sourceLineNo">242</span><a name="line.242"></a>
+<span class="sourceLineNo">243</span><a name="line.243"></a>
+<span class="sourceLineNo">244</span><a name="line.244"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

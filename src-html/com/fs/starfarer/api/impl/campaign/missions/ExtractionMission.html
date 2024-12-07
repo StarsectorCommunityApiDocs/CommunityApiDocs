@@ -1,0 +1,373 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.missions;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
+<span class="sourceLineNo">004</span><a name="line.4"></a>
+<span class="sourceLineNo">005</span>import com.fs.starfarer.api.campaign.FactionAPI;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import com.fs.starfarer.api.campaign.PersonImportance;<a name="line.6"></a>
+<span class="sourceLineNo">007</span>import com.fs.starfarer.api.campaign.econ.MarketAPI;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.characters.PersonAPI;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.impl.campaign.ids.Factions;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.impl.campaign.ids.Ranks;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.impl.campaign.ids.Tags;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.impl.campaign.intel.bases.LuddicPathBaseIntel;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.impl.campaign.intel.bases.PirateBaseIntel;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.impl.campaign.missions.hub.HubMissionWithBarEvent;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.impl.campaign.rulecmd.salvage.MarketCMD.RaidDangerLevel;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.ui.LabelAPI;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.ui.TooltipMakerAPI;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import com.fs.starfarer.api.util.Misc;<a name="line.18"></a>
+<span class="sourceLineNo">019</span><a name="line.19"></a>
+<span class="sourceLineNo">020</span>public class ExtractionMission extends HubMissionWithBarEvent {<a name="line.20"></a>
+<span class="sourceLineNo">021</span><a name="line.21"></a>
+<span class="sourceLineNo">022</span>        public static float PROB_BASE_INSTEAD_OF_MARKET_MIN = 0.25f;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>        public static float PROB_BASE_INSTEAD_OF_MARKET_MAX = 0.75f;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>        public static float PROB_PIRATE_BASE_WHEN_BASE = 0.5f;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>        <a name="line.25"></a>
+<span class="sourceLineNo">026</span>        public static float PROB_ADDITIONAL_PATROLS = 0.5f;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>        <a name="line.27"></a>
+<span class="sourceLineNo">028</span>        public static float MISSION_DAYS = 120f;<a name="line.28"></a>
+<span class="sourceLineNo">029</span>        <a name="line.29"></a>
+<span class="sourceLineNo">030</span>        public static enum Variation {<a name="line.30"></a>
+<span class="sourceLineNo">031</span>                COLONY,<a name="line.31"></a>
+<span class="sourceLineNo">032</span>                PIRATE_BASE,<a name="line.32"></a>
+<span class="sourceLineNo">033</span>                LUDDIC_PATH_BASE,<a name="line.33"></a>
+<span class="sourceLineNo">034</span>        }<a name="line.34"></a>
+<span class="sourceLineNo">035</span>        <a name="line.35"></a>
+<span class="sourceLineNo">036</span>        public static enum Stage {<a name="line.36"></a>
+<span class="sourceLineNo">037</span>                EXTRACT,<a name="line.37"></a>
+<span class="sourceLineNo">038</span>                RETURN,<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                COMPLETED,<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                FAILED,<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                FAILED_DECIV,<a name="line.41"></a>
+<span class="sourceLineNo">042</span>        }<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        <a name="line.43"></a>
+<span class="sourceLineNo">044</span>        protected Variation variation;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        protected MarketAPI market;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        protected RaidDangerLevel danger;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        protected int storyCost = 0;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        protected String seedyBarOwner;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        <a name="line.49"></a>
+<span class="sourceLineNo">050</span>        @Override<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        protected boolean create(MarketAPI createdAt, boolean barEvent) {<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                //genRandom = Misc.random;<a name="line.52"></a>
+<span class="sourceLineNo">053</span><a name="line.53"></a>
+<span class="sourceLineNo">054</span>                if (Factions.PIRATES.equals(createdAt.getFaction().getId())) return false;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                <a name="line.55"></a>
+<span class="sourceLineNo">056</span>                if (barEvent) {<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                        setGiverRank(Ranks.CITIZEN);<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                        setGiverPost(Ranks.POST_AGENT);<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                        setGiverImportance(pickImportance());<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                        setGiverTags(Tags.CONTACT_MILITARY);<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                        findOrCreateGiver(createdAt, true, false);<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                }<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                <a name="line.63"></a>
+<span class="sourceLineNo">064</span>                PersonAPI person = getPerson();<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                if (person == null) return false;<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                <a name="line.66"></a>
+<span class="sourceLineNo">067</span>                if (!setPersonMissionRef(person, "$extr_ref")) {<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                        return false;<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                }<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                <a name="line.70"></a>
+<span class="sourceLineNo">071</span>                if (barEvent) {<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                        setGiverIsPotentialContactOnSuccess();<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                }<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                <a name="line.74"></a>
+<span class="sourceLineNo">075</span>                seedyBarOwner = pickOne("Eduardo",<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                                                                "Roy", <a name="line.76"></a>
+<span class="sourceLineNo">077</span>                                                                "Hyde",<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                                                                "Shang",<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                                                                "Rick",<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                                                                "Bogdan",<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                                                                "William",<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                                                                "Marlowe",<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                                                                "Benny"<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                                );<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                <a name="line.85"></a>
+<span class="sourceLineNo">086</span>                PersonImportance importance = person.getImportance();<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                int minMarketSize = 3;<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                int maxMarketSize = 9;<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                switch (importance) {<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                case VERY_LOW:<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                        minMarketSize = 3;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                        maxMarketSize = 4;<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                        break;<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                case LOW:<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                        minMarketSize = 4;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                        maxMarketSize = 4;<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                        break;<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                case MEDIUM:<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                        minMarketSize = 5;<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                        maxMarketSize = 5;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                        break;<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                case HIGH:<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                        minMarketSize = 5;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                        maxMarketSize = 6;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                        break;<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                case VERY_HIGH:<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                        minMarketSize = 6;<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                        maxMarketSize = 8;<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                        break;<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                }<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                <a name="line.111"></a>
+<span class="sourceLineNo">112</span>                if (importance.ordinal() &gt;= PersonImportance.HIGH.ordinal()) {<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                        float pBase = PROB_BASE_INSTEAD_OF_MARKET_MIN + <a name="line.113"></a>
+<span class="sourceLineNo">114</span>                                        (PROB_BASE_INSTEAD_OF_MARKET_MAX - PROB_BASE_INSTEAD_OF_MARKET_MIN) * <a name="line.114"></a>
+<span class="sourceLineNo">115</span>                                        Math.max(0, getPerson().getRelToPlayer().getRel());<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                        if (rollProbability(pBase)) {<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                                resetSearch();<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                                requireMarketIsNot(createdAt);<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                                requireMarketFactionNotPlayer();<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                                requireMarketMemoryFlag(PirateBaseIntel.MEM_FLAG, true);<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                                requireMarketNotInHyperspace();<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                                preferMarketInDirectionOfOtherMissions();<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                                MarketAPI pirateBase = pickMarket();<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                                <a name="line.124"></a>
+<span class="sourceLineNo">125</span>                                resetSearch();<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                                requireMarketIsNot(createdAt);<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                                requireMarketMemoryFlag(LuddicPathBaseIntel.MEM_FLAG, true);<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                                requireMarketNotInHyperspace();<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                                preferMarketInDirectionOfOtherMissions();<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                                MarketAPI pathBase = pickMarket();<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                                <a name="line.131"></a>
+<span class="sourceLineNo">132</span>                                boolean allowPath = !Factions.LUDDIC_PATH.equals(createdAt.getFaction().getId());<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                                <a name="line.133"></a>
+<span class="sourceLineNo">134</span>                                if (rollProbability(PROB_PIRATE_BASE_WHEN_BASE) &amp;&amp; pirateBase != null) {<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                                        market = pirateBase;<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                                        variation = Variation.PIRATE_BASE;<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                                        danger = RaidDangerLevel.EXTREME;<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                                } else if (allowPath) {<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                                        market = pathBase;<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                                        variation = Variation.LUDDIC_PATH_BASE;<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                                        danger = RaidDangerLevel.EXTREME;<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                                }<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                        }<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                }<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                <a name="line.145"></a>
+<span class="sourceLineNo">146</span>                if (market == null) {<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                        resetSearch();<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                        requireMarketIsNot(createdAt);<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                        requireMarketFactionNotPlayer();<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                        requireMarketNotHidden();<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                        requireMarketNotInHyperspace();<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                        preferMarketSizeAtLeast(minMarketSize);<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                        preferMarketSizeAtMost(maxMarketSize);<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                        preferMarketFactionHostileTo(createdAt.getFactionId());<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                        preferMarketInDirectionOfOtherMissions();<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                        market = pickMarket();<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                        variation = Variation.COLONY;<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                        danger = RaidDangerLevel.MEDIUM;<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                }<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                <a name="line.160"></a>
+<span class="sourceLineNo">161</span>                if (market == null) return false;<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                if (!setMarketMissionRef(market, "$extr_ref")) {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                        return false;<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                }<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                <a name="line.165"></a>
+<span class="sourceLineNo">166</span>                int marines = getMarinesRequiredForCustomObjective(market, danger);<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                if (!isOkToOfferMissionRequiringMarines(marines)) {<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                        return false;<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                }<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                <a name="line.170"></a>
+<span class="sourceLineNo">171</span>                makeImportant(market, "$extr_target", Stage.EXTRACT);<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                makeImportant(getPerson(), "$extr_returnHere", Stage.RETURN);<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                <a name="line.173"></a>
+<span class="sourceLineNo">174</span>                setStartingStage(Stage.EXTRACT);<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                setSuccessStage(Stage.COMPLETED);<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                addFailureStages(Stage.FAILED);<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                <a name="line.177"></a>
+<span class="sourceLineNo">178</span>                connectWithMemoryFlag(Stage.EXTRACT, Stage.RETURN, market, "$extr_needToReturn");<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                setStageOnMemoryFlag(Stage.COMPLETED, person, "$extr_completed");<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                <a name="line.180"></a>
+<span class="sourceLineNo">181</span>                addNoPenaltyFailureStages(Stage.FAILED_DECIV);<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                connectWithMarketDecivilized(Stage.EXTRACT, Stage.FAILED_DECIV, market);<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                setStageOnMarketDecivilized(Stage.FAILED_DECIV, createdAt);<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                <a name="line.184"></a>
+<span class="sourceLineNo">185</span>                setTimeLimit(Stage.FAILED, MISSION_DAYS, null, Stage.RETURN);<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                <a name="line.186"></a>
+<span class="sourceLineNo">187</span>//              int sizeModifier = market.getSize() * 10000;<a name="line.187"></a>
+<span class="sourceLineNo">188</span>//              if (variation == Variation.PIRATE_BASE || variation == Variation.LUDDIC_PATH_BASE) {<a name="line.188"></a>
+<span class="sourceLineNo">189</span>//                      sizeModifier = 10 * 10000;;<a name="line.189"></a>
+<span class="sourceLineNo">190</span>//              }<a name="line.190"></a>
+<span class="sourceLineNo">191</span>//              setCreditReward(10000 + sizeModifier, 30000 + sizeModifier);<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                //int size = market.getSize();<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                int extraBonus = 0;<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                if (variation == Variation.PIRATE_BASE || variation == Variation.LUDDIC_PATH_BASE) {<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                        //size = 10;<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                        extraBonus = 75000;<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                }<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                //setCreditReward(CreditReward.AVERAGE, size);<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                <a name="line.199"></a>
+<span class="sourceLineNo">200</span>                int bonus = getRewardBonusForMarines(getMarinesRequiredForCustomObjective(market, danger));<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                setCreditRewardWithBonus(CreditReward.AVERAGE, bonus + extraBonus);<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                <a name="line.202"></a>
+<span class="sourceLineNo">203</span>                storyCost = getRoundNumber(getCreditsReward() / 2);<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                <a name="line.204"></a>
+<span class="sourceLineNo">205</span>                if (rollProbability(PROB_ADDITIONAL_PATROLS)) {<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                        if (market.getSize() &lt;= 4) {<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                                triggerCreateMediumPatrolAroundMarket(market, Stage.EXTRACT, 0f);<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                        } else if (market.getSize() &lt;= 6) {<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                                triggerCreateLargePatrolAroundMarket(market, Stage.EXTRACT, 0f);<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                        } else {<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                                triggerCreateMediumPatrolAroundMarket(market, Stage.EXTRACT, 0f);<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                                triggerCreateLargePatrolAroundMarket(market, Stage.EXTRACT, 0f);<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                        }<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                }<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                <a name="line.215"></a>
+<span class="sourceLineNo">216</span>                return true;<a name="line.216"></a>
+<span class="sourceLineNo">217</span>        }<a name="line.217"></a>
+<span class="sourceLineNo">218</span>        <a name="line.218"></a>
+<span class="sourceLineNo">219</span>        protected void updateInteractionDataImpl() {<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                set("$extr_variation", variation);<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                set("$extr_barName", seedyBarOwner + "'s");<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                set("$extr_barOwner", seedyBarOwner);<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                set("$extr_barEvent", isBarEvent());<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                set("$extr_manOrWoman", getPerson().getManOrWoman());<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                set("$extr_reward", Misc.getWithDGS(getCreditsReward()));<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                set("$extr_storyCost", Misc.getWithDGS(storyCost));<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                <a name="line.227"></a>
+<span class="sourceLineNo">228</span>                set("$extr_systemName", market.getStarSystem().getNameWithLowercaseTypeShort());<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                set("$extr_marketName", market.getName());<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                set("$extr_marketOnOrAt", market.getOnOrAt());<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                set("$extr_marketFactionArticle", market.getFaction().getPersonNamePrefixAOrAn());<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                set("$extr_marketFaction", market.getFaction().getPersonNamePrefix());<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                set("$extr_factionColor",  market.getFaction().getBaseUIColor());<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                set("$extr_dist", getDistanceLY(market));<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                <a name="line.235"></a>
+<span class="sourceLineNo">236</span>                set("$extr_danger", danger);<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                set("$extr_marines", Misc.getWithDGS(getMarinesRequiredForCustomObjective(market, danger)));<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                                <a name="line.238"></a>
+<span class="sourceLineNo">239</span>        }<a name="line.239"></a>
+<span class="sourceLineNo">240</span>        <a name="line.240"></a>
+<span class="sourceLineNo">241</span>        @Override<a name="line.241"></a>
+<span class="sourceLineNo">242</span>        public void addDescriptionForNonEndStage(TooltipMakerAPI info, float width, float height) {<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                float opad = 10f;<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                Color h = Misc.getHighlightColor();<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                if (currentStage == Stage.EXTRACT) {<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                        info.addPara("Extract agent located " +<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                                         market.getOnOrAt() + " " + market.getName() + <a name="line.247"></a>
+<span class="sourceLineNo">248</span>                                         " in the " + market.getStarSystem().getNameWithLowercaseTypeShort() + ".", opad);<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                        if (variation == Variation.PIRATE_BASE || variation == Variation.LUDDIC_PATH_BASE) {<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                                FactionAPI f = market.getFaction();<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                                info.addPara("The target location is " + f.getPersonNamePrefixAOrAn() + " %s base.",<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                                                         opad, f.getBaseUIColor(), f.getPersonNamePrefix());<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                                <a name="line.253"></a>
+<span class="sourceLineNo">254</span>//                              info.addPara("The operation will require a sizeable marine contingent and will face active " +<a name="line.254"></a>
+<span class="sourceLineNo">255</span>//                                              "resistance. A close assessment of the station's internal defenses is " +<a name="line.255"></a>
+<span class="sourceLineNo">256</span>//                                              "required to determine the forces necessary.", opad);<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                        } else {<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                                FactionAPI f = market.getFaction();<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                                LabelAPI label = info.addPara("The target location is a size %s " +<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                                                                "colony controlled by " + f.getDisplayNameWithArticle() + ".",<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                                                         opad, f.getBaseUIColor(),<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                                                         "" + market.getSize(), f.getDisplayNameWithArticleWithoutArticle());<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                                label.setHighlight("" + market.getSize(), f.getDisplayNameWithArticleWithoutArticle());<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                                label.setHighlightColors(h, f.getBaseUIColor());<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                                <a name="line.265"></a>
+<span class="sourceLineNo">266</span>//                              info.addPara("The operation will require a sizeable marine contingent and will face active " +<a name="line.266"></a>
+<span class="sourceLineNo">267</span>//                                              "resistance. A close assessment of the colony's ground defenses is " +<a name="line.267"></a>
+<span class="sourceLineNo">268</span>//                                              "required to determine the forces necessary.", opad);<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                        }<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                        addCustomRaidInfo(market, danger, info, opad);<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                        <a name="line.271"></a>
+<span class="sourceLineNo">272</span>                } else if (currentStage == Stage.RETURN) {<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                        info.addPara(getReturnText(getPerson().getMarket().getName()) + ".", opad);<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                }<a name="line.274"></a>
+<span class="sourceLineNo">275</span>        }<a name="line.275"></a>
+<span class="sourceLineNo">276</span><a name="line.276"></a>
+<span class="sourceLineNo">277</span>        @Override<a name="line.277"></a>
+<span class="sourceLineNo">278</span>        public boolean addNextStepText(TooltipMakerAPI info, Color tc, float pad) {<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                Color h = Misc.getHighlightColor();<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                if (currentStage == Stage.EXTRACT) {<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                                info.addPara("Extract agent from " +<a name="line.281"></a>
+<span class="sourceLineNo">282</span>                                                         market.getName() + <a name="line.282"></a>
+<span class="sourceLineNo">283</span>                                                         " in the " + market.getStarSystem().getNameWithLowercaseTypeShort() + ".", pad, tc,<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                                                         market.getFaction().getBaseUIColor(), market.getName());<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                                return true;<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                } else if (currentStage == Stage.RETURN) {<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                        info.addPara(getReturnTextShort(getPerson().getMarket().getName()), tc, pad);<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                        return true;<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                }<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                return false;<a name="line.290"></a>
+<span class="sourceLineNo">291</span>        }       <a name="line.291"></a>
+<span class="sourceLineNo">292</span>        <a name="line.292"></a>
+<span class="sourceLineNo">293</span>        @Override<a name="line.293"></a>
+<span class="sourceLineNo">294</span>        public String getBaseName() {<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                return "Combat Extraction";<a name="line.295"></a>
+<span class="sourceLineNo">296</span>        }<a name="line.296"></a>
+<span class="sourceLineNo">297</span>}<a name="line.297"></a>
+<span class="sourceLineNo">298</span><a name="line.298"></a>
+<span class="sourceLineNo">299</span><a name="line.299"></a>
+<span class="sourceLineNo">300</span><a name="line.300"></a>
+<span class="sourceLineNo">301</span><a name="line.301"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

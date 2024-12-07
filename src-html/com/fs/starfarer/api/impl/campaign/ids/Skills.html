@@ -1,0 +1,205 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.ids;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>public class Skills {<a name="line.3"></a>
+<span class="sourceLineNo">004</span>        public static final String APT_COMBAT = "combat";<a name="line.4"></a>
+<span class="sourceLineNo">005</span>        public static final String APT_LEADERSHIP = "leadership";<a name="line.5"></a>
+<span class="sourceLineNo">006</span>        public static final String APT_TECHNOLOGY = "technology";<a name="line.6"></a>
+<span class="sourceLineNo">007</span>        public static final String APT_INDUSTRY = "industry";<a name="line.7"></a>
+<span class="sourceLineNo">008</span>        <a name="line.8"></a>
+<span class="sourceLineNo">009</span>        @Deprecated public static final String COLONY_MANAGEMENT         =      "colony_management";<a name="line.9"></a>
+<span class="sourceLineNo">010</span>        @Deprecated public static final String SPACE_OPERATIONS          =      "space_operations";       <a name="line.10"></a>
+<span class="sourceLineNo">011</span>        @Deprecated public static final String PLANETARY_OPERATIONS      =      "planetary_operations";   <a name="line.11"></a>
+<span class="sourceLineNo">012</span>        @Deprecated public static final String RANGED_SPECIALIZATION     =      "ranged_specialization";<a name="line.12"></a>
+<span class="sourceLineNo">013</span>        @Deprecated public static final String SHIELD_MODULATION         =      "shield_modulation";      <a name="line.13"></a>
+<span class="sourceLineNo">014</span>        @Deprecated public static final String STRIKE_COMMANDER          =      "strike_commander";<a name="line.14"></a>
+<span class="sourceLineNo">015</span>        @Deprecated public static final String PHASE_MASTERY             =      "phase_mastery";          <a name="line.15"></a>
+<span class="sourceLineNo">016</span>        @Deprecated public static final String RELIABILITY_ENGINEERING   =      "reliability_engineering";<a name="line.16"></a>
+<span class="sourceLineNo">017</span>        @Deprecated public static final String WEAPON_DRILLS             =      "weapon_drills";          <a name="line.17"></a>
+<span class="sourceLineNo">018</span>        @Deprecated public static final String SPECIAL_MODIFICATIONS     =      "special_modifications";<a name="line.18"></a>
+<span class="sourceLineNo">019</span>        @Deprecated public static final String AUXILIARY_SUPPORT         =      "auxiliary_support";<a name="line.19"></a>
+<span class="sourceLineNo">020</span>        @Deprecated public static final String FORCE_CONCENTRATION       =      "force_concentration";<a name="line.20"></a>
+<span class="sourceLineNo">021</span>        <a name="line.21"></a>
+<span class="sourceLineNo">022</span>        <a name="line.22"></a>
+<span class="sourceLineNo">023</span>        public static final String HELMSMANSHIP              =  "helmsmanship";           <a name="line.23"></a>
+<span class="sourceLineNo">024</span>        public static final String TARGET_ANALYSIS           =  "target_analysis";        <a name="line.24"></a>
+<span class="sourceLineNo">025</span>        public static final String COMBAT_ENDURANCE                      =      "combat_endurance";          <a name="line.25"></a>
+<span class="sourceLineNo">026</span>        public static final String POINT_DEFENSE             =  "point_defense";          <a name="line.26"></a>
+<span class="sourceLineNo">027</span>        public static final String IMPACT_MITIGATION         =  "impact_mitigation";      <a name="line.27"></a>
+<span class="sourceLineNo">028</span>        public static final String BALLISTIC_MASTERY             =      "ballistic_mastery";  <a name="line.28"></a>
+<span class="sourceLineNo">029</span>        public static final String FIELD_MODULATION          =  "field_modulation";      <a name="line.29"></a>
+<span class="sourceLineNo">030</span>        public static final String DAMAGE_CONTROL            =  "damage_control";         <a name="line.30"></a>
+<span class="sourceLineNo">031</span>        public static final String SYSTEMS_EXPERTISE         =  "systems_expertise";      <a name="line.31"></a>
+<span class="sourceLineNo">032</span>        public static final String MISSILE_SPECIALIZATION    =  "missile_specialization"; <a name="line.32"></a>
+<span class="sourceLineNo">033</span><a name="line.33"></a>
+<span class="sourceLineNo">034</span>        public static final String TACTICAL_DRILLS           =  "tactical_drills";          <a name="line.34"></a>
+<span class="sourceLineNo">035</span>        public static final String COORDINATED_MANEUVERS     =  "coordinated_maneuvers";  <a name="line.35"></a>
+<span class="sourceLineNo">036</span>        public static final String WOLFPACK_TACTICS          =  "wolfpack_tactics";       <a name="line.36"></a>
+<span class="sourceLineNo">037</span>        public static final String CREW_TRAINING             =  "crew_training";          <a name="line.37"></a>
+<span class="sourceLineNo">038</span>        public static final String FIGHTER_UPLINK            =  "fighter_uplink";         <a name="line.38"></a>
+<span class="sourceLineNo">039</span>        public static final String CARRIER_GROUP             =  "carrier_group";          <a name="line.39"></a>
+<span class="sourceLineNo">040</span>        public static final String OFFICER_TRAINING          =  "officer_training";       <a name="line.40"></a>
+<span class="sourceLineNo">041</span>        public static final String OFFICER_MANAGEMENT        =  "officer_management";     <a name="line.41"></a>
+<span class="sourceLineNo">042</span>        public static final String BEST_OF_THE_BEST              =      "best_of_the_best";     <a name="line.42"></a>
+<span class="sourceLineNo">043</span>        public static final String SUPPORT_DOCTRINE              =      "support_doctrine";     <a name="line.43"></a>
+<span class="sourceLineNo">044</span>     <a name="line.44"></a>
+<span class="sourceLineNo">045</span><a name="line.45"></a>
+<span class="sourceLineNo">046</span>        public static final String NAVIGATION                =  "navigation";             <a name="line.46"></a>
+<span class="sourceLineNo">047</span>        public static final String SENSORS                   =  "sensors";                <a name="line.47"></a>
+<span class="sourceLineNo">048</span>        public static final String GUNNERY_IMPLANTS          =  "gunnery_implants";       <a name="line.48"></a>
+<span class="sourceLineNo">049</span>        public static final String ENERGY_WEAPON_MASTERY     =  "energy_weapon_mastery";  <a name="line.49"></a>
+<span class="sourceLineNo">050</span>        public static final String ELECTRONIC_WARFARE        =  "electronic_warfare";     <a name="line.50"></a>
+<span class="sourceLineNo">051</span>        public static final String FLUX_REGULATION           =  "flux_regulation";        <a name="line.51"></a>
+<span class="sourceLineNo">052</span>        public static final String CYBERNETIC_AUGMENTATION   =  "cybernetic_augmentation";        <a name="line.52"></a>
+<span class="sourceLineNo">053</span>        public static final String PHASE_CORPS               =  "phase_corps";            <a name="line.53"></a>
+<span class="sourceLineNo">054</span>        public static final String NEURAL_LINK                           =      "neural_link";        <a name="line.54"></a>
+<span class="sourceLineNo">055</span>        public static final String AUTOMATED_SHIPS           =  "automated_ships";        <a name="line.55"></a>
+<span class="sourceLineNo">056</span><a name="line.56"></a>
+<span class="sourceLineNo">057</span>        public static final String BULK_TRANSPORT            =  "bulk_transport";         <a name="line.57"></a>
+<span class="sourceLineNo">058</span>        public static final String SALVAGING                 =  "salvaging";              <a name="line.58"></a>
+<span class="sourceLineNo">059</span>        public static final String FIELD_REPAIRS             =  "field_repairs";          <a name="line.59"></a>
+<span class="sourceLineNo">060</span>        public static final String POLARIZED_ARMOR           =  "polarized_armor";          <a name="line.60"></a>
+<span class="sourceLineNo">061</span>        public static final String ORDNANCE_EXPERTISE        =  "ordnance_expert";          <a name="line.61"></a>
+<span class="sourceLineNo">062</span>        public static final String CONTAINMENT_PROCEDURES    =  "containment_procedures"; <a name="line.62"></a>
+<span class="sourceLineNo">063</span>        public static final String MAKESHIFT_EQUIPMENT       =  "makeshift_equipment";    <a name="line.63"></a>
+<span class="sourceLineNo">064</span>        public static final String INDUSTRIAL_PLANNING       =  "industrial_planning";    <a name="line.64"></a>
+<span class="sourceLineNo">065</span>        public static final String DERELICT_CONTINGENT       =  "derelict_contingent";    <a name="line.65"></a>
+<span class="sourceLineNo">066</span>        public static final String HULL_RESTORATION                      =      "hull_restoration";<a name="line.66"></a>
+<span class="sourceLineNo">067</span>        <a name="line.67"></a>
+<span class="sourceLineNo">068</span>        <a name="line.68"></a>
+<span class="sourceLineNo">069</span>        public static final String OMEGA_ECM                             =      "omega_ecm";      <a name="line.69"></a>
+<span class="sourceLineNo">070</span>        public static final String HYPERCOGNITION                        =      "hypercognition";      <a name="line.70"></a>
+<span class="sourceLineNo">071</span><a name="line.71"></a>
+<span class="sourceLineNo">072</span><a name="line.72"></a>
+<span class="sourceLineNo">073</span>//      public static final String COORDINATED_MANEUVERS = "coordinated_maneuvers";<a name="line.73"></a>
+<span class="sourceLineNo">074</span>//      public static final String ELECTRONIC_WARFARE = "electronic_warfare";<a name="line.74"></a>
+<span class="sourceLineNo">075</span>//      public static final String OFFICER_MANAGEMENT = "officer_management";<a name="line.75"></a>
+<span class="sourceLineNo">076</span>//      public static final String FIGHTER_DOCTRINE = "fighter_doctrine";<a name="line.76"></a>
+<span class="sourceLineNo">077</span>//      public static final String CARRIER_COMMAND = "carrier_command";<a name="line.77"></a>
+<span class="sourceLineNo">078</span>//      public static final String WING_COMMANDER = "wing_commander";<a name="line.78"></a>
+<span class="sourceLineNo">079</span>//      public static final String STRIKE_COMMANDER = "strike_commander";<a name="line.79"></a>
+<span class="sourceLineNo">080</span>//      public static final String COMMAND_AND_CONTROL = "command_and_control";<a name="line.80"></a>
+<span class="sourceLineNo">081</span>//      public static final String ADVANCED_COUNTERMEASURES = "advanced_countermeasures";<a name="line.81"></a>
+<span class="sourceLineNo">082</span>//      public static final String DEFENSIVE_SYSTEMS = "defensive_systems";<a name="line.82"></a>
+<span class="sourceLineNo">083</span>//      public static final String IMPACT_MITIGATION = "impact_mitigation";<a name="line.83"></a>
+<span class="sourceLineNo">084</span>//      public static final String COMBAT_ENDURANCE = "combat_endurance";<a name="line.84"></a>
+<span class="sourceLineNo">085</span>//      <a name="line.85"></a>
+<span class="sourceLineNo">086</span>//      public static final String MISSILE_SPECIALIZATION = "missile_specialization";<a name="line.86"></a>
+<span class="sourceLineNo">087</span>//      public static final String ORDNANCE_EXPERT = "ordnance_expert";<a name="line.87"></a>
+<span class="sourceLineNo">088</span>//      public static final String DAMAGE_CONTROL = "damage_control";<a name="line.88"></a>
+<span class="sourceLineNo">089</span>//      public static final String TARGET_ANALYSIS = "target_analysis";<a name="line.89"></a>
+<span class="sourceLineNo">090</span>//      public static final String EVASIVE_ACTION = "evasive_action";<a name="line.90"></a>
+<span class="sourceLineNo">091</span>//      public static final String HELMSMANSHIP = "helmsmanship";<a name="line.91"></a>
+<span class="sourceLineNo">092</span>//      public static final String FLUX_MODULATION = "flux_modulation";<a name="line.92"></a>
+<span class="sourceLineNo">093</span>//      public static final String FLEET_LOGISTICS = "fleet_logistics";<a name="line.93"></a>
+<span class="sourceLineNo">094</span>//      public static final String GUNNERY_IMPLANTS = "gunnery_implants";<a name="line.94"></a>
+<span class="sourceLineNo">095</span>//      public static final String FLUX_DYNAMICS = "flux_dynamics";<a name="line.95"></a>
+<span class="sourceLineNo">096</span>//      public static final String NAVIGATION = "navigation";<a name="line.96"></a>
+<span class="sourceLineNo">097</span>//      <a name="line.97"></a>
+<span class="sourceLineNo">098</span>//      <a name="line.98"></a>
+<span class="sourceLineNo">099</span>//      public static final String APPLIED_PHYSICS = "applied_physics";<a name="line.99"></a>
+<span class="sourceLineNo">100</span>//      public static final String COMPUTER_SYSTEMS = "computer_systems";<a name="line.100"></a>
+<span class="sourceLineNo">101</span>//      public static final String CONSTRUCTION = "construction";<a name="line.101"></a>
+<span class="sourceLineNo">102</span>//      public static final String MECHANICAL_ENGINEERING = "mechanical_engineering";<a name="line.102"></a>
+<span class="sourceLineNo">103</span>//      public static final String ADVANCED_TACTICS = "advanced_tactics";<a name="line.103"></a>
+<span class="sourceLineNo">104</span>//      public static final String COMMAND_EXPERIENCE = "command_experience";<a name="line.104"></a>
+<span class="sourceLineNo">105</span>//      <a name="line.105"></a>
+<span class="sourceLineNo">106</span>//      <a name="line.106"></a>
+<span class="sourceLineNo">107</span>//      public static final String SAFETY_PROCEDURES = "safety_procedures";<a name="line.107"></a>
+<span class="sourceLineNo">108</span>//      public static final String RECOVERY_OPERATIONS = "recovery_operations";<a name="line.108"></a>
+<span class="sourceLineNo">109</span>//      public static final String FIELD_REPAIRS = "field_repairs";<a name="line.109"></a>
+<span class="sourceLineNo">110</span>//      public static final String SURVEYING = "surveying";<a name="line.110"></a>
+<span class="sourceLineNo">111</span>//      public static final String SALVAGING = "salvaging";<a name="line.111"></a>
+<span class="sourceLineNo">112</span>//      <a name="line.112"></a>
+<span class="sourceLineNo">113</span>//      public static final String PLANETARY_OPERATIONS = "planetary_operations";<a name="line.113"></a>
+<span class="sourceLineNo">114</span>//      public static final String INDUSTRIAL_PLANNING = "industrial_planning";<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        <a name="line.115"></a>
+<span class="sourceLineNo">116</span>        public static final String TAG_AI_CORE = "ai_core";<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        public static final String TAG_NPC_ONLY = "npc_only";<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        public static final String TAG_AI_CORE_ONLY = "ai_core_only";<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        public static final String TAG_DEPRECATED = "deprecated";<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        public static final String TAG_CARRIER = "carrier";<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        public static final String TAG_PHASE = "phase";<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        public static final String TAG_PLAYER_ONLY = "player_only";<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        public static final String TAG_ELITE_PLAYER_ONLY = "elite_player_only";<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        public static final String TAG_ENERGY_WEAPONS = "energy_weapons";<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        public static final String TAG_BALLISTIC_WEAPONS = "ballistic_weapons";<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        public static final String TAG_MISSILE_WEAPONS = "missile_weapons";<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        public static final String TAG_ACTIVE_DEFENSES = "active_defenses";<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        public static final String TAG_SPEC = "spec";<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        <a name="line.129"></a>
+<span class="sourceLineNo">130</span>        <a name="line.130"></a>
+<span class="sourceLineNo">131</span>}<a name="line.131"></a>
+<span class="sourceLineNo">132</span><a name="line.132"></a>
+<span class="sourceLineNo">133</span><a name="line.133"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

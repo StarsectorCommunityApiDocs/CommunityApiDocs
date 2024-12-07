@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.campaign;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.util.List;<a name="line.3"></a>
+<span class="sourceLineNo">004</span><a name="line.4"></a>
+<span class="sourceLineNo">005</span>import org.lwjgl.util.vector.Vector2f;<a name="line.5"></a>
+<span class="sourceLineNo">006</span><a name="line.6"></a>
+<span class="sourceLineNo">007</span>import com.fs.starfarer.api.EveryFrameScript;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.Script;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.campaign.CampaignEventListener.FleetDespawnReason;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.campaign.ai.FleetAssignmentDataAPI;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.campaign.listeners.FleetEventListener;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.campaign.rules.MemoryAPI;<a name="line.12"></a>
+<span class="sourceLineNo">013</span><a name="line.13"></a>
+<span class="sourceLineNo">014</span>public interface FleetOrStubAPI {<a name="line.14"></a>
+<span class="sourceLineNo">015</span><a name="line.15"></a>
+<span class="sourceLineNo">016</span>        String getId();<a name="line.16"></a>
+<span class="sourceLineNo">017</span>        LocationAPI getContainingLocation();<a name="line.17"></a>
+<span class="sourceLineNo">018</span>        Vector2f getLocation();<a name="line.18"></a>
+<span class="sourceLineNo">019</span>        FleetAssignmentDataAPI getCurrentAssignment();<a name="line.19"></a>
+<span class="sourceLineNo">020</span>        List&lt;FleetAssignmentDataAPI&gt; getAssignmentsCopy();<a name="line.20"></a>
+<span class="sourceLineNo">021</span>        void addAssignment(FleetAssignment assignment, SectorEntityToken target,<a name="line.21"></a>
+<span class="sourceLineNo">022</span>                        float maxDurationInDays, Script onCompletion);<a name="line.22"></a>
+<span class="sourceLineNo">023</span>        void addAssignment(FleetAssignment assignment, SectorEntityToken target,<a name="line.23"></a>
+<span class="sourceLineNo">024</span>                        float maxDurationInDays, String actionText, Script onCompletion);<a name="line.24"></a>
+<span class="sourceLineNo">025</span>        void addAssignment(FleetAssignment assignment, SectorEntityToken target,<a name="line.25"></a>
+<span class="sourceLineNo">026</span>                        float maxDurationInDays, String actionText);<a name="line.26"></a>
+<span class="sourceLineNo">027</span>        void addAssignmentAtStart(FleetAssignment assignment,<a name="line.27"></a>
+<span class="sourceLineNo">028</span>                        SectorEntityToken target, float maxDurationInDays,<a name="line.28"></a>
+<span class="sourceLineNo">029</span>                        String actionText, Script onCompletion);<a name="line.29"></a>
+<span class="sourceLineNo">030</span>        void addAssignmentAtStart(FleetAssignment assignment,<a name="line.30"></a>
+<span class="sourceLineNo">031</span>                        SectorEntityToken target, float maxDurationInDays,<a name="line.31"></a>
+<span class="sourceLineNo">032</span>                        Script onCompletion);<a name="line.32"></a>
+<span class="sourceLineNo">033</span>        void addAssignment(FleetAssignment assignment, SectorEntityToken target, float maxDurationInDays);<a name="line.33"></a>
+<span class="sourceLineNo">034</span>        boolean isCurrentAssignment(FleetAssignment assignment);<a name="line.34"></a>
+<span class="sourceLineNo">035</span>        void removeFirstAssignmentIfItIs(FleetAssignment assignment);<a name="line.35"></a>
+<span class="sourceLineNo">036</span>        void removeFirstAssignment();<a name="line.36"></a>
+<span class="sourceLineNo">037</span>        void clearAssignments();<a name="line.37"></a>
+<span class="sourceLineNo">038</span>        MemoryAPI getMemoryWithoutUpdate();<a name="line.38"></a>
+<span class="sourceLineNo">039</span>        <a name="line.39"></a>
+<span class="sourceLineNo">040</span>        void despawn();<a name="line.40"></a>
+<span class="sourceLineNo">041</span>        void despawn(FleetDespawnReason reason, Object param);<a name="line.41"></a>
+<span class="sourceLineNo">042</span>        boolean isFleet();<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        //boolean isStub();<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        void addScript(EveryFrameScript script);<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        List&lt;FleetEventListener&gt; getEventListeners();<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        void addEventListener(FleetEventListener listener);<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        void removeEventListener(FleetEventListener listener);<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        List&lt;EveryFrameScript&gt; getScripts();<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        Vector2f getLocationInHyperspace();<a name="line.49"></a>
+<span class="sourceLineNo">050</span><a name="line.50"></a>
+<span class="sourceLineNo">051</span>        <a name="line.51"></a>
+<span class="sourceLineNo">052</span>        <a name="line.52"></a>
+<span class="sourceLineNo">053</span>}<a name="line.53"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.loading;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
+<span class="sourceLineNo">004</span><a name="line.4"></a>
+<span class="sourceLineNo">005</span>import org.json.JSONObject;<a name="line.5"></a>
+<span class="sourceLineNo">006</span><a name="line.6"></a>
+<span class="sourceLineNo">007</span>import com.fs.starfarer.api.combat.CollisionClass;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.combat.DamageAPI;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.combat.MutableShipStatsAPI;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.combat.OnFireEffectPlugin;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.combat.OnHitEffectPlugin;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.combat.WeaponAPI;<a name="line.12"></a>
+<span class="sourceLineNo">013</span><a name="line.13"></a>
+<span class="sourceLineNo">014</span>public interface ProjectileSpecAPI {<a name="line.14"></a>
+<span class="sourceLineNo">015</span>        String getOnHitClassName();<a name="line.15"></a>
+<span class="sourceLineNo">016</span>        void setOnHitClassName(String effectClassName);<a name="line.16"></a>
+<span class="sourceLineNo">017</span>        OnHitEffectPlugin getOnHitEffect();<a name="line.17"></a>
+<span class="sourceLineNo">018</span>        String getId();<a name="line.18"></a>
+<span class="sourceLineNo">019</span>        float getGlowRadius();<a name="line.19"></a>
+<span class="sourceLineNo">020</span>        void setGlowRadius(float glowRadius);<a name="line.20"></a>
+<span class="sourceLineNo">021</span>        Color getGlowColor();<a name="line.21"></a>
+<span class="sourceLineNo">022</span>        void setGlowColor(Color glowColor);<a name="line.22"></a>
+<span class="sourceLineNo">023</span>        float getHitGlowRadius();<a name="line.23"></a>
+<span class="sourceLineNo">024</span>        void setHitGlowRadius(float hitGlowSize);<a name="line.24"></a>
+<span class="sourceLineNo">025</span>        String getFringeTex();<a name="line.25"></a>
+<span class="sourceLineNo">026</span>        void setFringeTex(String fringeTex);<a name="line.26"></a>
+<span class="sourceLineNo">027</span>        String getCoreTex();<a name="line.27"></a>
+<span class="sourceLineNo">028</span>        void setCoreTex(String coreTex);<a name="line.28"></a>
+<span class="sourceLineNo">029</span>        Color getFringeColor();<a name="line.29"></a>
+<span class="sourceLineNo">030</span>        void setFringeColor(Color fringeColor);<a name="line.30"></a>
+<span class="sourceLineNo">031</span>        Color getCoreColor();<a name="line.31"></a>
+<span class="sourceLineNo">032</span>        void setCoreColor(Color coreColor);<a name="line.32"></a>
+<span class="sourceLineNo">033</span>        boolean isDarkCore();<a name="line.33"></a>
+<span class="sourceLineNo">034</span>        void setDarkCore(boolean darkCore);<a name="line.34"></a>
+<span class="sourceLineNo">035</span>        String getBulletSpriteName();<a name="line.35"></a>
+<span class="sourceLineNo">036</span>        void setBulletSpriteName(String bulletSpriteName);<a name="line.36"></a>
+<span class="sourceLineNo">037</span>        float getPixelsPerTexel();<a name="line.37"></a>
+<span class="sourceLineNo">038</span>        void setPixelsPerTexel(float pixelsPerTexel);<a name="line.38"></a>
+<span class="sourceLineNo">039</span>        float getTextureScrollSpeed();<a name="line.39"></a>
+<span class="sourceLineNo">040</span>        void setTextureScrollSpeed(float textureScrollSpeed);<a name="line.40"></a>
+<span class="sourceLineNo">041</span>        float getLength();<a name="line.41"></a>
+<span class="sourceLineNo">042</span>        void setLength(float length);<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        float getMaxRange();<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        void setMaxRange(float maxRange);<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        <a name="line.45"></a>
+<span class="sourceLineNo">046</span>        /**<a name="line.46"></a>
+<span class="sourceLineNo">047</span>         * Can pass in shipStats == null to get the base value.<a name="line.47"></a>
+<span class="sourceLineNo">048</span>         * @param shipStats<a name="line.48"></a>
+<span class="sourceLineNo">049</span>         * @param weapon<a name="line.49"></a>
+<span class="sourceLineNo">050</span>         * @return<a name="line.50"></a>
+<span class="sourceLineNo">051</span>         */<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        float getMoveSpeed(MutableShipStatsAPI shipStats, WeaponAPI weapon);<a name="line.52"></a>
+<span class="sourceLineNo">053</span>        void setMoveSpeed(float moveSpeed);<a name="line.53"></a>
+<span class="sourceLineNo">054</span>        float getFadeTime();<a name="line.54"></a>
+<span class="sourceLineNo">055</span>        void setFadeTime(float fadeTime);<a name="line.55"></a>
+<span class="sourceLineNo">056</span>        float getImpactMass();<a name="line.56"></a>
+<span class="sourceLineNo">057</span>        void setImpactStrength(float impactMass);<a name="line.57"></a>
+<span class="sourceLineNo">058</span>        CollisionClass getCollisionClass();<a name="line.58"></a>
+<span class="sourceLineNo">059</span>        void setCollisionClass(CollisionClass collisionClass);<a name="line.59"></a>
+<span class="sourceLineNo">060</span>        CollisionClass getCollisionClassIfByFighter();<a name="line.60"></a>
+<span class="sourceLineNo">061</span>        void setCollisionClassIfByFighter(CollisionClass collisionClassIfByFighter);<a name="line.61"></a>
+<span class="sourceLineNo">062</span>        DamageAPI getDamage();<a name="line.62"></a>
+<span class="sourceLineNo">063</span>        float getWidth();<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        void setWidth(float width);<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        ProjectileSpawnType getSpawnType();<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        void setSpawnType(ProjectileSpawnType style);<a name="line.66"></a>
+<span class="sourceLineNo">067</span>        float getMaxHealth();<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        void setMaxHealth(float maxHealth);<a name="line.68"></a>
+<span class="sourceLineNo">069</span>        boolean isPassThroughMissiles();<a name="line.69"></a>
+<span class="sourceLineNo">070</span>        void setPassThroughMissiles(boolean passThroughMissiles);<a name="line.70"></a>
+<span class="sourceLineNo">071</span>        JSONObject getBehaviorJSON();<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        int getDarkCoreIter();<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        void setDarkCoreIter(int darkCoreIter);<a name="line.73"></a>
+<span class="sourceLineNo">074</span>        int getDarkFringeIter();<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        void setDarkFringeIter(int darkFringeIter);<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        float getCoreWidthMult();<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        void setCoreWidthMult(float coreWidthMult);<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        void setOnFireClassName(String onFireClassName);<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        String getOnFireClassName();<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        OnFireEffectPlugin getOnFireEffect();<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        void setNoNonShieldImpactSounds(boolean noNonShieldImpactSounds);<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        void setNoImpactSounds(boolean noImpactSounds);<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        boolean isNoShieldImpactSounds();<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        void setNoShieldImpactSounds(boolean noShieldImpactSounds);<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        boolean isNoNonShieldImpactSounds();<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        boolean isNoImpactSounds();<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        boolean isPassThroughFighters();<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        void setPassThroughFighters(boolean passThroughFighters);<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        boolean isPassThroughFightersOnlyWhenDestroyed();<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        void setPassThroughFightersOnlyWhenDestroyed(boolean passThroughFightersOnlyWhenDestroyed);<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        boolean isApplyOnHitEffectWhenPassThrough();<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        void setApplyOnHitEffectWhenPassThrough(boolean applyOnHitEffectWhenPassThrough);<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        ShotBehaviorSpecAPI getBehaviorSpec();<a name="line.93"></a>
+<span class="sourceLineNo">094</span><a name="line.94"></a>
+<span class="sourceLineNo">095</span>}<a name="line.95"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

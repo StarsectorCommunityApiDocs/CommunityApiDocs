@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.rulecmd;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import java.util.List;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import java.util.Map;<a name="line.5"></a>
+<span class="sourceLineNo">006</span><a name="line.6"></a>
+<span class="sourceLineNo">007</span>import com.fs.starfarer.api.Global;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.campaign.CampaignFleetAPI;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.campaign.InteractionDialogAPI;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.campaign.rules.MemoryAPI;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.fleet.FleetMemberAPI;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.util.Misc.Token;<a name="line.12"></a>
+<span class="sourceLineNo">013</span><a name="line.13"></a>
+<span class="sourceLineNo">014</span>/**<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * <a name="line.15"></a>
+<span class="sourceLineNo">016</span> * RepairAll &lt;useSupplies, true by default&gt;<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * Copyright 2017 Fractal Softworks, LLC<a name="line.18"></a>
+<span class="sourceLineNo">019</span> */<a name="line.19"></a>
+<span class="sourceLineNo">020</span>public class RepairAll extends BaseCommandPlugin {<a name="line.20"></a>
+<span class="sourceLineNo">021</span><a name="line.21"></a>
+<span class="sourceLineNo">022</span>        private static final Color HIGHLIGHT_COLOR = Global.getSettings().getColor("buttonShortcut");<a name="line.22"></a>
+<span class="sourceLineNo">023</span>        <a name="line.23"></a>
+<span class="sourceLineNo">024</span>        public boolean execute(String ruleId, InteractionDialogAPI dialog, List&lt;Token&gt; params, Map&lt;String, MemoryAPI&gt; memoryMap) {<a name="line.24"></a>
+<span class="sourceLineNo">025</span>                CampaignFleetAPI playerFleet = Global.getSector().getPlayerFleet();<a name="line.25"></a>
+<span class="sourceLineNo">026</span>                <a name="line.26"></a>
+<span class="sourceLineNo">027</span>//              TextPanelAPI textPanel = dialog.getTextPanel();<a name="line.27"></a>
+<span class="sourceLineNo">028</span>                <a name="line.28"></a>
+<span class="sourceLineNo">029</span>//              textPanel.addParagraph(getString("repair"));<a name="line.29"></a>
+<span class="sourceLineNo">030</span>                <a name="line.30"></a>
+<span class="sourceLineNo">031</span>                boolean useSupplies = true;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>                if (params.size() &gt;= 1) {<a name="line.32"></a>
+<span class="sourceLineNo">033</span>                        useSupplies = params.get(0).getBoolean(memoryMap);<a name="line.33"></a>
+<span class="sourceLineNo">034</span>                }<a name="line.34"></a>
+<span class="sourceLineNo">035</span>                <a name="line.35"></a>
+<span class="sourceLineNo">036</span>                float supplies = playerFleet.getCargo().getSupplies();<a name="line.36"></a>
+<span class="sourceLineNo">037</span>                float needed = playerFleet.getLogistics().getTotalRepairAndRecoverySupplyCost();<a name="line.37"></a>
+<span class="sourceLineNo">038</span>                if (needed &gt; 0) needed = Math.max(1, Math.round(needed));<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                <a name="line.39"></a>
+<span class="sourceLineNo">040</span>//              memoryMap.get("global").set("$repairSupplyCost", (int) needed);<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                <a name="line.41"></a>
+<span class="sourceLineNo">042</span>//              textPanel.highlightLastInLastPara("" + (int) needed, HIGHLIGHT_COLOR);<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                <a name="line.43"></a>
+<span class="sourceLineNo">044</span>                for (FleetMemberAPI member : playerFleet.getFleetData().getMembersListCopy()) {<a name="line.44"></a>
+<span class="sourceLineNo">045</span>                        if (member.canBeRepaired() || (member.isFighterWing() &amp;&amp; !member.getRepairTracker().isSuspendRepairs())) {<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                                member.getStatus().repairFully();<a name="line.46"></a>
+<span class="sourceLineNo">047</span>                                float max = member.getRepairTracker().getMaxCR();<a name="line.47"></a>
+<span class="sourceLineNo">048</span>                                float curr = member.getRepairTracker().getBaseCR();<a name="line.48"></a>
+<span class="sourceLineNo">049</span>                                if (max &gt; curr) {<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                                        member.getRepairTracker().applyCREvent(max - curr, "Repaired at dockyard");<a name="line.50"></a>
+<span class="sourceLineNo">051</span>                                }<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                        }<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                }<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                <a name="line.54"></a>
+<span class="sourceLineNo">055</span>                if (needed &gt; 0 &amp;&amp; useSupplies) {<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                        playerFleet.getCargo().removeSupplies(needed);<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                        playerFleet.getLogistics().updateRepairUtilizationForUI();<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                }<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                <a name="line.59"></a>
+<span class="sourceLineNo">060</span>                return true;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>        }<a name="line.61"></a>
+<span class="sourceLineNo">062</span>        <a name="line.62"></a>
+<span class="sourceLineNo">063</span>        <a name="line.63"></a>
+<span class="sourceLineNo">064</span>        private String getString(String id) {<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                CampaignFleetAPI playerFleet = Global.getSector().getPlayerFleet();<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                <a name="line.66"></a>
+<span class="sourceLineNo">067</span>                String str = Global.getSettings().getString("stationInteractionDialog", id);<a name="line.67"></a>
+<span class="sourceLineNo">068</span><a name="line.68"></a>
+<span class="sourceLineNo">069</span>                float needed = playerFleet.getLogistics().getTotalRepairAndRecoverySupplyCost();<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                float supplies = playerFleet.getCargo().getSupplies();<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                str = str.replaceAll("\\$supplies", "" + (int) supplies);<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                str = str.replaceAll("\\$repairSupplyCost", "" + (int) Math.ceil(needed));<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                return str;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>        }<a name="line.74"></a>
+<span class="sourceLineNo">075</span>}<a name="line.75"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,380 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.util.Random;<a name="line.3"></a>
+<span class="sourceLineNo">004</span><a name="line.4"></a>
+<span class="sourceLineNo">005</span>import org.lwjgl.util.vector.Vector2f;<a name="line.5"></a>
+<span class="sourceLineNo">006</span><a name="line.6"></a>
+<span class="sourceLineNo">007</span>import com.fs.starfarer.api.campaign.CampaignFleetAPI;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.campaign.FleetAssignment;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.campaign.SectorEntityToken;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.campaign.TextPanelAPI;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.campaign.ai.FleetAssignmentDataAPI;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.campaign.rules.MemoryAPI;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.combat.MutableStat.StatMod;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.impl.campaign.ghosts.BaseSensorGhost;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.impl.campaign.ghosts.GBGoInDirection;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.impl.campaign.ids.MemFlags;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.impl.campaign.ids.Tags;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import com.fs.starfarer.api.impl.campaign.intel.BaseIntelPlugin;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import com.fs.starfarer.api.ui.TooltipMakerAPI;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import com.fs.starfarer.api.util.Misc;<a name="line.20"></a>
+<span class="sourceLineNo">021</span><a name="line.21"></a>
+<span class="sourceLineNo">022</span>public class SensorArrayEntityPlugin extends BaseCampaignObjectivePlugin {<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span>        public static float SENSOR_BONUS = 700f;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>        public static float SENSOR_BONUS_MAKESHIFT = 400f;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>        //public static float SENSOR_PENALTY_MULT_FROM_HACK = 0.75f;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>        <a name="line.27"></a>
+<span class="sourceLineNo">028</span>        public void init(SectorEntityToken entity, Object pluginParams) {<a name="line.28"></a>
+<span class="sourceLineNo">029</span>                super.init(entity, pluginParams);<a name="line.29"></a>
+<span class="sourceLineNo">030</span>                readResolve();<a name="line.30"></a>
+<span class="sourceLineNo">031</span>        }<a name="line.31"></a>
+<span class="sourceLineNo">032</span>        <a name="line.32"></a>
+<span class="sourceLineNo">033</span>        Object readResolve() {<a name="line.33"></a>
+<span class="sourceLineNo">034</span>                return this;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>        }<a name="line.35"></a>
+<span class="sourceLineNo">036</span>        <a name="line.36"></a>
+<span class="sourceLineNo">037</span>        public void advance(float amount) {<a name="line.37"></a>
+<span class="sourceLineNo">038</span>                if (entity.getContainingLocation() == null || entity.isInHyperspace()) return;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                //if (isReset()) return;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                boolean reset = isReset();<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                <a name="line.41"></a>
+<span class="sourceLineNo">042</span>                String id = getModId();<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                for (CampaignFleetAPI fleet : entity.getContainingLocation().getFleets()) {<a name="line.43"></a>
+<span class="sourceLineNo">044</span>                        if (fleet.isInHyperspaceTransition()) continue;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>                        <a name="line.45"></a>
+<span class="sourceLineNo">046</span>                        if (fleet.getFaction() == entity.getFaction() || (isHacked() &amp;&amp; fleet.getFaction().isPlayerFaction())) {<a name="line.46"></a>
+<span class="sourceLineNo">047</span>                                if (reset &amp;&amp; !fleet.getFaction().isPlayerFaction()) {<a name="line.47"></a>
+<span class="sourceLineNo">048</span>                                        respondToFalseSensorReadings(fleet);<a name="line.48"></a>
+<span class="sourceLineNo">049</span>                                } else if (reset &amp;&amp; fleet.isPlayerFleet()) {<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                                        spawnPlayerSensorReading(fleet);<a name="line.50"></a>
+<span class="sourceLineNo">051</span>                                }<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                                <a name="line.52"></a>
+<span class="sourceLineNo">053</span>                                String desc = "Sensor array";<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                                float bonus = SENSOR_BONUS;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                                if (isMakeshift()) {<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                                        desc = "Makeshift sensor array";<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                                        bonus = SENSOR_BONUS_MAKESHIFT;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                                }<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                                <a name="line.59"></a>
+<span class="sourceLineNo">060</span>//                              if (fleet.getFaction() == entity.getFaction() &amp;&amp; isHacked() &amp;&amp; !entity.getFaction().isPlayerFaction()) {<a name="line.60"></a>
+<span class="sourceLineNo">061</span>//                                      fleet.getStats().addTemporaryModMult(0.1f, id,<a name="line.61"></a>
+<span class="sourceLineNo">062</span>//                                                      desc, SENSOR_PENALTY_MULT_FROM_HACK, <a name="line.62"></a>
+<span class="sourceLineNo">063</span>//                                                      fleet.getStats().getSensorRangeMod());<a name="line.63"></a>
+<span class="sourceLineNo">064</span>//                              }<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                                <a name="line.65"></a>
+<span class="sourceLineNo">066</span>                                StatMod curr = fleet.getStats().getSensorRangeMod().getFlatBonus(id);<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                                if (curr == null || curr.value &lt;= bonus) {<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                                        fleet.getStats().addTemporaryModFlat(0.1f, id,<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                                                        desc, bonus, <a name="line.69"></a>
+<span class="sourceLineNo">070</span>                                                        fleet.getStats().getSensorRangeMod());<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                                }<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                        }<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                }<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                <a name="line.74"></a>
+<span class="sourceLineNo">075</span>        }<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        <a name="line.76"></a>
+<span class="sourceLineNo">077</span>        protected boolean isMakeshift() {<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                return entity.hasTag(Tags.MAKESHIFT);<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        }<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        <a name="line.80"></a>
+<span class="sourceLineNo">081</span>        public void printEffect(TooltipMakerAPI text, float pad) {<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                int bonus = (int) SENSOR_BONUS;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                if (isMakeshift()) {<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                        bonus = (int) SENSOR_BONUS_MAKESHIFT;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                }<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                <a name="line.86"></a>
+<span class="sourceLineNo">087</span>                text.addPara(BaseIntelPlugin.INDENT + "%s sensor range for all same-faction fleets in system",<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                                pad, Misc.getHighlightColor(), "+" + bonus);<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                if (isReset()) {<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                        //text.addPara(BaseIntelPlugin.INDENT + "Auto-calibrating after factory reset; non-functional", 3f);<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                        text.addPara(BaseIntelPlugin.INDENT + "Generating false readings", 3f);<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                }<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                <a name="line.93"></a>
+<span class="sourceLineNo">094</span>//              text.addPara(BaseIntelPlugin.INDENT + "%s sensor range to same-faction fleets when hacked",<a name="line.94"></a>
+<span class="sourceLineNo">095</span>//                              0f, Misc.getHighlightColor(), "-" + (int) Math.round((1f - SENSOR_PENALTY_MULT_FROM_HACK) * 100f) + "%");<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        }<a name="line.96"></a>
+<span class="sourceLineNo">097</span><a name="line.97"></a>
+<span class="sourceLineNo">098</span>        public void printNonFunctionalAndHackDescription(TextPanelAPI text) {<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                if (entity.getMemoryWithoutUpdate().getBoolean(MemFlags.OBJECTIVE_NON_FUNCTIONAL)) {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                        text.addPara("This one, however, does not appear to be transmitting a sensor telemetry broadcast. The cause of its lack of function is unknown.");<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                }<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                if (isHacked()) {<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                        text.addPara("You have a hack running on this sensor array.");<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                }<a name="line.104"></a>
+<span class="sourceLineNo">105</span>//              if (isReset()) {<a name="line.105"></a>
+<span class="sourceLineNo">106</span>//                      text.addPara("This sensor array is auto-calibrating after a factory reset and is effectively non-functional.");<a name="line.106"></a>
+<span class="sourceLineNo">107</span>//              }<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        }<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        <a name="line.109"></a>
+<span class="sourceLineNo">110</span>        <a name="line.110"></a>
+<span class="sourceLineNo">111</span>        <a name="line.111"></a>
+<span class="sourceLineNo">112</span>        @Override<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        public void addHackStatusToTooltip(TooltipMakerAPI text, float pad) {<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                int bonus = (int) SENSOR_BONUS;<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                if (isMakeshift()) {<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                        bonus = (int) SENSOR_BONUS_MAKESHIFT;<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                }<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                text.addPara("%s sensor range for in-system fleets",<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                                pad, Misc.getHighlightColor(), "+" + bonus);<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                <a name="line.120"></a>
+<span class="sourceLineNo">121</span>//              text.addPara("%s%% sensor range when hacked",<a name="line.121"></a>
+<span class="sourceLineNo">122</span>//                              pad, Misc.getHighlightColor(), "-" + (int) Math.round((1f - SENSOR_PENALTY_MULT_FROM_HACK) * 100f));<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                <a name="line.123"></a>
+<span class="sourceLineNo">124</span>                super.addHackStatusToTooltip(text, pad);<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        }<a name="line.125"></a>
+<span class="sourceLineNo">126</span><a name="line.126"></a>
+<span class="sourceLineNo">127</span>        protected String getModId() {<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                return "sensor_array";<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        }<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        <a name="line.130"></a>
+<span class="sourceLineNo">131</span><a name="line.131"></a>
+<span class="sourceLineNo">132</span>        public static String GHOST_RESPONSE = "ghost_response"; // custom value added to assignments so we know which to clear<a name="line.132"></a>
+<span class="sourceLineNo">133</span><a name="line.133"></a>
+<span class="sourceLineNo">134</span>        protected void spawnPlayerSensorReading(CampaignFleetAPI fleet) {<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                Random random = Misc.random;<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                <a name="line.136"></a>
+<span class="sourceLineNo">137</span>                MemoryAPI mem = fleet.getMemoryWithoutUpdate();<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                if (mem.getBoolean(MemFlags.FLEET_NOT_CHASING_GHOST)) {<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                        return;<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                }<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                if (mem.getBoolean(MemFlags.FLEET_CHASING_GHOST)) {<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                        return;<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                }<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                boolean spawnReading = random.nextFloat() &lt; 0.5f;<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                //spawnReading = true;<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                if (!spawnReading) {<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                        mem.set(MemFlags.FLEET_NOT_CHASING_GHOST, true, 1f + 2f * random.nextFloat());<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                        return;<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                }<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                <a name="line.150"></a>
+<span class="sourceLineNo">151</span>                float dur = 3f + 3f + random.nextFloat();<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                mem.set(MemFlags.FLEET_NOT_CHASING_GHOST, true, dur * 0.5f);<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                <a name="line.153"></a>
+<span class="sourceLineNo">154</span>                BaseSensorGhost g = new BaseSensorGhost(null, 0);<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                <a name="line.155"></a>
+<span class="sourceLineNo">156</span>                float r = random.nextFloat();<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                int maxBurn;<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                if (r &lt; 0.25f) {<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                        g.initEntity(g.genMediumSensorProfile(), g.genSmallRadius(), 0, fleet.getContainingLocation());<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                        maxBurn = 9 + random.nextInt(3);<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                } else if (r &lt; 0.6f) {<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                        g.initEntity(g.genLargeSensorProfile(), g.genMediumRadius(), 0, fleet.getContainingLocation());<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                        maxBurn = 8 + random.nextInt(3);<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                } else {<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                        g.initEntity(g.genLargeSensorProfile(), g.genLargeRadius(), 0, fleet.getContainingLocation());<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                        maxBurn = 7 + random.nextInt(3);<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                }<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                <a name="line.168"></a>
+<span class="sourceLineNo">169</span>                <a name="line.169"></a>
+<span class="sourceLineNo">170</span>                if (!g.placeNearPlayer()) {<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                        return;<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                }<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                //g.setDespawnRange(200f);<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                <a name="line.174"></a>
+<span class="sourceLineNo">175</span>                <a name="line.175"></a>
+<span class="sourceLineNo">176</span>                float speed = Misc.getSpeedForBurnLevel(maxBurn);<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                float accelMult = speed / Misc.getSpeedForBurnLevel(20f);<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                if (accelMult &lt; 0.1f) accelMult = 0.1f;<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                g.setAccelMult(1f/ accelMult);<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                <a name="line.180"></a>
+<span class="sourceLineNo">181</span>                float dir = Misc.getAngleInDegrees(g.getEntity().getLocation(), fleet.getLocation());<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                float sign = Math.signum(random.nextFloat() - 0.5f);<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                dir += sign * (30f + random.nextFloat() * 60f);<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                <a name="line.184"></a>
+<span class="sourceLineNo">185</span>                <a name="line.185"></a>
+<span class="sourceLineNo">186</span>                g.addBehavior(new GBGoInDirection(dur, dir, maxBurn));<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                <a name="line.187"></a>
+<span class="sourceLineNo">188</span>                fleet.getContainingLocation().addScript(g);<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                <a name="line.189"></a>
+<span class="sourceLineNo">190</span>        }<a name="line.190"></a>
+<span class="sourceLineNo">191</span>        <a name="line.191"></a>
+<span class="sourceLineNo">192</span>        protected void respondToFalseSensorReadings(CampaignFleetAPI fleet) {<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                if (fleet.isStationMode()) return;<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                if (fleet.getAI() == null) {<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                        return;<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                }<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                if (fleet.getAI().getAssignmentsCopy() == null) {<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                        return;<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                }<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                <a name="line.200"></a>
+<span class="sourceLineNo">201</span>                MemoryAPI mem = fleet.getMemoryWithoutUpdate();<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                if (mem.getBoolean(MemFlags.FLEET_NOT_CHASING_GHOST)) {<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                        return;<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                }<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                if (mem.getBoolean(MemFlags.FLEET_CHASING_GHOST)) {<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                        return;<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                }<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                if (mem.getBoolean(MemFlags.FLEET_BUSY)) {<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                        return;<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                }<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                boolean patrol = mem.getBoolean(MemFlags.MEMORY_KEY_PATROL_FLEET);<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                boolean warFleet = mem.getBoolean(MemFlags.MEMORY_KEY_WAR_FLEET);<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                boolean pirate = mem.getBoolean(MemFlags.MEMORY_KEY_PIRATE);<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                if (!patrol &amp;&amp; !warFleet &amp;&amp; !pirate) {<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                        return;<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                }<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                <a name="line.217"></a>
+<span class="sourceLineNo">218</span>                Random random = (Random) mem.get(MemFlags.FLEET_CHASING_GHOST_RANDOM);<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                if (random == null) {<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                        random = Misc.getRandom(Misc.getSalvageSeed(fleet), 7);<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                        mem.set(MemFlags.FLEET_CHASING_GHOST_RANDOM, random, 30f);<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                }<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                <a name="line.223"></a>
+<span class="sourceLineNo">224</span>                boolean willRespond = random.nextFloat() &lt; 0.75f;<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                //willRespond = true;<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                if (!willRespond) {<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                        mem.set(MemFlags.FLEET_NOT_CHASING_GHOST, true, 1f + 1f * random.nextFloat());<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                        Misc.setFlagWithReason(fleet.getMemoryWithoutUpdate(), <a name="line.228"></a>
+<span class="sourceLineNo">229</span>                                           MemFlags.FLEET_CHASING_GHOST, GHOST_RESPONSE, false, 0f);<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                        for (FleetAssignmentDataAPI curr : fleet.getAI().getAssignmentsCopy()) {<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                                if (GHOST_RESPONSE.equals(curr.getCustom())) {<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                                        fleet.getAI().removeAssignment(curr);<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                                }<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                        }<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                        return;<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                }<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                <a name="line.237"></a>
+<span class="sourceLineNo">238</span>                float chaseDur = (2.5f + (float) Math.random()) * 2f;<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                Misc.setFlagWithReason(fleet.getMemoryWithoutUpdate(), <a name="line.239"></a>
+<span class="sourceLineNo">240</span>                                MemFlags.FLEET_CHASING_GHOST, GHOST_RESPONSE, true, chaseDur);<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                mem.set(MemFlags.FLEET_BUSY, true, chaseDur);<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                mem.set(MemFlags.FLEET_NOT_CHASING_GHOST, true, chaseDur + 8f + 4f * random.nextFloat());<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                <a name="line.243"></a>
+<span class="sourceLineNo">244</span>                float angle = Misc.getAngleInDegrees(fleet.getLocation()); // away from center of system;<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                float arc = 270f;<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                angle += arc/2f - arc * random.nextFloat();<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                float dist = 3000f + 3000f * random.nextFloat();<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                Vector2f loc = Misc.getUnitVectorAtDegreeAngle(angle);<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                loc.scale(dist);<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                Vector2f.add(loc, fleet.getLocation(), loc);<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                <a name="line.251"></a>
+<span class="sourceLineNo">252</span><a name="line.252"></a>
+<span class="sourceLineNo">253</span>                String actionText = "investigating anomalous sensor reading";<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                <a name="line.254"></a>
+<span class="sourceLineNo">255</span>                SectorEntityToken target = fleet.getContainingLocation().createToken(loc);<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                fleet.addAssignmentAtStart(FleetAssignment.PATROL_SYSTEM, target, 3f, actionText, null);<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                FleetAssignmentDataAPI curr = fleet.getCurrentAssignment();<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                if (curr != null) {<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                        curr.setCustom(GHOST_RESPONSE);<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                }<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                <a name="line.261"></a>
+<span class="sourceLineNo">262</span>                if (dist &gt; 2000f) {<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                        fleet.addAssignmentAtStart(FleetAssignment.GO_TO_LOCATION, target, 3f, actionText, null);<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                        curr = fleet.getCurrentAssignment();<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                        if (curr != null) {<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                                curr.setCustom(GHOST_RESPONSE);<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                        }<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                }<a name="line.268"></a>
+<span class="sourceLineNo">269</span>        }<a name="line.269"></a>
+<span class="sourceLineNo">270</span>        <a name="line.270"></a>
+<span class="sourceLineNo">271</span>//      protected void unrespond(CampaignFleetAPI fleet) {<a name="line.271"></a>
+<span class="sourceLineNo">272</span>//              Misc.setFlagWithReason(fleet.getMemoryWithoutUpdate(), <a name="line.272"></a>
+<span class="sourceLineNo">273</span>//                                                         MemFlags.FLEET_CHASING_GHOST, GHOST_RESPONSE, false, 0f);<a name="line.273"></a>
+<span class="sourceLineNo">274</span>//              for (FleetAssignmentDataAPI curr : fleet.getAI().getAssignmentsCopy()) {<a name="line.274"></a>
+<span class="sourceLineNo">275</span>//                      if (GHOST_RESPONSE.equals(curr.getCustom())) {<a name="line.275"></a>
+<span class="sourceLineNo">276</span>//                              fleet.getAI().removeAssignment(curr);<a name="line.276"></a>
+<span class="sourceLineNo">277</span>//                      }<a name="line.277"></a>
+<span class="sourceLineNo">278</span>//              }<a name="line.278"></a>
+<span class="sourceLineNo">279</span>//      }<a name="line.279"></a>
+<span class="sourceLineNo">280</span>//      <a name="line.280"></a>
+<span class="sourceLineNo">281</span>//      protected void respond(CampaignFleetAPI fleet) {<a name="line.281"></a>
+<span class="sourceLineNo">282</span>//              unrespond(fleet);<a name="line.282"></a>
+<span class="sourceLineNo">283</span>//              <a name="line.283"></a>
+<span class="sourceLineNo">284</span>//              Misc.setFlagWithReason(fleet.getMemoryWithoutUpdate(), <a name="line.284"></a>
+<span class="sourceLineNo">285</span>//                                                              MemFlags.FLEET_CHASING_GHOST, GHOST_RESPONSE, true, (1.5f + (float) Math.random()) * 0.2f);<a name="line.285"></a>
+<span class="sourceLineNo">286</span>//              <a name="line.286"></a>
+<span class="sourceLineNo">287</span>//              fleet.addAssignmentAtStart(FleetAssignment.PATROL_SYSTEM, params.target, 3f, params.actionText, null);<a name="line.287"></a>
+<span class="sourceLineNo">288</span>//              FleetAssignmentDataAPI curr = fleet.getCurrentAssignment();<a name="line.288"></a>
+<span class="sourceLineNo">289</span>//              if (curr != null) {<a name="line.289"></a>
+<span class="sourceLineNo">290</span>//                      curr.setCustom(GHOST_RESPONSE);<a name="line.290"></a>
+<span class="sourceLineNo">291</span>//              }<a name="line.291"></a>
+<span class="sourceLineNo">292</span>//              <a name="line.292"></a>
+<span class="sourceLineNo">293</span>//              float dist = Misc.getDistance(params.target, fleet);<a name="line.293"></a>
+<span class="sourceLineNo">294</span>//              if (dist &gt; 2000f) {<a name="line.294"></a>
+<span class="sourceLineNo">295</span>//                      fleet.addAssignmentAtStart(FleetAssignment.GO_TO_LOCATION, params.target, 3f, params.travelText, null);<a name="line.295"></a>
+<span class="sourceLineNo">296</span>//                      //fleet.addAssignmentAtStart(FleetAssignment.DELIVER_CREW, params.target, 3f, params.travelText, null);<a name="line.296"></a>
+<span class="sourceLineNo">297</span>//                      curr = fleet.getCurrentAssignment();<a name="line.297"></a>
+<span class="sourceLineNo">298</span>//                      if (curr != null) {<a name="line.298"></a>
+<span class="sourceLineNo">299</span>//                              curr.setCustom(GHOST_RESPONSE);<a name="line.299"></a>
+<span class="sourceLineNo">300</span>//                      }<a name="line.300"></a>
+<span class="sourceLineNo">301</span>//              }<a name="line.301"></a>
+<span class="sourceLineNo">302</span>//              <a name="line.302"></a>
+<span class="sourceLineNo">303</span>//              //Global.getSector().addPing(fleet, Pings.DANGER);<a name="line.303"></a>
+<span class="sourceLineNo">304</span>//      }<a name="line.304"></a>
+<span class="sourceLineNo">305</span>}<a name="line.305"></a>
+<span class="sourceLineNo">306</span><a name="line.306"></a>
+<span class="sourceLineNo">307</span><a name="line.307"></a>
+<span class="sourceLineNo">308</span><a name="line.308"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.missions;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
+<span class="sourceLineNo">004</span><a name="line.4"></a>
+<span class="sourceLineNo">005</span>import com.fs.starfarer.api.Global;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import com.fs.starfarer.api.campaign.PersonImportance;<a name="line.6"></a>
+<span class="sourceLineNo">007</span>import com.fs.starfarer.api.campaign.SectorEntityToken;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.campaign.StarSystemAPI;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.campaign.econ.CommodityOnMarketAPI;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.campaign.econ.MarketAPI;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.characters.PersonAPI;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.impl.campaign.ids.Factions;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.impl.campaign.ids.Ranks;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.impl.campaign.ids.Tags;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.impl.campaign.missions.academy.GACelestialObject.Variation;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.impl.campaign.missions.askonia.TheUsurpers.Stage;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.impl.campaign.missions.hub.HubMissionWithBarEvent;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import com.fs.starfarer.api.impl.campaign.missions.hub.ReqMode;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import com.fs.starfarer.api.ui.TooltipMakerAPI;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import com.fs.starfarer.api.util.Misc;<a name="line.20"></a>
+<span class="sourceLineNo">021</span><a name="line.21"></a>
+<span class="sourceLineNo">022</span>public class LuddicPilgrimTransport extends HubMissionWithBarEvent {<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span>        //graphics/icons/missions/luddic_pilgrim_transport.png<a name="line.24"></a>
+<span class="sourceLineNo">025</span>        public static float MISSION_DAYS = 60f;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>        public static float MIN_VALUE = 10000f;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>        public static float MAX_VALUE = 20000f;<a name="line.27"></a>
+<span class="sourceLineNo">028</span>        public static float PROB_RICH = 0.5f;<a name="line.28"></a>
+<span class="sourceLineNo">029</span>        <a name="line.29"></a>
+<span class="sourceLineNo">030</span>        public static enum Stage {<a name="line.30"></a>
+<span class="sourceLineNo">031</span>                TRANSPORT,<a name="line.31"></a>
+<span class="sourceLineNo">032</span>                COMPLETED,<a name="line.32"></a>
+<span class="sourceLineNo">033</span>                FAILED,<a name="line.33"></a>
+<span class="sourceLineNo">034</span>        }<a name="line.34"></a>
+<span class="sourceLineNo">035</span>        <a name="line.35"></a>
+<span class="sourceLineNo">036</span>        public static enum Variation {<a name="line.36"></a>
+<span class="sourceLineNo">037</span>                RICH,<a name="line.37"></a>
+<span class="sourceLineNo">038</span>                POOR,<a name="line.38"></a>
+<span class="sourceLineNo">039</span>        }<a name="line.39"></a>
+<span class="sourceLineNo">040</span>        <a name="line.40"></a>
+<span class="sourceLineNo">041</span>        <a name="line.41"></a>
+<span class="sourceLineNo">042</span>        protected MarketAPI source_market;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        protected StarSystemAPI destination_system;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        protected SectorEntityToken destination_entity;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        protected int quantity;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        protected String destination_shrine;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        protected Variation variation;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        <a name="line.48"></a>
+<span class="sourceLineNo">049</span>        @Override<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        protected boolean create(MarketAPI createdAt, boolean barEvent) {<a name="line.50"></a>
+<span class="sourceLineNo">051</span>                // if already accepted by the player, abort<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                if (!setGlobalReference("$lpt_ref", "$lpt_inProgress")) {<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                        return false;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                }<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                <a name="line.55"></a>
+<span class="sourceLineNo">056</span>                //genRandom = Misc.random;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                <a name="line.57"></a>
+<span class="sourceLineNo">058</span>                //if (Factions.PIRATES.equals(createdAt.getFaction().getId())) return false;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                <a name="line.59"></a>
+<span class="sourceLineNo">060</span>                source_market = createdAt;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                <a name="line.61"></a>
+<span class="sourceLineNo">062</span>                // let's just whitelist core worlds. Should be based on places that plausibly have a significant/interesting Luddic population<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                if ( !( source_market.getId().equals("chicomoztoc") ||<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                                source_market.getId().equals("mazalot") ||<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                                source_market.getId().equals("ilm") ||<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                                source_market.getId().equals("volturn") ||<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                                source_market.getId().equals("jangala") ||<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                                source_market.getId().equals("epiphany") ||<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                                source_market.getId().equals("cibola") ||<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                                source_market.getId().equals("madeira") ||<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                                source_market.getId().equals("chalcedon") ||<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                                source_market.getId().equals("tartessus") ||<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                                source_market.getId().equals("hesperus") ||<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                                source_market.getId().equals("fikenhild") ||<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                                source_market.getId().equals("athulf") ||<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                                source_market.getId().equals("suddene")) ) {<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                        return false;<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                        }<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                <a name="line.79"></a>
+<span class="sourceLineNo">080</span>                if (rollProbability(PROB_RICH)) {<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                        variation = Variation.RICH;<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                        float value = MIN_VALUE + getQuality() * (MAX_VALUE - MIN_VALUE);<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                        value *= 0.9f + genRandom.nextFloat() * 0.2f;<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                        setCreditReward((int)(value * 0.5f), (int)(value * 0.7f));<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                } else {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                        variation = Variation.POOR;<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                }<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                <a name="line.88"></a>
+<span class="sourceLineNo">089</span>                if (barEvent) {<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                        setGiverRank(Ranks.CITIZEN);<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                        setGiverPost(Ranks.POST_PILGRIM);<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                        //setGiverImportance(pickImportance());<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                        setGiverImportance(PersonImportance.VERY_LOW); // irrelevant anyway.<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                        setGiverFaction(Factions.LUDDIC_CHURCH);<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                        findOrCreateGiver(createdAt, false, false);<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                }<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                <a name="line.97"></a>
+<span class="sourceLineNo">098</span>                PersonAPI person = getPerson();<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                if (person == null) return false;<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                <a name="line.100"></a>
+<span class="sourceLineNo">101</span>                <a name="line.101"></a>
+<span class="sourceLineNo">102</span>                if (!setPersonMissionRef(person, "$lpt_ref")) {<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                        return false;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                }<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                <a name="line.105"></a>
+<span class="sourceLineNo">106</span>                setRepFactionChangesNone();<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                setIconName("campaignMissions", "luddic_pilgrim_transport");<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                <a name="line.108"></a>
+<span class="sourceLineNo">109</span>                // Maybe handle non-"public" shrines later.<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                destination_shrine = pickOne("gilead", "beholder_station");<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                <a name="line.111"></a>
+<span class="sourceLineNo">112</span>                if (destination_shrine.equals("gilead"))<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                {<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                        destination_system = Global.getSector().getStarSystem("canaan");<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                        destination_entity = Global.getSector().getEconomy().getMarket("gilead").getPlanetEntity();<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                        if (destination_entity == null) return false;<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                        if (!destination_entity.getMarket().getFactionId().equals(Factions.LUDDIC_CHURCH)) return false;<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                }<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                else if (destination_shrine.equals("beholder_station"))<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                {<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                        destination_system = Global.getSector().getStarSystem("kumari kandam");<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                        for (SectorEntityToken beholder_station : destination_system.getEntitiesWithTag(Tags.LUDDIC_SHRINE)) {<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                                destination_entity = beholder_station;<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                                break;<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                        }<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                }<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                <a name="line.127"></a>
+<span class="sourceLineNo">128</span>                if (!setEntityMissionRef(destination_entity, "$lpt_ref")) {<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                        return false;<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                }<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                <a name="line.131"></a>
+<span class="sourceLineNo">132</span>                makeImportant(destination_entity, "$lpt_target", Stage.TRANSPORT);<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                <a name="line.133"></a>
+<span class="sourceLineNo">134</span>                setStartingStage(Stage.TRANSPORT);<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                setSuccessStage(Stage.COMPLETED);<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                setFailureStage(Stage.FAILED);<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                <a name="line.137"></a>
+<span class="sourceLineNo">138</span>                setStageOnMemoryFlag(Stage.COMPLETED, destination_entity, "$lpt_completed");<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        //      setStageOnGlobalFlag(Stage.COMPLETED, "lpt_completed");<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                setNoAbandon();<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                setTimeLimit(Stage.FAILED, MISSION_DAYS, null);<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                <a name="line.142"></a>
+<span class="sourceLineNo">143</span>                <a name="line.143"></a>
+<span class="sourceLineNo">144</span>                <a name="line.144"></a>
+<span class="sourceLineNo">145</span>                //setCreditRewardWithBonus(CreditReward.VERY_LOW, (int) (value * 0.5f));<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                <a name="line.146"></a>
+<span class="sourceLineNo">147</span>                return true;<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        }<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        <a name="line.149"></a>
+<span class="sourceLineNo">150</span>        protected void updateInteractionDataImpl() {<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                //set("$lpt_destinationShrine", destination_shrine);<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                set("$lpt_barEvent", isBarEvent());<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                set("$lpt_reward", Misc.getWithDGS(getCreditsReward()));<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                <a name="line.154"></a>
+<span class="sourceLineNo">155</span>                set("$lpt_manOrWoman", getPerson().getManOrWoman());<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                set("$lpt_heOrShe", getPerson().getHeOrShe());<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                set("$lpt_hisOrHer", getPerson().getHisOrHer());<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                set("$lpt_himOrHer", getPerson().getHimOrHer());<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                set("$lpt_HeOrShe", getPerson().getHeOrShe().substring(0, 1).toUpperCase() + getPerson().getHeOrShe().substring(1));<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                set("$lpt_HisOrHer", getPerson().getHisOrHer().substring(0, 1).toUpperCase() + getPerson().getHisOrHer().substring(1));<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                set("$lpt_HimOrHer", getPerson().getHimOrHer().substring(0, 1).toUpperCase() + getPerson().getHimOrHer().substring(1));<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                <a name="line.162"></a>
+<span class="sourceLineNo">163</span>                if( variation == variation.POOR)<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                        set("$lpt_wealth", "poor");<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                else set("$lpt_wealth", "rich");        <a name="line.165"></a>
+<span class="sourceLineNo">166</span>                <a name="line.166"></a>
+<span class="sourceLineNo">167</span>                set("$lpt_personName", getPerson().getNameString());<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                set("$lpt_systemName", destination_system.getNameWithLowercaseTypeShort());<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                set("$lpt_entityName", destination_entity.getName());<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                set("$lpt_sourceName", source_market.getName());<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                <a name="line.171"></a>
+<span class="sourceLineNo">172</span>                //if (destination_entity.m)<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                //set("$lpt_marketOnOrAt", destination_entity.getOnOrAt());<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                <a name="line.174"></a>
+<span class="sourceLineNo">175</span>                set("$lpt_dist", getDistanceLY(destination_entity));<a name="line.175"></a>
+<span class="sourceLineNo">176</span>        }<a name="line.176"></a>
+<span class="sourceLineNo">177</span>        <a name="line.177"></a>
+<span class="sourceLineNo">178</span>        @Override<a name="line.178"></a>
+<span class="sourceLineNo">179</span>        public void addDescriptionForNonEndStage(TooltipMakerAPI info, float width, float height) {<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                float opad = 10f;<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                Color h = Misc.getHighlightColor();<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                if (currentStage == Stage.TRANSPORT) {<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                        info.addPara("Transport a small party of Luddic pilgrims to " + destination_entity.getName() + <a name="line.183"></a>
+<span class="sourceLineNo">184</span>                                        " in the " + destination_system.getNameWithLowercaseTypeShort() + ".", opad,<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                                        h, Misc.getWithDGS(quantity));<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                        <a name="line.186"></a>
+<span class="sourceLineNo">187</span>                        info.addPara("The pilgrims will expect to arrive at the shrine within " + MISSION_DAYS + " days.", opad);<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                }<a name="line.188"></a>
+<span class="sourceLineNo">189</span>        }<a name="line.189"></a>
+<span class="sourceLineNo">190</span><a name="line.190"></a>
+<span class="sourceLineNo">191</span>        @Override<a name="line.191"></a>
+<span class="sourceLineNo">192</span>        public boolean addNextStepText(TooltipMakerAPI info, Color tc, float pad) {<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                Color h = Misc.getHighlightColor();<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                if (currentStage == Stage.TRANSPORT) {<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                        info.addPara("Transport a small party of Luddic pilgrims to " + destination_entity.getName() + <a name="line.195"></a>
+<span class="sourceLineNo">196</span>                                        " in the " + destination_system.getNameWithLowercaseTypeShort(), pad, tc,<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                                        h, Misc.getWithDGS(quantity));<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                        return true;<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                }<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                return false;<a name="line.200"></a>
+<span class="sourceLineNo">201</span>        }       <a name="line.201"></a>
+<span class="sourceLineNo">202</span>        <a name="line.202"></a>
+<span class="sourceLineNo">203</span>        @Override<a name="line.203"></a>
+<span class="sourceLineNo">204</span>        public String getBaseName() {<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                return "Luddic Pilgrim Transport";<a name="line.205"></a>
+<span class="sourceLineNo">206</span>        }<a name="line.206"></a>
+<span class="sourceLineNo">207</span>        <a name="line.207"></a>
+<span class="sourceLineNo">208</span>}<a name="line.208"></a>
+<span class="sourceLineNo">209</span><a name="line.209"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

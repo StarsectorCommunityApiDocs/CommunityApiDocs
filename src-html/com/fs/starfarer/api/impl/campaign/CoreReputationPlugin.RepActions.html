@@ -1,0 +1,1141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import java.util.ArrayList;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import java.util.List;<a name="line.5"></a>
+<span class="sourceLineNo">006</span><a name="line.6"></a>
+<span class="sourceLineNo">007</span>import com.fs.starfarer.api.Global;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.campaign.CampaignFleetAPI;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.campaign.FactionAPI;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.campaign.RepLevel;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.campaign.ReputationActionResponsePlugin;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.campaign.SectorEntityToken;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.campaign.TextPanelAPI;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.campaign.comm.CommMessageAPI;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.campaign.comm.MessageParaAPI;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.campaign.comm.MessageSectionAPI;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.campaign.econ.MarketAPI;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import com.fs.starfarer.api.characters.PersonAPI;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import com.fs.starfarer.api.characters.RelationshipAPI;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import com.fs.starfarer.api.impl.campaign.ids.Factions;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import com.fs.starfarer.api.impl.campaign.ids.Tags;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import com.fs.starfarer.api.impl.campaign.intel.BaseIntelPlugin;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>import com.fs.starfarer.api.impl.campaign.intel.MessageIntel;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>import com.fs.starfarer.api.ui.LabelAPI;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>import com.fs.starfarer.api.ui.TooltipMakerAPI;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>import com.fs.starfarer.api.util.Misc;<a name="line.26"></a>
+<span class="sourceLineNo">027</span><a name="line.27"></a>
+<span class="sourceLineNo">028</span>public class CoreReputationPlugin implements ReputationActionResponsePlugin {<a name="line.28"></a>
+<span class="sourceLineNo">029</span>        <a name="line.29"></a>
+<span class="sourceLineNo">030</span>        public static class MissionCompletionRep {<a name="line.30"></a>
+<span class="sourceLineNo">031</span>                public float successDelta;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>                public RepLevel successLimit;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>                public float failureDelta;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>                public RepLevel failureLimit;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>                public MissionCompletionRep(float successDelta, RepLevel successLimit,<a name="line.35"></a>
+<span class="sourceLineNo">036</span>                                                                        float failureDelta, RepLevel failureLimit) {<a name="line.36"></a>
+<span class="sourceLineNo">037</span>                        this.successDelta = successDelta;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>                        this.successLimit = successLimit;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                        this.failureDelta = failureDelta;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                        this.failureLimit = failureLimit;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                }<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                <a name="line.42"></a>
+<span class="sourceLineNo">043</span>        }<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        <a name="line.44"></a>
+<span class="sourceLineNo">045</span>        public static class RepActionEnvelope {<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                public RepActions action;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>                public Object param = null;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>                public CommMessageAPI message = null;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>                public TextPanelAPI textPanel = null;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                public boolean addMessageOnNoChange = true;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>                public boolean withMessage = true;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                public String reason;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                public RepActionEnvelope(RepActions action, Object param) {<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                        this.action = action;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                        this.param = param;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                }<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                public RepActionEnvelope(RepActions action) {<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                        this.action = action;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                }<a name="line.59"></a>
+<span class="sourceLineNo">060</span>//              public RepActionEnvelope(RepActions action, Object param, CommMessageAPI message, boolean addMessageOnNoChange) {<a name="line.60"></a>
+<span class="sourceLineNo">061</span>//                      this.action = action;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>//                      this.param = param;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>//                      this.message = message;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>//                      this.addMessageOnNoChange = addMessageOnNoChange;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>//              }<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                public RepActionEnvelope(RepActions action, Object param, CommMessageAPI message, TextPanelAPI textPanel, boolean addMessageOnNoChange) {<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                        this(action, param, message, textPanel, addMessageOnNoChange, true);<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                }<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                public RepActionEnvelope(RepActions action, Object param, TextPanelAPI textPanel, boolean addMessageOnNoChange) {<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                        this(action, param, null, textPanel, addMessageOnNoChange, true);<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                }<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                public RepActionEnvelope(RepActions action, Object param, CommMessageAPI message, TextPanelAPI textPanel, boolean addMessageOnNoChange, boolean withMessage) {<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                        this(action, param, message, textPanel, addMessageOnNoChange, withMessage, null);<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                }<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                public RepActionEnvelope(RepActions action, Object param, TextPanelAPI textPanel, boolean addMessageOnNoChange, boolean withMessage) {<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                        this(action, param, null, textPanel, addMessageOnNoChange, withMessage, null);<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                }<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                public RepActionEnvelope(RepActions action, Object param, TextPanelAPI textPanel, boolean addMessageOnNoChange, boolean withMessage, String reason) {<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                        this(action, param, null, textPanel, addMessageOnNoChange, withMessage, reason);<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                }<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                public RepActionEnvelope(RepActions action, Object param, CommMessageAPI message, TextPanelAPI textPanel, boolean addMessageOnNoChange, boolean withMessage, String reason) {<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                        this.action = action;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                        this.param = param;<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                        this.message = message;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                        this.addMessageOnNoChange = addMessageOnNoChange;<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                        this.textPanel = textPanel;<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                        this.withMessage = withMessage;<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                        this.reason = reason;<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                }<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                public RepActionEnvelope(RepActions action, Object param, TextPanelAPI textPanel) {<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                        this.action = action;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                        this.param = param;<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                        this.textPanel = textPanel;<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                }<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        }<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        <a name="line.96"></a>
+<span class="sourceLineNo">097</span>        public static class CustomRepImpact {<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                public float delta = 0;<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                public RepLevel limit = null;<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                public RepLevel ensureAtBest = null;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                public RepLevel ensureAtWorst = null;<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                public RepLevel requireAtBest = null;<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                public RepLevel requireAtWorst = null;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        }<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        <a name="line.105"></a>
+<span class="sourceLineNo">106</span>        public static enum RepActions {<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                COMBAT_NO_DAMAGE_ESCAPE, // now unused<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                <a name="line.108"></a>
+<span class="sourceLineNo">109</span>                COMBAT_NORMAL,<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                COMBAT_AGGRESSIVE,<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                <a name="line.111"></a>
+<span class="sourceLineNo">112</span>                COMBAT_NORMAL_TOFF,<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                COMBAT_AGGRESSIVE_TOFF,<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                <a name="line.114"></a>
+<span class="sourceLineNo">115</span>                COMBAT_HELP_MINOR,<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                COMBAT_HELP_MAJOR,<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                COMBAT_HELP_CRITICAL,<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                <a name="line.118"></a>
+<span class="sourceLineNo">119</span>                COMBAT_FRIENDLY_FIRE,<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                <a name="line.120"></a>
+<span class="sourceLineNo">121</span>                FOOD_SHORTAGE_PLAYER_ENDED_FAST,<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                FOOD_SHORTAGE_PLAYER_ENDED_NORMAL,<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                <a name="line.123"></a>
+<span class="sourceLineNo">124</span>                SYSTEM_BOUNTY_REWARD,<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                PERSON_BOUNTY_REWARD,<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                COMBAT_WITH_ENEMY,<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                <a name="line.127"></a>
+<span class="sourceLineNo">128</span>                TRADE_EFFECT,<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                SMUGGLING_EFFECT,<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                TRADE_WITH_ENEMY,<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                <a name="line.131"></a>
+<span class="sourceLineNo">132</span>                OTHER_FACTION_GOOD_REP_INVESTIGATION_MINOR,<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                OTHER_FACTION_GOOD_REP_INVESTIGATION_MAJOR,<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                OTHER_FACTION_GOOD_REP_INVESTIGATION_CRITICAL,<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                <a name="line.135"></a>
+<span class="sourceLineNo">136</span>                SMUGGLING_INVESTIGATION_GUILTY,<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                COMM_SNIFFER_INVESTIGATION_GUILTY,<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                FOOD_INVESTIGATION_GUILTY,<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                FOOD_INVESTIGATION_GUILTY_MAJOR,<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                <a name="line.140"></a>
+<span class="sourceLineNo">141</span>                CAUGHT_INSTALLING_SNIFFER,<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                <a name="line.142"></a>
+<span class="sourceLineNo">143</span>                CUSTOMS_NOTICED_EVADING,<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                CUSTOMS_CAUGHT_SMUGGLING,<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                CUSTOMS_REFUSED_TOLL,<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                CUSTOMS_REFUSED_FINE,<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                CUSTOMS_COULD_NOT_AFFORD,<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                CUSTOMS_PAID,<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                <a name="line.149"></a>
+<span class="sourceLineNo">150</span>                REP_DECAY_POSITIVE,<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                //REP_DECAY_NEGATIVE,<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                <a name="line.152"></a>
+<span class="sourceLineNo">153</span>                TRANSPONDER_OFF,<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                TRANSPONDER_OFF_REFUSE,<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                <a name="line.155"></a>
+<span class="sourceLineNo">156</span>                CARGO_SCAN_REFUSE,<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                <a name="line.157"></a>
+<span class="sourceLineNo">158</span>                MISSION_SUCCESS,<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                MISSION_FAILURE,<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                <a name="line.160"></a>
+<span class="sourceLineNo">161</span>                MAKE_SUSPICOUS_AT_WORST,<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                <a name="line.162"></a>
+<span class="sourceLineNo">163</span>                MAKE_HOSTILE_AT_BEST,<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                COMMISSION_ACCEPT,<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                COMMISSION_BOUNTY_REWARD,<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                <a name="line.166"></a>
+<span class="sourceLineNo">167</span>                COMMISSION_NEUTRAL_BATTLE_PENALTY,<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                COMMISSION_PENALTY_HOSTILE_TO_NON_ENEMY,<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                <a name="line.169"></a>
+<span class="sourceLineNo">170</span>                SHRINE_OFFERING,<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                <a name="line.171"></a>
+<span class="sourceLineNo">172</span>                INTERDICTED,<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                <a name="line.173"></a>
+<span class="sourceLineNo">174</span>                CUSTOM,<a name="line.174"></a>
+<span class="sourceLineNo">175</span>//              MISSION_COMPLETED_MINOR,<a name="line.175"></a>
+<span class="sourceLineNo">176</span>//              MISSION_COMPLETED_MEDIUM,<a name="line.176"></a>
+<span class="sourceLineNo">177</span>//              MISSION_COMPLETED_IMPORTANT,<a name="line.177"></a>
+<span class="sourceLineNo">178</span>//              <a name="line.178"></a>
+<span class="sourceLineNo">179</span>//              MISSION_FAILED_MINOR,<a name="line.179"></a>
+<span class="sourceLineNo">180</span>//              MISSION_FAILED_MEDIUM,<a name="line.180"></a>
+<span class="sourceLineNo">181</span>//              MISSION_FAILED_IMPORTANT,<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                <a name="line.182"></a>
+<span class="sourceLineNo">183</span>                <a name="line.183"></a>
+<span class="sourceLineNo">184</span>        }<a name="line.184"></a>
+<span class="sourceLineNo">185</span>        <a name="line.185"></a>
+<span class="sourceLineNo">186</span>        public static class RepRewards {<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                public static final float TINY = 0.01f;<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                public static final float SMALL = 0.02f;<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                public static final float MEDIUM = 0.03f;<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                public static final float HIGH = 0.05f;<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                public static final float VERY_HIGH = 0.07f;<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                public static final float EXTREME = 0.1f;<a name="line.192"></a>
+<span class="sourceLineNo">193</span>        }<a name="line.193"></a>
+<span class="sourceLineNo">194</span>        <a name="line.194"></a>
+<span class="sourceLineNo">195</span>        <a name="line.195"></a>
+<span class="sourceLineNo">196</span><a name="line.196"></a>
+<span class="sourceLineNo">197</span><a name="line.197"></a>
+<span class="sourceLineNo">198</span>        public ReputationAdjustmentResult handlePlayerReputationAction(Object action, final String factionId) {<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                //final FactionAPI player = Global.getSector().getFaction(Factions.PLAYER);<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                final FactionAPI faction = Global.getSector().getFaction(factionId);<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                if (faction == null) return new ReputationAdjustmentResult(0);<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                return handlePlayerReputationActionInner(action, factionId, null, faction.getRelToPlayer());<a name="line.202"></a>
+<span class="sourceLineNo">203</span>        }<a name="line.203"></a>
+<span class="sourceLineNo">204</span><a name="line.204"></a>
+<span class="sourceLineNo">205</span><a name="line.205"></a>
+<span class="sourceLineNo">206</span>        public ReputationAdjustmentResult handlePlayerReputationAction(Object action, PersonAPI person) {<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                return handlePlayerReputationActionInner(action, person.getFaction().getId(), person, person.getRelToPlayer());<a name="line.207"></a>
+<span class="sourceLineNo">208</span>        }<a name="line.208"></a>
+<span class="sourceLineNo">209</span><a name="line.209"></a>
+<span class="sourceLineNo">210</span>        <a name="line.210"></a>
+<span class="sourceLineNo">211</span>        public ReputationAdjustmentResult handlePlayerReputationActionInner(Object actionObject,<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                                                                                                                                        String factionId,<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                                                                                                                                        PersonAPI person,<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                                                                                                                                        RelationshipAPI delegate) {<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                if (!(actionObject instanceof RepActionEnvelope) &amp;&amp; !(actionObject instanceof RepActions)) {<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                        return new ReputationAdjustmentResult(0);<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                }<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                <a name="line.218"></a>
+<span class="sourceLineNo">219</span>                if (Factions.NEUTRAL.equals(factionId)) {<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                        return new ReputationAdjustmentResult(0);<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                }<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                <a name="line.222"></a>
+<span class="sourceLineNo">223</span>//              FactionAPI player = Global.getSector().getFaction(Factions.PLAYER);<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                FactionAPI faction = Global.getSector().getFaction(factionId);<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                <a name="line.225"></a>
+<span class="sourceLineNo">226</span>                CampaignFleetAPI playerFleet = Global.getSector().getPlayerFleet();<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                <a name="line.227"></a>
+<span class="sourceLineNo">228</span>                RepActions action = null;<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                String reason = null;<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                Object param = null;<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                CommMessageAPI message = null;<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                TextPanelAPI panel = null;<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                boolean withMessage = true;<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                boolean addMessageOnNoChange = true;<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                if (actionObject instanceof RepActions) {<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                        action = (RepActions) actionObject;<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                        param = null;<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                } else if (actionObject instanceof RepActionEnvelope) {<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                        RepActionEnvelope envelope = (RepActionEnvelope) actionObject;<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                        action = envelope.action;<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                        param = envelope.param;<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                        message = envelope.message;<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                        panel = envelope.textPanel;<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                        addMessageOnNoChange = envelope.addMessageOnNoChange;<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                        withMessage = envelope.withMessage;<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                        reason = envelope.reason;<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                }<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                <a name="line.248"></a>
+<span class="sourceLineNo">249</span>                float delta = 0;<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                RepLevel limit = null;<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                RepLevel ensureAtBest = null;<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                RepLevel ensureAtWorst = null;<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                RepLevel requireAtBest = null;<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                RepLevel requireAtWorst = null;<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                //RepLevel curr = player.getRelationshipLevel(faction);<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                RepLevel curr = delegate.getLevel();<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                <a name="line.257"></a>
+<span class="sourceLineNo">258</span>                if (action == RepActions.CUSTOM) {<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                        if (!(param instanceof CustomRepImpact)) {<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                                throw new RuntimeException("For RepActions.CUSTOM, use CustomRepImpact as a param in a RepActionEnvelope");<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                        }<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                        <a name="line.262"></a>
+<span class="sourceLineNo">263</span>                        CustomRepImpact impact = (CustomRepImpact) param;<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                        <a name="line.264"></a>
+<span class="sourceLineNo">265</span>                        delta = impact.delta;<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                        limit = impact.limit;<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                        ensureAtBest = impact.ensureAtBest;<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                        ensureAtWorst = impact.ensureAtWorst;<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                        requireAtBest = impact.requireAtBest;<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                        requireAtWorst = impact.requireAtWorst;<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                }<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                <a name="line.272"></a>
+<span class="sourceLineNo">273</span>                switch (action) {<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                case COMBAT_HELP_MINOR:<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                        delta = RepRewards.TINY;<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                        limit = RepLevel.WELCOMING;<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                        requireAtWorst = RepLevel.INHOSPITABLE;<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                        break;<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                case COMBAT_HELP_MAJOR:<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                        delta = RepRewards.MEDIUM;<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                        limit = RepLevel.FRIENDLY;<a name="line.281"></a>
+<span class="sourceLineNo">282</span>                        requireAtWorst = RepLevel.INHOSPITABLE;<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                        break;<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                case COMBAT_HELP_CRITICAL:<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                        delta = RepRewards.HIGH;<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                        limit = RepLevel.COOPERATIVE;<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                        requireAtWorst = RepLevel.INHOSPITABLE;<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                        break;<a name="line.288"></a>
+<span class="sourceLineNo">289</span>//              case COMBAT_NO_DAMAGE_ESCAPE:<a name="line.289"></a>
+<span class="sourceLineNo">290</span>//                      if (delegate.isAtWorst(RepLevel.FAVORABLE)) {<a name="line.290"></a>
+<span class="sourceLineNo">291</span>//                              delta = -RepRewards.HIGH;<a name="line.291"></a>
+<span class="sourceLineNo">292</span>//                      } else {<a name="line.292"></a>
+<span class="sourceLineNo">293</span>//                              delta = -RepRewards.SMALL;<a name="line.293"></a>
+<span class="sourceLineNo">294</span>//                      }<a name="line.294"></a>
+<span class="sourceLineNo">295</span>//                      limit = RepLevel.HOSTILE;<a name="line.295"></a>
+<span class="sourceLineNo">296</span>//                      break;<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                case COMBAT_FRIENDLY_FIRE:<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                        float fpHull = (float) Math.ceil((Float) param);<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                        if (fpHull &gt;= 20f) {<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                                fpHull = 0f;<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                                ensureAtBest = RepLevel.HOSTILE;<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                        }<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                        delta = -1f * fpHull * 0.01f;<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                        break;<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                case COMBAT_NORMAL:<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                        delta = -RepRewards.MEDIUM;<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                        limit = RepLevel.VENGEFUL;<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                        ensureAtBest = RepLevel.HOSTILE;<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                        break;<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                case COMBAT_AGGRESSIVE:<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                        delta = -RepRewards.HIGH;<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                        limit = RepLevel.VENGEFUL;<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                        ensureAtBest = RepLevel.HOSTILE;<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                        break;<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                case COMBAT_NORMAL_TOFF:<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                        delta = -RepRewards.MEDIUM;<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                        limit = RepLevel.VENGEFUL;<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                        break;<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                case COMBAT_AGGRESSIVE_TOFF:<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                        delta = -RepRewards.HIGH;<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                        limit = RepLevel.VENGEFUL;<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                        break;                  <a name="line.322"></a>
+<span class="sourceLineNo">323</span>                case FOOD_SHORTAGE_PLAYER_ENDED_FAST:<a name="line.323"></a>
+<span class="sourceLineNo">324</span>                        delta = getRepRewardForFoodShortage(action, (MarketAPI) param);<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                        limit = RepLevel.FRIENDLY;<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                        requireAtWorst = RepLevel.INHOSPITABLE;<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                        break;<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                case FOOD_SHORTAGE_PLAYER_ENDED_NORMAL:<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                        delta = getRepRewardForFoodShortage(action, (MarketAPI) param);<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                        limit = RepLevel.WELCOMING;<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                        requireAtWorst = RepLevel.INHOSPITABLE;<a name="line.331"></a>
+<span class="sourceLineNo">332</span>                        break;<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                case SYSTEM_BOUNTY_REWARD:<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                        float fp = (Float) param;<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                        if (fp &lt; 10) {<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                                delta = RepRewards.SMALL;<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                                limit = RepLevel.WELCOMING;<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                        } else if (fp &lt; 30) {<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                                delta = RepRewards.MEDIUM;<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                                limit = RepLevel.FRIENDLY;<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                        } else {<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                                delta = RepRewards.HIGH;<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                                limit = RepLevel.COOPERATIVE;<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                        }<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                        requireAtWorst = RepLevel.VENGEFUL;<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                        break;<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                case PERSON_BOUNTY_REWARD:<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                        delta = RepRewards.MEDIUM;<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                        limit = RepLevel.COOPERATIVE;<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                        requireAtWorst = RepLevel.VENGEFUL;<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                        break;<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                case COMBAT_WITH_ENEMY:<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                        fp = (Float) param;<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                        if (fp &lt; 10) {<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                                delta = RepRewards.TINY;<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                                limit = RepLevel.WELCOMING;<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                        } else if (fp &lt; 30) {<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                                delta = RepRewards.SMALL;<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                                limit = RepLevel.FRIENDLY;<a name="line.359"></a>
+<span class="sourceLineNo">360</span>                        } else {<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                                delta = RepRewards.MEDIUM;<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                                limit = RepLevel.COOPERATIVE;<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                        }<a name="line.363"></a>
+<span class="sourceLineNo">364</span>                        requireAtWorst = RepLevel.VENGEFUL;<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                        break;<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                case TRADE_EFFECT:<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                        delta = (Float) param * 0.01f;<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                        limit = RepLevel.WELCOMING;<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                        //if (faction.getId().equals(Factions.PIRATES)) {<a name="line.369"></a>
+<span class="sourceLineNo">370</span>//                      if (faction.getCustom().optBoolean(Factions.CUSTOM_WILL_TRADE_WHEN_HOSTILE)) {<a name="line.370"></a>
+<span class="sourceLineNo">371</span>//                              requireAtWorst = RepLevel.HOSTILE;<a name="line.371"></a>
+<span class="sourceLineNo">372</span>//                      } else {<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                                requireAtWorst = RepLevel.INHOSPITABLE;<a name="line.373"></a>
+<span class="sourceLineNo">374</span>//                      }<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                        break;<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                case SMUGGLING_EFFECT:<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                        delta = -(Float) param * 0.01f;<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                        limit = RepLevel.INHOSPITABLE;<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                        break;<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                case TRADE_WITH_ENEMY:<a name="line.380"></a>
+<span class="sourceLineNo">381</span>                        delta = -(Float) param * 0.01f;<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                        limit = RepLevel.HOSTILE;<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                        break;<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                case SMUGGLING_INVESTIGATION_GUILTY:<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                        delta = -RepRewards.HIGH;<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                        limit = RepLevel.HOSTILE;<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                        ensureAtBest = RepLevel.INHOSPITABLE;<a name="line.387"></a>
+<span class="sourceLineNo">388</span>                        break;<a name="line.388"></a>
+<span class="sourceLineNo">389</span>                case OTHER_FACTION_GOOD_REP_INVESTIGATION_MINOR:<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                        delta = -RepRewards.HIGH;<a name="line.390"></a>
+<span class="sourceLineNo">391</span>                        limit = RepLevel.HOSTILE;<a name="line.391"></a>
+<span class="sourceLineNo">392</span>                        break;<a name="line.392"></a>
+<span class="sourceLineNo">393</span>                case OTHER_FACTION_GOOD_REP_INVESTIGATION_MAJOR:<a name="line.393"></a>
+<span class="sourceLineNo">394</span>                        delta = -RepRewards.HIGH;<a name="line.394"></a>
+<span class="sourceLineNo">395</span>                        limit = RepLevel.HOSTILE;<a name="line.395"></a>
+<span class="sourceLineNo">396</span>                        ensureAtBest = RepLevel.INHOSPITABLE;<a name="line.396"></a>
+<span class="sourceLineNo">397</span>                        break;<a name="line.397"></a>
+<span class="sourceLineNo">398</span>                case OTHER_FACTION_GOOD_REP_INVESTIGATION_CRITICAL:<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                        delta = -RepRewards.HIGH;<a name="line.399"></a>
+<span class="sourceLineNo">400</span>                        limit = RepLevel.HOSTILE;<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                        ensureAtBest = RepLevel.HOSTILE;<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                        break;<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                case CAUGHT_INSTALLING_SNIFFER:<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                        delta = -RepRewards.TINY;<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                        limit = RepLevel.INHOSPITABLE;<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                        break;<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                case COMM_SNIFFER_INVESTIGATION_GUILTY:<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                        delta = -RepRewards.SMALL;<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                        limit = RepLevel.INHOSPITABLE;<a name="line.409"></a>
+<span class="sourceLineNo">410</span>                        break;<a name="line.410"></a>
+<span class="sourceLineNo">411</span>                case FOOD_INVESTIGATION_GUILTY:<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                        delta = -RepRewards.HIGH;<a name="line.412"></a>
+<span class="sourceLineNo">413</span>                        limit = RepLevel.INHOSPITABLE;<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                        break;<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                case FOOD_INVESTIGATION_GUILTY_MAJOR:<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                        delta = -RepRewards.HIGH;<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                        limit = RepLevel.HOSTILE;<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                        ensureAtBest = RepLevel.SUSPICIOUS;<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                        break;<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                case CUSTOMS_NOTICED_EVADING:<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                        delta = -RepRewards.MEDIUM;<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                        limit = RepLevel.HOSTILE;<a name="line.422"></a>
+<span class="sourceLineNo">423</span>                        break;<a name="line.423"></a>
+<span class="sourceLineNo">424</span>                case CUSTOMS_CAUGHT_SMUGGLING:<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                        delta = -(Float) param * 0.01f;<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                        limit = RepLevel.HOSTILE;<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                        break;<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                case CUSTOMS_REFUSED_TOLL:<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                        delta = -RepRewards.MEDIUM;<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                        limit = RepLevel.HOSTILE;<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                        break;<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                case CUSTOMS_REFUSED_FINE:<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                        delta = -RepRewards.VERY_HIGH;<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                        limit = RepLevel.HOSTILE;<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                        break;<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                case CUSTOMS_COULD_NOT_AFFORD:<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                        delta = -RepRewards.SMALL;<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                        limit = RepLevel.INHOSPITABLE;<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                        break;<a name="line.439"></a>
+<span class="sourceLineNo">440</span>                case CUSTOMS_PAID:<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                        delta = RepRewards.TINY;<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                        limit = RepLevel.WELCOMING;<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                        break;<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                case REP_DECAY_POSITIVE:<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                        delta = .15f;<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                        limit = RepLevel.NEUTRAL;<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                        requireAtWorst = RepLevel.INHOSPITABLE;<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                        break;<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                case MISSION_SUCCESS:<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                        MissionCompletionRep rep = (MissionCompletionRep) param;<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                        delta = rep.successDelta;<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                        limit = rep.successLimit;<a name="line.452"></a>
+<span class="sourceLineNo">453</span>                        break;<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                case MISSION_FAILURE:<a name="line.454"></a>
+<span class="sourceLineNo">455</span>                        rep = (MissionCompletionRep) param;<a name="line.455"></a>
+<span class="sourceLineNo">456</span>                        delta = rep.failureDelta;<a name="line.456"></a>
+<span class="sourceLineNo">457</span>                        limit = rep.failureLimit;<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                        break;<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                case TRANSPONDER_OFF:<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                        if (person != null) {<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                                delta = -RepRewards.MEDIUM;<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                        } else {<a name="line.462"></a>
+<span class="sourceLineNo">463</span>                                delta = -RepRewards.SMALL;<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                        }<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                        limit = RepLevel.HOSTILE;<a name="line.465"></a>
+<span class="sourceLineNo">466</span>                        break;<a name="line.466"></a>
+<span class="sourceLineNo">467</span>                case TRANSPONDER_OFF_REFUSE:<a name="line.467"></a>
+<span class="sourceLineNo">468</span>                case CARGO_SCAN_REFUSE:<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                        if (person != null) {<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                                delta = -RepRewards.HIGH;<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                        } else {<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                                delta = -RepRewards.MEDIUM;<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                        }<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                        limit = RepLevel.HOSTILE;<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                        break;<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                case COMMISSION_ACCEPT:<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                        delta = RepRewards.HIGH;<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                        break;<a name="line.478"></a>
+<span class="sourceLineNo">479</span>                case SHRINE_OFFERING:<a name="line.479"></a>
+<span class="sourceLineNo">480</span>                        delta = RepRewards.MEDIUM;<a name="line.480"></a>
+<span class="sourceLineNo">481</span>                        limit = RepLevel.FRIENDLY;<a name="line.481"></a>
+<span class="sourceLineNo">482</span>                        break;<a name="line.482"></a>
+<span class="sourceLineNo">483</span>                case INTERDICTED:<a name="line.483"></a>
+<span class="sourceLineNo">484</span>                        delta = -RepRewards.TINY;<a name="line.484"></a>
+<span class="sourceLineNo">485</span>                        limit = RepLevel.INHOSPITABLE;<a name="line.485"></a>
+<span class="sourceLineNo">486</span>                        break;<a name="line.486"></a>
+<span class="sourceLineNo">487</span>                case MAKE_HOSTILE_AT_BEST:<a name="line.487"></a>
+<span class="sourceLineNo">488</span>                        delta = 0;<a name="line.488"></a>
+<span class="sourceLineNo">489</span>                        ensureAtBest = RepLevel.HOSTILE;<a name="line.489"></a>
+<span class="sourceLineNo">490</span>                        break;<a name="line.490"></a>
+<span class="sourceLineNo">491</span>                case MAKE_SUSPICOUS_AT_WORST:<a name="line.491"></a>
+<span class="sourceLineNo">492</span>                        delta = 0;<a name="line.492"></a>
+<span class="sourceLineNo">493</span>                        ensureAtWorst = RepLevel.SUSPICIOUS;<a name="line.493"></a>
+<span class="sourceLineNo">494</span>                        break;<a name="line.494"></a>
+<span class="sourceLineNo">495</span>                case COMMISSION_BOUNTY_REWARD:<a name="line.495"></a>
+<span class="sourceLineNo">496</span>                        fp = (Float) param;<a name="line.496"></a>
+<span class="sourceLineNo">497</span>                        if (fp &lt; 20) {<a name="line.497"></a>
+<span class="sourceLineNo">498</span>                                delta = RepRewards.TINY;<a name="line.498"></a>
+<span class="sourceLineNo">499</span>                                limit = RepLevel.FRIENDLY;<a name="line.499"></a>
+<span class="sourceLineNo">500</span>                        } else if (fp &lt; 50) {<a name="line.500"></a>
+<span class="sourceLineNo">501</span>                                delta = RepRewards.SMALL;<a name="line.501"></a>
+<span class="sourceLineNo">502</span>                                limit = RepLevel.COOPERATIVE;<a name="line.502"></a>
+<span class="sourceLineNo">503</span>                        } else {<a name="line.503"></a>
+<span class="sourceLineNo">504</span>                                delta = RepRewards.MEDIUM;<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                                limit = RepLevel.COOPERATIVE;<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                        }<a name="line.506"></a>
+<span class="sourceLineNo">507</span>                        break;<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                case COMMISSION_PENALTY_HOSTILE_TO_NON_ENEMY:<a name="line.508"></a>
+<span class="sourceLineNo">509</span>                        //delta = -RepRewards.MEDIUM;<a name="line.509"></a>
+<span class="sourceLineNo">510</span>                        fp = (Float) param;<a name="line.510"></a>
+<span class="sourceLineNo">511</span>                        if (fp &lt; 20) {<a name="line.511"></a>
+<span class="sourceLineNo">512</span>                                delta = -RepRewards.TINY;<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                        } else if (fp &lt; 50) {<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                                delta = -RepRewards.SMALL;<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                        } else {<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                                delta = -RepRewards.MEDIUM;<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                        }<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                        limit = RepLevel.INHOSPITABLE;<a name="line.518"></a>
+<span class="sourceLineNo">519</span>                        break;<a name="line.519"></a>
+<span class="sourceLineNo">520</span>                }<a name="line.520"></a>
+<span class="sourceLineNo">521</span><a name="line.521"></a>
+<span class="sourceLineNo">522</span>                if (delta &lt; 0 &amp;&amp; delta &gt; -0.01f) delta = -0.01f;<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                if (delta &gt; 0 &amp;&amp; delta &lt; 0.01f) delta = 0.01f;<a name="line.523"></a>
+<span class="sourceLineNo">524</span>                delta = Math.round(delta * 100f) / 100f;<a name="line.524"></a>
+<span class="sourceLineNo">525</span>                <a name="line.525"></a>
+<span class="sourceLineNo">526</span>                if (delegate.getTarget() == Global.getSector().getPlayerFaction()) {<a name="line.526"></a>
+<span class="sourceLineNo">527</span>                        delta = 0;<a name="line.527"></a>
+<span class="sourceLineNo">528</span>                }<a name="line.528"></a>
+<span class="sourceLineNo">529</span>                if (delegate.getTarget() == Global.getSector().getPlayerPerson()) {<a name="line.529"></a>
+<span class="sourceLineNo">530</span>                        delta = 0;<a name="line.530"></a>
+<span class="sourceLineNo">531</span>                }<a name="line.531"></a>
+<span class="sourceLineNo">532</span>                <a name="line.532"></a>
+<span class="sourceLineNo">533</span>                float deltaSign = Math.signum(delta);<a name="line.533"></a>
+<span class="sourceLineNo">534</span>                //float before = player.getRelationship(faction.getId());<a name="line.534"></a>
+<span class="sourceLineNo">535</span>                float before = delegate.getRel();<a name="line.535"></a>
+<span class="sourceLineNo">536</span>                <a name="line.536"></a>
+<span class="sourceLineNo">537</span>                if (ensureAtBest != null) {<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                        delegate.ensureAtBest(ensureAtBest);<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                }<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                if (ensureAtWorst != null) {<a name="line.540"></a>
+<span class="sourceLineNo">541</span>                        delegate.ensureAtWorst(ensureAtWorst);<a name="line.541"></a>
+<span class="sourceLineNo">542</span>                }<a name="line.542"></a>
+<span class="sourceLineNo">543</span>                <a name="line.543"></a>
+<span class="sourceLineNo">544</span>                if ((requireAtBest == null || curr.isAtBest(requireAtBest)) &amp;&amp;<a name="line.544"></a>
+<span class="sourceLineNo">545</span>                                (requireAtWorst == null || curr.isAtWorst(requireAtWorst))) {<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                        delegate.adjustRelationship(delta, limit);<a name="line.546"></a>
+<span class="sourceLineNo">547</span>                }<a name="line.547"></a>
+<span class="sourceLineNo">548</span>                <a name="line.548"></a>
+<span class="sourceLineNo">549</span>                //float after = player.getRelationship(faction.getId());<a name="line.549"></a>
+<span class="sourceLineNo">550</span>                float after = delegate.getRel();<a name="line.550"></a>
+<span class="sourceLineNo">551</span>                delta = after - before;<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                <a name="line.552"></a>
+<span class="sourceLineNo">553</span>                //if (delta != 0) {<a name="line.553"></a>
+<span class="sourceLineNo">554</span>                if (withMessage) {<a name="line.554"></a>
+<span class="sourceLineNo">555</span>                        if (Math.abs(delta) &gt;= 0.005f) {<a name="line.555"></a>
+<span class="sourceLineNo">556</span>                                addAdjustmentMessage(delta, faction, person, message, panel, null, null, true, 0f, reason);<a name="line.556"></a>
+<span class="sourceLineNo">557</span>                        } else if (deltaSign != 0 &amp;&amp; addMessageOnNoChange) {<a name="line.557"></a>
+<span class="sourceLineNo">558</span>                                addNoChangeMessage(deltaSign, faction, person, message, panel, null, null, true, 0f, reason);<a name="line.558"></a>
+<span class="sourceLineNo">559</span>                        }<a name="line.559"></a>
+<span class="sourceLineNo">560</span>                }<a name="line.560"></a>
+<span class="sourceLineNo">561</span>                <a name="line.561"></a>
+<span class="sourceLineNo">562</span>                if (delta != 0) {<a name="line.562"></a>
+<span class="sourceLineNo">563</span>                        if (person == null) {<a name="line.563"></a>
+<span class="sourceLineNo">564</span>                                Global.getSector().reportPlayerReputationChange(faction.getId(), delta);<a name="line.564"></a>
+<span class="sourceLineNo">565</span>                        } else {<a name="line.565"></a>
+<span class="sourceLineNo">566</span>                                Global.getSector().reportPlayerReputationChange(person, delta);<a name="line.566"></a>
+<span class="sourceLineNo">567</span>                        }<a name="line.567"></a>
+<span class="sourceLineNo">568</span>                }<a name="line.568"></a>
+<span class="sourceLineNo">569</span>                <a name="line.569"></a>
+<span class="sourceLineNo">570</span>                return new ReputationAdjustmentResult(delta);<a name="line.570"></a>
+<span class="sourceLineNo">571</span>        }<a name="line.571"></a>
+<span class="sourceLineNo">572</span>        <a name="line.572"></a>
+<span class="sourceLineNo">573</span>        <a name="line.573"></a>
+<span class="sourceLineNo">574</span>        private float getRepRewardForFoodShortage(RepActions action, MarketAPI market) {<a name="line.574"></a>
+<span class="sourceLineNo">575</span>                float mult = (float) market.getSize() / 10f + 0.5f;<a name="line.575"></a>
+<span class="sourceLineNo">576</span>                float delta = 0;<a name="line.576"></a>
+<span class="sourceLineNo">577</span>                switch (action) {<a name="line.577"></a>
+<span class="sourceLineNo">578</span>                case FOOD_SHORTAGE_PLAYER_ENDED_NORMAL:<a name="line.578"></a>
+<span class="sourceLineNo">579</span>                        delta = RepRewards.MEDIUM;<a name="line.579"></a>
+<span class="sourceLineNo">580</span>                        break;<a name="line.580"></a>
+<span class="sourceLineNo">581</span>                case FOOD_SHORTAGE_PLAYER_ENDED_FAST:<a name="line.581"></a>
+<span class="sourceLineNo">582</span>                        delta = RepRewards.HIGH;<a name="line.582"></a>
+<span class="sourceLineNo">583</span>                        break;<a name="line.583"></a>
+<span class="sourceLineNo">584</span>                }<a name="line.584"></a>
+<span class="sourceLineNo">585</span>                return delta * mult;<a name="line.585"></a>
+<span class="sourceLineNo">586</span>        }<a name="line.586"></a>
+<span class="sourceLineNo">587</span>        <a name="line.587"></a>
+<span class="sourceLineNo">588</span>        <a name="line.588"></a>
+<span class="sourceLineNo">589</span>        <a name="line.589"></a>
+<span class="sourceLineNo">590</span>        public static void addDeltaMessage(float delta, FactionAPI faction, PersonAPI person, TextPanelAPI panel,<a name="line.590"></a>
+<span class="sourceLineNo">591</span>                                                                           TooltipMakerAPI info, Color tc, boolean withCurrent, float pad) {<a name="line.591"></a>
+<span class="sourceLineNo">592</span>                if (delta == 0) {<a name="line.592"></a>
+<span class="sourceLineNo">593</span>                        addNoChangeMessage(delta, faction, person, null, panel, info, tc, withCurrent, pad);<a name="line.593"></a>
+<span class="sourceLineNo">594</span>                } else {<a name="line.594"></a>
+<span class="sourceLineNo">595</span>                        addAdjustmentMessage(delta, faction, person, null, panel, info, tc, withCurrent, pad);<a name="line.595"></a>
+<span class="sourceLineNo">596</span>                }<a name="line.596"></a>
+<span class="sourceLineNo">597</span>                <a name="line.597"></a>
+<span class="sourceLineNo">598</span>        }<a name="line.598"></a>
+<span class="sourceLineNo">599</span>        public static void addNoChangeMessage(float deltaSign, FactionAPI faction, PersonAPI person, CommMessageAPI message, TextPanelAPI panel,<a name="line.599"></a>
+<span class="sourceLineNo">600</span>                        TooltipMakerAPI info, Color tc, boolean withCurrent, float pad) {<a name="line.600"></a>
+<span class="sourceLineNo">601</span>                addNoChangeMessage(deltaSign, faction, person, message, panel, info, tc, withCurrent, pad, null);<a name="line.601"></a>
+<span class="sourceLineNo">602</span>        }<a name="line.602"></a>
+<span class="sourceLineNo">603</span>        public static void addNoChangeMessage(float deltaSign, FactionAPI faction, PersonAPI person, CommMessageAPI message, TextPanelAPI panel,<a name="line.603"></a>
+<span class="sourceLineNo">604</span>                                                                                  TooltipMakerAPI info, Color tc, boolean withCurrent, float pad, String reason) {<a name="line.604"></a>
+<span class="sourceLineNo">605</span>                FactionAPI player = Global.getSector().getFaction(Factions.PLAYER);<a name="line.605"></a>
+<span class="sourceLineNo">606</span>//              String standing = player.getRelationshipLevel(faction).getDisplayName();<a name="line.606"></a>
+<span class="sourceLineNo">607</span>//              standing = standing.toLowerCase();<a name="line.607"></a>
+<span class="sourceLineNo">608</span>                RepLevel level = player.getRelationshipLevel(faction.getId());<a name="line.608"></a>
+<span class="sourceLineNo">609</span>                int repInt = RepLevel.getRepInt(player.getRelationship(faction.getId()));<a name="line.609"></a>
+<span class="sourceLineNo">610</span>                <a name="line.610"></a>
+<span class="sourceLineNo">611</span>                Color textColor = Global.getSettings().getColor("standardTextColor");<a name="line.611"></a>
+<span class="sourceLineNo">612</span>                Color factionColor = faction.getBaseUIColor();<a name="line.612"></a>
+<span class="sourceLineNo">613</span>                Color relColor = faction.getRelColor(player.getId());<a name="line.613"></a>
+<span class="sourceLineNo">614</span>                String targetName = faction.getDisplayNameWithArticle();<a name="line.614"></a>
+<span class="sourceLineNo">615</span>                String targetNameHighlight = faction.getDisplayName();<a name="line.615"></a>
+<span class="sourceLineNo">616</span>                if (Factions.INDEPENDENT.equals(faction.getId())) {<a name="line.616"></a>
+<span class="sourceLineNo">617</span>                        targetName = faction.getDisplayNameLongWithArticle();<a name="line.617"></a>
+<span class="sourceLineNo">618</span>                        targetNameHighlight = faction.getDisplayNameLong();<a name="line.618"></a>
+<span class="sourceLineNo">619</span>                }<a name="line.619"></a>
+<span class="sourceLineNo">620</span>                <a name="line.620"></a>
+<span class="sourceLineNo">621</span>                if (person != null) {<a name="line.621"></a>
+<span class="sourceLineNo">622</span>                        targetName = person.getName().getFullName();<a name="line.622"></a>
+<span class="sourceLineNo">623</span>                        relColor = person.getRelToPlayer().getRelColor();<a name="line.623"></a>
+<span class="sourceLineNo">624</span>                        repInt = RepLevel.getRepInt(person.getRelToPlayer().getRel());<a name="line.624"></a>
+<span class="sourceLineNo">625</span>                        level = person.getRelToPlayer().getLevel();<a name="line.625"></a>
+<span class="sourceLineNo">626</span>                }<a name="line.626"></a>
+<span class="sourceLineNo">627</span>                <a name="line.627"></a>
+<span class="sourceLineNo">628</span>                String standing = "" + repInt + "/100" + " (" + level.getDisplayName().toLowerCase() + ")";<a name="line.628"></a>
+<span class="sourceLineNo">629</span>                <a name="line.629"></a>
+<span class="sourceLineNo">630</span>                <a name="line.630"></a>
+<span class="sourceLineNo">631</span>                <a name="line.631"></a>
+<span class="sourceLineNo">632</span><a name="line.632"></a>
+<span class="sourceLineNo">633</span>                String text = "Your relationship with " + targetName + <a name="line.633"></a>
+<span class="sourceLineNo">634</span>                                        ", currently at " + standing + ", is already well-established and is not affected by your recent actions";<a name="line.634"></a>
+<span class="sourceLineNo">635</span>                <a name="line.635"></a>
+<span class="sourceLineNo">636</span>                if (panel == null &amp;&amp; info == null) {<a name="line.636"></a>
+<span class="sourceLineNo">637</span>//                      Global.getSector().getCampaignUI().addMessage(text, textColor, <a name="line.637"></a>
+<span class="sourceLineNo">638</span>//                                      standing, <a name="line.638"></a>
+<span class="sourceLineNo">639</span>//                                      relColor);<a name="line.639"></a>
+<span class="sourceLineNo">640</span>                        <a name="line.640"></a>
+<span class="sourceLineNo">641</span>                        MessageIntel intel = new MessageIntel();<a name="line.641"></a>
+<span class="sourceLineNo">642</span>                        if (person == null) {<a name="line.642"></a>
+<span class="sourceLineNo">643</span>                                intel.addLine("Relationship with " + targetName + " not affected", null, <a name="line.643"></a>
+<span class="sourceLineNo">644</span>                                                         new String[] {targetNameHighlight}, <a name="line.644"></a>
+<span class="sourceLineNo">645</span>                                                                                   factionColor); <a name="line.645"></a>
+<span class="sourceLineNo">646</span>                                intel.addLine(BaseIntelPlugin.BULLET + "Currently at %s", null, new String[]{standing}, relColor);<a name="line.646"></a>
+<span class="sourceLineNo">647</span>                                if (reason != null) intel.addLine(BaseIntelPlugin.BULLET + reason);<a name="line.647"></a>
+<span class="sourceLineNo">648</span>                                intel.setIcon(faction.getCrest());<a name="line.648"></a>
+<span class="sourceLineNo">649</span>                        } else {<a name="line.649"></a>
+<span class="sourceLineNo">650</span>                                intel.addLine("Relationship with " + targetName + " not affected"); <a name="line.650"></a>
+<span class="sourceLineNo">651</span>                                intel.addLine(BaseIntelPlugin.BULLET + "Currently at %s", null, new String[]{standing}, relColor);<a name="line.651"></a>
+<span class="sourceLineNo">652</span>                                if (reason != null) intel.addLine(BaseIntelPlugin.BULLET + reason);<a name="line.652"></a>
+<span class="sourceLineNo">653</span>                                intel.setIcon(person.getPortraitSprite());<a name="line.653"></a>
+<span class="sourceLineNo">654</span>                        }<a name="line.654"></a>
+<span class="sourceLineNo">655</span>                        //intel.setIcon(Global.getSettings().getSpriteName("intel_categories", "reputation"));<a name="line.655"></a>
+<span class="sourceLineNo">656</span>                        Global.getSector().getCampaignUI().addMessage(intel);<a name="line.656"></a>
+<span class="sourceLineNo">657</span>                }<a name="line.657"></a>
+<span class="sourceLineNo">658</span>                <a name="line.658"></a>
+<span class="sourceLineNo">659</span>                if (panel != null) {<a name="line.659"></a>
+<span class="sourceLineNo">660</span>                        if (panel.getDialog() != null) {<a name="line.660"></a>
+<span class="sourceLineNo">661</span>                                SectorEntityToken target = panel.getDialog().getInteractionTarget();<a name="line.661"></a>
+<span class="sourceLineNo">662</span>                                if (target != null) {<a name="line.662"></a>
+<span class="sourceLineNo">663</span>                                        if (target.getActivePerson() != null) {<a name="line.663"></a>
+<span class="sourceLineNo">664</span>                                                target.getActivePerson().getMemory();<a name="line.664"></a>
+<span class="sourceLineNo">665</span>                                        }<a name="line.665"></a>
+<span class="sourceLineNo">666</span>                                        target.getMemory();<a name="line.666"></a>
+<span class="sourceLineNo">667</span>                                }<a name="line.667"></a>
+<span class="sourceLineNo">668</span>                        }<a name="line.668"></a>
+<span class="sourceLineNo">669</span>                }<a name="line.669"></a>
+<span class="sourceLineNo">670</span>                <a name="line.670"></a>
+<span class="sourceLineNo">671</span>                if (text != null) {<a name="line.671"></a>
+<span class="sourceLineNo">672</span>                        if (message != null) {<a name="line.672"></a>
+<span class="sourceLineNo">673</span>                                text = text.replaceAll(" by your recent actions", " by this.");<a name="line.673"></a>
+<span class="sourceLineNo">674</span>                                appendToSection2(text, message);<a name="line.674"></a>
+<span class="sourceLineNo">675</span>                                appendToSectionHighlights(message.getSection2(), <a name="line.675"></a>
+<span class="sourceLineNo">676</span>                                                new String [] {standing}, <a name="line.676"></a>
+<span class="sourceLineNo">677</span>                                                new Color [] {relColor});<a name="line.677"></a>
+<span class="sourceLineNo">678</span>                                <a name="line.678"></a>
+<span class="sourceLineNo">679</span>                                message.addTag(Tags.REPORT_REP);<a name="line.679"></a>
+<span class="sourceLineNo">680</span>                                if (person == null) {<a name="line.680"></a>
+<span class="sourceLineNo">681</span>                                        message.getCustomMap().put(CommMessageAPI.MESSAGE_FACTION_ID_KEY, faction.getId());<a name="line.681"></a>
+<span class="sourceLineNo">682</span>                                } else {<a name="line.682"></a>
+<span class="sourceLineNo">683</span>                                        message.getCustomMap().put(CommMessageAPI.MESSAGE_PERSON_ID_KEY, person.getId());<a name="line.683"></a>
+<span class="sourceLineNo">684</span>                                }<a name="line.684"></a>
+<span class="sourceLineNo">685</span>                                //message.setSmallIcon(faction.getLogo());<a name="line.685"></a>
+<span class="sourceLineNo">686</span>                        } <a name="line.686"></a>
+<span class="sourceLineNo">687</span>                        <a name="line.687"></a>
+<span class="sourceLineNo">688</span>                        if (panel != null) {<a name="line.688"></a>
+<span class="sourceLineNo">689</span>                                text = text.replaceAll(" by your recent actions", "");<a name="line.689"></a>
+<span class="sourceLineNo">690</span>                                printToTextPanel(panel, text, <a name="line.690"></a>
+<span class="sourceLineNo">691</span>                                                new String [] {standing}, <a name="line.691"></a>
+<span class="sourceLineNo">692</span>                                                new Color [] {relColor});<a name="line.692"></a>
+<span class="sourceLineNo">693</span>                        }<a name="line.693"></a>
+<span class="sourceLineNo">694</span>                }<a name="line.694"></a>
+<span class="sourceLineNo">695</span>                <a name="line.695"></a>
+<span class="sourceLineNo">696</span>                if (info != null) {<a name="line.696"></a>
+<span class="sourceLineNo">697</span>                        if (person == null) {<a name="line.697"></a>
+<span class="sourceLineNo">698</span>                                LabelAPI label = info.addPara("Relationship with " + targetName + " not affected", tc, pad);<a name="line.698"></a>
+<span class="sourceLineNo">699</span>                                label.setHighlight(targetNameHighlight); <a name="line.699"></a>
+<span class="sourceLineNo">700</span>                                label.setHighlightColors(factionColor); <a name="line.700"></a>
+<span class="sourceLineNo">701</span>                                if (withCurrent) info.addPara("Currently at %s", 0f, tc, relColor, standing);<a name="line.701"></a>
+<span class="sourceLineNo">702</span>                        } else {<a name="line.702"></a>
+<span class="sourceLineNo">703</span>                                LabelAPI label = info.addPara("Relationship with " + targetName + " not affected", tc, pad);<a name="line.703"></a>
+<span class="sourceLineNo">704</span>                                if (withCurrent) info.addPara("Currently at %s", 0f, tc, relColor, standing);<a name="line.704"></a>
+<span class="sourceLineNo">705</span>                        }<a name="line.705"></a>
+<span class="sourceLineNo">706</span>                }<a name="line.706"></a>
+<span class="sourceLineNo">707</span>        }<a name="line.707"></a>
+<span class="sourceLineNo">708</span>        <a name="line.708"></a>
+<span class="sourceLineNo">709</span>        <a name="line.709"></a>
+<span class="sourceLineNo">710</span>        public static void addCurrentStanding(FactionAPI faction, PersonAPI person, TextPanelAPI panel,<a name="line.710"></a>
+<span class="sourceLineNo">711</span>                        TooltipMakerAPI info, Color tc, float pad) {<a name="line.711"></a>
+<span class="sourceLineNo">712</span>                FactionAPI player = Global.getSector().getFaction(Factions.PLAYER);<a name="line.712"></a>
+<span class="sourceLineNo">713</span>                RepLevel level = player.getRelationshipLevel(faction.getId());<a name="line.713"></a>
+<span class="sourceLineNo">714</span>                int repInt = RepLevel.getRepInt(player.getRelationship(faction.getId()));<a name="line.714"></a>
+<span class="sourceLineNo">715</span><a name="line.715"></a>
+<span class="sourceLineNo">716</span>                Color factionColor = faction.getBaseUIColor();<a name="line.716"></a>
+<span class="sourceLineNo">717</span>                Color relColor = faction.getRelColor(player.getId());<a name="line.717"></a>
+<span class="sourceLineNo">718</span>                String targetName = faction.getDisplayNameWithArticle();<a name="line.718"></a>
+<span class="sourceLineNo">719</span>                String targetNameHighlight = faction.getDisplayName();<a name="line.719"></a>
+<span class="sourceLineNo">720</span>                if (Factions.INDEPENDENT.equals(faction.getId())) {<a name="line.720"></a>
+<span class="sourceLineNo">721</span>                        targetName = faction.getDisplayNameLongWithArticle();<a name="line.721"></a>
+<span class="sourceLineNo">722</span>                        targetNameHighlight = faction.getDisplayNameLong();<a name="line.722"></a>
+<span class="sourceLineNo">723</span>                }<a name="line.723"></a>
+<span class="sourceLineNo">724</span><a name="line.724"></a>
+<span class="sourceLineNo">725</span>                if (person != null) {<a name="line.725"></a>
+<span class="sourceLineNo">726</span>                        targetName = person.getName().getFullName();<a name="line.726"></a>
+<span class="sourceLineNo">727</span>                        relColor = person.getRelToPlayer().getRelColor();<a name="line.727"></a>
+<span class="sourceLineNo">728</span>                        repInt = RepLevel.getRepInt(person.getRelToPlayer().getRel());<a name="line.728"></a>
+<span class="sourceLineNo">729</span>                        level = person.getRelToPlayer().getLevel();<a name="line.729"></a>
+<span class="sourceLineNo">730</span>                }<a name="line.730"></a>
+<span class="sourceLineNo">731</span><a name="line.731"></a>
+<span class="sourceLineNo">732</span>                String standing = "" + repInt + "/100" + " (" + level.getDisplayName().toLowerCase() + ")";<a name="line.732"></a>
+<span class="sourceLineNo">733</span><a name="line.733"></a>
+<span class="sourceLineNo">734</span>                String text = "Current standing with " + targetName + <a name="line.734"></a>
+<span class="sourceLineNo">735</span>                                          " is " + standing + "";<a name="line.735"></a>
+<span class="sourceLineNo">736</span><a name="line.736"></a>
+<span class="sourceLineNo">737</span>                if (panel != null) {<a name="line.737"></a>
+<span class="sourceLineNo">738</span>                        printToTextPanel(panel, text, <a name="line.738"></a>
+<span class="sourceLineNo">739</span>                                        new String [] {targetNameHighlight, standing}, <a name="line.739"></a>
+<span class="sourceLineNo">740</span>                                        new Color [] {factionColor, relColor});<a name="line.740"></a>
+<span class="sourceLineNo">741</span>                }<a name="line.741"></a>
+<span class="sourceLineNo">742</span><a name="line.742"></a>
+<span class="sourceLineNo">743</span>                if (info != null) {<a name="line.743"></a>
+<span class="sourceLineNo">744</span>                        String end = "";<a name="line.744"></a>
+<span class="sourceLineNo">745</span>                        if (pad &gt; 0) {<a name="line.745"></a>
+<span class="sourceLineNo">746</span>                                end = ".";<a name="line.746"></a>
+<span class="sourceLineNo">747</span>                        }<a name="line.747"></a>
+<span class="sourceLineNo">748</span>                        if (person == null) {<a name="line.748"></a>
+<span class="sourceLineNo">749</span>                                LabelAPI label = info.addPara("Current standing with " + targetName + <a name="line.749"></a>
+<span class="sourceLineNo">750</span>                                                " is %s" + end, pad, tc, relColor, standing);<a name="line.750"></a>
+<span class="sourceLineNo">751</span>                                label.setHighlight(targetNameHighlight, standing); <a name="line.751"></a>
+<span class="sourceLineNo">752</span>                                label.setHighlightColors(factionColor, relColor);<a name="line.752"></a>
+<span class="sourceLineNo">753</span>                        } else {<a name="line.753"></a>
+<span class="sourceLineNo">754</span>                                LabelAPI label = info.addPara("Current standing with " + targetName + <a name="line.754"></a>
+<span class="sourceLineNo">755</span>                                                " is %s" + end, pad, tc, relColor, standing);<a name="line.755"></a>
+<span class="sourceLineNo">756</span>                                label.setHighlight(targetNameHighlight, standing); <a name="line.756"></a>
+<span class="sourceLineNo">757</span>                                label.setHighlightColors(factionColor, relColor);<a name="line.757"></a>
+<span class="sourceLineNo">758</span>                        }<a name="line.758"></a>
+<span class="sourceLineNo">759</span>                }<a name="line.759"></a>
+<span class="sourceLineNo">760</span>        }<a name="line.760"></a>
+<span class="sourceLineNo">761</span>        <a name="line.761"></a>
+<span class="sourceLineNo">762</span>        public static void addRequiredStanding(FactionAPI faction, RepLevel req, PersonAPI person, TextPanelAPI panel,<a name="line.762"></a>
+<span class="sourceLineNo">763</span>                        TooltipMakerAPI info, Color tc, float pad, boolean orBetter) {<a name="line.763"></a>
+<span class="sourceLineNo">764</span>                FactionAPI player = Global.getSector().getFaction(Factions.PLAYER);<a name="line.764"></a>
+<span class="sourceLineNo">765</span>                RepLevel level = req;<a name="line.765"></a>
+<span class="sourceLineNo">766</span><a name="line.766"></a>
+<span class="sourceLineNo">767</span>                float rel = level.getMin() + 0.01f;<a name="line.767"></a>
+<span class="sourceLineNo">768</span>                <a name="line.768"></a>
+<span class="sourceLineNo">769</span>                PersonAPI fake = Global.getFactory().createPerson();<a name="line.769"></a>
+<span class="sourceLineNo">770</span>                fake.getRelToPlayer().setRel(rel);<a name="line.770"></a>
+<span class="sourceLineNo">771</span><a name="line.771"></a>
+<span class="sourceLineNo">772</span>                int repInt = RepLevel.getRepInt(rel);<a name="line.772"></a>
+<span class="sourceLineNo">773</span>                Color relColor = fake.getRelToPlayer().getRelColor(level);<a name="line.773"></a>
+<span class="sourceLineNo">774</span>                <a name="line.774"></a>
+<span class="sourceLineNo">775</span>                <a name="line.775"></a>
+<span class="sourceLineNo">776</span>                Color factionColor = faction.getBaseUIColor();<a name="line.776"></a>
+<span class="sourceLineNo">777</span>                String targetName = faction.getDisplayNameWithArticle();<a name="line.777"></a>
+<span class="sourceLineNo">778</span>                String targetNameHighlight = faction.getDisplayName();<a name="line.778"></a>
+<span class="sourceLineNo">779</span>                if (Factions.INDEPENDENT.equals(faction.getId())) {<a name="line.779"></a>
+<span class="sourceLineNo">780</span>                        targetName = faction.getDisplayNameLongWithArticle();<a name="line.780"></a>
+<span class="sourceLineNo">781</span>                        targetNameHighlight = faction.getDisplayNameLong();<a name="line.781"></a>
+<span class="sourceLineNo">782</span>                }<a name="line.782"></a>
+<span class="sourceLineNo">783</span><a name="line.783"></a>
+<span class="sourceLineNo">784</span>                if (person != null) {<a name="line.784"></a>
+<span class="sourceLineNo">785</span>                        targetName = person.getName().getFullName();<a name="line.785"></a>
+<span class="sourceLineNo">786</span>                        relColor = person.getRelToPlayer().getRelColor();<a name="line.786"></a>
+<span class="sourceLineNo">787</span>                }<a name="line.787"></a>
+<span class="sourceLineNo">788</span>                <a name="line.788"></a>
+<span class="sourceLineNo">789</span><a name="line.789"></a>
+<span class="sourceLineNo">790</span>                String standing = "" + repInt + "/100" + " (" + level.getDisplayName().toLowerCase() + ")";<a name="line.790"></a>
+<span class="sourceLineNo">791</span><a name="line.791"></a>
+<span class="sourceLineNo">792</span>                String mid = "or better";<a name="line.792"></a>
+<span class="sourceLineNo">793</span>                if (!orBetter) {<a name="line.793"></a>
+<span class="sourceLineNo">794</span>                        mid = "or worse";<a name="line.794"></a>
+<span class="sourceLineNo">795</span>                }<a name="line.795"></a>
+<span class="sourceLineNo">796</span>                String text = "Requires " + standing + " " + mid + " standing with " + targetName;<a name="line.796"></a>
+<span class="sourceLineNo">797</span>                <a name="line.797"></a>
+<span class="sourceLineNo">798</span>                if (panel != null) {<a name="line.798"></a>
+<span class="sourceLineNo">799</span>                        printToTextPanel(panel, text, <a name="line.799"></a>
+<span class="sourceLineNo">800</span>                                        new String [] {standing, targetNameHighlight}, <a name="line.800"></a>
+<span class="sourceLineNo">801</span>                                        new Color [] {relColor, factionColor});<a name="line.801"></a>
+<span class="sourceLineNo">802</span>                }<a name="line.802"></a>
+<span class="sourceLineNo">803</span><a name="line.803"></a>
+<span class="sourceLineNo">804</span>                if (info != null) {<a name="line.804"></a>
+<span class="sourceLineNo">805</span>                        String end = "";<a name="line.805"></a>
+<span class="sourceLineNo">806</span>                        if (pad &gt; 0) {<a name="line.806"></a>
+<span class="sourceLineNo">807</span>                                end = ".";<a name="line.807"></a>
+<span class="sourceLineNo">808</span>                        }<a name="line.808"></a>
+<span class="sourceLineNo">809</span>                        if (person == null) {<a name="line.809"></a>
+<span class="sourceLineNo">810</span>                                LabelAPI label = info.addPara("Requires %s " + mid + " standing with " + targetName + end, <a name="line.810"></a>
+<span class="sourceLineNo">811</span>                                                                                          pad, tc, relColor, standing);<a name="line.811"></a>
+<span class="sourceLineNo">812</span>                                label.setHighlight(standing, targetNameHighlight); <a name="line.812"></a>
+<span class="sourceLineNo">813</span>                                label.setHighlightColors(relColor, factionColor);<a name="line.813"></a>
+<span class="sourceLineNo">814</span>                        } else {<a name="line.814"></a>
+<span class="sourceLineNo">815</span>                                LabelAPI label = info.addPara("Requires %s " + mid + " standing with " + targetName + end, <a name="line.815"></a>
+<span class="sourceLineNo">816</span>                                                                                          pad, tc, relColor, standing);<a name="line.816"></a>
+<span class="sourceLineNo">817</span>                                label.setHighlight(standing, targetNameHighlight); <a name="line.817"></a>
+<span class="sourceLineNo">818</span>                                label.setHighlightColors(relColor, factionColor);<a name="line.818"></a>
+<span class="sourceLineNo">819</span>                        }<a name="line.819"></a>
+<span class="sourceLineNo">820</span>                }<a name="line.820"></a>
+<span class="sourceLineNo">821</span>        }<a name="line.821"></a>
+<span class="sourceLineNo">822</span>        <a name="line.822"></a>
+<span class="sourceLineNo">823</span>        <a name="line.823"></a>
+<span class="sourceLineNo">824</span>        public static void addAdjustmentMessage(float delta, FactionAPI faction, PersonAPI person, <a name="line.824"></a>
+<span class="sourceLineNo">825</span>                        TextPanelAPI panel, <a name="line.825"></a>
+<span class="sourceLineNo">826</span>                        TooltipMakerAPI info, Color tc, boolean withCurrent, float pad) {<a name="line.826"></a>
+<span class="sourceLineNo">827</span>                addAdjustmentMessage(delta, faction, person, null, panel, info, tc, withCurrent, pad, null);<a name="line.827"></a>
+<span class="sourceLineNo">828</span>        }<a name="line.828"></a>
+<span class="sourceLineNo">829</span>        public static void addAdjustmentMessage(float delta, FactionAPI faction, PersonAPI person, <a name="line.829"></a>
+<span class="sourceLineNo">830</span>                        CommMessageAPI message, TextPanelAPI panel, <a name="line.830"></a>
+<span class="sourceLineNo">831</span>                        TooltipMakerAPI info, Color tc, boolean withCurrent, float pad) {<a name="line.831"></a>
+<span class="sourceLineNo">832</span>                addAdjustmentMessage(delta, faction, person, message, panel, info, tc, withCurrent, pad, null);<a name="line.832"></a>
+<span class="sourceLineNo">833</span>        }<a name="line.833"></a>
+<span class="sourceLineNo">834</span>        public static void addAdjustmentMessage(float delta, FactionAPI faction, PersonAPI person, <a name="line.834"></a>
+<span class="sourceLineNo">835</span>                        TextPanelAPI panel, <a name="line.835"></a>
+<span class="sourceLineNo">836</span>                        TooltipMakerAPI info, Color tc, boolean withCurrent, float pad,<a name="line.836"></a>
+<span class="sourceLineNo">837</span>                        String reason) {<a name="line.837"></a>
+<span class="sourceLineNo">838</span>                addAdjustmentMessage(delta, faction, person, null, panel, info, tc, withCurrent, pad, reason);<a name="line.838"></a>
+<span class="sourceLineNo">839</span>        }<a name="line.839"></a>
+<span class="sourceLineNo">840</span>        public static void addAdjustmentMessage(float delta, FactionAPI faction, PersonAPI person, <a name="line.840"></a>
+<span class="sourceLineNo">841</span>                                                        CommMessageAPI message, TextPanelAPI panel, <a name="line.841"></a>
+<span class="sourceLineNo">842</span>                                                        TooltipMakerAPI info, Color tc, boolean withCurrent, float pad,<a name="line.842"></a>
+<span class="sourceLineNo">843</span>                                                        String reason) {<a name="line.843"></a>
+<span class="sourceLineNo">844</span>                FactionAPI player = Global.getSector().getFaction(Factions.PLAYER);<a name="line.844"></a>
+<span class="sourceLineNo">845</span>                <a name="line.845"></a>
+<span class="sourceLineNo">846</span>                //faction may be null here if it's w/ person<a name="line.846"></a>
+<span class="sourceLineNo">847</span>                <a name="line.847"></a>
+<span class="sourceLineNo">848</span>                RepLevel level = null;<a name="line.848"></a>
+<span class="sourceLineNo">849</span>                int deltaInt = (int) Math.round((Math.abs(delta) * 100f));<a name="line.849"></a>
+<span class="sourceLineNo">850</span>                String targetName = null;<a name="line.850"></a>
+<span class="sourceLineNo">851</span>                String targetNameHighlight = null;<a name="line.851"></a>
+<span class="sourceLineNo">852</span>                Color relColor = null;<a name="line.852"></a>
+<span class="sourceLineNo">853</span>                <a name="line.853"></a>
+<span class="sourceLineNo">854</span>                int repInt = 0;<a name="line.854"></a>
+<span class="sourceLineNo">855</span>                if (faction != null) {<a name="line.855"></a>
+<span class="sourceLineNo">856</span>                        level = player.getRelationshipLevel(faction.getId());<a name="line.856"></a>
+<span class="sourceLineNo">857</span>                        repInt = RepLevel.getRepInt(player.getRelationship(faction.getId()));<a name="line.857"></a>
+<span class="sourceLineNo">858</span>                        targetName = faction.getDisplayNameWithArticle();<a name="line.858"></a>
+<span class="sourceLineNo">859</span>                        targetNameHighlight = faction.getDisplayName();<a name="line.859"></a>
+<span class="sourceLineNo">860</span>                        if (Factions.INDEPENDENT.equals(faction.getId())) {<a name="line.860"></a>
+<span class="sourceLineNo">861</span>                                targetName = faction.getDisplayNameLongWithArticle();<a name="line.861"></a>
+<span class="sourceLineNo">862</span>                                targetNameHighlight  = faction.getDisplayNameLong();<a name="line.862"></a>
+<span class="sourceLineNo">863</span>                        }<a name="line.863"></a>
+<span class="sourceLineNo">864</span>                        relColor = faction.getRelColor(player.getId());<a name="line.864"></a>
+<span class="sourceLineNo">865</span>                }<a name="line.865"></a>
+<span class="sourceLineNo">866</span>                <a name="line.866"></a>
+<span class="sourceLineNo">867</span>                if (person != null) {<a name="line.867"></a>
+<span class="sourceLineNo">868</span>                        targetName = person.getName().getFullName();<a name="line.868"></a>
+<span class="sourceLineNo">869</span>                        relColor = person.getRelToPlayer().getRelColor();<a name="line.869"></a>
+<span class="sourceLineNo">870</span>                        repInt = RepLevel.getRepInt(person.getRelToPlayer().getRel());<a name="line.870"></a>
+<span class="sourceLineNo">871</span>                        level = person.getRelToPlayer().getLevel();<a name="line.871"></a>
+<span class="sourceLineNo">872</span>                }<a name="line.872"></a>
+<span class="sourceLineNo">873</span>                <a name="line.873"></a>
+<span class="sourceLineNo">874</span>                String standing = "" + repInt + "/100" + " (" + level.getDisplayName().toLowerCase() + ")";<a name="line.874"></a>
+<span class="sourceLineNo">875</span>                String text = null;<a name="line.875"></a>
+<span class="sourceLineNo">876</span>                <a name="line.876"></a>
+<span class="sourceLineNo">877</span>                <a name="line.877"></a>
+<span class="sourceLineNo">878</span>                Color textColor = Global.getSettings().getColor("standardTextColor");<a name="line.878"></a>
+<span class="sourceLineNo">879</span>                //Color textColor = Global.getSettings().getColor("textGrayColor");<a name="line.879"></a>
+<span class="sourceLineNo">880</span>                Color factionColor = null;<a name="line.880"></a>
+<span class="sourceLineNo">881</span>                if (faction != null) factionColor = faction.getBaseUIColor();<a name="line.881"></a>
+<span class="sourceLineNo">882</span>                <a name="line.882"></a>
+<span class="sourceLineNo">883</span>                Color deltaColor = Global.getSettings().getColor("textFriendColor");<a name="line.883"></a>
+<span class="sourceLineNo">884</span>                String deltaString = "improved by " + deltaInt;<a name="line.884"></a>
+<span class="sourceLineNo">885</span>                if (Math.abs(delta) &lt;= 0.0049f || deltaInt == 0) {<a name="line.885"></a>
+<span class="sourceLineNo">886</span>                        deltaString = "not affected";<a name="line.886"></a>
+<span class="sourceLineNo">887</span>                        deltaColor = tc;<a name="line.887"></a>
+<span class="sourceLineNo">888</span>                } else if (delta &lt; 0) {<a name="line.888"></a>
+<span class="sourceLineNo">889</span>                        deltaColor = Misc.getNegativeHighlightColor();<a name="line.889"></a>
+<span class="sourceLineNo">890</span>                        deltaString = "reduced by " + deltaInt;<a name="line.890"></a>
+<span class="sourceLineNo">891</span>                }<a name="line.891"></a>
+<span class="sourceLineNo">892</span>                <a name="line.892"></a>
+<span class="sourceLineNo">893</span>                text = "Relationship with " +  targetName + " " + deltaString + ", currently at " + standing + "";<a name="line.893"></a>
+<span class="sourceLineNo">894</span>                <a name="line.894"></a>
+<span class="sourceLineNo">895</span>                if (panel == null &amp;&amp; info == null) {<a name="line.895"></a>
+<span class="sourceLineNo">896</span>//                      Global.getSector().getCampaignUI().addMessage(text, textColor, <a name="line.896"></a>
+<span class="sourceLineNo">897</span>//                                      deltaString, standing, <a name="line.897"></a>
+<span class="sourceLineNo">898</span>//                                      deltaColor, relColor);<a name="line.898"></a>
+<span class="sourceLineNo">899</span>                        <a name="line.899"></a>
+<span class="sourceLineNo">900</span>                        MessageIntel intel = new MessageIntel();<a name="line.900"></a>
+<span class="sourceLineNo">901</span>                        if (person == null) {<a name="line.901"></a>
+<span class="sourceLineNo">902</span>                                intel.addLine("Relationship with " + targetName + " " + deltaString, null, <a name="line.902"></a>
+<span class="sourceLineNo">903</span>                                                         new String[] {targetNameHighlight, deltaString}, <a name="line.903"></a>
+<span class="sourceLineNo">904</span>                                                         factionColor, deltaColor); <a name="line.904"></a>
+<span class="sourceLineNo">905</span>                                intel.addLine(BaseIntelPlugin.BULLET + "Currently at %s", null, new String[]{standing}, relColor);<a name="line.905"></a>
+<span class="sourceLineNo">906</span>                                if (reason != null) intel.addLine(BaseIntelPlugin.BULLET + reason);<a name="line.906"></a>
+<span class="sourceLineNo">907</span>                                if (faction != null) intel.setIcon(faction.getCrest());<a name="line.907"></a>
+<span class="sourceLineNo">908</span>                        } else {<a name="line.908"></a>
+<span class="sourceLineNo">909</span>                                intel.addLine("Relationship with " + targetName + " " + deltaString, null, <a name="line.909"></a>
+<span class="sourceLineNo">910</span>                                                 new String[] {deltaString}, <a name="line.910"></a>
+<span class="sourceLineNo">911</span>                                                                           deltaColor); <a name="line.911"></a>
+<span class="sourceLineNo">912</span>                                intel.addLine(BaseIntelPlugin.BULLET + "Currently at %s", null, new String[]{standing}, relColor);<a name="line.912"></a>
+<span class="sourceLineNo">913</span>                                if (reason != null) intel.addLine(BaseIntelPlugin.BULLET + reason);<a name="line.913"></a>
+<span class="sourceLineNo">914</span>                                intel.setIcon(person.getPortraitSprite());<a name="line.914"></a>
+<span class="sourceLineNo">915</span>                        }<a name="line.915"></a>
+<span class="sourceLineNo">916</span>                        //intel.setIcon(Global.getSettings().getSpriteName("intel_categories", "reputation"));<a name="line.916"></a>
+<span class="sourceLineNo">917</span>                        Global.getSector().getCampaignUI().addMessage(intel);<a name="line.917"></a>
+<span class="sourceLineNo">918</span>                }<a name="line.918"></a>
+<span class="sourceLineNo">919</span>                <a name="line.919"></a>
+<span class="sourceLineNo">920</span>                if (text != null) {<a name="line.920"></a>
+<span class="sourceLineNo">921</span>                        <a name="line.921"></a>
+<span class="sourceLineNo">922</span>                        if (message != null) {<a name="line.922"></a>
+<span class="sourceLineNo">923</span>                                text += ".";<a name="line.923"></a>
+<span class="sourceLineNo">924</span>                                appendToSection2(text, message);<a name="line.924"></a>
+<span class="sourceLineNo">925</span>                                <a name="line.925"></a>
+<span class="sourceLineNo">926</span>                                appendToSectionHighlights(message.getSection2(), <a name="line.926"></a>
+<span class="sourceLineNo">927</span>                                                new String [] {deltaString, standing}, <a name="line.927"></a>
+<span class="sourceLineNo">928</span>                                                new Color [] {deltaColor, relColor});<a name="line.928"></a>
+<span class="sourceLineNo">929</span>                                <a name="line.929"></a>
+<span class="sourceLineNo">930</span>                                message.addTag(Tags.REPORT_REP);<a name="line.930"></a>
+<span class="sourceLineNo">931</span>                                if (person == null) {<a name="line.931"></a>
+<span class="sourceLineNo">932</span>                                        message.getCustomMap().put(CommMessageAPI.MESSAGE_FACTION_ID_KEY, faction.getId());<a name="line.932"></a>
+<span class="sourceLineNo">933</span>                                } else {<a name="line.933"></a>
+<span class="sourceLineNo">934</span>                                        message.getCustomMap().put(CommMessageAPI.MESSAGE_PERSON_ID_KEY, person.getId());<a name="line.934"></a>
+<span class="sourceLineNo">935</span>                                }<a name="line.935"></a>
+<span class="sourceLineNo">936</span>                                //message.setSmallIcon(faction.getLogo());<a name="line.936"></a>
+<span class="sourceLineNo">937</span>                        }<a name="line.937"></a>
+<span class="sourceLineNo">938</span>                        <a name="line.938"></a>
+<span class="sourceLineNo">939</span>                        if (panel != null) {<a name="line.939"></a>
+<span class="sourceLineNo">940</span>                                printToTextPanel(panel, text, <a name="line.940"></a>
+<span class="sourceLineNo">941</span>                                                new String [] {deltaString, standing},<a name="line.941"></a>
+<span class="sourceLineNo">942</span>                                                new Color [] {deltaColor, relColor});<a name="line.942"></a>
+<span class="sourceLineNo">943</span>                        }<a name="line.943"></a>
+<span class="sourceLineNo">944</span>                }<a name="line.944"></a>
+<span class="sourceLineNo">945</span>                <a name="line.945"></a>
+<span class="sourceLineNo">946</span>                if (info != null) {<a name="line.946"></a>
+<span class="sourceLineNo">947</span>                        if (person == null) {<a name="line.947"></a>
+<span class="sourceLineNo">948</span>//                              LabelAPI label = info.addPara("Relationship with " + targetName + " " + deltaString + <a name="line.948"></a>
+<span class="sourceLineNo">949</span>//                                              ", currently " + standing, tc, pad);<a name="line.949"></a>
+<span class="sourceLineNo">950</span>//                              label.setHighlight(targetNameHighlight, deltaString, standing); <a name="line.950"></a>
+<span class="sourceLineNo">951</span>//                              label.setHighlightColors(factionColor, deltaColor, relColor);<a name="line.951"></a>
+<span class="sourceLineNo">952</span>//                              if (delta &gt; 0) {<a name="line.952"></a>
+<span class="sourceLineNo">953</span>//                                      deltaString = "+" + deltaInt;<a name="line.953"></a>
+<span class="sourceLineNo">954</span>//                              } else if (delta &lt; 0) {<a name="line.954"></a>
+<span class="sourceLineNo">955</span>//                                      deltaString = "-" + deltaInt;<a name="line.955"></a>
+<span class="sourceLineNo">956</span>//                              } else {<a name="line.956"></a>
+<span class="sourceLineNo">957</span>//                                      deltaString = "" + deltaInt;<a name="line.957"></a>
+<span class="sourceLineNo">958</span>//                              }<a name="line.958"></a>
+<span class="sourceLineNo">959</span>//                              LabelAPI label = info.addPara(faction.getDisplayName() + " reputation " + deltaString, tc, pad);<a name="line.959"></a>
+<span class="sourceLineNo">960</span>//                              label.setHighlight(targetNameHighlight, deltaString); <a name="line.960"></a>
+<span class="sourceLineNo">961</span>//                              label.setHighlightColors(factionColor, deltaColor);<a name="line.961"></a>
+<span class="sourceLineNo">962</span>                                <a name="line.962"></a>
+<span class="sourceLineNo">963</span>                                LabelAPI label = info.addPara("Relationship with " + targetName + " " + deltaString, tc, pad);<a name="line.963"></a>
+<span class="sourceLineNo">964</span>                                label.setHighlight(targetNameHighlight, deltaString); <a name="line.964"></a>
+<span class="sourceLineNo">965</span>                                label.setHighlightColors(factionColor, deltaColor);<a name="line.965"></a>
+<span class="sourceLineNo">966</span>                                //info.setBulletedListMode(BaseIntelPlugin.INDENT);<a name="line.966"></a>
+<span class="sourceLineNo">967</span>                                if (withCurrent) info.addPara("Currently at %s", 0f, tc, relColor, standing);<a name="line.967"></a>
+<span class="sourceLineNo">968</span>                                //info.setBulletedListMode(BaseIntelPlugin.BULLET);<a name="line.968"></a>
+<span class="sourceLineNo">969</span>                        } else {<a name="line.969"></a>
+<span class="sourceLineNo">970</span>                                LabelAPI label = info.addPara("Relationship with " + targetName + " " + deltaString, tc, pad);<a name="line.970"></a>
+<span class="sourceLineNo">971</span>                                label.setHighlight(deltaString); <a name="line.971"></a>
+<span class="sourceLineNo">972</span>                                label.setHighlightColors(deltaColor); <a name="line.972"></a>
+<span class="sourceLineNo">973</span>                                if (withCurrent) info.addPara("Currently at %s", 0f, tc, relColor, standing);<a name="line.973"></a>
+<span class="sourceLineNo">974</span>                        }<a name="line.974"></a>
+<span class="sourceLineNo">975</span>                }<a name="line.975"></a>
+<span class="sourceLineNo">976</span>        }<a name="line.976"></a>
+<span class="sourceLineNo">977</span>        <a name="line.977"></a>
+<span class="sourceLineNo">978</span>        private static void printToTextPanel(TextPanelAPI panel, String text, String [] highlights, Color [] colors) {<a name="line.978"></a>
+<span class="sourceLineNo">979</span>                Color textColor = Global.getSettings().getColor("textGrayColor");<a name="line.979"></a>
+<span class="sourceLineNo">980</span>                panel.setFontSmallInsignia();<a name="line.980"></a>
+<span class="sourceLineNo">981</span>                panel.addParagraph(text, textColor);<a name="line.981"></a>
+<span class="sourceLineNo">982</span>                panel.highlightInLastPara(highlights);<a name="line.982"></a>
+<span class="sourceLineNo">983</span>                panel.setHighlightColorsInLastPara(colors);<a name="line.983"></a>
+<span class="sourceLineNo">984</span>                panel.setFontInsignia();<a name="line.984"></a>
+<span class="sourceLineNo">985</span>        }<a name="line.985"></a>
+<span class="sourceLineNo">986</span>        <a name="line.986"></a>
+<span class="sourceLineNo">987</span>        private static void appendToSectionHighlights(MessageSectionAPI section, String [] strings, Color [] colors) {<a name="line.987"></a>
+<span class="sourceLineNo">988</span>                String [] currStrings = section.getHighlights();<a name="line.988"></a>
+<span class="sourceLineNo">989</span>                Color [] currColors = section.getHighlightColors();<a name="line.989"></a>
+<span class="sourceLineNo">990</span>                if (currStrings == null) {<a name="line.990"></a>
+<span class="sourceLineNo">991</span>                        section.setHighlights(strings);<a name="line.991"></a>
+<span class="sourceLineNo">992</span>                        section.setHighlightColors(colors);<a name="line.992"></a>
+<span class="sourceLineNo">993</span>                } else {<a name="line.993"></a>
+<span class="sourceLineNo">994</span>                        List&lt;String&gt; stringList = new ArrayList&lt;String&gt;();<a name="line.994"></a>
+<span class="sourceLineNo">995</span>                        for (String s : currStrings) stringList.add(s);<a name="line.995"></a>
+<span class="sourceLineNo">996</span>                        for (String s : strings) stringList.add(s);<a name="line.996"></a>
+<span class="sourceLineNo">997</span>                        <a name="line.997"></a>
+<span class="sourceLineNo">998</span>                        List&lt;Color&gt; colorList = new ArrayList&lt;Color&gt;();<a name="line.998"></a>
+<span class="sourceLineNo">999</span>                        for (Color s : currColors) colorList.add(s);<a name="line.999"></a>
+<span class="sourceLineNo">1000</span>                        for (Color s : colors) colorList.add(s);<a name="line.1000"></a>
+<span class="sourceLineNo">1001</span>                        <a name="line.1001"></a>
+<span class="sourceLineNo">1002</span>                        section.setHighlights(stringList.toArray(new String [0]));<a name="line.1002"></a>
+<span class="sourceLineNo">1003</span>                        section.setHighlightColors(colorList.toArray(new Color [0]));<a name="line.1003"></a>
+<span class="sourceLineNo">1004</span>                }<a name="line.1004"></a>
+<span class="sourceLineNo">1005</span>        }<a name="line.1005"></a>
+<span class="sourceLineNo">1006</span>        <a name="line.1006"></a>
+<span class="sourceLineNo">1007</span>        private static void appendToSection2(String text, CommMessageAPI message) {<a name="line.1007"></a>
+<span class="sourceLineNo">1008</span>                List&lt;MessageParaAPI&gt; body = message.getSection2().getBody();<a name="line.1008"></a>
+<span class="sourceLineNo">1009</span>                if (body.isEmpty()) {<a name="line.1009"></a>
+<span class="sourceLineNo">1010</span>                        message.getSection2().addPara(text);<a name="line.1010"></a>
+<span class="sourceLineNo">1011</span>                } else {<a name="line.1011"></a>
+<span class="sourceLineNo">1012</span>                        MessageParaAPI lastPara = body.get(body.size() - 1);<a name="line.1012"></a>
+<span class="sourceLineNo">1013</span>                        String str = lastPara.getBody();<a name="line.1013"></a>
+<span class="sourceLineNo">1014</span>                        str = str + "\n\n" + text;<a name="line.1014"></a>
+<span class="sourceLineNo">1015</span>                        lastPara.setBody(str);<a name="line.1015"></a>
+<span class="sourceLineNo">1016</span>                }<a name="line.1016"></a>
+<span class="sourceLineNo">1017</span>        }<a name="line.1017"></a>
+<span class="sourceLineNo">1018</span><a name="line.1018"></a>
+<span class="sourceLineNo">1019</span>        <a name="line.1019"></a>
+<span class="sourceLineNo">1020</span>        <a name="line.1020"></a>
+<span class="sourceLineNo">1021</span>        <a name="line.1021"></a>
+<span class="sourceLineNo">1022</span>//      public static int otherRepInt(float f) {<a name="line.1022"></a>
+<span class="sourceLineNo">1023</span>//              int repInt = (int) Math.ceil((Math.round(f * 100f)));<a name="line.1023"></a>
+<span class="sourceLineNo">1024</span>//              return repInt;<a name="line.1024"></a>
+<span class="sourceLineNo">1025</span>//      }<a name="line.1025"></a>
+<span class="sourceLineNo">1026</span>//      <a name="line.1026"></a>
+<span class="sourceLineNo">1027</span>//      public static void main(String[] args) {<a name="line.1027"></a>
+<span class="sourceLineNo">1028</span>//              float [] tests = new float [] {<a name="line.1028"></a>
+<span class="sourceLineNo">1029</span>//                              0.1f,<a name="line.1029"></a>
+<span class="sourceLineNo">1030</span>//                              0.0951f,<a name="line.1030"></a>
+<span class="sourceLineNo">1031</span>//                              0.105f,<a name="line.1031"></a>
+<span class="sourceLineNo">1032</span>//                              0.090001f,<a name="line.1032"></a>
+<span class="sourceLineNo">1033</span>//                              0.099999999f,<a name="line.1033"></a>
+<span class="sourceLineNo">1034</span>//                              -0.1f,<a name="line.1034"></a>
+<span class="sourceLineNo">1035</span>//                              -0.0951f,<a name="line.1035"></a>
+<span class="sourceLineNo">1036</span>//                              -0.105f,<a name="line.1036"></a>
+<span class="sourceLineNo">1037</span>//                              -0.090001f,<a name="line.1037"></a>
+<span class="sourceLineNo">1038</span>//                              -0.099999999f,<a name="line.1038"></a>
+<span class="sourceLineNo">1039</span>//              };<a name="line.1039"></a>
+<span class="sourceLineNo">1040</span>//              <a name="line.1040"></a>
+<span class="sourceLineNo">1041</span>//              for (float f : tests) {<a name="line.1041"></a>
+<span class="sourceLineNo">1042</span>//                      System.out.println(String.format("In: %s, old: %s, new: %s", "" + f, "" + otherRepInt(f), "" + RepLevel.getRepInt(f)));<a name="line.1042"></a>
+<span class="sourceLineNo">1043</span>//              }<a name="line.1043"></a>
+<span class="sourceLineNo">1044</span>//              <a name="line.1044"></a>
+<span class="sourceLineNo">1045</span>////            for (float f = -1; f &lt;= 1f; f += 0.00001f) {<a name="line.1045"></a>
+<span class="sourceLineNo">1046</span>////                    int before = otherRepInt(f);<a name="line.1046"></a>
+<span class="sourceLineNo">1047</span>////                    int after = getRepInt(f);<a name="line.1047"></a>
+<span class="sourceLineNo">1048</span>////                    if (before != after) {<a name="line.1048"></a>
+<span class="sourceLineNo">1049</span>////                            System.out.println("NOT EQUAL FOR: " + f);<a name="line.1049"></a>
+<span class="sourceLineNo">1050</span>////                    }<a name="line.1050"></a>
+<span class="sourceLineNo">1051</span>////            }<a name="line.1051"></a>
+<span class="sourceLineNo">1052</span>//              <a name="line.1052"></a>
+<span class="sourceLineNo">1053</span>//              for (float f = -1; f &lt;= 1f; f += 0.00001f) {<a name="line.1053"></a>
+<span class="sourceLineNo">1054</span>//                      int i = RepLevel.getRepInt(f);<a name="line.1054"></a>
+<span class="sourceLineNo">1055</span>//                      RepLevel level = RepLevel.getLevelFor(f);<a name="line.1055"></a>
+<span class="sourceLineNo">1056</span>//                      RepLevel fromInt = RepLevel.getLevelFor(i / 100f);<a name="line.1056"></a>
+<span class="sourceLineNo">1057</span>//                      if (level != fromInt) {<a name="line.1057"></a>
+<span class="sourceLineNo">1058</span>//                              System.out.println("FAILED FOR: " + f + ", should be " + level + ", is " + fromInt);<a name="line.1058"></a>
+<span class="sourceLineNo">1059</span>////                            RepLevel.getRepInt(f);<a name="line.1059"></a>
+<span class="sourceLineNo">1060</span>////                            level = RepLevel.getLevelFor(f);<a name="line.1060"></a>
+<span class="sourceLineNo">1061</span>////                            fromInt = RepLevel.getLevelFor(i / 100f);<a name="line.1061"></a>
+<span class="sourceLineNo">1062</span>//                      }<a name="line.1062"></a>
+<span class="sourceLineNo">1063</span>//              }<a name="line.1063"></a>
+<span class="sourceLineNo">1064</span>//      }<a name="line.1064"></a>
+<span class="sourceLineNo">1065</span>}<a name="line.1065"></a>
+<span class="sourceLineNo">1066</span><a name="line.1066"></a>
+<span class="sourceLineNo">1067</span><a name="line.1067"></a>
+<span class="sourceLineNo">1068</span><a name="line.1068"></a>
+<span class="sourceLineNo">1069</span><a name="line.1069"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,307 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.campaign;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import com.fs.starfarer.api.PluginPick;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import com.fs.starfarer.api.campaign.ai.AbilityAIPlugin;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import com.fs.starfarer.api.campaign.ai.AssignmentModulePlugin;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import com.fs.starfarer.api.campaign.ai.ModularFleetAIAPI;<a name="line.6"></a>
+<span class="sourceLineNo">007</span>import com.fs.starfarer.api.campaign.ai.NavigationModulePlugin;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.campaign.ai.StrategicModulePlugin;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.campaign.ai.TacticalModulePlugin;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.campaign.econ.ImmigrationPlugin;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.campaign.econ.MarketAPI;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.campaign.rules.MemoryAPI;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.characters.AbilityPlugin;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.characters.PersonAPI;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.fleet.FleetMemberAPI;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.plugins.AutofitPlugin;<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span>public interface CampaignPlugin {<a name="line.19"></a>
+<span class="sourceLineNo">020</span><a name="line.20"></a>
+<span class="sourceLineNo">021</span>        public static enum PickPriority {<a name="line.21"></a>
+<span class="sourceLineNo">022</span>                /**<a name="line.22"></a>
+<span class="sourceLineNo">023</span>                 * Lowest priority. Should only be used by core code, a modded plugin with this priority may not end up being used<a name="line.23"></a>
+<span class="sourceLineNo">024</span>                 * anywhere, as what gets picked when multiple plugins have the same priority is undefined.<a name="line.24"></a>
+<span class="sourceLineNo">025</span>                 */<a name="line.25"></a>
+<span class="sourceLineNo">026</span>                CORE_GENERAL,<a name="line.26"></a>
+<span class="sourceLineNo">027</span>                <a name="line.27"></a>
+<span class="sourceLineNo">028</span>                /**<a name="line.28"></a>
+<span class="sourceLineNo">029</span>                 * Should be used by mods for wholesale replacement of campaign features.<a name="line.29"></a>
+<span class="sourceLineNo">030</span>                 */<a name="line.30"></a>
+<span class="sourceLineNo">031</span>                MOD_GENERAL,<a name="line.31"></a>
+<span class="sourceLineNo">032</span>                <a name="line.32"></a>
+<span class="sourceLineNo">033</span>                /**<a name="line.33"></a>
+<span class="sourceLineNo">034</span>                 * Should only be used by core code.<a name="line.34"></a>
+<span class="sourceLineNo">035</span>                 */<a name="line.35"></a>
+<span class="sourceLineNo">036</span>                CORE_SET,<a name="line.36"></a>
+<span class="sourceLineNo">037</span>                <a name="line.37"></a>
+<span class="sourceLineNo">038</span>                /**<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                 * For a plugin that handles a set of circumstances. For example "interaction with all jungle worlds".<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                 * Overrides any _GENERAL prioritiy implementations (i.e. "interaction with all planets").<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                 * Is overriden by _SPECIFIC priority ("interaction with this particular planet").<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                 */<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                MOD_SET,<a name="line.43"></a>
+<span class="sourceLineNo">044</span>                <a name="line.44"></a>
+<span class="sourceLineNo">045</span>                /**<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                 * Should be used by core code only for specific encounters. For example, a "special" planet or fleet<a name="line.46"></a>
+<span class="sourceLineNo">047</span>                 * could have their own dialog, and the priority of this would override a mod that replaces the general interactions<a name="line.47"></a>
+<span class="sourceLineNo">048</span>                 * with all planets or fleets.<a name="line.48"></a>
+<span class="sourceLineNo">049</span>                 */<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                CORE_SPECIFIC,<a name="line.50"></a>
+<span class="sourceLineNo">051</span>                <a name="line.51"></a>
+<span class="sourceLineNo">052</span>                /**<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                 * Should be used by mods for specific encounters, that is, encounters that aren't handled by<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                 * any of the _GENERAL and _SET priority plugins. For example, if a specific fleet has a special encounter dialog, it would be<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                 * returned using this priority.<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                 */<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                MOD_SPECIFIC,<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                <a name="line.58"></a>
+<span class="sourceLineNo">059</span>                /**<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                 * Absolute highest priority; shouldn't be used without good reason.<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                 * A mod compilation might use this to resolve conflicts introduced by mods it contains.<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                 */<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                HIGHEST,<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                <a name="line.64"></a>
+<span class="sourceLineNo">065</span>        }<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        <a name="line.66"></a>
+<span class="sourceLineNo">067</span>        /**<a name="line.67"></a>
+<span class="sourceLineNo">068</span>         * Used for unregistering plugins, should be unique.<a name="line.68"></a>
+<span class="sourceLineNo">069</span>         * Can be null, but shouldn't. If not null, the game will ensure that only one copy of the<a name="line.69"></a>
+<span class="sourceLineNo">070</span>         * plugin can be registered - new registrations will override prior ones.<a name="line.70"></a>
+<span class="sourceLineNo">071</span>         * @return<a name="line.71"></a>
+<span class="sourceLineNo">072</span>         */<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        String getId();<a name="line.73"></a>
+<span class="sourceLineNo">074</span>        <a name="line.74"></a>
+<span class="sourceLineNo">075</span>        /**<a name="line.75"></a>
+<span class="sourceLineNo">076</span>         * If the plugin is transient, its data won't be included in save games and it needs to be re-added to<a name="line.76"></a>
+<span class="sourceLineNo">077</span>         * the game every time (in ModPlugin.onGameLoad()).<a name="line.77"></a>
+<span class="sourceLineNo">078</span>         * <a name="line.78"></a>
+<span class="sourceLineNo">079</span>         * If a plugin is not transient, its data is saved and it can be added in ModPlugin.onNewGame().<a name="line.79"></a>
+<span class="sourceLineNo">080</span>         * <a name="line.80"></a>
+<span class="sourceLineNo">081</span>         * Plugins should be transient unless they need to save data, to improve the ability to add/remove mods<a name="line.81"></a>
+<span class="sourceLineNo">082</span>         * from an existing game.<a name="line.82"></a>
+<span class="sourceLineNo">083</span>         * <a name="line.83"></a>
+<span class="sourceLineNo">084</span>         * @return<a name="line.84"></a>
+<span class="sourceLineNo">085</span>         */<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        boolean isTransient();<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        <a name="line.87"></a>
+<span class="sourceLineNo">088</span>        <a name="line.88"></a>
+<span class="sourceLineNo">089</span>        /**<a name="line.89"></a>
+<span class="sourceLineNo">090</span>         * Returns the dialog plugin to be used to drive the interaction dialog for the particular entity.<a name="line.90"></a>
+<span class="sourceLineNo">091</span>         * <a name="line.91"></a>
+<span class="sourceLineNo">092</span>         * Return null if this CampaignPlugin implementation doesn't provide one.<a name="line.92"></a>
+<span class="sourceLineNo">093</span>         * <a name="line.93"></a>
+<span class="sourceLineNo">094</span>         * @param interactionTarget<a name="line.94"></a>
+<span class="sourceLineNo">095</span>         * @return<a name="line.95"></a>
+<span class="sourceLineNo">096</span>         */<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        PluginPick&lt;InteractionDialogPlugin&gt; pickInteractionDialogPlugin(SectorEntityToken interactionTarget);<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        <a name="line.98"></a>
+<span class="sourceLineNo">099</span>        <a name="line.99"></a>
+<span class="sourceLineNo">100</span>        /**<a name="line.100"></a>
+<span class="sourceLineNo">101</span>         * Used for:<a name="line.101"></a>
+<span class="sourceLineNo">102</span>         *  - interaction dialogs created by clicking on a comm message action icon <a name="line.102"></a>
+<span class="sourceLineNo">103</span>         * <a name="line.103"></a>
+<span class="sourceLineNo">104</span>         * Return null if this CampaignPlugin implementation doesn't provide a dialog for the above use case(s).<a name="line.104"></a>
+<span class="sourceLineNo">105</span>         * <a name="line.105"></a>
+<span class="sourceLineNo">106</span>         * @param interactionTarget<a name="line.106"></a>
+<span class="sourceLineNo">107</span>         * @return<a name="line.107"></a>
+<span class="sourceLineNo">108</span>         */<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        PluginPick&lt;InteractionDialogPlugin&gt; pickInteractionDialogPlugin(Object param, SectorEntityToken interactionTarget);<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        <a name="line.110"></a>
+<span class="sourceLineNo">111</span>        <a name="line.111"></a>
+<span class="sourceLineNo">112</span>        /**<a name="line.112"></a>
+<span class="sourceLineNo">113</span>         * Returns a plugin that is used to generate the battlefield. Mods could use this to create a custom<a name="line.113"></a>
+<span class="sourceLineNo">114</span>         * battlefield for a special opponent, for example, without having to override the core<a name="line.114"></a>
+<span class="sourceLineNo">115</span>         * BattleCreationPlugin implementation.<a name="line.115"></a>
+<span class="sourceLineNo">116</span>         * <a name="line.116"></a>
+<span class="sourceLineNo">117</span>         * Return null if this CampaignPlugin implementation doesn't provide one.<a name="line.117"></a>
+<span class="sourceLineNo">118</span>         * @param opponent<a name="line.118"></a>
+<span class="sourceLineNo">119</span>         * @return<a name="line.119"></a>
+<span class="sourceLineNo">120</span>         */<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        PluginPick&lt;BattleCreationPlugin&gt; pickBattleCreationPlugin(SectorEntityToken opponent);<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        <a name="line.122"></a>
+<span class="sourceLineNo">123</span>        <a name="line.123"></a>
+<span class="sourceLineNo">124</span>        /**<a name="line.124"></a>
+<span class="sourceLineNo">125</span>         * Returns a plugin used to quickly resolve a battle outcome.<a name="line.125"></a>
+<span class="sourceLineNo">126</span>         * <a name="line.126"></a>
+<span class="sourceLineNo">127</span>         * <a name="line.127"></a>
+<span class="sourceLineNo">128</span>         * Return null if this CampaignPlugin implementation doesn't provide one.<a name="line.128"></a>
+<span class="sourceLineNo">129</span>         * @param one<a name="line.129"></a>
+<span class="sourceLineNo">130</span>         * @param two<a name="line.130"></a>
+<span class="sourceLineNo">131</span>         * @return<a name="line.131"></a>
+<span class="sourceLineNo">132</span>         */<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        PluginPick&lt;BattleAutoresolverPlugin&gt; pickBattleAutoresolverPlugin(BattleAPI battle);<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        <a name="line.134"></a>
+<span class="sourceLineNo">135</span>        <a name="line.135"></a>
+<span class="sourceLineNo">136</span>        PluginPick&lt;ReputationActionResponsePlugin&gt; pickReputationActionResponsePlugin(Object action, String factionId);<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        PluginPick&lt;ReputationActionResponsePlugin&gt; pickReputationActionResponsePlugin(Object action, PersonAPI person);<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        <a name="line.138"></a>
+<span class="sourceLineNo">139</span>        <a name="line.139"></a>
+<span class="sourceLineNo">140</span>        /**<a name="line.140"></a>
+<span class="sourceLineNo">141</span>         * Update the "this is known by the entity about the world" facts.<a name="line.141"></a>
+<span class="sourceLineNo">142</span>         * Any variables set here should have an expiration time of 0, since<a name="line.142"></a>
+<span class="sourceLineNo">143</span>         * this method will be called every time the getMemory() method is called.<a name="line.143"></a>
+<span class="sourceLineNo">144</span>         * <a name="line.144"></a>
+<span class="sourceLineNo">145</span>         * Having facts not expire would clutter up the memory.<a name="line.145"></a>
+<span class="sourceLineNo">146</span>         * <a name="line.146"></a>
+<span class="sourceLineNo">147</span>         * Mod-added facts should have their variable names use a mod-specific prefix to<a name="line.147"></a>
+<span class="sourceLineNo">148</span>         * avoid conflicts.<a name="line.148"></a>
+<span class="sourceLineNo">149</span>         * <a name="line.149"></a>
+<span class="sourceLineNo">150</span>         * @param memory<a name="line.150"></a>
+<span class="sourceLineNo">151</span>         */<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        void updateEntityFacts(SectorEntityToken entity, MemoryAPI memory);<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        void updatePersonFacts(PersonAPI person, MemoryAPI memory);<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        void updateFactionFacts(FactionAPI faction, MemoryAPI memory);<a name="line.154"></a>
+<span class="sourceLineNo">155</span>        void updateGlobalFacts(MemoryAPI memory);<a name="line.155"></a>
+<span class="sourceLineNo">156</span>        void updatePlayerFacts(MemoryAPI memory);<a name="line.156"></a>
+<span class="sourceLineNo">157</span>        void updateMarketFacts(MarketAPI market, MemoryAPI memory);<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        <a name="line.158"></a>
+<span class="sourceLineNo">159</span>        <a name="line.159"></a>
+<span class="sourceLineNo">160</span>        <a name="line.160"></a>
+<span class="sourceLineNo">161</span>        <a name="line.161"></a>
+<span class="sourceLineNo">162</span>        <a name="line.162"></a>
+<span class="sourceLineNo">163</span>        <a name="line.163"></a>
+<span class="sourceLineNo">164</span>        /**<a name="line.164"></a>
+<span class="sourceLineNo">165</span>         * See ModularFleetAIAPI documentation for details.<a name="line.165"></a>
+<span class="sourceLineNo">166</span>         * @param fleet<a name="line.166"></a>
+<span class="sourceLineNo">167</span>         * @param ai<a name="line.167"></a>
+<span class="sourceLineNo">168</span>         * @return<a name="line.168"></a>
+<span class="sourceLineNo">169</span>         */<a name="line.169"></a>
+<span class="sourceLineNo">170</span>        PluginPick&lt;AssignmentModulePlugin&gt; pickAssignmentAIModule(CampaignFleetAPI fleet, ModularFleetAIAPI ai);<a name="line.170"></a>
+<span class="sourceLineNo">171</span>        <a name="line.171"></a>
+<span class="sourceLineNo">172</span>        /**<a name="line.172"></a>
+<span class="sourceLineNo">173</span>         * See ModularFleetAIAPI documentation for details.<a name="line.173"></a>
+<span class="sourceLineNo">174</span>         * @param fleet<a name="line.174"></a>
+<span class="sourceLineNo">175</span>         * @param ai<a name="line.175"></a>
+<span class="sourceLineNo">176</span>         * @return<a name="line.176"></a>
+<span class="sourceLineNo">177</span>         */<a name="line.177"></a>
+<span class="sourceLineNo">178</span>        PluginPick&lt;StrategicModulePlugin&gt; pickStrategicAIModule(CampaignFleetAPI fleet, ModularFleetAIAPI ai);<a name="line.178"></a>
+<span class="sourceLineNo">179</span>        <a name="line.179"></a>
+<span class="sourceLineNo">180</span>        /**<a name="line.180"></a>
+<span class="sourceLineNo">181</span>         * See ModularFleetAIAPI documentation for details.<a name="line.181"></a>
+<span class="sourceLineNo">182</span>         * @param fleet<a name="line.182"></a>
+<span class="sourceLineNo">183</span>         * @param ai<a name="line.183"></a>
+<span class="sourceLineNo">184</span>         * @return<a name="line.184"></a>
+<span class="sourceLineNo">185</span>         */<a name="line.185"></a>
+<span class="sourceLineNo">186</span>        PluginPick&lt;TacticalModulePlugin&gt; pickTacticalAIModule(CampaignFleetAPI fleet, ModularFleetAIAPI ai);<a name="line.186"></a>
+<span class="sourceLineNo">187</span>        <a name="line.187"></a>
+<span class="sourceLineNo">188</span>        /**<a name="line.188"></a>
+<span class="sourceLineNo">189</span>         * See ModularFleetAIAPI documentation for details.<a name="line.189"></a>
+<span class="sourceLineNo">190</span>         * @param fleet<a name="line.190"></a>
+<span class="sourceLineNo">191</span>         * @param ai<a name="line.191"></a>
+<span class="sourceLineNo">192</span>         * @return<a name="line.192"></a>
+<span class="sourceLineNo">193</span>         */<a name="line.193"></a>
+<span class="sourceLineNo">194</span>        PluginPick&lt;NavigationModulePlugin&gt; pickNavigationAIModule(CampaignFleetAPI fleet, ModularFleetAIAPI ai);<a name="line.194"></a>
+<span class="sourceLineNo">195</span>        <a name="line.195"></a>
+<span class="sourceLineNo">196</span>        <a name="line.196"></a>
+<span class="sourceLineNo">197</span>        <a name="line.197"></a>
+<span class="sourceLineNo">198</span>        /**<a name="line.198"></a>
+<span class="sourceLineNo">199</span>         * AI for campaign abilities - transponder, go dark, emergency burn, etc.<a name="line.199"></a>
+<span class="sourceLineNo">200</span>         * @param ability<a name="line.200"></a>
+<span class="sourceLineNo">201</span>         * @return<a name="line.201"></a>
+<span class="sourceLineNo">202</span>         */<a name="line.202"></a>
+<span class="sourceLineNo">203</span>        PluginPick&lt;AbilityAIPlugin&gt; pickAbilityAI(AbilityPlugin ability, ModularFleetAIAPI ai);<a name="line.203"></a>
+<span class="sourceLineNo">204</span>        <a name="line.204"></a>
+<span class="sourceLineNo">205</span>        <a name="line.205"></a>
+<span class="sourceLineNo">206</span>        PluginPick&lt;FleetStubConverterPlugin&gt; pickStubConverter(FleetStubAPI stub);<a name="line.206"></a>
+<span class="sourceLineNo">207</span>        PluginPick&lt;FleetStubConverterPlugin&gt; pickStubConverter(CampaignFleetAPI fleet);<a name="line.207"></a>
+<span class="sourceLineNo">208</span><a name="line.208"></a>
+<span class="sourceLineNo">209</span>        <a name="line.209"></a>
+<span class="sourceLineNo">210</span>        /**<a name="line.210"></a>
+<span class="sourceLineNo">211</span>         * member will be null when picking plugin to assign idle officers from fleet screen.<a name="line.211"></a>
+<span class="sourceLineNo">212</span>         * Only used for autofit in the refit screen. For NPC fleets, see: DefaultFleetInflater.<a name="line.212"></a>
+<span class="sourceLineNo">213</span>         * @param member<a name="line.213"></a>
+<span class="sourceLineNo">214</span>         * @return<a name="line.214"></a>
+<span class="sourceLineNo">215</span>         */<a name="line.215"></a>
+<span class="sourceLineNo">216</span>        PluginPick&lt;AutofitPlugin&gt; pickAutofitPlugin(FleetMemberAPI member);<a name="line.216"></a>
+<span class="sourceLineNo">217</span><a name="line.217"></a>
+<span class="sourceLineNo">218</span>        PluginPick&lt;InteractionDialogPlugin&gt; pickRespawnPlugin();<a name="line.218"></a>
+<span class="sourceLineNo">219</span><a name="line.219"></a>
+<span class="sourceLineNo">220</span>        PluginPick&lt;ImmigrationPlugin&gt; pickImmigrationPlugin(MarketAPI market);<a name="line.220"></a>
+<span class="sourceLineNo">221</span><a name="line.221"></a>
+<span class="sourceLineNo">222</span>        PluginPick&lt;AICoreAdminPlugin&gt; pickAICoreAdminPlugin(String commodityId);<a name="line.222"></a>
+<span class="sourceLineNo">223</span>        PluginPick&lt;AICoreOfficerPlugin&gt; pickAICoreOfficerPlugin(String commodityId);<a name="line.223"></a>
+<span class="sourceLineNo">224</span><a name="line.224"></a>
+<span class="sourceLineNo">225</span>        PluginPick&lt;FleetInflater&gt; pickFleetInflater(CampaignFleetAPI fleet, Object params);<a name="line.225"></a>
+<span class="sourceLineNo">226</span><a name="line.226"></a>
+<span class="sourceLineNo">227</span>}<a name="line.227"></a>
+<span class="sourceLineNo">228</span><a name="line.228"></a>
+<span class="sourceLineNo">229</span><a name="line.229"></a>
+<span class="sourceLineNo">230</span><a name="line.230"></a>
+<span class="sourceLineNo">231</span><a name="line.231"></a>
+<span class="sourceLineNo">232</span><a name="line.232"></a>
+<span class="sourceLineNo">233</span><a name="line.233"></a>
+<span class="sourceLineNo">234</span><a name="line.234"></a>
+<span class="sourceLineNo">235</span><a name="line.235"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

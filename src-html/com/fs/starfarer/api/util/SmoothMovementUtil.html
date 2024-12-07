@@ -1,0 +1,295 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.util;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import org.lwjgl.util.vector.ReadableVector2f;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import org.lwjgl.util.vector.Vector2f;<a name="line.4"></a>
+<span class="sourceLineNo">005</span><a name="line.5"></a>
+<span class="sourceLineNo">006</span>public class SmoothMovementUtil {<a name="line.6"></a>
+<span class="sourceLineNo">007</span><a name="line.7"></a>
+<span class="sourceLineNo">008</span>        protected Vector2f vel = new Vector2f();<a name="line.8"></a>
+<span class="sourceLineNo">009</span>        protected Vector2f loc = new Vector2f();<a name="line.9"></a>
+<span class="sourceLineNo">010</span>        protected Vector2f accel = new Vector2f();<a name="line.10"></a>
+<span class="sourceLineNo">011</span>        <a name="line.11"></a>
+<span class="sourceLineNo">012</span>        protected Vector2f dest = new Vector2f();<a name="line.12"></a>
+<span class="sourceLineNo">013</span>        protected Vector2f destVel = new Vector2f();<a name="line.13"></a>
+<span class="sourceLineNo">014</span>        <a name="line.14"></a>
+<span class="sourceLineNo">015</span>        protected float acceleration, maxSpeed;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>        protected boolean smoothCap = false;<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span>        protected float hardSpeedLimit = -1f;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>        <a name="line.19"></a>
+<span class="sourceLineNo">020</span>        public float getHardSpeedLimit() {<a name="line.20"></a>
+<span class="sourceLineNo">021</span>                return hardSpeedLimit;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>        }<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span>        public void setHardSpeedLimit(float hardSpeedLimit) {<a name="line.24"></a>
+<span class="sourceLineNo">025</span>                this.hardSpeedLimit = hardSpeedLimit;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>        }<a name="line.26"></a>
+<span class="sourceLineNo">027</span><a name="line.27"></a>
+<span class="sourceLineNo">028</span>        public SmoothMovementUtil() {<a name="line.28"></a>
+<span class="sourceLineNo">029</span>                acceleration = 1f;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>                maxSpeed = 1f;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>                smoothCap = true;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>        }<a name="line.32"></a>
+<span class="sourceLineNo">033</span><a name="line.33"></a>
+<span class="sourceLineNo">034</span>        public void setDest(Vector2f dest, Vector2f destVel) {<a name="line.34"></a>
+<span class="sourceLineNo">035</span>                if (dest == null) {<a name="line.35"></a>
+<span class="sourceLineNo">036</span>                        this.dest.set(0, 0);<a name="line.36"></a>
+<span class="sourceLineNo">037</span>                } else {<a name="line.37"></a>
+<span class="sourceLineNo">038</span>                        this.dest.set(dest);<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                }<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                if (destVel == null) {<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                        float dir = Misc.getAngleInDegrees(loc, this.dest);<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                        this.destVel = Misc.getUnitVectorAtDegreeAngle(dir);<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                        this.destVel.scale(10000f);<a name="line.43"></a>
+<span class="sourceLineNo">044</span>                } else {<a name="line.44"></a>
+<span class="sourceLineNo">045</span>                        this.destVel.set(destVel);<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                }<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        }<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        <a name="line.48"></a>
+<span class="sourceLineNo">049</span>        public void advance(float amount) {<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                <a name="line.50"></a>
+<span class="sourceLineNo">051</span>                if (amount * amount == 0 || amount &lt;= 0) {<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                        return;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                }<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                <a name="line.54"></a>
+<span class="sourceLineNo">055</span>                float effectiveMaxSpeed = maxSpeed;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                float accelMult = 1f;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>//              if (true &amp;&amp; fleet != null) {<a name="line.57"></a>
+<span class="sourceLineNo">058</span>//                      accelMult = 1f - Math.max(0, (fleet.getRadius() - 22f) / (100 - 22f));<a name="line.58"></a>
+<span class="sourceLineNo">059</span>//                      accelMult = 0.25f + accelMult * 0.75f;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>//              }<a name="line.60"></a>
+<span class="sourceLineNo">061</span>//              if (fleet != null &amp;&amp; fleet.isPlayerFleet()) {<a name="line.61"></a>
+<span class="sourceLineNo">062</span>//                      System.out.println("fwefwefe");<a name="line.62"></a>
+<span class="sourceLineNo">063</span>//              }<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                        <a name="line.64"></a>
+<span class="sourceLineNo">065</span>                float speed = vel.length();<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                float acc = acceleration;<a name="line.66"></a>
+<span class="sourceLineNo">067</span>//              if (speed &gt; effectiveMaxSpeed) {<a name="line.67"></a>
+<span class="sourceLineNo">068</span>//                      acc = Math.max(speed, 200f) + fleet.getAcceleration();<a name="line.68"></a>
+<span class="sourceLineNo">069</span>//              }<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                <a name="line.70"></a>
+<span class="sourceLineNo">071</span>                float effectiveAccel = acc * accelMult;<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                <a name="line.72"></a>
+<span class="sourceLineNo">073</span>                if (effectiveAccel &lt;= 0f) {<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                        accel.set(0, 0);<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                        return;<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                }<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                //amount *= 20f;<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                <a name="line.78"></a>
+<span class="sourceLineNo">079</span>                Vector2f toDest = Vector2f.sub(dest, loc, new Vector2f());<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                Vector2f velDiff = Vector2f.sub(destVel, vel, new Vector2f());<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                <a name="line.81"></a>
+<span class="sourceLineNo">082</span>                //toDest.scale(3f);<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                <a name="line.83"></a>
+<span class="sourceLineNo">084</span>                //Vector2f dir = Vector2f.sub(dest, loc, new Vector2f());<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                //Utils.normalise(dir);<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                <a name="line.86"></a>
+<span class="sourceLineNo">087</span>                // positive means away from loc<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                //float relativeSpeed = Vector2f.dot(dir, destVel);<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                //float dist = Utils.getDistance(loc, dest);<a name="line.89"></a>
+<span class="sourceLineNo">090</span>//              if (delegate == CampaignEngine.getInstance().getPlayerFleet()) {<a name="line.90"></a>
+<span class="sourceLineNo">091</span>//                      System.out.println("23rsd1sdfew");<a name="line.91"></a>
+<span class="sourceLineNo">092</span>//              }<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                float timeToMatchVel = velDiff.length() / effectiveAccel;<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                //toDest.scale(timeToMatchVel + 2f);<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                velDiff.scale(timeToMatchVel + 0.75f);<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                //velDiff.scale(0.5f * timeToMatchVel);<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                <a name="line.97"></a>
+<span class="sourceLineNo">098</span>//              if (relativeSpeed &gt; 0) {<a name="line.98"></a>
+<span class="sourceLineNo">099</span>//                      velDiff.scale(dist / relativeSpeed);<a name="line.99"></a>
+<span class="sourceLineNo">100</span>//              } else {<a name="line.100"></a>
+<span class="sourceLineNo">101</span>//                      velDiff.scale(timeToMatchVel);<a name="line.101"></a>
+<span class="sourceLineNo">102</span>//              }<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                <a name="line.103"></a>
+<span class="sourceLineNo">104</span>                // this is the vector we want to negate (reduce to zero) in order to match<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                // location and speed. Units are distance.<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                Vector2f negate = (Vector2f) Vector2f.add(toDest, velDiff, new Vector2f()).negate();<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                //if (negate.lengthSquared() &lt; 0.25f) negate.set(0, 0);<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                <a name="line.108"></a>
+<span class="sourceLineNo">109</span>//              if (delegate == CampaignEngine.getInstance().getPlayerFleet()) {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>//                      System.out.println(toDest);<a name="line.110"></a>
+<span class="sourceLineNo">111</span>//              }<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                <a name="line.112"></a>
+<span class="sourceLineNo">113</span>                float maxAccel = negate.length() / (amount * amount);<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                if (maxAccel &gt; effectiveAccel) maxAccel = effectiveAccel;<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                //maxAccel = 280f;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                //maxAccel = acceleration;<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                if (maxAccel &gt; 0) {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                        accel = (Vector2f) Misc.normalise(negate).scale(-maxAccel);<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                } else {<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                        accel = (Vector2f) negate.negate();<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                }<a name="line.121"></a>
+<span class="sourceLineNo">122</span>//              accel = (Vector2f) Utils.normalise(negate).scale(-maxAccel);<a name="line.122"></a>
+<span class="sourceLineNo">123</span>//              if (delegate == CampaignEngine.getInstance().getPlayerFleet()) {<a name="line.123"></a>
+<span class="sourceLineNo">124</span>//                      System.out.println("Max: " + maxAccel);<a name="line.124"></a>
+<span class="sourceLineNo">125</span>//              }<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                <a name="line.126"></a>
+<span class="sourceLineNo">127</span>//              float speedPre = vel.length();<a name="line.127"></a>
+<span class="sourceLineNo">128</span>//              if (delegate == CampaignEngine.getInstance().getPlayerFleet()) {<a name="line.128"></a>
+<span class="sourceLineNo">129</span>//                      System.out.println("Speed pre: " + vel.length());<a name="line.129"></a>
+<span class="sourceLineNo">130</span>//              }<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                vel.x += accel.x * amount;<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                vel.y += accel.y * amount;<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                <a name="line.133"></a>
+<span class="sourceLineNo">134</span>                speed = vel.length();<a name="line.134"></a>
+<span class="sourceLineNo">135</span>//              float speedPost = vel.length();<a name="line.135"></a>
+<span class="sourceLineNo">136</span>//              if (delegate == CampaignEngine.getInstance().getPlayerFleet()) {<a name="line.136"></a>
+<span class="sourceLineNo">137</span>//                      System.out.println("Speed post: " + vel.length());<a name="line.137"></a>
+<span class="sourceLineNo">138</span>//                      System.out.println("");<a name="line.138"></a>
+<span class="sourceLineNo">139</span>//              }<a name="line.139"></a>
+<span class="sourceLineNo">140</span>//              if (delegate == CampaignEngine.getInstance().getPlayerFleet()) {<a name="line.140"></a>
+<span class="sourceLineNo">141</span>//                      if (speedPre &lt; speedPost) {<a name="line.141"></a>
+<span class="sourceLineNo">142</span>//                              System.out.println(accel);<a name="line.142"></a>
+<span class="sourceLineNo">143</span>//                      }<a name="line.143"></a>
+<span class="sourceLineNo">144</span>//              }<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                <a name="line.145"></a>
+<span class="sourceLineNo">146</span>                //float speed = vel.length();<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                if (speed &gt;= effectiveMaxSpeed &amp;&amp; speed &gt; 0) {<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                        if (smoothCap) {<a name="line.148"></a>
+<span class="sourceLineNo">149</span>//                              if (delegate == CampaignEngine.getInstance().getPlayerFleet()) {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>//                                      System.out.println("23refwef");<a name="line.150"></a>
+<span class="sourceLineNo">151</span>//                              }<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                                Vector2f cap = new Vector2f(vel);<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                                cap.negate();<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                                Misc.normalise(cap);<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                                //float mag = 1f;<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                                //if (maxAccel * 2f &gt; 1) {<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                                        //mag = maxAccel * 2f;<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                                //}<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                                //if (mag &lt; 1000) mag = 1000;<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                                float mag = speed - effectiveMaxSpeed;<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                                if (mag &lt; 50f) mag = 50f;<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                                <a name="line.162"></a>
+<span class="sourceLineNo">163</span>                                float minMag = maxAccel * 2f;<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                                if (mag &lt; minMag) mag = minMag;<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                                <a name="line.165"></a>
+<span class="sourceLineNo">166</span>                                if (mag * amount &gt; (speed - effectiveMaxSpeed) &amp;&amp; amount &gt; 0) {<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                                        mag = (speed - effectiveMaxSpeed) / amount;<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                                }<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                                cap.scale(mag);<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                                vel.x += cap.x * amount;<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                                vel.y += cap.y * amount;<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                        } else {<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                                vel.scale(effectiveMaxSpeed / speed);<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                        }<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                }<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                <a name="line.176"></a>
+<span class="sourceLineNo">177</span>                if (hardSpeedLimit &gt;= 0 &amp;&amp; speed &gt; 0) {<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                        vel.scale(hardSpeedLimit / speed);<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                }<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                <a name="line.180"></a>
+<span class="sourceLineNo">181</span>                loc.x += vel.x * amount;<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                loc.y += vel.y * amount;<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                <a name="line.183"></a>
+<span class="sourceLineNo">184</span>        }<a name="line.184"></a>
+<span class="sourceLineNo">185</span>        <a name="line.185"></a>
+<span class="sourceLineNo">186</span>        <a name="line.186"></a>
+<span class="sourceLineNo">187</span>        public ReadableVector2f getAccelVector() {<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                return accel;<a name="line.188"></a>
+<span class="sourceLineNo">189</span>        }<a name="line.189"></a>
+<span class="sourceLineNo">190</span><a name="line.190"></a>
+<span class="sourceLineNo">191</span>        public float getAcceleration() {<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                return acceleration;<a name="line.192"></a>
+<span class="sourceLineNo">193</span>        }<a name="line.193"></a>
+<span class="sourceLineNo">194</span><a name="line.194"></a>
+<span class="sourceLineNo">195</span>        public void setAcceleration(float acceleration) {<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                this.acceleration = acceleration;<a name="line.196"></a>
+<span class="sourceLineNo">197</span>        }<a name="line.197"></a>
+<span class="sourceLineNo">198</span><a name="line.198"></a>
+<span class="sourceLineNo">199</span>        public float getMaxSpeed() {<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                return maxSpeed;<a name="line.200"></a>
+<span class="sourceLineNo">201</span>        }<a name="line.201"></a>
+<span class="sourceLineNo">202</span>        <a name="line.202"></a>
+<span class="sourceLineNo">203</span>        public void setMaxSpeed(float maxSpeed) {<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                this.maxSpeed = maxSpeed;<a name="line.204"></a>
+<span class="sourceLineNo">205</span>        }<a name="line.205"></a>
+<span class="sourceLineNo">206</span><a name="line.206"></a>
+<span class="sourceLineNo">207</span>        public Vector2f getVelocity() {<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                return vel;<a name="line.208"></a>
+<span class="sourceLineNo">209</span>        }<a name="line.209"></a>
+<span class="sourceLineNo">210</span><a name="line.210"></a>
+<span class="sourceLineNo">211</span>        public Vector2f getLocation() {<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                return loc;<a name="line.212"></a>
+<span class="sourceLineNo">213</span>        }<a name="line.213"></a>
+<span class="sourceLineNo">214</span><a name="line.214"></a>
+<span class="sourceLineNo">215</span>        public Vector2f getDest() {<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                return dest;<a name="line.216"></a>
+<span class="sourceLineNo">217</span>        }<a name="line.217"></a>
+<span class="sourceLineNo">218</span>        <a name="line.218"></a>
+<span class="sourceLineNo">219</span>}<a name="line.219"></a>
+<span class="sourceLineNo">220</span><a name="line.220"></a>
+<span class="sourceLineNo">221</span><a name="line.221"></a>
+<span class="sourceLineNo">222</span><a name="line.222"></a>
+<span class="sourceLineNo">223</span><a name="line.223"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,321 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.fleets;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.util.Random;<a name="line.3"></a>
+<span class="sourceLineNo">004</span><a name="line.4"></a>
+<span class="sourceLineNo">005</span>import com.fs.starfarer.api.Global;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import com.fs.starfarer.api.campaign.CampaignFleetAPI;<a name="line.6"></a>
+<span class="sourceLineNo">007</span>import com.fs.starfarer.api.campaign.SectorEntityToken;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.campaign.econ.MarketAPI;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.impl.campaign.fleets.FleetFactory.MercType;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.impl.campaign.fleets.RouteManager.OptionalFleetData;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.impl.campaign.fleets.RouteManager.RouteData;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.impl.campaign.fleets.RouteManager.RouteSegment;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.impl.campaign.ids.Factions;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.impl.campaign.ids.Tags;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.impl.campaign.intel.SystemBountyManager;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.util.Misc;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.util.WeightedRandomPicker;<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span>public class MercFleetManagerV2 extends BaseRouteFleetManager {<a name="line.19"></a>
+<span class="sourceLineNo">020</span><a name="line.20"></a>
+<span class="sourceLineNo">021</span>        public static final Integer ROUTE_PREPARE = 1;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>        public static final Integer ROUTE_TRAVEL = 2;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>        public static final Integer ROUTE_PATROL = 3;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>        public static final Integer ROUTE_RETURN = 4;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>        public static final Integer ROUTE_STAND_DOWN = 5;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>        <a name="line.26"></a>
+<span class="sourceLineNo">027</span>        public MercFleetManagerV2() {<a name="line.27"></a>
+<span class="sourceLineNo">028</span>                super(0.5f, 1.5f);<a name="line.28"></a>
+<span class="sourceLineNo">029</span>        }<a name="line.29"></a>
+<span class="sourceLineNo">030</span>        <a name="line.30"></a>
+<span class="sourceLineNo">031</span>        @Override<a name="line.31"></a>
+<span class="sourceLineNo">032</span>        protected void addRouteFleetIfPossible() {<a name="line.32"></a>
+<span class="sourceLineNo">033</span>                MarketAPI from = pickMarket();<a name="line.33"></a>
+<span class="sourceLineNo">034</span>                if (from == null) return;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>                <a name="line.35"></a>
+<span class="sourceLineNo">036</span>                MarketAPI to = pickNearbyMarketToDefend(from);<a name="line.36"></a>
+<span class="sourceLineNo">037</span>                if (to == null) return;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>                <a name="line.38"></a>
+<span class="sourceLineNo">039</span>                Long seed = new Random().nextLong();<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                String id = getRouteSourceId();<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                <a name="line.41"></a>
+<span class="sourceLineNo">042</span>                OptionalFleetData extra = new OptionalFleetData(from);<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                <a name="line.43"></a>
+<span class="sourceLineNo">044</span>                RouteData route = RouteManager.getInstance().addRoute(id, from, seed, extra, this);<a name="line.44"></a>
+<span class="sourceLineNo">045</span>                <a name="line.45"></a>
+<span class="sourceLineNo">046</span>                float orbitDays = 2f + (float) Math.random() * 3f;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>                float deorbitDays = 2f + (float) Math.random() * 3f;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>                float patrolDays = 2f + (float) Math.random() * 3f;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>                <a name="line.49"></a>
+<span class="sourceLineNo">050</span>                SectorEntityToken target = to.getPrimaryEntity();<a name="line.50"></a>
+<span class="sourceLineNo">051</span>                if ((float) Math.random() &gt; 0.25f &amp;&amp; to.getStarSystem() != null) {<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                        if ((float) Math.random() &gt; 0.25f) {<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                                target = to.getStarSystem().getCenter();<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                        } else {<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                                target = to.getStarSystem().getHyperspaceAnchor();<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                        }<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                }<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                <a name="line.58"></a>
+<span class="sourceLineNo">059</span>                if (from.getContainingLocation() == to.getContainingLocation() &amp;&amp; !from.getContainingLocation().isHyperspace()) {<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                        route.addSegment(new RouteSegment(ROUTE_PREPARE, orbitDays, from.getPrimaryEntity()));<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                        route.addSegment(new RouteSegment(ROUTE_PATROL, patrolDays, target));<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                        route.addSegment(new RouteSegment(ROUTE_STAND_DOWN, deorbitDays, from.getPrimaryEntity()));<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                } else {<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                        route.addSegment(new RouteSegment(ROUTE_PREPARE, orbitDays, from.getPrimaryEntity()));<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                        route.addSegment(new RouteSegment(ROUTE_TRAVEL, from.getPrimaryEntity(), to.getPrimaryEntity()));<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                        route.addSegment(new RouteSegment(ROUTE_PATROL, patrolDays, target));<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                        route.addSegment(new RouteSegment(ROUTE_RETURN, to.getPrimaryEntity(), from.getPrimaryEntity()));<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                        route.addSegment(new RouteSegment(ROUTE_STAND_DOWN, deorbitDays, from.getPrimaryEntity()));<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                }<a name="line.69"></a>
+<span class="sourceLineNo">070</span>        }<a name="line.70"></a>
+<span class="sourceLineNo">071</span>        <a name="line.71"></a>
+<span class="sourceLineNo">072</span>        public MercType pickFleetType(Random random) {<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                WeightedRandomPicker&lt;MercType&gt; picker = new WeightedRandomPicker&lt;MercType&gt;(random);<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                picker.add(MercType.SCOUT, 10f); <a name="line.74"></a>
+<span class="sourceLineNo">075</span>                picker.add(MercType.BOUNTY_HUNTER, 10f); <a name="line.75"></a>
+<span class="sourceLineNo">076</span>                picker.add(MercType.PRIVATEER, 10f); <a name="line.76"></a>
+<span class="sourceLineNo">077</span>                picker.add(MercType.PATROL, 10f); <a name="line.77"></a>
+<span class="sourceLineNo">078</span>                picker.add(MercType.ARMADA, 3f); <a name="line.78"></a>
+<span class="sourceLineNo">079</span>                MercType type = picker.pick();<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                return type;<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        }<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        <a name="line.82"></a>
+<span class="sourceLineNo">083</span>        public CampaignFleetAPI spawnFleet(RouteData route) {<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                Random random = route.getRandom();<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                <a name="line.85"></a>
+<span class="sourceLineNo">086</span>                MercType type = pickFleetType(random);<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                <a name="line.87"></a>
+<span class="sourceLineNo">088</span>                float combat = 0f;<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                float tanker = 0f;<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                float freighter = 0f;<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                String fleetType = type.fleetType;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                switch (type) {<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                case SCOUT:<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                        combat = Math.round(1f + random.nextFloat() * 2f);<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                        break;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                case PRIVATEER:<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                case BOUNTY_HUNTER:<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                        combat = Math.round(3f + random.nextFloat() * 2f);<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                        break;<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                case PATROL:<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                        combat = Math.round(9f + random.nextFloat() * 3f);<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                        tanker = Math.round(random.nextFloat()) * 5f;<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                        break;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                case ARMADA:<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                        combat = Math.round(10f + random.nextFloat() * 4f);<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                        tanker = Math.round(random.nextFloat()) * 10f;<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                        freighter = Math.round(random.nextFloat()) * 10f;<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                        break;<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                }<a name="line.109"></a>
+<span class="sourceLineNo">110</span><a name="line.110"></a>
+<span class="sourceLineNo">111</span>                combat *= 5f;<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                <a name="line.112"></a>
+<span class="sourceLineNo">113</span>                FleetParamsV3 params = new FleetParamsV3(<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                                route.getMarket(), <a name="line.114"></a>
+<span class="sourceLineNo">115</span>                                null,<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                                Factions.INDEPENDENT,<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                                route.getQualityOverride() + 0.2f,<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                                fleetType,<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                                combat, // combatPts<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                                freighter, // freighterPts <a name="line.120"></a>
+<span class="sourceLineNo">121</span>                                tanker, // tankerPts<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                                0f, // transportPts<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                                0f, // linerPts<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                                0f, // utilityPts<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                                0f // qualityMod<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                                );<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                params.timestamp = route.getTimestamp();<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                params.random = random;<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                CampaignFleetAPI fleet = FleetFactoryV3.createFleet(params);<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                <a name="line.130"></a>
+<span class="sourceLineNo">131</span>                if (fleet == null || fleet.isEmpty()) return null;<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                <a name="line.132"></a>
+<span class="sourceLineNo">133</span>                route.getMarket().getContainingLocation().addEntity(fleet);<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                fleet.setFacing((float) Math.random() * 360f);<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                // this will get overridden by the patrol assignment AI, depending on route-time elapsed etc<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                fleet.setLocation(route.getMarket().getPrimaryEntity().getLocation().x, route.getMarket().getPrimaryEntity().getLocation().x);<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                <a name="line.137"></a>
+<span class="sourceLineNo">138</span>                MercAssignmentAIV2 ai = new MercAssignmentAIV2(fleet, route);<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                fleet.addScript(ai);<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                <a name="line.140"></a>
+<span class="sourceLineNo">141</span>                <a name="line.141"></a>
+<span class="sourceLineNo">142</span>                return fleet;<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        }<a name="line.143"></a>
+<span class="sourceLineNo">144</span><a name="line.144"></a>
+<span class="sourceLineNo">145</span>        <a name="line.145"></a>
+<span class="sourceLineNo">146</span>        protected MarketAPI pickMarket() {<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                WeightedRandomPicker&lt;MarketAPI&gt; picker = new WeightedRandomPicker&lt;MarketAPI&gt;();<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                for (MarketAPI market : Global.getSector().getEconomy().getMarketsCopy()) {<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                        if (market.isHidden()) continue;<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                        if (market.getFactionId().equals(Factions.PIRATES)) continue;<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                        if (market.getFaction().isHostileTo(Factions.INDEPENDENT)) continue;<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                        <a name="line.152"></a>
+<span class="sourceLineNo">153</span>                        if (!market.hasSpaceport()) continue;<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                        <a name="line.154"></a>
+<span class="sourceLineNo">155</span>                        if (market.getStarSystem() != null &amp;&amp; market.getStarSystem().hasTag(Tags.SYSTEM_CUT_OFF_FROM_HYPER)) {<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                                continue;<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                        }<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                        <a name="line.158"></a>
+<span class="sourceLineNo">159</span>                        if (market.getDaysInExistence() &lt; Global.getSettings().getFloat("minMarketExistenceDaysForMercs")) {<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                                continue;<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                        }<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                        if (market.getSize() &lt; Global.getSettings().getFloat("minMarketSizeForMercs")) {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                                continue;<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                        }<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                        <a name="line.165"></a>
+<span class="sourceLineNo">166</span>                        <a name="line.166"></a>
+<span class="sourceLineNo">167</span>                        float mult = Misc.getSpawnChanceMult(market.getLocationInHyperspace());<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                        float w = market.getStabilityValue() + market.getSize();<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                        <a name="line.169"></a>
+<span class="sourceLineNo">170</span>                        w *= mult;<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                        picker.add(market, w);<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                }<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                return picker.pick();<a name="line.173"></a>
+<span class="sourceLineNo">174</span>        }<a name="line.174"></a>
+<span class="sourceLineNo">175</span><a name="line.175"></a>
+<span class="sourceLineNo">176</span>        <a name="line.176"></a>
+<span class="sourceLineNo">177</span>        protected MarketAPI pickNearbyMarketToDefend(MarketAPI source) {<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                WeightedRandomPicker&lt;MarketAPI&gt; picker = new WeightedRandomPicker&lt;MarketAPI&gt;();<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                <a name="line.179"></a>
+<span class="sourceLineNo">180</span>                //CampaignEventManagerAPI eventManager = Global.getSector().getEventManager();<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                <a name="line.181"></a>
+<span class="sourceLineNo">182</span>                for (MarketAPI market : Global.getSector().getEconomy().getMarketsCopy()) {<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                        //if (market.getFactionId().equals(Factions.PIRATES)) continue;<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                        if (market.getFaction().isHostileTo(Factions.INDEPENDENT)) continue;<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                        if (market.getStarSystem() == null) continue;<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                        if (market.isHidden()) continue;<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                        <a name="line.187"></a>
+<span class="sourceLineNo">188</span>                        if (market.getStarSystem() != null &amp;&amp; market.getStarSystem().hasTag(Tags.SYSTEM_CUT_OFF_FROM_HYPER)) {<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                                continue;<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                        }<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                        <a name="line.191"></a>
+<span class="sourceLineNo">192</span>                        float dist = Misc.getDistance(market.getLocationInHyperspace(), source.getLocationInHyperspace());<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                        if (dist &lt; 1000) dist = 1000;<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                        float weight = 10000f / dist;<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                        <a name="line.195"></a>
+<span class="sourceLineNo">196</span>                        if (SystemBountyManager.getInstance().isActive(market)) {<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                                weight *= 5f;<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                        }<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                        <a name="line.199"></a>
+<span class="sourceLineNo">200</span>                        picker.add(market, weight);<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                }<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                MarketAPI market = picker.pick();<a name="line.202"></a>
+<span class="sourceLineNo">203</span>//              if (market == null) return null;<a name="line.203"></a>
+<span class="sourceLineNo">204</span>//              return market.getStarSystem();<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                return market;<a name="line.205"></a>
+<span class="sourceLineNo">206</span>        }<a name="line.206"></a>
+<span class="sourceLineNo">207</span>        <a name="line.207"></a>
+<span class="sourceLineNo">208</span>        <a name="line.208"></a>
+<span class="sourceLineNo">209</span>        <a name="line.209"></a>
+<span class="sourceLineNo">210</span>        @Override<a name="line.210"></a>
+<span class="sourceLineNo">211</span>        protected int getMaxFleets() {<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                return (int) Global.getSettings().getFloat("maxMercFleets");<a name="line.212"></a>
+<span class="sourceLineNo">213</span>        }<a name="line.213"></a>
+<span class="sourceLineNo">214</span><a name="line.214"></a>
+<span class="sourceLineNo">215</span>        @Override<a name="line.215"></a>
+<span class="sourceLineNo">216</span>        protected String getRouteSourceId() {<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                return "mercs_global";<a name="line.217"></a>
+<span class="sourceLineNo">218</span>        }<a name="line.218"></a>
+<span class="sourceLineNo">219</span><a name="line.219"></a>
+<span class="sourceLineNo">220</span>        public void reportAboutToBeDespawnedByRouteManager(RouteData route) {<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                <a name="line.221"></a>
+<span class="sourceLineNo">222</span>        }<a name="line.222"></a>
+<span class="sourceLineNo">223</span><a name="line.223"></a>
+<span class="sourceLineNo">224</span>        public boolean shouldCancelRouteAfterDelayCheck(RouteData route) {<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                return false;<a name="line.225"></a>
+<span class="sourceLineNo">226</span>        }<a name="line.226"></a>
+<span class="sourceLineNo">227</span><a name="line.227"></a>
+<span class="sourceLineNo">228</span>        public boolean shouldRepeat(RouteData route) {<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                return false;<a name="line.229"></a>
+<span class="sourceLineNo">230</span>        }<a name="line.230"></a>
+<span class="sourceLineNo">231</span><a name="line.231"></a>
+<span class="sourceLineNo">232</span><a name="line.232"></a>
+<span class="sourceLineNo">233</span>        <a name="line.233"></a>
+<span class="sourceLineNo">234</span>}<a name="line.234"></a>
+<span class="sourceLineNo">235</span><a name="line.235"></a>
+<span class="sourceLineNo">236</span><a name="line.236"></a>
+<span class="sourceLineNo">237</span><a name="line.237"></a>
+<span class="sourceLineNo">238</span><a name="line.238"></a>
+<span class="sourceLineNo">239</span><a name="line.239"></a>
+<span class="sourceLineNo">240</span><a name="line.240"></a>
+<span class="sourceLineNo">241</span><a name="line.241"></a>
+<span class="sourceLineNo">242</span><a name="line.242"></a>
+<span class="sourceLineNo">243</span><a name="line.243"></a>
+<span class="sourceLineNo">244</span><a name="line.244"></a>
+<span class="sourceLineNo">245</span><a name="line.245"></a>
+<span class="sourceLineNo">246</span><a name="line.246"></a>
+<span class="sourceLineNo">247</span><a name="line.247"></a>
+<span class="sourceLineNo">248</span><a name="line.248"></a>
+<span class="sourceLineNo">249</span><a name="line.249"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

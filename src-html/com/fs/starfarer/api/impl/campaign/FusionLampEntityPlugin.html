@@ -1,0 +1,316 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
+<span class="sourceLineNo">004</span><a name="line.4"></a>
+<span class="sourceLineNo">005</span>import org.lwjgl.util.vector.Vector2f;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import org.lwjgl.util.vector.Vector3f;<a name="line.6"></a>
+<span class="sourceLineNo">007</span><a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.Global;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.campaign.CampaignEngineLayers;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.campaign.CustomEntitySpecAPI;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.campaign.PlanetAPI;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.campaign.SectorEntityToken;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.combat.ViewportAPI;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.graphics.SpriteAPI;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.util.FlickerUtilV2;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.util.Misc;<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span>public class FusionLampEntityPlugin extends BaseCustomEntityPlugin {<a name="line.18"></a>
+<span class="sourceLineNo">019</span><a name="line.19"></a>
+<span class="sourceLineNo">020</span>        public static Color GLOW_COLOR = new Color(255,165,100,255);<a name="line.20"></a>
+<span class="sourceLineNo">021</span>        public static Color LIGHT_COLOR = new Color(255,165,100,255);<a name="line.21"></a>
+<span class="sourceLineNo">022</span>        <a name="line.22"></a>
+<span class="sourceLineNo">023</span>        public static String VOLATILES_SHORTAGE_KEY = "$core_volatilesShortage";<a name="line.23"></a>
+<span class="sourceLineNo">024</span>        <a name="line.24"></a>
+<span class="sourceLineNo">025</span>        public static String GLOW_COLOR_KEY = "$core_lampGlowColor";<a name="line.25"></a>
+<span class="sourceLineNo">026</span>        public static String LIGHT_COLOR_KEY = "$core_lampLightColor";<a name="line.26"></a>
+<span class="sourceLineNo">027</span>        public static float GLOW_FREQUENCY = 0.2f; // on/off cycles per second<a name="line.27"></a>
+<span class="sourceLineNo">028</span>        <a name="line.28"></a>
+<span class="sourceLineNo">029</span>        <a name="line.29"></a>
+<span class="sourceLineNo">030</span>        transient private SpriteAPI sprite;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>        transient private SpriteAPI glow;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>        <a name="line.32"></a>
+<span class="sourceLineNo">033</span>        public void init(SectorEntityToken entity, Object pluginParams) {<a name="line.33"></a>
+<span class="sourceLineNo">034</span>                super.init(entity, pluginParams);<a name="line.34"></a>
+<span class="sourceLineNo">035</span>                //this.entity = entity;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>                entity.setDetectionRangeDetailsOverrideMult(0.75f);<a name="line.36"></a>
+<span class="sourceLineNo">037</span>                readResolve();<a name="line.37"></a>
+<span class="sourceLineNo">038</span>        }<a name="line.38"></a>
+<span class="sourceLineNo">039</span>        <a name="line.39"></a>
+<span class="sourceLineNo">040</span>        Object readResolve() {<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                //sprite = Global.getSettings().getSprite("campaignEntities", "fusion_lamp");<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                glow = Global.getSettings().getSprite("campaignEntities", "fusion_lamp_glow");<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                return this;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        }<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        <a name="line.45"></a>
+<span class="sourceLineNo">046</span>        protected float phase = 0f;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        protected FlickerUtilV2 flicker = new FlickerUtilV2();<a name="line.47"></a>
+<span class="sourceLineNo">048</span><a name="line.48"></a>
+<span class="sourceLineNo">049</span>        public void advance(float amount) {<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                phase += amount * GLOW_FREQUENCY;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>                while (phase &gt; 1) phase --;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                <a name="line.52"></a>
+<span class="sourceLineNo">053</span>                flicker.advance(amount * 1f);<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                <a name="line.54"></a>
+<span class="sourceLineNo">055</span>                SectorEntityToken focus = entity.getOrbitFocus();<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                if (focus instanceof PlanetAPI) {<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                        PlanetAPI planet = (PlanetAPI) focus;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                        float lightAlpha = getLightAlpha();<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                        lightAlpha *= entity.getSensorFaderBrightness();<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                        lightAlpha *= entity.getSensorContactFaderBrightness();<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                        planet.setSecondLight(<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                                        new Vector3f(entity.getLocation().x, entity.getLocation().y, entity.getCircularOrbitRadius() * 0.75f), <a name="line.62"></a>
+<span class="sourceLineNo">063</span>                                        Misc.scaleColor(getLightColor(), lightAlpha));<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                }<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        }<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        <a name="line.66"></a>
+<span class="sourceLineNo">067</span>        public float getFlickerBasedMult() {<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                float shortage = entity.getMemoryWithoutUpdate().getFloat(VOLATILES_SHORTAGE_KEY);<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                shortage *= 0.33f;<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                if (shortage &lt;= 0f) return 1f;<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                <a name="line.71"></a>
+<span class="sourceLineNo">072</span>                //float f = (1f - shortage) + (shortage * flicker.getBrightness());<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                float f = 1f - shortage * flicker.getBrightness();<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                return f;<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        }<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        <a name="line.76"></a>
+<span class="sourceLineNo">077</span>        public float getGlowAlpha() {<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                float glowAlpha = 0f;<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                if (phase &lt; 0.5f) glowAlpha = phase * 2f;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                if (phase &gt;= 0.5f) glowAlpha = (1f - (phase - 0.5f) * 2f);<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                glowAlpha = 0.75f + glowAlpha * 0.25f;<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                glowAlpha *= getFlickerBasedMult();<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                if (glowAlpha &lt; 0) glowAlpha = 0;<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                if (glowAlpha &gt; 1) glowAlpha = 1;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                return glowAlpha;<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        }<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        public float getLightAlpha() {<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                //if (true) return 0f;<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                float lightAlpha = 0f;<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                if (phase &lt; 0.5f) lightAlpha = phase * 2f;<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                if (phase &gt;= 0.5f) lightAlpha = (1f - (phase - 0.5f) * 2f);<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                lightAlpha = 0.5f + lightAlpha * 0.5f;<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                lightAlpha *= getFlickerBasedMult();<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                if (lightAlpha &lt; 0) lightAlpha = 0;<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                if (lightAlpha &gt; 1) lightAlpha = 1;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                return lightAlpha;<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        }<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        <a name="line.98"></a>
+<span class="sourceLineNo">099</span>        public Color getGlowColor() {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                Color glowColor = GLOW_COLOR;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                if (entity.getMemoryWithoutUpdate().contains(GLOW_COLOR_KEY)) {<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                        glowColor = (Color) entity.getMemoryWithoutUpdate().get(GLOW_COLOR_KEY);<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                }<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                return glowColor;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        }<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        public Color getLightColor() {<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                Color lightColor = LIGHT_COLOR;<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                if (entity.getMemoryWithoutUpdate().contains(LIGHT_COLOR_KEY)) {<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                        lightColor = (Color) entity.getMemoryWithoutUpdate().get(LIGHT_COLOR_KEY);<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                }<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                return lightColor;<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        }<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        <a name="line.113"></a>
+<span class="sourceLineNo">114</span>        public void setGlowColor(Color color) {<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                entity.getMemoryWithoutUpdate().set(GLOW_COLOR_KEY, color);<a name="line.115"></a>
+<span class="sourceLineNo">116</span>        }<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        public void setLightColor(Color color) {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                entity.getMemoryWithoutUpdate().set(LIGHT_COLOR_KEY, color);<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        }<a name="line.119"></a>
+<span class="sourceLineNo">120</span><a name="line.120"></a>
+<span class="sourceLineNo">121</span>        public float getRenderRange() {<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                return entity.getRadius() + 1200f;<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        }<a name="line.123"></a>
+<span class="sourceLineNo">124</span><a name="line.124"></a>
+<span class="sourceLineNo">125</span>        public void render(CampaignEngineLayers layer, ViewportAPI viewport) {<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                float alphaMult = viewport.getAlphaMult();<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                alphaMult *= entity.getSensorFaderBrightness();<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                alphaMult *= entity.getSensorContactFaderBrightness();<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                if (alphaMult &lt;= 0) return;<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                <a name="line.130"></a>
+<span class="sourceLineNo">131</span>                CustomEntitySpecAPI spec = entity.getCustomEntitySpec();<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                if (spec == null) return;<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                <a name="line.133"></a>
+<span class="sourceLineNo">134</span>                float w = spec.getSpriteWidth();<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                float h = spec.getSpriteHeight();<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                <a name="line.136"></a>
+<span class="sourceLineNo">137</span>                Vector2f loc = entity.getLocation();<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                <a name="line.138"></a>
+<span class="sourceLineNo">139</span>                if (sprite != null) {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                        sprite.setAngle(entity.getFacing() - 90f);<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                        sprite.setSize(w, h);<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                        sprite.setAlphaMult(alphaMult);<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                        sprite.setNormalBlend();<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                        sprite.renderAtCenter(loc.x, loc.y);<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                }<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                <a name="line.146"></a>
+<span class="sourceLineNo">147</span>                <a name="line.147"></a>
+<span class="sourceLineNo">148</span>                float glowAlpha = getGlowAlpha();<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                <a name="line.149"></a>
+<span class="sourceLineNo">150</span>                float glowAngle1 = (((phase * 1.3f) % 1) - 0.5f) * 12f;<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                float glowAngle2 = (((phase * 1.9f) % 1) - 0.5f) * 12f;<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                <a name="line.152"></a>
+<span class="sourceLineNo">153</span>                glow.setColor(getGlowColor());<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                <a name="line.154"></a>
+<span class="sourceLineNo">155</span>                w = 600f;<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                h = 600f;<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                <a name="line.157"></a>
+<span class="sourceLineNo">158</span>                glow.setSize(w, h);<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                glow.setAlphaMult(alphaMult * glowAlpha * 0.5f);<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                glow.setAdditiveBlend();<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                <a name="line.161"></a>
+<span class="sourceLineNo">162</span>                glow.renderAtCenter(loc.x, loc.y);<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                <a name="line.163"></a>
+<span class="sourceLineNo">164</span>                for (int i = 0; i &lt; 5; i++) {<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                        w *= 0.3f;<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                        h *= 0.3f;<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                        //glow.setSize(w * 0.1f, h * 0.1f);<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                        glow.setSize(w, h);<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                        glow.setAlphaMult(alphaMult * glowAlpha * 0.67f);<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                        glow.renderAtCenter(loc.x, loc.y);<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                }<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                <a name="line.172"></a>
+<span class="sourceLineNo">173</span>//              glow.setSize(w, h);<a name="line.173"></a>
+<span class="sourceLineNo">174</span>//              glow.setAlphaMult(alphaMult * glowAlpha);<a name="line.174"></a>
+<span class="sourceLineNo">175</span>//              glow.setAdditiveBlend();<a name="line.175"></a>
+<span class="sourceLineNo">176</span>//              <a name="line.176"></a>
+<span class="sourceLineNo">177</span>//              glow.setAngle(entity.getFacing() - 90f + glowAngle1);<a name="line.177"></a>
+<span class="sourceLineNo">178</span>//              glow.renderAtCenter(loc.x, loc.y);<a name="line.178"></a>
+<span class="sourceLineNo">179</span>//              <a name="line.179"></a>
+<span class="sourceLineNo">180</span>//              glow.setAngle(entity.getFacing() - 90f + glowAngle2);<a name="line.180"></a>
+<span class="sourceLineNo">181</span>//              glow.setAlphaMult(alphaMult * glowAlpha * 0.5f);<a name="line.181"></a>
+<span class="sourceLineNo">182</span>//              glow.renderAtCenter(loc.x, loc.y);<a name="line.182"></a>
+<span class="sourceLineNo">183</span>        }<a name="line.183"></a>
+<span class="sourceLineNo">184</span>        <a name="line.184"></a>
+<span class="sourceLineNo">185</span><a name="line.185"></a>
+<span class="sourceLineNo">186</span>//      @Override<a name="line.186"></a>
+<span class="sourceLineNo">187</span>//      public void createMapTooltip(TooltipMakerAPI tooltip, boolean expanded) {<a name="line.187"></a>
+<span class="sourceLineNo">188</span>//              String post = "";<a name="line.188"></a>
+<span class="sourceLineNo">189</span>//              Color color = entity.getFaction().getBaseUIColor();<a name="line.189"></a>
+<span class="sourceLineNo">190</span>//              Color postColor = color;<a name="line.190"></a>
+<span class="sourceLineNo">191</span>//              if (entity.getMemoryWithoutUpdate().getBoolean(RemnantSystemType.DESTROYED.getBeaconFlag())) {<a name="line.191"></a>
+<span class="sourceLineNo">192</span>//                      post = " - Low";<a name="line.192"></a>
+<span class="sourceLineNo">193</span>//                      postColor = Misc.getPositiveHighlightColor();<a name="line.193"></a>
+<span class="sourceLineNo">194</span>//              } else if (entity.getMemoryWithoutUpdate().getBoolean(RemnantSystemType.SUPPRESSED.getBeaconFlag())) {<a name="line.194"></a>
+<span class="sourceLineNo">195</span>//                      post = " - Medium";<a name="line.195"></a>
+<span class="sourceLineNo">196</span>//                      postColor = Misc.getHighlightColor();<a name="line.196"></a>
+<span class="sourceLineNo">197</span>//              } else if (entity.getMemoryWithoutUpdate().getBoolean(RemnantSystemType.RESURGENT.getBeaconFlag())) {<a name="line.197"></a>
+<span class="sourceLineNo">198</span>//                      post = " - High";<a name="line.198"></a>
+<span class="sourceLineNo">199</span>//                      postColor = Misc.getNegativeHighlightColor();<a name="line.199"></a>
+<span class="sourceLineNo">200</span>//              }<a name="line.200"></a>
+<span class="sourceLineNo">201</span>//              <a name="line.201"></a>
+<span class="sourceLineNo">202</span>//              tooltip.addPara(entity.getName() + post, 0f, color, postColor, post.replaceFirst(" - ", ""));<a name="line.202"></a>
+<span class="sourceLineNo">203</span>//      }<a name="line.203"></a>
+<span class="sourceLineNo">204</span>//<a name="line.204"></a>
+<span class="sourceLineNo">205</span>//      @Override<a name="line.205"></a>
+<span class="sourceLineNo">206</span>//      public boolean hasCustomMapTooltip() {<a name="line.206"></a>
+<span class="sourceLineNo">207</span>//              return true;<a name="line.207"></a>
+<span class="sourceLineNo">208</span>//      }<a name="line.208"></a>
+<span class="sourceLineNo">209</span>//      <a name="line.209"></a>
+<span class="sourceLineNo">210</span>//      @Override<a name="line.210"></a>
+<span class="sourceLineNo">211</span>//      public void appendToCampaignTooltip(TooltipMakerAPI tooltip, VisibilityLevel level) {<a name="line.211"></a>
+<span class="sourceLineNo">212</span>//              if (level == VisibilityLevel.COMPOSITION_AND_FACTION_DETAILS || <a name="line.212"></a>
+<span class="sourceLineNo">213</span>//                              level == VisibilityLevel.COMPOSITION_DETAILS) {<a name="line.213"></a>
+<span class="sourceLineNo">214</span>//                      <a name="line.214"></a>
+<span class="sourceLineNo">215</span>//                      String post = "";<a name="line.215"></a>
+<span class="sourceLineNo">216</span>//                      Color color = Misc.getTextColor();<a name="line.216"></a>
+<span class="sourceLineNo">217</span>//                      Color postColor = color;<a name="line.217"></a>
+<span class="sourceLineNo">218</span>//                      if (entity.getMemoryWithoutUpdate().getBoolean(RemnantSystemType.DESTROYED.getBeaconFlag())) {<a name="line.218"></a>
+<span class="sourceLineNo">219</span>//                              post = "low";<a name="line.219"></a>
+<span class="sourceLineNo">220</span>//                              postColor = Misc.getPositiveHighlightColor();<a name="line.220"></a>
+<span class="sourceLineNo">221</span>//                      } else if (entity.getMemoryWithoutUpdate().getBoolean(RemnantSystemType.SUPPRESSED.getBeaconFlag())) {<a name="line.221"></a>
+<span class="sourceLineNo">222</span>//                              post = "medium";<a name="line.222"></a>
+<span class="sourceLineNo">223</span>//                              postColor = Misc.getHighlightColor();<a name="line.223"></a>
+<span class="sourceLineNo">224</span>//                      } else if (entity.getMemoryWithoutUpdate().getBoolean(RemnantSystemType.RESURGENT.getBeaconFlag())) {<a name="line.224"></a>
+<span class="sourceLineNo">225</span>//                              post = "high";<a name="line.225"></a>
+<span class="sourceLineNo">226</span>//                              postColor = Misc.getNegativeHighlightColor();<a name="line.226"></a>
+<span class="sourceLineNo">227</span>//                      }<a name="line.227"></a>
+<span class="sourceLineNo">228</span>//                      if (!post.isEmpty()) {<a name="line.228"></a>
+<span class="sourceLineNo">229</span>//                              tooltip.setParaFontDefault();<a name="line.229"></a>
+<span class="sourceLineNo">230</span>//                              tooltip.addPara(BaseIntelPlugin.BULLET + "Danger level: " + post, 10f, color, postColor, post);<a name="line.230"></a>
+<span class="sourceLineNo">231</span>//                      }<a name="line.231"></a>
+<span class="sourceLineNo">232</span>//              }<a name="line.232"></a>
+<span class="sourceLineNo">233</span>//              <a name="line.233"></a>
+<span class="sourceLineNo">234</span>//      }<a name="line.234"></a>
+<span class="sourceLineNo">235</span>}<a name="line.235"></a>
+<span class="sourceLineNo">236</span><a name="line.236"></a>
+<span class="sourceLineNo">237</span><a name="line.237"></a>
+<span class="sourceLineNo">238</span><a name="line.238"></a>
+<span class="sourceLineNo">239</span><a name="line.239"></a>
+<span class="sourceLineNo">240</span><a name="line.240"></a>
+<span class="sourceLineNo">241</span><a name="line.241"></a>
+<span class="sourceLineNo">242</span><a name="line.242"></a>
+<span class="sourceLineNo">243</span><a name="line.243"></a>
+<span class="sourceLineNo">244</span><a name="line.244"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

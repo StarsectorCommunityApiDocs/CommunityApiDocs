@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.ghosts.types;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import com.fs.starfarer.api.Global;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import com.fs.starfarer.api.campaign.CampaignFleetAPI;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import com.fs.starfarer.api.impl.campaign.ghosts.BaseSensorGhost;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import com.fs.starfarer.api.impl.campaign.ghosts.GBFollow;<a name="line.6"></a>
+<span class="sourceLineNo">007</span>import com.fs.starfarer.api.impl.campaign.ghosts.GBGoAwayFrom;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.impl.campaign.ghosts.GBITooClose;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.impl.campaign.ghosts.SensorGhostManager;<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span>public class TestGhost extends BaseSensorGhost {<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>        public TestGhost(SensorGhostManager manager) {<a name="line.13"></a>
+<span class="sourceLineNo">014</span>                super(manager, 30);<a name="line.14"></a>
+<span class="sourceLineNo">015</span>                <a name="line.15"></a>
+<span class="sourceLineNo">016</span>                CampaignFleetAPI pf = Global.getSector().getPlayerFleet();<a name="line.16"></a>
+<span class="sourceLineNo">017</span>                //initEntity(1000f, 200f);<a name="line.17"></a>
+<span class="sourceLineNo">018</span>                initEntity(2000f, pf.getRadius());<a name="line.18"></a>
+<span class="sourceLineNo">019</span>                placeNearPlayer(700f, 1200f);<a name="line.19"></a>
+<span class="sourceLineNo">020</span>                <a name="line.20"></a>
+<span class="sourceLineNo">021</span>                //getMovement().getLocation().set(pf.getLocation().x + 900, pf.getLocationInHyperspace().y);<a name="line.21"></a>
+<span class="sourceLineNo">022</span>                <a name="line.22"></a>
+<span class="sourceLineNo">023</span>                float delay = 0.05f + manager.getRandom().nextFloat() * 0.05f;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>                //addBehavior(new GBStayInPlace(1f));<a name="line.24"></a>
+<span class="sourceLineNo">025</span>                //addBehavior(new GBEchoMovement(pf, delay, 5f));<a name="line.25"></a>
+<span class="sourceLineNo">026</span>                //addBehavior(new GBIntercept(pf, 10f, 20, true));<a name="line.26"></a>
+<span class="sourceLineNo">027</span>                //addBehavior(new GBIntercept(pf, 10f, 20, 500f, true));<a name="line.27"></a>
+<span class="sourceLineNo">028</span>                //addBehavior(new GBCircle(pf, 10f, 50, 600f, -1f));<a name="line.28"></a>
+<span class="sourceLineNo">029</span>                <a name="line.29"></a>
+<span class="sourceLineNo">030</span>                addBehavior(new GBFollow(pf, 1000f, 15, 1200f, 1800f));<a name="line.30"></a>
+<span class="sourceLineNo">031</span>                addInterrupt(new GBITooClose(0f, pf, 300f));<a name="line.31"></a>
+<span class="sourceLineNo">032</span>                addBehavior(new GBGoAwayFrom(10f, pf, 50));<a name="line.32"></a>
+<span class="sourceLineNo">033</span>        }<a name="line.33"></a>
+<span class="sourceLineNo">034</span>}<a name="line.34"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

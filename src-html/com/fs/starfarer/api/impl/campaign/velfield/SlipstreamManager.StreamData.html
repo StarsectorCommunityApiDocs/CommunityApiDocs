@@ -1,0 +1,1020 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.velfield;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.util.ArrayList;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import java.util.HashSet;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import java.util.Iterator;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import java.util.LinkedHashMap;<a name="line.6"></a>
+<span class="sourceLineNo">007</span>import java.util.LinkedHashSet;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import java.util.List;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import java.util.Map;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import java.util.Random;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import java.util.Set;<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>import org.lwjgl.util.vector.Vector2f;<a name="line.13"></a>
+<span class="sourceLineNo">014</span><a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.EveryFrameScript;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.Global;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.campaign.CampaignTerrainAPI;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import com.fs.starfarer.api.campaign.JumpPointAPI;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import com.fs.starfarer.api.campaign.LocationAPI;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import com.fs.starfarer.api.campaign.NascentGravityWellAPI;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import com.fs.starfarer.api.campaign.SectorEntityToken;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import com.fs.starfarer.api.campaign.StarSystemAPI;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>import com.fs.starfarer.api.campaign.listeners.ListenerUtil;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>import com.fs.starfarer.api.impl.campaign.DebugFlags;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>import com.fs.starfarer.api.impl.campaign.ids.Tags;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>import com.fs.starfarer.api.impl.campaign.ids.Terrain;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>import com.fs.starfarer.api.impl.campaign.terrain.HyperspaceAbyssPlugin;<a name="line.27"></a>
+<span class="sourceLineNo">028</span>import com.fs.starfarer.api.impl.campaign.terrain.HyperspaceTerrainPlugin;<a name="line.28"></a>
+<span class="sourceLineNo">029</span>import com.fs.starfarer.api.impl.campaign.velfield.SlipstreamBuilder.StreamType;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>import com.fs.starfarer.api.impl.campaign.velfield.SlipstreamTerrainPlugin2.SlipstreamParams2;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import com.fs.starfarer.api.impl.campaign.velfield.SlipstreamTerrainPlugin2.SlipstreamSegment;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import com.fs.starfarer.api.impl.campaign.world.TTBlackSite;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import com.fs.starfarer.api.util.CollisionGridUtil;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import com.fs.starfarer.api.util.IntervalUtil;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import com.fs.starfarer.api.util.Misc;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import com.fs.starfarer.api.util.WeightedRandomPicker;<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>public class SlipstreamManager implements EveryFrameScript {<a name="line.38"></a>
+<span class="sourceLineNo">039</span>        <a name="line.39"></a>
+<span class="sourceLineNo">040</span>        public static int WIDTH = 21;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>        public static int HEIGHT = 11;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>        public static float MAP_WIDTH_PADDING = 8000;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        public static float MAP_HEIGHT_PADDING = 5000;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        /**<a name="line.44"></a>
+<span class="sourceLineNo">045</span>         * 21x11 characters<a name="line.45"></a>
+<span class="sourceLineNo">046</span>         * Capital letter: endpoints<a name="line.46"></a>
+<span class="sourceLineNo">047</span>         * Lowercase letter, optional: control point for 3-point stream (if 2: cubic bezier curve instead of quadratic)<a name="line.47"></a>
+<span class="sourceLineNo">048</span>         * Direction of flow is determined by time of cycle and relative location of endpoints<a name="line.48"></a>
+<span class="sourceLineNo">049</span>         * X is ignored; just marks the center to make it easier to edit<a name="line.49"></a>
+<span class="sourceLineNo">050</span>         * After a capital letter:<a name="line.50"></a>
+<span class="sourceLineNo">051</span>         * &lt; makes the stream go in the opposite-to-standard direction<a name="line.51"></a>
+<span class="sourceLineNo">052</span>         * +-&lt;single digit number&gt; adjusts the stream's burn level; 0 means +10<a name="line.52"></a>
+<span class="sourceLineNo">053</span>         * ~ makes the stream narrower, on average<a name="line.53"></a>
+<span class="sourceLineNo">054</span>         * = makes it wider<a name="line.54"></a>
+<span class="sourceLineNo">055</span>         * | makes it much straighter than usual<a name="line.55"></a>
+<span class="sourceLineNo">056</span>         * ! priority, spawned before other streams (and thus other streams will fade when intersecting it, not this one)<a name="line.56"></a>
+<span class="sourceLineNo">057</span>         * ^ only keep longest segment - but, from intersections with streams ONLY, not with stars/other blockers<a name="line.57"></a>
+<span class="sourceLineNo">058</span>         * * randomize: up to +10 burn, reverse, straightness, wide/narrow <a name="line.58"></a>
+<span class="sourceLineNo">059</span>         * ? randomize: same as above, but no reverse and only up to +5 burn<a name="line.59"></a>
+<span class="sourceLineNo">060</span>         */<a name="line.60"></a>
+<span class="sourceLineNo">061</span>        public static Map&lt;String, Float&gt; STREAM_CONFIGS = new LinkedHashMap&lt;String, Float&gt;();<a name="line.61"></a>
+<span class="sourceLineNo">062</span>        <a name="line.62"></a>
+<span class="sourceLineNo">063</span>        static {<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                loadConfigs();<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        }<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        <a name="line.66"></a>
+<span class="sourceLineNo">067</span>        public static void loadConfigs() {<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                // begin "finished"<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                STREAM_CONFIGS.put(<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                                "aD?                 B" +<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                                "C?                 EA" +<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                                "                  c  " +<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                                "                     " +<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                                "                     " +<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                                "          X          " +<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                                "                     " +<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                                "                     " +<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                                "  d                  " +<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                                "A!E?                C" +<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                                "B!                 Db"<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                                , 10f);<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                STREAM_CONFIGS.put(<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                                "Ba   C         D   aB" +<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                                "                     " +<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                                "                     " +<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                                "                     " +<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                                "                     " +<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                                "         CXD         " +<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                                "          e          " +<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                                "                     " +<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                                "                     " +<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                                "                     " +<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                                "A!bE              EbA"<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                , 10f);         <a name="line.94"></a>
+<span class="sourceLineNo">095</span>                STREAM_CONFIGS.put(<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                                "A! D?            F? A" +<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                                "                     " +<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                                "                     " +<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                                "a                   a" +<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                                "                     " +<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                                "C!   DE   X   FG    C" +<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                                "                     " +<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                                "b                   b" +<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                                "                     " +<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                                "                     " +<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                                "B! E?            G? B"<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                                , 10f);         <a name="line.107"></a>
+<span class="sourceLineNo">108</span>                STREAM_CONFIGS.put(<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                                "C!   D!            cA" +<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                                "                     " +<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                                "                     " +<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                                "                     " +<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                                "A?                 aa" +<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                                "          X         c" +<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                                "B?                 bb" +<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                                "                     " +<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                                "                     " +<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                                "d             C      " +<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                                "d                  DB"<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                                , 10f);         <a name="line.120"></a>
+<span class="sourceLineNo">121</span>                STREAM_CONFIGS.put(<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                                "B^!     I^?   H^? a G" +<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                                "                     " +<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                                "   i         h       " +<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                                "                    g" +<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                                "    A!|  H^G^?       " +<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                                "   C^&lt;I   X          " +<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                                "    D^    E^?F^?    F" +<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                                "c  AB                " +<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                                "                     " +<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                                "b    d               " +<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                                "C?          D?e   a E"<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                                , 10f);<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                STREAM_CONFIGS.put(<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                                "       b  a          " +<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                                "A|~+0               A" +<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                                "                     " +<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                                "B|~+0               B" +<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                                "      c          a   " +<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                                "          X          " +<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                                "                     " +<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                                "C|!+0 d             C" +<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                                "               b     " +<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                                "D|~+0               D" +<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                                "          d   c      "<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                                , 10f);<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                <a name="line.147"></a>
+<span class="sourceLineNo">148</span>                // highly randomized and mirrored<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                STREAM_CONFIGS.put(<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                                "A*       B*         G" +<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                                "    H*         g     " +<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                                "           h      H  " +<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                                "    b                " +<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                                " C*     A        G*  " +<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                                "          X         F" +<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                                "     c       D       " +<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                                "  B     E*      e    " +<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                                "          d       f  " +<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                                "                     " +<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                                "D*     C    F*      E"<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                                , 5f);<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                String prev = (String) STREAM_CONFIGS.keySet().toArray()[STREAM_CONFIGS.size() - 1];<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                STREAM_CONFIGS.put(mirrorHorz(prev), 5f);<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                STREAM_CONFIGS.put(mirrorVert(prev), 5f);<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                STREAM_CONFIGS.put(mirrorHorz(mirrorVert(prev)), 5f);<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                <a name="line.166"></a>
+<span class="sourceLineNo">167</span>                // end "finished"<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                <a name="line.168"></a>
+<span class="sourceLineNo">169</span>                <a name="line.169"></a>
+<span class="sourceLineNo">170</span>                // maybe?<a name="line.170"></a>
+<span class="sourceLineNo">171</span>//              STREAM_CONFIGS.put(<a name="line.171"></a>
+<span class="sourceLineNo">172</span>//                              "A|!~+0C   D    FE   A" +<a name="line.172"></a>
+<span class="sourceLineNo">173</span>//                              "c    d              B" +<a name="line.173"></a>
+<span class="sourceLineNo">174</span>//                              "                     " +<a name="line.174"></a>
+<span class="sourceLineNo">175</span>//                              "                     " +<a name="line.175"></a>
+<span class="sourceLineNo">176</span>//                              "                     " +<a name="line.176"></a>
+<span class="sourceLineNo">177</span>//                              "        f X      e   " +<a name="line.177"></a>
+<span class="sourceLineNo">178</span>//                              "                     " +<a name="line.178"></a>
+<span class="sourceLineNo">179</span>//                              "                     " +<a name="line.179"></a>
+<span class="sourceLineNo">180</span>//                              "                     " +<a name="line.180"></a>
+<span class="sourceLineNo">181</span>//                              "B|!&lt;-5D^             " +<a name="line.181"></a>
+<span class="sourceLineNo">182</span>//                              "  C^       F^E&lt;^   bb"<a name="line.182"></a>
+<span class="sourceLineNo">183</span>//                              , 10f);         <a name="line.183"></a>
+<span class="sourceLineNo">184</span>//              STREAM_CONFIGS.put( // also maybe, very similar to another one though<a name="line.184"></a>
+<span class="sourceLineNo">185</span>//                              "A        C D        A" +<a name="line.185"></a>
+<span class="sourceLineNo">186</span>//                              "  c               d  " +<a name="line.186"></a>
+<span class="sourceLineNo">187</span>//                              "                     " +<a name="line.187"></a>
+<span class="sourceLineNo">188</span>//                              "                     " +<a name="line.188"></a>
+<span class="sourceLineNo">189</span>//                              "          e          " +<a name="line.189"></a>
+<span class="sourceLineNo">190</span>//                              "          X          " +<a name="line.190"></a>
+<span class="sourceLineNo">191</span>//                              "          b          " +<a name="line.191"></a>
+<span class="sourceLineNo">192</span>//                              "E         a         E" +<a name="line.192"></a>
+<span class="sourceLineNo">193</span>//                              "                     " +<a name="line.193"></a>
+<span class="sourceLineNo">194</span>//                              "                     " +<a name="line.194"></a>
+<span class="sourceLineNo">195</span>//                              "B  C            D   B"<a name="line.195"></a>
+<span class="sourceLineNo">196</span>//                              , 10f);<a name="line.196"></a>
+<span class="sourceLineNo">197</span><a name="line.197"></a>
+<span class="sourceLineNo">198</span>                // blank<a name="line.198"></a>
+<span class="sourceLineNo">199</span>//              STREAM_CONFIGS.put(<a name="line.199"></a>
+<span class="sourceLineNo">200</span>//                              "                     " +<a name="line.200"></a>
+<span class="sourceLineNo">201</span>//                              "                     " +<a name="line.201"></a>
+<span class="sourceLineNo">202</span>//                              "                     " +<a name="line.202"></a>
+<span class="sourceLineNo">203</span>//                              "                     " +<a name="line.203"></a>
+<span class="sourceLineNo">204</span>//                              "                     " +<a name="line.204"></a>
+<span class="sourceLineNo">205</span>//                              "          X          " +<a name="line.205"></a>
+<span class="sourceLineNo">206</span>//                              "                     " +<a name="line.206"></a>
+<span class="sourceLineNo">207</span>//                              "                     " +<a name="line.207"></a>
+<span class="sourceLineNo">208</span>//                              "                     " +<a name="line.208"></a>
+<span class="sourceLineNo">209</span>//                              "                     " +<a name="line.209"></a>
+<span class="sourceLineNo">210</span>//                              "                     "<a name="line.210"></a>
+<span class="sourceLineNo">211</span>//                              , 10f);<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                <a name="line.212"></a>
+<span class="sourceLineNo">213</span>        }<a name="line.213"></a>
+<span class="sourceLineNo">214</span>        <a name="line.214"></a>
+<span class="sourceLineNo">215</span>        public static void mirrorPrevVert(float weight) {<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                String prev = (String) STREAM_CONFIGS.keySet().toArray()[STREAM_CONFIGS.size() - 1];<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                STREAM_CONFIGS.put(mirrorVert(prev), weight);<a name="line.217"></a>
+<span class="sourceLineNo">218</span>        }<a name="line.218"></a>
+<span class="sourceLineNo">219</span>        public static String mirrorVert(String in) {<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                String out = "";<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                for (int j = 0; j &lt; HEIGHT; j++) {<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                        out = in.substring(j * WIDTH, (j + 1) * WIDTH) + out;<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                }<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                return out;<a name="line.224"></a>
+<span class="sourceLineNo">225</span>        }<a name="line.225"></a>
+<span class="sourceLineNo">226</span>        public static void mirrorPrevHorz(float weight) {<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                String prev = (String) STREAM_CONFIGS.keySet().toArray()[STREAM_CONFIGS.size() - 1];<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                STREAM_CONFIGS.put(mirrorHorz(prev), weight);<a name="line.228"></a>
+<span class="sourceLineNo">229</span>        }<a name="line.229"></a>
+<span class="sourceLineNo">230</span>        public static String mirrorHorz(String in) {<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                String out = "";<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                for (int j = 0; j &lt; HEIGHT; j++) {<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                        out = out + new StringBuilder(in.substring(j * WIDTH, (j + 1) * WIDTH)).reverse();<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                }<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                return out;<a name="line.235"></a>
+<span class="sourceLineNo">236</span>        }<a name="line.236"></a>
+<span class="sourceLineNo">237</span>        <a name="line.237"></a>
+<span class="sourceLineNo">238</span>        public static void validateConfigs() {<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                // make sure they all parse<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                for (String key : STREAM_CONFIGS.keySet()) {<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                        if (key.length() != WIDTH * HEIGHT) {<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                                throw new RuntimeException("Length of slipstream config not WIDTHxHEIGHT [" + key + "]");<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                        }<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                        try {<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                                new StreamConfig(key, null);<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                        } catch (Throwable t) {<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                                throw new RuntimeException("Error parsing slipstream config [" + key + "]", t);<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                        }<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                }<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                <a name="line.250"></a>
+<span class="sourceLineNo">251</span>        }<a name="line.251"></a>
+<span class="sourceLineNo">252</span>        <a name="line.252"></a>
+<span class="sourceLineNo">253</span>        public static class StreamData {<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                public String id;<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                public int p0x = -1;<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                public int p0y = -1;<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                public int p1x = -1;<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                public int p1y = -1;<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                public int controlX = -1;<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                public int controlY = -1;<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                public int control2X = -1;<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                public int control2Y = -1;<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                public int burnMod = 0;<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                public boolean reverse = false;<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                public StreamType type = StreamType.NORMAL;<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                public boolean wasUsed = false;<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                public boolean straight = false;<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                public boolean priority = false;<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                public boolean onlyKeepLongestSegment = false;<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                public boolean randomize = false;<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                public boolean minorRandomize = false;<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                <a name="line.272"></a>
+<span class="sourceLineNo">273</span>                public StreamData(String id) {<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                        this.id = id;<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                }<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                public Vector2f generateP0(Random random) {<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                        if (p0x &lt; 0) return null;<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                        return generate(p0x, p0y, random);<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                }<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                public Vector2f generateP1(Random random) {<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                        if (p1x &lt; 0) return null;<a name="line.281"></a>
+<span class="sourceLineNo">282</span>                        return generate(p1x, p1y, random);<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                }<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                public Vector2f generateControl(Random random) {<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                        if (controlX &lt; 0) return null;<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                        return generate(controlX, controlY, random);<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                }<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                public Vector2f generateControl2(Random random) {<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                        if (control2X &lt; 0) return null;<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                        return generate(control2X, control2Y, random);<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                }<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                public Vector2f generate(int cellX, int cellY, Random random) {<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                        float sw = Global.getSettings().getFloat("sectorWidth") - MAP_WIDTH_PADDING;<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                        float sh = Global.getSettings().getFloat("sectorHeight") - MAP_HEIGHT_PADDING;<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                        float cellWidth = sw / WIDTH;<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                        float cellHeight = sh / HEIGHT;<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                        Vector2f p = new Vector2f();<a name="line.297"></a>
+<span class="sourceLineNo">298</span>//                      if (cellX == 20) {<a name="line.298"></a>
+<span class="sourceLineNo">299</span>//                              System.out.println("efwefwef");<a name="line.299"></a>
+<span class="sourceLineNo">300</span>//                      }<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                        float minX = -sw/2f + cellWidth * cellX;<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                        float maxX = -sw/2f + cellWidth * (cellX + 1);<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                        float minY = -sh/2f + cellHeight * cellY;<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                        float maxY = -sh/2f + cellHeight * (cellY + 1);<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                        <a name="line.305"></a>
+<span class="sourceLineNo">306</span>                        p.x = minX + (maxX - minX) * random.nextFloat();<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                        p.y = minY + (maxY - minY) * random.nextFloat();<a name="line.307"></a>
+<span class="sourceLineNo">308</span>//                      p.x = minX + (maxX - minX) * 0f;<a name="line.308"></a>
+<span class="sourceLineNo">309</span>//                      p.y = minY + (maxY - minY) * 0f;<a name="line.309"></a>
+<span class="sourceLineNo">310</span>//                      p.x = minX + (maxX - minX) * 1f;<a name="line.310"></a>
+<span class="sourceLineNo">311</span>//                      p.y = minY + (maxY - minY) * 1f;<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                        <a name="line.312"></a>
+<span class="sourceLineNo">313</span>                        return p;<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                }<a name="line.314"></a>
+<span class="sourceLineNo">315</span>        }<a name="line.315"></a>
+<span class="sourceLineNo">316</span>        <a name="line.316"></a>
+<span class="sourceLineNo">317</span>        public static class StreamConfig {<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                <a name="line.318"></a>
+<span class="sourceLineNo">319</span>                public List&lt;StreamData&gt; streams = new ArrayList&lt;StreamData&gt;();<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                public String data;<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                public StreamConfig(String data, Random random) {<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                        this.data = data;<a name="line.322"></a>
+<span class="sourceLineNo">323</span>                        Set&lt;String&gt; ids = new LinkedHashSet&lt;String&gt;();<a name="line.323"></a>
+<span class="sourceLineNo">324</span>                        for (int i = 0; i &lt; data.length(); i++) {<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                                char c = data.charAt(i);<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                                if (c == 'X') continue;<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                                if (Character.isUpperCase(c)) {<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                                        ids.add("" + c);<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                                }<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                        }<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                        <a name="line.331"></a>
+<span class="sourceLineNo">332</span>                        for (String id : ids) {<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                                StreamData curr = new StreamData(id);<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                                for (int i = 0; i &lt; data.length(); i++) {<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                                        char c = data.charAt(i);<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                                        if (c == 'X') continue;<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                                        <a name="line.337"></a>
+<span class="sourceLineNo">338</span>                                        int cellX = i % WIDTH;<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                                        int cellY = HEIGHT - i / WIDTH - 1;<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                                        if (id.equals("" + c)) {<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                                                if (curr.p0x &lt; 0) {<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                                                        curr.p0x = cellX;<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                                                        curr.p0y = cellY;<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                                                } else if (curr.p1x &lt; 0) {<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                                                        curr.p1x = cellX;<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                                                        curr.p1y = cellY;<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                                                }<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                                        } else if (id.toLowerCase().equals("" + c)) {<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                                                if (curr.controlX &lt; 0) {<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                                                        curr.controlX = cellX;<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                                                        curr.controlY = cellY;<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                                                } else {<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                                                        curr.control2X = cellX;<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                                                        curr.control2Y = cellY;<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                                                }<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                                        }<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                                        <a name="line.357"></a>
+<span class="sourceLineNo">358</span>                                        if (id.equals("" + c)) {<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                                                for (int j = i + 1; j &lt; data.length() &amp;&amp; j &lt; i + 10; j++) {<a name="line.359"></a>
+<span class="sourceLineNo">360</span>                                                        char c2 = data.charAt(j);<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                                                        if (c2 == ' ' || Character.isAlphabetic(c2)) break;<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                                                        if (c2 == '&lt;') {<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                                                                curr.reverse = true;<a name="line.363"></a>
+<span class="sourceLineNo">364</span>                                                        } else if (c2 == '~') {<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                                                                curr.type = StreamType.NARROW;<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                                                        } else if (c2 == '=') {<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                                                                curr.type = StreamType.WIDE;<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                                                        } else if (c2 == '-') {<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                                                                int burnMod = data.charAt(j + 1) - '0';<a name="line.369"></a>
+<span class="sourceLineNo">370</span>                                                                if (burnMod == 0) burnMod = 10;<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                                                                curr.burnMod = -1 * burnMod;<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                                                        } else if (c2 == '+') {<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                                                                int burnMod = data.charAt(j + 1) - '0';<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                                                                if (burnMod == 0) burnMod = 10;<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                                                                curr.burnMod = burnMod;<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                                                        } else if (c2 == '|') {<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                                                                curr.straight = true;<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                                                        } else if (c2 == '!') {<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                                                                curr.priority = true;<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                                                        } else if (c2 == '^') {<a name="line.380"></a>
+<span class="sourceLineNo">381</span>                                                                curr.onlyKeepLongestSegment = true;<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                                                        } else if (c2 == '*') {<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                                                                curr.randomize = true;<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                                                        } else if (c2 == '?') {<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                                                                curr.minorRandomize = true;<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                                                        }<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                                                }<a name="line.387"></a>
+<span class="sourceLineNo">388</span>                                        }<a name="line.388"></a>
+<span class="sourceLineNo">389</span>                                }<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                                if (curr.p0x &gt;= 0 || curr.p1x &gt;= 0) {<a name="line.390"></a>
+<span class="sourceLineNo">391</span>                                        if ((curr.randomize || curr.minorRandomize) &amp;&amp; random != null) {<a name="line.391"></a>
+<span class="sourceLineNo">392</span>                                                if (!curr.reverse &amp;&amp; !curr.minorRandomize) {<a name="line.392"></a>
+<span class="sourceLineNo">393</span>                                                        curr.reverse = random.nextFloat() &lt; 0.5f;<a name="line.393"></a>
+<span class="sourceLineNo">394</span>                                                }<a name="line.394"></a>
+<span class="sourceLineNo">395</span>                                                if (!curr.straight) {<a name="line.395"></a>
+<span class="sourceLineNo">396</span>                                                        curr.straight = random.nextFloat() &lt; 0.25f;<a name="line.396"></a>
+<span class="sourceLineNo">397</span>                                                }<a name="line.397"></a>
+<span class="sourceLineNo">398</span>                                                if (curr.burnMod == 0) {<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                                                        //curr.burnMod = (random.nextBoolean() ? 1 : -1) * random.nextInt(6);<a name="line.399"></a>
+<span class="sourceLineNo">400</span>                                                        if (curr.minorRandomize) {<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                                                                curr.burnMod = random.nextInt(6);<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                                                        } else {<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                                                                curr.burnMod = random.nextInt(11);<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                                                        }<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                                                }<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                                                if (curr.type == StreamType.NORMAL) {<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                                                        float r = random.nextFloat();<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                                                        if (r &lt; 0.2f) {<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                                                                curr.type = StreamType.NARROW;<a name="line.409"></a>
+<span class="sourceLineNo">410</span>                                                        } else if (r &lt; 0.4f) {<a name="line.410"></a>
+<span class="sourceLineNo">411</span>                                                                curr.type = StreamType.WIDE;<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                                                        }<a name="line.412"></a>
+<span class="sourceLineNo">413</span>                                                }<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                                        }<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                                        streams.add(curr);<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                                }<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                        }<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                }<a name="line.418"></a>
+<span class="sourceLineNo">419</span>        }<a name="line.419"></a>
+<span class="sourceLineNo">420</span>        <a name="line.420"></a>
+<span class="sourceLineNo">421</span><a name="line.421"></a>
+<span class="sourceLineNo">422</span>        public static class AddedStream {<a name="line.422"></a>
+<span class="sourceLineNo">423</span>                public CampaignTerrainAPI terrain;<a name="line.423"></a>
+<span class="sourceLineNo">424</span>                public SlipstreamTerrainPlugin2 plugin;<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                public Vector2f from;<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                public Vector2f to;<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                public Vector2f control;<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                public long timestamp;<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                public AddedStream(SlipstreamTerrainPlugin2 plugin) {<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                        this.plugin = plugin;<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                        terrain = (CampaignTerrainAPI) plugin.getEntity();<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                        from = new Vector2f(plugin.getSegments().get(0).loc);<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                        to = new Vector2f(plugin.getSegments().get(plugin.getSegments().size() - 1).loc);<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                        timestamp = Global.getSector().getClock().getTimestamp();<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                }<a name="line.435"></a>
+<span class="sourceLineNo">436</span>        }<a name="line.436"></a>
+<span class="sourceLineNo">437</span>        <a name="line.437"></a>
+<span class="sourceLineNo">438</span>        <a name="line.438"></a>
+<span class="sourceLineNo">439</span>        protected transient CollisionGridUtil grid;<a name="line.439"></a>
+<span class="sourceLineNo">440</span>        <a name="line.440"></a>
+<span class="sourceLineNo">441</span>        protected IntervalUtil interval = new IntervalUtil(1f, 2f);<a name="line.441"></a>
+<span class="sourceLineNo">442</span>        protected Random random = new Random();<a name="line.442"></a>
+<span class="sourceLineNo">443</span>        protected int prevMonth = -1;<a name="line.443"></a>
+<span class="sourceLineNo">444</span>        protected int desiredNumStreams = 0;<a name="line.444"></a>
+<span class="sourceLineNo">445</span>        protected List&lt;AddedStream&gt; active = new ArrayList&lt;SlipstreamManager.AddedStream&gt;();<a name="line.445"></a>
+<span class="sourceLineNo">446</span>        protected StreamConfig config;<a name="line.446"></a>
+<span class="sourceLineNo">447</span>        protected String prevConfig;<a name="line.447"></a>
+<span class="sourceLineNo">448</span>        <a name="line.448"></a>
+<span class="sourceLineNo">449</span>        protected Object readResolve() {<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                if (active == null) {<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                        active = new ArrayList&lt;SlipstreamManager.AddedStream&gt;();<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                }<a name="line.452"></a>
+<span class="sourceLineNo">453</span>                return this;<a name="line.453"></a>
+<span class="sourceLineNo">454</span>        }<a name="line.454"></a>
+<span class="sourceLineNo">455</span>        <a name="line.455"></a>
+<span class="sourceLineNo">456</span>        <a name="line.456"></a>
+<span class="sourceLineNo">457</span>        public void advance(float amount) {<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                //if (true) return;<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                if (DebugFlags.SLIPSTREAM_DEBUG) {<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                        random = Misc.random;<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                }<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                <a name="line.462"></a>
+<span class="sourceLineNo">463</span>//              int total = 0;<a name="line.463"></a>
+<span class="sourceLineNo">464</span>//              for (AddedStream curr : active) {<a name="line.464"></a>
+<span class="sourceLineNo">465</span>//                      total += curr.plugin.getSegments().size();<a name="line.465"></a>
+<span class="sourceLineNo">466</span>//              }<a name="line.466"></a>
+<span class="sourceLineNo">467</span>//              System.out.println("TOTAL SEGMENTS: " + total + ", streams: " + active.size());<a name="line.467"></a>
+<span class="sourceLineNo">468</span>                <a name="line.468"></a>
+<span class="sourceLineNo">469</span>                float days = Global.getSector().getClock().convertToDays(amount);<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                if (DebugFlags.SLIPSTREAM_DEBUG) {<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                        days *= 100f;<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                }<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                interval.advance(days);<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                //DebugFlags.SLIPSTREAM_DEBUG = true;<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                if (interval.intervalElapsed()) {<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                        Iterator&lt;AddedStream&gt; iter = active.iterator();<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                        while (iter.hasNext()) {<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                                AddedStream curr = iter.next();<a name="line.478"></a>
+<span class="sourceLineNo">479</span>                                if (!curr.terrain.isAlive()) {<a name="line.479"></a>
+<span class="sourceLineNo">480</span>                                        iter.remove();<a name="line.480"></a>
+<span class="sourceLineNo">481</span>                                }<a name="line.481"></a>
+<span class="sourceLineNo">482</span>                        }<a name="line.482"></a>
+<span class="sourceLineNo">483</span>                        <a name="line.483"></a>
+<span class="sourceLineNo">484</span>                        int month = Global.getSector().getClock().getMonth();<a name="line.484"></a>
+<span class="sourceLineNo">485</span>                        //month = 6;<a name="line.485"></a>
+<span class="sourceLineNo">486</span>                        if (month == 6 || month == 12) {<a name="line.486"></a>
+<span class="sourceLineNo">487</span>                                for (AddedStream curr : active) {<a name="line.487"></a>
+<span class="sourceLineNo">488</span>                                        if (curr.plugin.isDespawning()) continue;<a name="line.488"></a>
+<span class="sourceLineNo">489</span>                                        float despawnDelay = 0f + random.nextFloat() * 20f;<a name="line.489"></a>
+<span class="sourceLineNo">490</span>                                        float timeMinusDelay = 27f - despawnDelay;<a name="line.490"></a>
+<span class="sourceLineNo">491</span>                                        float despawnDays = timeMinusDelay * 0.5f + random.nextFloat() * timeMinusDelay * 0.5f;<a name="line.491"></a>
+<span class="sourceLineNo">492</span>                                        curr.plugin.despawn(despawnDelay, despawnDays, random);<a name="line.492"></a>
+<span class="sourceLineNo">493</span>                                }<a name="line.493"></a>
+<span class="sourceLineNo">494</span>                                if (config != null) {<a name="line.494"></a>
+<span class="sourceLineNo">495</span>                                        prevConfig = config.data;<a name="line.495"></a>
+<span class="sourceLineNo">496</span>                                }<a name="line.496"></a>
+<span class="sourceLineNo">497</span>                                config = null;<a name="line.497"></a>
+<span class="sourceLineNo">498</span>                        } else if (month != 6 &amp;&amp; month != 12) {<a name="line.498"></a>
+<span class="sourceLineNo">499</span>                                if (config == null) {<a name="line.499"></a>
+<span class="sourceLineNo">500</span>                                        if (DebugFlags.SLIPSTREAM_DEBUG) {<a name="line.500"></a>
+<span class="sourceLineNo">501</span>                                                STREAM_CONFIGS.clear();<a name="line.501"></a>
+<span class="sourceLineNo">502</span>                                                loadConfigs();<a name="line.502"></a>
+<span class="sourceLineNo">503</span>                                        }<a name="line.503"></a>
+<span class="sourceLineNo">504</span>                                        <a name="line.504"></a>
+<span class="sourceLineNo">505</span>                                        WeightedRandomPicker&lt;String&gt; picker = new WeightedRandomPicker&lt;String&gt;(random);<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                                        for (String key : STREAM_CONFIGS.keySet()) {<a name="line.506"></a>
+<span class="sourceLineNo">507</span>                                                if (prevConfig != null &amp;&amp; prevConfig.equals(key) &amp;&amp; STREAM_CONFIGS.size() &gt; 1) {<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                                                        continue;<a name="line.508"></a>
+<span class="sourceLineNo">509</span>                                                }<a name="line.509"></a>
+<span class="sourceLineNo">510</span>                                                picker.add(key, STREAM_CONFIGS.get(key));<a name="line.510"></a>
+<span class="sourceLineNo">511</span>                                        }<a name="line.511"></a>
+<span class="sourceLineNo">512</span>                                        if (picker.isEmpty() &amp;&amp; prevConfig != null) {<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                                                picker.add(prevConfig, 1f);<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                                        }<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                                        ListenerUtil.updateSlipstreamConfig(prevConfig, picker, this);<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                                        String data = picker.pick();<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                                        if (data != null) {<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                                                config = new StreamConfig(data, random);<a name="line.518"></a>
+<span class="sourceLineNo">519</span>                                        }<a name="line.519"></a>
+<span class="sourceLineNo">520</span>                                }<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                                addStream(month);<a name="line.521"></a>
+<span class="sourceLineNo">522</span>                        }<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                        <a name="line.523"></a>
+<span class="sourceLineNo">524</span>                        <a name="line.524"></a>
+<span class="sourceLineNo">525</span>                        prevMonth = month;<a name="line.525"></a>
+<span class="sourceLineNo">526</span>                }<a name="line.526"></a>
+<span class="sourceLineNo">527</span>                grid = null;<a name="line.527"></a>
+<span class="sourceLineNo">528</span>        }<a name="line.528"></a>
+<span class="sourceLineNo">529</span>        <a name="line.529"></a>
+<span class="sourceLineNo">530</span>        <a name="line.530"></a>
+<span class="sourceLineNo">531</span>        public void addStream(int month) {<a name="line.531"></a>
+<span class="sourceLineNo">532</span>                if (config == null) return;<a name="line.532"></a>
+<span class="sourceLineNo">533</span>                <a name="line.533"></a>
+<span class="sourceLineNo">534</span>                //random = new Random();<a name="line.534"></a>
+<span class="sourceLineNo">535</span>//              long seed = 23895464576452L + 4384357483229348234L + 4343253L;<a name="line.535"></a>
+<span class="sourceLineNo">536</span>//              seed = 1181783497276652981L ^ seed;<a name="line.536"></a>
+<span class="sourceLineNo">537</span>//              Random random = new Random(seed);<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                <a name="line.538"></a>
+<span class="sourceLineNo">539</span>                WeightedRandomPicker&lt;StreamData&gt; picker = new WeightedRandomPicker&lt;StreamData&gt;(random);<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                for (StreamData data : config.streams) {<a name="line.540"></a>
+<span class="sourceLineNo">541</span>                        if (data.wasUsed) continue;<a name="line.541"></a>
+<span class="sourceLineNo">542</span>                        if (!data.priority) continue;<a name="line.542"></a>
+<span class="sourceLineNo">543</span>                        picker.add(data);<a name="line.543"></a>
+<span class="sourceLineNo">544</span>                }<a name="line.544"></a>
+<span class="sourceLineNo">545</span>                if (picker.isEmpty()) {<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                        // add non-priority if all priority ones are already used<a name="line.546"></a>
+<span class="sourceLineNo">547</span>                        for (StreamData data : config.streams) {<a name="line.547"></a>
+<span class="sourceLineNo">548</span>                                if (data.wasUsed) continue;<a name="line.548"></a>
+<span class="sourceLineNo">549</span>                                picker.add(data);<a name="line.549"></a>
+<span class="sourceLineNo">550</span>                        }<a name="line.550"></a>
+<span class="sourceLineNo">551</span>                }<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                <a name="line.552"></a>
+<span class="sourceLineNo">553</span>                StreamData data = picker.pick();<a name="line.553"></a>
+<span class="sourceLineNo">554</span>                if (data == null) return;<a name="line.554"></a>
+<span class="sourceLineNo">555</span>                <a name="line.555"></a>
+<span class="sourceLineNo">556</span>                SlipstreamParams2 params = new SlipstreamParams2();<a name="line.556"></a>
+<span class="sourceLineNo">557</span>                params.burnLevel = 30 + data.burnMod;<a name="line.557"></a>
+<span class="sourceLineNo">558</span>                params.minSpeed = Misc.getSpeedForBurnLevel(params.burnLevel - 5);<a name="line.558"></a>
+<span class="sourceLineNo">559</span>                params.maxSpeed = Misc.getSpeedForBurnLevel(params.burnLevel + 5);<a name="line.559"></a>
+<span class="sourceLineNo">560</span>                params.lineLengthFractionOfSpeed = 0.25f * Math.max(0.25f, Math.min(1f, 30f / (float) params.burnLevel));<a name="line.560"></a>
+<span class="sourceLineNo">561</span>                <a name="line.561"></a>
+<span class="sourceLineNo">562</span>                <a name="line.562"></a>
+<span class="sourceLineNo">563</span>                Vector2f from = data.generateP0(random);<a name="line.563"></a>
+<span class="sourceLineNo">564</span>                Vector2f to = data.generateP1(random);<a name="line.564"></a>
+<span class="sourceLineNo">565</span>                Vector2f control = data.generateControl(random);<a name="line.565"></a>
+<span class="sourceLineNo">566</span>                Vector2f control2 = data.generateControl2(random);<a name="line.566"></a>
+<span class="sourceLineNo">567</span>                if (from == null || to == null) return;<a name="line.567"></a>
+<span class="sourceLineNo">568</span><a name="line.568"></a>
+<span class="sourceLineNo">569</span>                // default direction is east in first half of the cycle, west in the second half<a name="line.569"></a>
+<span class="sourceLineNo">570</span>                // months 6 and 12 don't really matter since the slipstreams despawn during those<a name="line.570"></a>
+<span class="sourceLineNo">571</span>                if (month == 12 || month &lt; 6) {<a name="line.571"></a>
+<span class="sourceLineNo">572</span>                //if (!(month == 12 || month &lt; 6)) {<a name="line.572"></a>
+<span class="sourceLineNo">573</span>                        if ((!data.reverse &amp;&amp; from.x &gt; to.x) || (data.reverse &amp;&amp; from.x &lt; to.x)) {<a name="line.573"></a>
+<span class="sourceLineNo">574</span>                                Vector2f temp = to;<a name="line.574"></a>
+<span class="sourceLineNo">575</span>                                to = from;<a name="line.575"></a>
+<span class="sourceLineNo">576</span>                                from = temp;<a name="line.576"></a>
+<span class="sourceLineNo">577</span>                        }<a name="line.577"></a>
+<span class="sourceLineNo">578</span>                } else {<a name="line.578"></a>
+<span class="sourceLineNo">579</span>                        if ((!data.reverse &amp;&amp; from.x &lt; to.x) || (data.reverse &amp;&amp; from.x &gt; to.x)) {<a name="line.579"></a>
+<span class="sourceLineNo">580</span>                                Vector2f temp = to;<a name="line.580"></a>
+<span class="sourceLineNo">581</span>                                to = from;<a name="line.581"></a>
+<span class="sourceLineNo">582</span>                                from = temp;<a name="line.582"></a>
+<span class="sourceLineNo">583</span>                        }<a name="line.583"></a>
+<span class="sourceLineNo">584</span>                }<a name="line.584"></a>
+<span class="sourceLineNo">585</span>                <a name="line.585"></a>
+<span class="sourceLineNo">586</span>                <a name="line.586"></a>
+<span class="sourceLineNo">587</span>                LocationAPI hyperspace = Global.getSector().getHyperspace();<a name="line.587"></a>
+<span class="sourceLineNo">588</span>                CampaignTerrainAPI slipstream = (CampaignTerrainAPI) hyperspace.addTerrain(Terrain.SLIPSTREAM, params);<a name="line.588"></a>
+<span class="sourceLineNo">589</span>                <a name="line.589"></a>
+<span class="sourceLineNo">590</span>                slipstream.setLocation(from.x, from.y);<a name="line.590"></a>
+<span class="sourceLineNo">591</span>                SlipstreamTerrainPlugin2 plugin = (SlipstreamTerrainPlugin2) slipstream.getPlugin();<a name="line.591"></a>
+<span class="sourceLineNo">592</span>                SlipstreamBuilder builder = new SlipstreamBuilder(slipstream.getLocation(), plugin, data.type, random);<a name="line.592"></a>
+<span class="sourceLineNo">593</span>                <a name="line.593"></a>
+<span class="sourceLineNo">594</span>                if (data.straight) {<a name="line.594"></a>
+<span class="sourceLineNo">595</span>                        float mult = 0.25f;<a name="line.595"></a>
+<span class="sourceLineNo">596</span>                        builder.setMaxAngleVariance(builder.getMaxAngleVariance() * mult);<a name="line.596"></a>
+<span class="sourceLineNo">597</span>                        builder.setMaxAngleVarianceForCurve(builder.getMaxAngleVarianceForCurve() * mult);<a name="line.597"></a>
+<span class="sourceLineNo">598</span>                }<a name="line.598"></a>
+<span class="sourceLineNo">599</span>                <a name="line.599"></a>
+<span class="sourceLineNo">600</span>                if (control2 != null) {<a name="line.600"></a>
+<span class="sourceLineNo">601</span>                        float dist1 = Misc.getDistance(from, control);<a name="line.601"></a>
+<span class="sourceLineNo">602</span>                        float dist2 = Misc.getDistance(from, control2);<a name="line.602"></a>
+<span class="sourceLineNo">603</span>                        if (dist2 &lt; dist1) {<a name="line.603"></a>
+<span class="sourceLineNo">604</span>                                Vector2f temp = control2;<a name="line.604"></a>
+<span class="sourceLineNo">605</span>                                control2 = control;<a name="line.605"></a>
+<span class="sourceLineNo">606</span>                                control = temp;<a name="line.606"></a>
+<span class="sourceLineNo">607</span>                        }<a name="line.607"></a>
+<span class="sourceLineNo">608</span>                        builder.buildToDestination(control, control2, to);<a name="line.608"></a>
+<span class="sourceLineNo">609</span>                } else if (control != null) {<a name="line.609"></a>
+<span class="sourceLineNo">610</span>                        builder.buildToDestination(control, to);<a name="line.610"></a>
+<span class="sourceLineNo">611</span>                } else {<a name="line.611"></a>
+<span class="sourceLineNo">612</span>                        builder.buildToDestination(to);<a name="line.612"></a>
+<span class="sourceLineNo">613</span>                }<a name="line.613"></a>
+<span class="sourceLineNo">614</span>                <a name="line.614"></a>
+<span class="sourceLineNo">615</span>                checkIntersectionsAndFadeSections(plugin, data.onlyKeepLongestSegment);<a name="line.615"></a>
+<span class="sourceLineNo">616</span>                <a name="line.616"></a>
+<span class="sourceLineNo">617</span>                if (plugin.getSegments().size() &lt; 3) {<a name="line.617"></a>
+<span class="sourceLineNo">618</span>                        hyperspace.removeEntity(slipstream);<a name="line.618"></a>
+<span class="sourceLineNo">619</span>                        return;<a name="line.619"></a>
+<span class="sourceLineNo">620</span>                }<a name="line.620"></a>
+<span class="sourceLineNo">621</span>                <a name="line.621"></a>
+<span class="sourceLineNo">622</span>                float spawnDays = 1f + 2f * random.nextFloat();<a name="line.622"></a>
+<span class="sourceLineNo">623</span>                if (DebugFlags.SLIPSTREAM_DEBUG) {<a name="line.623"></a>
+<span class="sourceLineNo">624</span>                        spawnDays = 0f;<a name="line.624"></a>
+<span class="sourceLineNo">625</span>                }<a name="line.625"></a>
+<span class="sourceLineNo">626</span>                plugin.spawn(spawnDays, random);<a name="line.626"></a>
+<span class="sourceLineNo">627</span>                <a name="line.627"></a>
+<span class="sourceLineNo">628</span>                plugin.recomputeEncounterPoints();<a name="line.628"></a>
+<span class="sourceLineNo">629</span>                <a name="line.629"></a>
+<span class="sourceLineNo">630</span>                AddedStream added = new AddedStream(plugin);<a name="line.630"></a>
+<span class="sourceLineNo">631</span>                active.add(added);<a name="line.631"></a>
+<span class="sourceLineNo">632</span>                data.wasUsed = true;<a name="line.632"></a>
+<span class="sourceLineNo">633</span>        }<a name="line.633"></a>
+<span class="sourceLineNo">634</span>        <a name="line.634"></a>
+<span class="sourceLineNo">635</span>        public void checkIntersectionsAndFadeSections(SlipstreamTerrainPlugin2 plugin, boolean onlyKeepLongestBetweenStreams) {<a name="line.635"></a>
+<span class="sourceLineNo">636</span>                updateGrid();<a name="line.636"></a>
+<span class="sourceLineNo">637</span>                <a name="line.637"></a>
+<span class="sourceLineNo">638</span>                plugin.recomputeIfNeeded();<a name="line.638"></a>
+<span class="sourceLineNo">639</span>                <a name="line.639"></a>
+<span class="sourceLineNo">640</span>                List&lt;SlipstreamSegment&gt; segments = plugin.getSegments();<a name="line.640"></a>
+<span class="sourceLineNo">641</span>                <a name="line.641"></a>
+<span class="sourceLineNo">642</span>                Set&lt;SlipstreamSegment&gt; otherStreamCuts = new HashSet&lt;SlipstreamSegment&gt;();<a name="line.642"></a>
+<span class="sourceLineNo">643</span>                <a name="line.643"></a>
+<span class="sourceLineNo">644</span>                for (SlipstreamSegment curr : segments) {<a name="line.644"></a>
+<span class="sourceLineNo">645</span>                        <a name="line.645"></a>
+<span class="sourceLineNo">646</span>                        Iterator&lt;Object&gt; iter = grid.getCheckIterator(curr.loc, curr.width / 2f, curr.width / 2f);<a name="line.646"></a>
+<span class="sourceLineNo">647</span>                        while (iter.hasNext()) {<a name="line.647"></a>
+<span class="sourceLineNo">648</span>                                Object obj = iter.next();<a name="line.648"></a>
+<span class="sourceLineNo">649</span>                                if (obj instanceof JumpPointAPI) {<a name="line.649"></a>
+<span class="sourceLineNo">650</span>                                        JumpPointAPI jp = (JumpPointAPI) obj;<a name="line.650"></a>
+<span class="sourceLineNo">651</span>                                        Vector2f loc = jp.getLocation();<a name="line.651"></a>
+<span class="sourceLineNo">652</span>                                        float radius = jp.getRadius();<a name="line.652"></a>
+<span class="sourceLineNo">653</span>                                        if (jp.getOrbitFocus() != null) {<a name="line.653"></a>
+<span class="sourceLineNo">654</span>                                                loc = jp.getOrbitFocus().getLocation();<a name="line.654"></a>
+<span class="sourceLineNo">655</span>                                                radius = Misc.getDistance(jp.getOrbitFocus(), jp) + jp.getRadius();<a name="line.655"></a>
+<span class="sourceLineNo">656</span>                                        }<a name="line.656"></a>
+<span class="sourceLineNo">657</span>                                        <a name="line.657"></a>
+<span class="sourceLineNo">658</span>                                        Vector2f diff = Vector2f.sub(loc, curr.loc, new Vector2f());<a name="line.658"></a>
+<span class="sourceLineNo">659</span>                                        <a name="line.659"></a>
+<span class="sourceLineNo">660</span>                                        float distPerp = Math.abs(Vector2f.dot(curr.normal, diff));<a name="line.660"></a>
+<span class="sourceLineNo">661</span>                                        float distAlong = Math.abs(Vector2f.dot(curr.dir, diff));<a name="line.661"></a>
+<span class="sourceLineNo">662</span>                                        <a name="line.662"></a>
+<span class="sourceLineNo">663</span>                                        distPerp -= radius;<a name="line.663"></a>
+<span class="sourceLineNo">664</span>                                        distAlong -= radius;<a name="line.664"></a>
+<span class="sourceLineNo">665</span>                                        <a name="line.665"></a>
+<span class="sourceLineNo">666</span>                                        float minDistAlong = Math.max(curr.lengthToNext, curr.lengthToPrev);<a name="line.666"></a>
+<span class="sourceLineNo">667</span>                                        float fadeDistAlong = 500f + minDistAlong;<a name="line.667"></a>
+<span class="sourceLineNo">668</span>                                        if (distPerp &lt; curr.width / 2f &amp;&amp; <a name="line.668"></a>
+<span class="sourceLineNo">669</span>                                                        distAlong &lt; fadeDistAlong) {<a name="line.669"></a>
+<span class="sourceLineNo">670</span>                                                if (distAlong &lt; minDistAlong) {<a name="line.670"></a>
+<span class="sourceLineNo">671</span>                                                        curr.fader.forceOut();<a name="line.671"></a>
+<span class="sourceLineNo">672</span>                                                        curr.bMult = 0f;<a name="line.672"></a>
+<span class="sourceLineNo">673</span>                                                } else {<a name="line.673"></a>
+<span class="sourceLineNo">674</span>                                                        curr.bMult = Math.min(curr.bMult, <a name="line.674"></a>
+<span class="sourceLineNo">675</span>                                                                                                 (distAlong - minDistAlong) / (fadeDistAlong - minDistAlong));<a name="line.675"></a>
+<span class="sourceLineNo">676</span>                                                }<a name="line.676"></a>
+<span class="sourceLineNo">677</span>                                        }<a name="line.677"></a>
+<span class="sourceLineNo">678</span>                                } else if (obj instanceof CampaignTerrainAPI) {<a name="line.678"></a>
+<span class="sourceLineNo">679</span>                                        CampaignTerrainAPI terrain = (CampaignTerrainAPI) obj;<a name="line.679"></a>
+<span class="sourceLineNo">680</span>                                        SlipstreamTerrainPlugin2 otherPlugin = (SlipstreamTerrainPlugin2) terrain.getPlugin();<a name="line.680"></a>
+<span class="sourceLineNo">681</span>                                        if (otherPlugin == plugin) continue;<a name="line.681"></a>
+<span class="sourceLineNo">682</span>                                        <a name="line.682"></a>
+<span class="sourceLineNo">683</span>                                        for (SlipstreamSegment other : otherPlugin.getSegmentsNear(curr.loc, curr.width / 2f)) {<a name="line.683"></a>
+<span class="sourceLineNo">684</span>                                                //if (other.fader.getBrightness() == 0 || other.bMult &lt;= 0) continue;<a name="line.684"></a>
+<span class="sourceLineNo">685</span>                                                if (other.bMult &lt;= 0) continue;<a name="line.685"></a>
+<span class="sourceLineNo">686</span>                                                <a name="line.686"></a>
+<span class="sourceLineNo">687</span>                                                float dist = Misc.getDistance(curr.loc, other.loc);<a name="line.687"></a>
+<span class="sourceLineNo">688</span>                                                float minDist = curr.width / 2f + other.width / 2f;<a name="line.688"></a>
+<span class="sourceLineNo">689</span>                                                float fadeDist = minDist + 500f;<a name="line.689"></a>
+<span class="sourceLineNo">690</span>                                                if (dist &lt; fadeDist) {<a name="line.690"></a>
+<span class="sourceLineNo">691</span>                                                        if (dist &lt; minDist) {<a name="line.691"></a>
+<span class="sourceLineNo">692</span>                                                                curr.fader.forceOut();<a name="line.692"></a>
+<span class="sourceLineNo">693</span>                                                                curr.bMult = 0f;<a name="line.693"></a>
+<span class="sourceLineNo">694</span>                                                                otherStreamCuts.add(curr);<a name="line.694"></a>
+<span class="sourceLineNo">695</span>                                                        } else {<a name="line.695"></a>
+<span class="sourceLineNo">696</span>                                                                curr.bMult = Math.min(curr.bMult, <a name="line.696"></a>
+<span class="sourceLineNo">697</span>                                                                                                         (dist - minDist) / (fadeDist - minDist));<a name="line.697"></a>
+<span class="sourceLineNo">698</span>                                                        }<a name="line.698"></a>
+<span class="sourceLineNo">699</span>                                                }<a name="line.699"></a>
+<span class="sourceLineNo">700</span>                                        }<a name="line.700"></a>
+<span class="sourceLineNo">701</span>                                } else if (obj instanceof CustomStreamBlocker) {<a name="line.701"></a>
+<span class="sourceLineNo">702</span>                                        CustomStreamBlocker blocker = (CustomStreamBlocker) obj;<a name="line.702"></a>
+<span class="sourceLineNo">703</span>                                        Vector2f loc = blocker.loc;<a name="line.703"></a>
+<span class="sourceLineNo">704</span>                                        float radius = blocker.radius;<a name="line.704"></a>
+<span class="sourceLineNo">705</span>                                        <a name="line.705"></a>
+<span class="sourceLineNo">706</span>                                        Vector2f diff = Vector2f.sub(loc, curr.loc, new Vector2f());<a name="line.706"></a>
+<span class="sourceLineNo">707</span>                                        float distPerp = Math.abs(Vector2f.dot(curr.normal, diff));<a name="line.707"></a>
+<span class="sourceLineNo">708</span>                                        float distAlong = Math.abs(Vector2f.dot(curr.dir, diff));<a name="line.708"></a>
+<span class="sourceLineNo">709</span>                                        <a name="line.709"></a>
+<span class="sourceLineNo">710</span>                                        distPerp -= radius;<a name="line.710"></a>
+<span class="sourceLineNo">711</span>                                        distAlong -= radius;<a name="line.711"></a>
+<span class="sourceLineNo">712</span>                                        <a name="line.712"></a>
+<span class="sourceLineNo">713</span>                                        float minDistAlong = Math.max(curr.lengthToNext, curr.lengthToPrev);<a name="line.713"></a>
+<span class="sourceLineNo">714</span>                                        float fadeDistAlong = 500f + minDistAlong;<a name="line.714"></a>
+<span class="sourceLineNo">715</span>                                        if (distPerp &lt; curr.width / 2f &amp;&amp; <a name="line.715"></a>
+<span class="sourceLineNo">716</span>                                                        distAlong &lt; fadeDistAlong) {<a name="line.716"></a>
+<span class="sourceLineNo">717</span>                                                if (distAlong &lt; minDistAlong) {<a name="line.717"></a>
+<span class="sourceLineNo">718</span>                                                        curr.fader.forceOut();<a name="line.718"></a>
+<span class="sourceLineNo">719</span>                                                        curr.bMult = 0f;<a name="line.719"></a>
+<span class="sourceLineNo">720</span>                                                } else {<a name="line.720"></a>
+<span class="sourceLineNo">721</span>                                                        curr.bMult = Math.min(curr.bMult, <a name="line.721"></a>
+<span class="sourceLineNo">722</span>                                                                                                 (distAlong - minDistAlong) / (fadeDistAlong - minDistAlong));<a name="line.722"></a>
+<span class="sourceLineNo">723</span>                                                }<a name="line.723"></a>
+<span class="sourceLineNo">724</span>                                        }<a name="line.724"></a>
+<span class="sourceLineNo">725</span>                                } else if (obj instanceof AbyssStreamBlocker) {<a name="line.725"></a>
+<span class="sourceLineNo">726</span>                                        AbyssStreamBlocker abyss = (AbyssStreamBlocker) obj;<a name="line.726"></a>
+<span class="sourceLineNo">727</span>                                        if (abyss.containsPoint(curr.loc)) {<a name="line.727"></a>
+<span class="sourceLineNo">728</span>                                                curr.fader.forceOut();<a name="line.728"></a>
+<span class="sourceLineNo">729</span>                                                curr.bMult = 0f;<a name="line.729"></a>
+<span class="sourceLineNo">730</span>                                        }<a name="line.730"></a>
+<span class="sourceLineNo">731</span>                                }<a name="line.731"></a>
+<span class="sourceLineNo">732</span>                        }<a name="line.732"></a>
+<span class="sourceLineNo">733</span>                }<a name="line.733"></a>
+<span class="sourceLineNo">734</span><a name="line.734"></a>
+<span class="sourceLineNo">735</span>                fadeOutSectionsShorterThan(segments, 5000f);<a name="line.735"></a>
+<span class="sourceLineNo">736</span>                <a name="line.736"></a>
+<span class="sourceLineNo">737</span>                // unrelated to the above - for proximity-to-something fades that<a name="line.737"></a>
+<span class="sourceLineNo">738</span>                // were unnecessary because there wasn't an actual intersection with that something<a name="line.738"></a>
+<span class="sourceLineNo">739</span>                removedFadesThatDoNotReachZero(segments);<a name="line.739"></a>
+<span class="sourceLineNo">740</span>                <a name="line.740"></a>
+<span class="sourceLineNo">741</span>                <a name="line.741"></a>
+<span class="sourceLineNo">742</span>                <a name="line.742"></a>
+<span class="sourceLineNo">743</span>                if (onlyKeepLongestBetweenStreams) {<a name="line.743"></a>
+<span class="sourceLineNo">744</span>                        List&lt;SlipstreamSegment&gt; longest = new ArrayList&lt;SlipstreamTerrainPlugin2.SlipstreamSegment&gt;();<a name="line.744"></a>
+<span class="sourceLineNo">745</span>                        <a name="line.745"></a>
+<span class="sourceLineNo">746</span>                        List&lt;SlipstreamSegment&gt; currList = new ArrayList&lt;SlipstreamTerrainPlugin2.SlipstreamSegment&gt;();<a name="line.746"></a>
+<span class="sourceLineNo">747</span>                        <a name="line.747"></a>
+<span class="sourceLineNo">748</span>                        for (SlipstreamSegment curr : segments) {<a name="line.748"></a>
+<span class="sourceLineNo">749</span>                                if (otherStreamCuts.contains(curr)) {<a name="line.749"></a>
+<span class="sourceLineNo">750</span>                                        if (currList.size() &gt; longest.size()) {<a name="line.750"></a>
+<span class="sourceLineNo">751</span>                                                longest = currList;<a name="line.751"></a>
+<span class="sourceLineNo">752</span>                                        }<a name="line.752"></a>
+<span class="sourceLineNo">753</span>                                        currList = new ArrayList&lt;SlipstreamSegment&gt;();<a name="line.753"></a>
+<span class="sourceLineNo">754</span>                                }<a name="line.754"></a>
+<span class="sourceLineNo">755</span>                                if (curr.bMult &gt; 0f) {<a name="line.755"></a>
+<span class="sourceLineNo">756</span>                                        currList.add(curr);<a name="line.756"></a>
+<span class="sourceLineNo">757</span>                                }<a name="line.757"></a>
+<span class="sourceLineNo">758</span>                        }<a name="line.758"></a>
+<span class="sourceLineNo">759</span>                        if (currList.size() &gt; longest.size()) {<a name="line.759"></a>
+<span class="sourceLineNo">760</span>                                longest = currList;<a name="line.760"></a>
+<span class="sourceLineNo">761</span>                        }<a name="line.761"></a>
+<span class="sourceLineNo">762</span>                        for (SlipstreamSegment curr : segments) {<a name="line.762"></a>
+<span class="sourceLineNo">763</span>                                if (!longest.contains(curr)) {<a name="line.763"></a>
+<span class="sourceLineNo">764</span>                                        curr.bMult = 0f;<a name="line.764"></a>
+<span class="sourceLineNo">765</span>                                        curr.fader.forceOut();<a name="line.765"></a>
+<span class="sourceLineNo">766</span>                                }<a name="line.766"></a>
+<span class="sourceLineNo">767</span>                        }<a name="line.767"></a>
+<span class="sourceLineNo">768</span>                        <a name="line.768"></a>
+<span class="sourceLineNo">769</span>                }<a name="line.769"></a>
+<span class="sourceLineNo">770</span>        }<a name="line.770"></a>
+<span class="sourceLineNo">771</span>        <a name="line.771"></a>
+<span class="sourceLineNo">772</span>        <a name="line.772"></a>
+<span class="sourceLineNo">773</span>        public static void fadeOutSectionsShorterThan(List&lt;SlipstreamSegment&gt; segments, float minLength) {<a name="line.773"></a>
+<span class="sourceLineNo">774</span>                float minRunLength = minLength;<a name="line.774"></a>
+<span class="sourceLineNo">775</span>                List&lt;SlipstreamSegment&gt; currRun = new ArrayList&lt;SlipstreamSegment&gt;();<a name="line.775"></a>
+<span class="sourceLineNo">776</span>                for (SlipstreamSegment curr : segments) {<a name="line.776"></a>
+<span class="sourceLineNo">777</span>                        if (curr.bMult &lt;= 0f) {<a name="line.777"></a>
+<span class="sourceLineNo">778</span>                                float runLength = 0f;<a name="line.778"></a>
+<span class="sourceLineNo">779</span>                                for (SlipstreamSegment inRun : currRun) {<a name="line.779"></a>
+<span class="sourceLineNo">780</span>                                        runLength += inRun.lengthToNext; // counts one more than it should; meh <a name="line.780"></a>
+<span class="sourceLineNo">781</span>                                }<a name="line.781"></a>
+<span class="sourceLineNo">782</span>                                if (runLength &lt; minRunLength) {<a name="line.782"></a>
+<span class="sourceLineNo">783</span>                                        for (SlipstreamSegment inRun : currRun) {<a name="line.783"></a>
+<span class="sourceLineNo">784</span>                                                inRun.fader.forceOut();<a name="line.784"></a>
+<span class="sourceLineNo">785</span>                                                inRun.bMult = 0f;<a name="line.785"></a>
+<span class="sourceLineNo">786</span>                                        }<a name="line.786"></a>
+<span class="sourceLineNo">787</span>                                }<a name="line.787"></a>
+<span class="sourceLineNo">788</span>                                currRun.clear();<a name="line.788"></a>
+<span class="sourceLineNo">789</span>                        } else {<a name="line.789"></a>
+<span class="sourceLineNo">790</span>                                currRun.add(curr);<a name="line.790"></a>
+<span class="sourceLineNo">791</span>                        }<a name="line.791"></a>
+<span class="sourceLineNo">792</span>                }<a name="line.792"></a>
+<span class="sourceLineNo">793</span>        }<a name="line.793"></a>
+<span class="sourceLineNo">794</span>        <a name="line.794"></a>
+<span class="sourceLineNo">795</span>        public static void removedFadesThatDoNotReachZero(List&lt;SlipstreamSegment&gt; segments) {<a name="line.795"></a>
+<span class="sourceLineNo">796</span>                List&lt;SlipstreamSegment&gt; currRun = new ArrayList&lt;SlipstreamSegment&gt;();<a name="line.796"></a>
+<span class="sourceLineNo">797</span>                boolean currRunReachedZero = false;<a name="line.797"></a>
+<span class="sourceLineNo">798</span>                for (SlipstreamSegment curr : segments) {<a name="line.798"></a>
+<span class="sourceLineNo">799</span>                        if (curr.bMult &lt; 1f) {<a name="line.799"></a>
+<span class="sourceLineNo">800</span>                                currRun.add(curr);<a name="line.800"></a>
+<span class="sourceLineNo">801</span>                                if (curr.bMult &lt;= 0f || (curr.fader.getBrightness() == 0 &amp;&amp; !curr.fader.isFadingIn())) {<a name="line.801"></a>
+<span class="sourceLineNo">802</span>                                        currRunReachedZero = true;<a name="line.802"></a>
+<span class="sourceLineNo">803</span>                                }<a name="line.803"></a>
+<span class="sourceLineNo">804</span>                        } else {<a name="line.804"></a>
+<span class="sourceLineNo">805</span>                                if (!currRunReachedZero) {<a name="line.805"></a>
+<span class="sourceLineNo">806</span>                                        for (SlipstreamSegment inRun : currRun) {<a name="line.806"></a>
+<span class="sourceLineNo">807</span>                                                inRun.fader.fadeIn();<a name="line.807"></a>
+<span class="sourceLineNo">808</span>                                                inRun.bMult = 1f;<a name="line.808"></a>
+<span class="sourceLineNo">809</span>                                        }<a name="line.809"></a>
+<span class="sourceLineNo">810</span>                                }<a name="line.810"></a>
+<span class="sourceLineNo">811</span>                                currRun.clear();<a name="line.811"></a>
+<span class="sourceLineNo">812</span>                                currRunReachedZero = false;<a name="line.812"></a>
+<span class="sourceLineNo">813</span>                        } <a name="line.813"></a>
+<span class="sourceLineNo">814</span>                }<a name="line.814"></a>
+<span class="sourceLineNo">815</span>        }<a name="line.815"></a>
+<span class="sourceLineNo">816</span>        <a name="line.816"></a>
+<span class="sourceLineNo">817</span>        <a name="line.817"></a>
+<span class="sourceLineNo">818</span>        <a name="line.818"></a>
+<span class="sourceLineNo">819</span>        public static class CustomStreamRevealer extends CustomStreamBlocker {<a name="line.819"></a>
+<span class="sourceLineNo">820</span>                public CustomStreamRevealer(Vector2f loc, float radius) {<a name="line.820"></a>
+<span class="sourceLineNo">821</span>                        super(loc, radius);<a name="line.821"></a>
+<span class="sourceLineNo">822</span>                }<a name="line.822"></a>
+<span class="sourceLineNo">823</span>        }<a name="line.823"></a>
+<span class="sourceLineNo">824</span>        <a name="line.824"></a>
+<span class="sourceLineNo">825</span>        public static class CustomStreamBlocker {<a name="line.825"></a>
+<span class="sourceLineNo">826</span>                public Vector2f loc;<a name="line.826"></a>
+<span class="sourceLineNo">827</span>                public float radius;<a name="line.827"></a>
+<span class="sourceLineNo">828</span>                public CustomStreamBlocker(Vector2f loc, float radius) {<a name="line.828"></a>
+<span class="sourceLineNo">829</span>                        this.loc = new Vector2f(loc);<a name="line.829"></a>
+<span class="sourceLineNo">830</span>                        this.radius = radius;<a name="line.830"></a>
+<span class="sourceLineNo">831</span>                }<a name="line.831"></a>
+<span class="sourceLineNo">832</span>        }<a name="line.832"></a>
+<span class="sourceLineNo">833</span>        public static class AbyssStreamBlocker {<a name="line.833"></a>
+<span class="sourceLineNo">834</span>                public HyperspaceAbyssPlugin plugin;<a name="line.834"></a>
+<span class="sourceLineNo">835</span>                public AbyssStreamBlocker() {<a name="line.835"></a>
+<span class="sourceLineNo">836</span>                        CampaignTerrainAPI terrain = Misc.getHyperspaceTerrain();<a name="line.836"></a>
+<span class="sourceLineNo">837</span>                        if (terrain != null) {<a name="line.837"></a>
+<span class="sourceLineNo">838</span>                                this.plugin = ((HyperspaceTerrainPlugin) terrain.getPlugin()).getAbyssPlugin();<a name="line.838"></a>
+<span class="sourceLineNo">839</span>                        }<a name="line.839"></a>
+<span class="sourceLineNo">840</span>                }<a name="line.840"></a>
+<span class="sourceLineNo">841</span>                public boolean containsPoint(Vector2f loc) {<a name="line.841"></a>
+<span class="sourceLineNo">842</span>                        if (plugin == null) return false;<a name="line.842"></a>
+<span class="sourceLineNo">843</span>                        return plugin.getAbyssalDepth(loc) &gt; 0;<a name="line.843"></a>
+<span class="sourceLineNo">844</span>                }<a name="line.844"></a>
+<span class="sourceLineNo">845</span>        }<a name="line.845"></a>
+<span class="sourceLineNo">846</span>        <a name="line.846"></a>
+<span class="sourceLineNo">847</span>        public CollisionGridUtil getGrid() {<a name="line.847"></a>
+<span class="sourceLineNo">848</span>                return grid;<a name="line.848"></a>
+<span class="sourceLineNo">849</span>        }<a name="line.849"></a>
+<span class="sourceLineNo">850</span><a name="line.850"></a>
+<span class="sourceLineNo">851</span>        public void updateGrid() {<a name="line.851"></a>
+<span class="sourceLineNo">852</span>                if (grid != null) return;<a name="line.852"></a>
+<span class="sourceLineNo">853</span>                <a name="line.853"></a>
+<span class="sourceLineNo">854</span>                float sw = Global.getSettings().getFloat("sectorWidth");<a name="line.854"></a>
+<span class="sourceLineNo">855</span>                float sh = Global.getSettings().getFloat("sectorHeight");<a name="line.855"></a>
+<span class="sourceLineNo">856</span>                float minCellSize = 12000f;<a name="line.856"></a>
+<span class="sourceLineNo">857</span>                float cellSize = Math.max(minCellSize, sw * 0.05f);<a name="line.857"></a>
+<span class="sourceLineNo">858</span>                <a name="line.858"></a>
+<span class="sourceLineNo">859</span>                grid = new CollisionGridUtil(-sw/2f, sw/2f, -sh/2f, sh/2f, cellSize);<a name="line.859"></a>
+<span class="sourceLineNo">860</span>                <a name="line.860"></a>
+<span class="sourceLineNo">861</span>                LocationAPI hyperspace = Global.getSector().getHyperspace();<a name="line.861"></a>
+<span class="sourceLineNo">862</span>                for (SectorEntityToken jp : hyperspace.getJumpPoints()) {<a name="line.862"></a>
+<span class="sourceLineNo">863</span>                        float size = jp.getRadius() * 2f + 100f;<a name="line.863"></a>
+<span class="sourceLineNo">864</span>                        grid.addObject(jp, jp.getLocation(), size * 2f, size * 2f);<a name="line.864"></a>
+<span class="sourceLineNo">865</span>                }<a name="line.865"></a>
+<span class="sourceLineNo">866</span>                <a name="line.866"></a>
+<span class="sourceLineNo">867</span>//              for (NascentGravityWellAPI well : hyperspace.getGravityWells()) {<a name="line.867"></a>
+<span class="sourceLineNo">868</span>//                      float size = 1000f + well.getRadius();<a name="line.868"></a>
+<span class="sourceLineNo">869</span>//                      CustomStreamBlocker blocker = new CustomStreamBlocker(well.getLocation(), size);<a name="line.869"></a>
+<span class="sourceLineNo">870</span>//                      grid.addObject(blocker, well.getLocation(), size * 2f, size * 2f);<a name="line.870"></a>
+<span class="sourceLineNo">871</span>//              }<a name="line.871"></a>
+<span class="sourceLineNo">872</span>                Object alphaSiteWell = Global.getSector().getMemoryWithoutUpdate().get(TTBlackSite.NASCENT_WELL_KEY);<a name="line.872"></a>
+<span class="sourceLineNo">873</span>                if (alphaSiteWell instanceof NascentGravityWellAPI) {<a name="line.873"></a>
+<span class="sourceLineNo">874</span>                        NascentGravityWellAPI well = (NascentGravityWellAPI) alphaSiteWell;<a name="line.874"></a>
+<span class="sourceLineNo">875</span>                        float size = 1000f + well.getRadius();<a name="line.875"></a>
+<span class="sourceLineNo">876</span>                        CustomStreamBlocker blocker = new CustomStreamBlocker(well.getLocation(), size);<a name="line.876"></a>
+<span class="sourceLineNo">877</span>                        grid.addObject(blocker, well.getLocation(), size * 2f, size * 2f);<a name="line.877"></a>
+<span class="sourceLineNo">878</span>                }<a name="line.878"></a>
+<span class="sourceLineNo">879</span>                <a name="line.879"></a>
+<span class="sourceLineNo">880</span>                for (StarSystemAPI system : Global.getSector().getStarSystems()) {<a name="line.880"></a>
+<span class="sourceLineNo">881</span>                        if (system.hasTag(Tags.THEME_CORE)) {<a name="line.881"></a>
+<span class="sourceLineNo">882</span>                                Vector2f loc = system.getLocation();<a name="line.882"></a>
+<span class="sourceLineNo">883</span>                                float size = 4000f;<a name="line.883"></a>
+<span class="sourceLineNo">884</span>                                CustomStreamBlocker blocker = new CustomStreamBlocker(loc, size);<a name="line.884"></a>
+<span class="sourceLineNo">885</span>                                grid.addObject(blocker, loc, size * 2f, size * 2f);<a name="line.885"></a>
+<span class="sourceLineNo">886</span>                        }<a name="line.886"></a>
+<span class="sourceLineNo">887</span>                }<a name="line.887"></a>
+<span class="sourceLineNo">888</span>                <a name="line.888"></a>
+<span class="sourceLineNo">889</span>                {<a name="line.889"></a>
+<span class="sourceLineNo">890</span>                        float w = Global.getSettings().getFloat("sectorWidth");<a name="line.890"></a>
+<span class="sourceLineNo">891</span>                        float h = Global.getSettings().getFloat("sectorHeight");<a name="line.891"></a>
+<span class="sourceLineNo">892</span>//                      Vector2f loc = new Vector2f(-w/2f, -h/2f);<a name="line.892"></a>
+<span class="sourceLineNo">893</span>//                      float size = 26000;<a name="line.893"></a>
+<span class="sourceLineNo">894</span>//                      CustomStreamBlocker orionPersusAbyssBlocker = new CustomStreamBlocker(loc, size);<a name="line.894"></a>
+<span class="sourceLineNo">895</span>//                      grid.addObject(orionPersusAbyssBlocker, loc, size * 2f, size * 2f);<a name="line.895"></a>
+<span class="sourceLineNo">896</span>                        AbyssStreamBlocker orionPersusAbyssBlocker = new AbyssStreamBlocker();<a name="line.896"></a>
+<span class="sourceLineNo">897</span>                        grid.addObject(orionPersusAbyssBlocker, new Vector2f(), w, h);<a name="line.897"></a>
+<span class="sourceLineNo">898</span>                }<a name="line.898"></a>
+<span class="sourceLineNo">899</span>                <a name="line.899"></a>
+<span class="sourceLineNo">900</span>//              for (MarketAPI market : Global.getSector().getEconomy().getMarketsCopy()) {<a name="line.900"></a>
+<span class="sourceLineNo">901</span>//                      if (market.isHidden()) continue;<a name="line.901"></a>
+<span class="sourceLineNo">902</span>//                      //if (market.hasIndustry(Industries.SPACEPORT)) continue;<a name="line.902"></a>
+<span class="sourceLineNo">903</span>//                      Industry spaceport = market.getIndustry(Industries.SPACEPORT);<a name="line.903"></a>
+<span class="sourceLineNo">904</span>//                      if (spaceport == null || !spaceport.isFunctional()) continue;<a name="line.904"></a>
+<span class="sourceLineNo">905</span>//                      <a name="line.905"></a>
+<span class="sourceLineNo">906</span>//                      Vector2f loc = market.getLocationInHyperspace();<a name="line.906"></a>
+<span class="sourceLineNo">907</span>//                      float size = 5000f;<a name="line.907"></a>
+<span class="sourceLineNo">908</span>//                      CustomStreamRevealer revealer = new CustomStreamRevealer(loc, size);<a name="line.908"></a>
+<span class="sourceLineNo">909</span>//                      grid.addObject(revealer, loc, size * 2f, size * 2f);<a name="line.909"></a>
+<span class="sourceLineNo">910</span>//              }<a name="line.910"></a>
+<span class="sourceLineNo">911</span>                <a name="line.911"></a>
+<span class="sourceLineNo">912</span>                <a name="line.912"></a>
+<span class="sourceLineNo">913</span>                int segmentsToSkip = (int) ((cellSize - 2000) / 400f);<a name="line.913"></a>
+<span class="sourceLineNo">914</span>                float checkSize = minCellSize - 2000f;<a name="line.914"></a>
+<span class="sourceLineNo">915</span>                <a name="line.915"></a>
+<span class="sourceLineNo">916</span>                for (CampaignTerrainAPI curr : hyperspace.getTerrainCopy()) {<a name="line.916"></a>
+<span class="sourceLineNo">917</span>                        if (curr.getPlugin() instanceof SlipstreamTerrainPlugin2) {<a name="line.917"></a>
+<span class="sourceLineNo">918</span>                                SlipstreamTerrainPlugin2 plugin = (SlipstreamTerrainPlugin2) curr.getPlugin();<a name="line.918"></a>
+<span class="sourceLineNo">919</span>                                List&lt;SlipstreamSegment&gt; segments = plugin.getSegments();<a name="line.919"></a>
+<span class="sourceLineNo">920</span>                                List&lt;SlipstreamSegment&gt; check = new ArrayList&lt;SlipstreamTerrainPlugin2.SlipstreamSegment&gt;();<a name="line.920"></a>
+<span class="sourceLineNo">921</span>                                for (int i = 0; i &lt; segments.size(); i += segmentsToSkip) {<a name="line.921"></a>
+<span class="sourceLineNo">922</span>                                        check.add(segments.get(i));<a name="line.922"></a>
+<span class="sourceLineNo">923</span>                                }<a name="line.923"></a>
+<span class="sourceLineNo">924</span>                                if (!check.contains(segments.get(segments.size() - 1))) {<a name="line.924"></a>
+<span class="sourceLineNo">925</span>                                        check.add(segments.get(segments.size() - 1));<a name="line.925"></a>
+<span class="sourceLineNo">926</span>                                }<a name="line.926"></a>
+<span class="sourceLineNo">927</span>                                <a name="line.927"></a>
+<span class="sourceLineNo">928</span>                                for (SlipstreamSegment seg : check) {<a name="line.928"></a>
+<span class="sourceLineNo">929</span>                                        grid.addObject(curr, seg.loc, checkSize, checkSize);<a name="line.929"></a>
+<span class="sourceLineNo">930</span>                                }<a name="line.930"></a>
+<span class="sourceLineNo">931</span>                        }<a name="line.931"></a>
+<span class="sourceLineNo">932</span>                }<a name="line.932"></a>
+<span class="sourceLineNo">933</span>                <a name="line.933"></a>
+<span class="sourceLineNo">934</span>                ListenerUtil.updateSlipstreamBlockers(grid, this);<a name="line.934"></a>
+<span class="sourceLineNo">935</span>        }<a name="line.935"></a>
+<span class="sourceLineNo">936</span>        <a name="line.936"></a>
+<span class="sourceLineNo">937</span>        <a name="line.937"></a>
+<span class="sourceLineNo">938</span>        public boolean isDone() {<a name="line.938"></a>
+<span class="sourceLineNo">939</span>                return false;<a name="line.939"></a>
+<span class="sourceLineNo">940</span>        }<a name="line.940"></a>
+<span class="sourceLineNo">941</span><a name="line.941"></a>
+<span class="sourceLineNo">942</span>        public boolean runWhilePaused() {<a name="line.942"></a>
+<span class="sourceLineNo">943</span>                return false;<a name="line.943"></a>
+<span class="sourceLineNo">944</span>        }<a name="line.944"></a>
+<span class="sourceLineNo">945</span>        <a name="line.945"></a>
+<span class="sourceLineNo">946</span>        <a name="line.946"></a>
+<span class="sourceLineNo">947</span>        <a name="line.947"></a>
+<span class="sourceLineNo">948</span>}<a name="line.948"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

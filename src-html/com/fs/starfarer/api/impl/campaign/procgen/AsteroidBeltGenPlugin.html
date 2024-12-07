@@ -1,0 +1,202 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.procgen;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
+<span class="sourceLineNo">004</span><a name="line.4"></a>
+<span class="sourceLineNo">005</span>import com.fs.starfarer.api.campaign.SectorEntityToken;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import com.fs.starfarer.api.campaign.StarSystemAPI;<a name="line.6"></a>
+<span class="sourceLineNo">007</span>import com.fs.starfarer.api.impl.campaign.ids.Terrain;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.impl.campaign.procgen.StarSystemGenerator.GenContext;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.impl.campaign.procgen.StarSystemGenerator.GenResult;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.impl.campaign.procgen.StarSystemGenerator.GeneratedPlanet;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.util.WeightedRandomPicker;<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>public class AsteroidBeltGenPlugin implements TerrainGenPlugin {<a name="line.13"></a>
+<span class="sourceLineNo">014</span>        <a name="line.14"></a>
+<span class="sourceLineNo">015</span>        public GenResult generate(TerrainGenDataSpec terrainData, GenContext context) {<a name="line.15"></a>
+<span class="sourceLineNo">016</span>                StarSystemAPI system = context.system;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>                SectorEntityToken parent = context.center;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>                if (context.parent != null) parent = context.parent;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>                <a name="line.19"></a>
+<span class="sourceLineNo">020</span>                //float width = StarSystemGenerator.getRadius(terrainData.getMinRadius(), terrainData.getMaxRadius());<a name="line.20"></a>
+<span class="sourceLineNo">021</span>                float width = 200f;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>                <a name="line.22"></a>
+<span class="sourceLineNo">023</span>                float countMult = 1f;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>                float maxPlanets = 1;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>                if (context.currentRadius &gt; 2000f &amp;&amp; StarSystemGenerator.random.nextFloat() &gt; 0.5f) {<a name="line.25"></a>
+<span class="sourceLineNo">026</span>                        width += 100f;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>                        countMult += 0.1f;<a name="line.27"></a>
+<span class="sourceLineNo">028</span>                        maxPlanets++;<a name="line.28"></a>
+<span class="sourceLineNo">029</span>                }<a name="line.29"></a>
+<span class="sourceLineNo">030</span>                if (context.currentRadius &gt; 4000f &amp;&amp; StarSystemGenerator.random.nextFloat() &gt; 0.5f) {<a name="line.30"></a>
+<span class="sourceLineNo">031</span>                        width += 100f;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>                        countMult += 0.1f;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>                        maxPlanets++;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>                }<a name="line.34"></a>
+<span class="sourceLineNo">035</span>                if (context.currentRadius &gt; 6000f &amp;&amp; StarSystemGenerator.random.nextFloat() &gt; 0.5f) {<a name="line.35"></a>
+<span class="sourceLineNo">036</span>                        width += 100f;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>                        countMult += 0.1f;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>                        maxPlanets++;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                }<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                <a name="line.40"></a>
+<span class="sourceLineNo">041</span>                //if (maxPlanets &gt; 3) maxPlanets = 3;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                if (maxPlanets &gt; 1) maxPlanets = 1;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                <a name="line.43"></a>
+<span class="sourceLineNo">044</span>                <a name="line.44"></a>
+<span class="sourceLineNo">045</span>                float orbitRadius = context.currentRadius + width / 2f;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                float orbitDays = orbitRadius / (15f + 5f * StarSystemGenerator.random.nextFloat());<a name="line.46"></a>
+<span class="sourceLineNo">047</span><a name="line.47"></a>
+<span class="sourceLineNo">048</span>                int count = (int) (orbitDays * (0.25f + 0.5f * StarSystemGenerator.random.nextFloat()) * countMult);<a name="line.48"></a>
+<span class="sourceLineNo">049</span>                if (count &gt; 100) {<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                        count = (int) (100f + (count - 100f) * 0.25f); <a name="line.50"></a>
+<span class="sourceLineNo">051</span>                }<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                if (count &gt; 250) count = 250;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                <a name="line.53"></a>
+<span class="sourceLineNo">054</span>                SectorEntityToken belt = system.addAsteroidBelt(parent, count, orbitRadius, width, orbitDays * .75f, orbitDays * 1.5f, Terrain.ASTEROID_BELT,  null);<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                <a name="line.55"></a>
+<span class="sourceLineNo">056</span>                WeightedRandomPicker&lt;Integer&gt; indexPicker = new WeightedRandomPicker&lt;Integer&gt;(StarSystemGenerator.random);<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                indexPicker.add(0);<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                indexPicker.add(1);<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                //indexPicker.add(2);<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                //indexPicker.add(3);<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                <a name="line.61"></a>
+<span class="sourceLineNo">062</span>                system.addRingBand(parent, "misc", "rings_asteroids0", 256f, indexPicker.pickAndRemove(), Color.white, 256f, orbitRadius - width * 0.25f, orbitDays * 1.05f, null, null);<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                <a name="line.63"></a>
+<span class="sourceLineNo">064</span>                <a name="line.64"></a>
+<span class="sourceLineNo">065</span>                indexPicker = new WeightedRandomPicker&lt;Integer&gt;(StarSystemGenerator.random);<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                indexPicker.add(0);<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                indexPicker.add(1);<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                indexPicker.add(2);<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                indexPicker.add(3);<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                system.addRingBand(parent, "misc", "rings_asteroids0", 256f, indexPicker.pickAndRemove(), Color.white, 256f, orbitRadius + width * 0.25f, orbitDays, null, null);<a name="line.70"></a>
+<span class="sourceLineNo">071</span><a name="line.71"></a>
+<span class="sourceLineNo">072</span>                <a name="line.72"></a>
+<span class="sourceLineNo">073</span>                float prevRadius = context.currentRadius;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                //float [] offsets = new float [] {0.5f, 0.15f, 0.85f};<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                //float [] offsets = new float [] {0.25f};<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                for (int i = 0; i &lt; maxPlanets; i++) {<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                        CategoryGenDataSpec cat = context.gen.pickCategory(context, StarSystemGenerator.COL_IN_ASTEROIDS, true);<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                        if (cat != null) {<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                                WeightedRandomPicker&lt;EntityGenDataSpec&gt; picker = context.gen.getPickerForCategory(cat, context,<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                                                                                                                                                StarSystemGenerator.COL_IN_ASTEROIDS);<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                                if (StarSystemGenerator.DEBUG) {<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                                        picker.print("  Picking from category " + cat.getCategory() + <a name="line.82"></a>
+<span class="sourceLineNo">083</span>                                                        ", orbit index " + (context.parent != null ? context.parentOrbitIndex : context.orbitIndex));<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                                }<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                                EntityGenDataSpec pick = picker.pick();<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                                if (StarSystemGenerator.DEBUG) {<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                                        if (pick == null) {<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                                                System.out.println("  Nothing to pick");<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                                                System.out.println();<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                                        } else {<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                                                System.out.println("  Picked: " + pick.getId());<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                                                System.out.println();<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                                        }<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                                }<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                                <a name="line.95"></a>
+<span class="sourceLineNo">096</span>                                if (pick instanceof PlanetGenDataSpec) {<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                                        PlanetGenDataSpec planetData = (PlanetGenDataSpec) pick;<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                                        //context.currentRadius = prevRadius + width * 0.1f + i * (width * 0.8f) / maxPlanets;<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                                        //context.currentRadius = prevRadius + width * offsets[i];<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                                        context.currentRadius = prevRadius - width * 0.6f;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                                        //context.parentRadiusOverride = width * 0.75f / maxPlanets / StarSystemGenerator.MOON_RADIUS_MAX_FRACTION_OF_PARENT;<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                                        context.parentRadiusOverride = 200f;<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                                        GenResult result = context.gen.addPlanet(context, planetData, true, false);<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                                        if (result != null &amp;&amp; !result.entities.isEmpty()) {<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                                                context.gen.getAllEntitiesAdded().put(result.entities.get(0), result.entities);<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                                        }<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                                        <a name="line.107"></a>
+<span class="sourceLineNo">108</span>                                        if (!context.generatedPlanets.isEmpty()) {<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                                                GeneratedPlanet last = context.generatedPlanets.get(context.generatedPlanets.size() - 1);<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                                                last.planet.setRadius(last.planet.getRadius() * 0.75f);<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                                        }<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                                }<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                        }<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                }<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                context.parentRadiusOverride = -1;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                context.currentRadius = prevRadius;<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                <a name="line.117"></a>
+<span class="sourceLineNo">118</span>                <a name="line.118"></a>
+<span class="sourceLineNo">119</span>                GenResult result = new GenResult();<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                result.onlyIncrementByWidth = false;<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                result.orbitalWidth = width;<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                result.entities.add(belt); <a name="line.122"></a>
+<span class="sourceLineNo">123</span>                return result;<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        }<a name="line.124"></a>
+<span class="sourceLineNo">125</span><a name="line.125"></a>
+<span class="sourceLineNo">126</span>        public boolean wantsToHandle(TerrainGenDataSpec terrainData, GenContext context) {<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                return terrainData != null &amp;&amp; terrainData.getId().equals("asteroid_belt");<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        }<a name="line.128"></a>
+<span class="sourceLineNo">129</span><a name="line.129"></a>
+<span class="sourceLineNo">130</span>}<a name="line.130"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

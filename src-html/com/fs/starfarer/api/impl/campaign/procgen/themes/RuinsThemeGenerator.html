@@ -1,0 +1,446 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.procgen.themes;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.util.ArrayList;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import java.util.Collections;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import java.util.Comparator;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import java.util.List;<a name="line.6"></a>
+<span class="sourceLineNo">007</span><a name="line.7"></a>
+<span class="sourceLineNo">008</span>import org.lwjgl.util.vector.Vector2f;<a name="line.8"></a>
+<span class="sourceLineNo">009</span><a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.campaign.PlanetAPI;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.campaign.StarSystemAPI;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.impl.campaign.ids.Entities;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.impl.campaign.ids.Tags;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.impl.campaign.procgen.Constellation;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.impl.campaign.procgen.NameAssigner;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.impl.campaign.procgen.StarSystemGenerator;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.impl.campaign.procgen.themes.SalvageSpecialAssigner.SpecialCreationContext;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import com.fs.starfarer.api.util.Misc;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import com.fs.starfarer.api.util.WeightedRandomPicker;<a name="line.19"></a>
+<span class="sourceLineNo">020</span><a name="line.20"></a>
+<span class="sourceLineNo">021</span><a name="line.21"></a>
+<span class="sourceLineNo">022</span>public class RuinsThemeGenerator extends BaseThemeGenerator {<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span>        public static final int MIN_CONSTELLATIONS_WITH_RUINS = 15;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>        public static final int MAX_CONSTELLATIONS_WITH_RUINS = 25;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>        <a name="line.26"></a>
+<span class="sourceLineNo">027</span>        public static float CONSTELLATION_SKIP_PROB = 0f;<a name="line.27"></a>
+<span class="sourceLineNo">028</span>        <a name="line.28"></a>
+<span class="sourceLineNo">029</span>        <a name="line.29"></a>
+<span class="sourceLineNo">030</span>        public String getThemeId() {<a name="line.30"></a>
+<span class="sourceLineNo">031</span>                return Themes.RUINS;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>        }<a name="line.32"></a>
+<span class="sourceLineNo">033</span><a name="line.33"></a>
+<span class="sourceLineNo">034</span>        <a name="line.34"></a>
+<span class="sourceLineNo">035</span>        @Override<a name="line.35"></a>
+<span class="sourceLineNo">036</span>        public void generateForSector(ThemeGenContext context, float allowedUnusedFraction) {<a name="line.36"></a>
+<span class="sourceLineNo">037</span>                <a name="line.37"></a>
+<span class="sourceLineNo">038</span>                float total = (float) (context.constellations.size() - context.majorThemes.size()) * allowedUnusedFraction;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                if (total &lt;= 0) return;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                <a name="line.40"></a>
+<span class="sourceLineNo">041</span>                int num = (int) StarSystemGenerator.getNormalRandom(MIN_CONSTELLATIONS_WITH_RUINS, MAX_CONSTELLATIONS_WITH_RUINS);<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                if (num &gt; total) num = (int) total;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                <a name="line.43"></a>
+<span class="sourceLineNo">044</span>                <a name="line.44"></a>
+<span class="sourceLineNo">045</span>                List&lt;Constellation&gt; constellations = getSortedAvailableConstellations(context, false, new Vector2f(), null);<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                Collections.reverse(constellations);<a name="line.46"></a>
+<span class="sourceLineNo">047</span>                <a name="line.47"></a>
+<span class="sourceLineNo">048</span>                float skipProb = CONSTELLATION_SKIP_PROB;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>                if (total &lt; num / (1f - skipProb)) {<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                        skipProb = 1f - (num / total);<a name="line.50"></a>
+<span class="sourceLineNo">051</span>                }<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                skipProb = 0f;<a name="line.52"></a>
+<span class="sourceLineNo">053</span><a name="line.53"></a>
+<span class="sourceLineNo">054</span>                List&lt;StarSystemData&gt; ruinSystems = new ArrayList&lt;StarSystemData&gt;();<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                <a name="line.55"></a>
+<span class="sourceLineNo">056</span>                if (DEBUG) System.out.println("\n\n\n");<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                if (DEBUG) System.out.println("Generating systems with ruins");<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                <a name="line.58"></a>
+<span class="sourceLineNo">059</span>                int count = 0;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                <a name="line.60"></a>
+<span class="sourceLineNo">061</span>                int numUsed = 0;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                for (int i = 0; i &lt; num &amp;&amp; i &lt; constellations.size(); i++) {<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                        Constellation c = constellations.get(i);<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                        if (random.nextFloat() &lt; skipProb) {<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                                if (DEBUG) System.out.println("Skipping constellation " + c.getName());<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                                continue;<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                        }<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                        <a name="line.68"></a>
+<span class="sourceLineNo">069</span>                        <a name="line.69"></a>
+<span class="sourceLineNo">070</span>//                      if (c.getName().toLowerCase().contains("shero")) {<a name="line.70"></a>
+<span class="sourceLineNo">071</span>//                              System.out.println("wefwefwef");<a name="line.71"></a>
+<span class="sourceLineNo">072</span>//                      }<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                        <a name="line.73"></a>
+<span class="sourceLineNo">074</span>                        List&lt;StarSystemData&gt; systems = new ArrayList&lt;StarSystemData&gt;();<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                        for (StarSystemAPI system : c.getSystems()) {<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                                StarSystemData data = computeSystemData(system);<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                                systems.add(data);<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                        }<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                        <a name="line.79"></a>
+<span class="sourceLineNo">080</span>                        List&lt;StarSystemData&gt; mainCandidates = getSortedSystemsSuitedToBePopulated(systems);<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                        <a name="line.81"></a>
+<span class="sourceLineNo">082</span>                        int numMain = 1 + random.nextInt(3);<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                        if (numMain &gt; mainCandidates.size()) numMain = mainCandidates.size();<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                        if (numMain &lt;= 0) {<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                                if (DEBUG) System.out.println("Skipping constellation " + c.getName() + ", no suitable main candidates");<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                                continue;<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                        }<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                        <a name="line.88"></a>
+<span class="sourceLineNo">089</span>                        context.majorThemes.put(c, Themes.RUINS);<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                        numUsed++;<a name="line.90"></a>
+<span class="sourceLineNo">091</span><a name="line.91"></a>
+<span class="sourceLineNo">092</span>                        if (DEBUG) System.out.println("Generating " + numMain + " main systems in " + c.getName());<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                        for (int j = 0; j &lt; numMain; j++) {<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                                StarSystemData data = mainCandidates.get(j);<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                                populateMain(data);<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                                <a name="line.96"></a>
+<span class="sourceLineNo">097</span>                                data.system.addTag(Tags.THEME_INTERESTING);<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                                data.system.addTag(Tags.THEME_RUINS);<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                                data.system.addTag(Tags.THEME_RUINS_MAIN);<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                                ruinSystems.add(data);<a name="line.100"></a>
+<span class="sourceLineNo">101</span><a name="line.101"></a>
+<span class="sourceLineNo">102</span>                                RuinsFleetRouteManager fleets = new RuinsFleetRouteManager(data.system);<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                                data.system.addScript(fleets);<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                                <a name="line.104"></a>
+<span class="sourceLineNo">105</span>                                if (!NameAssigner.isNameSpecial(data.system)) {<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                                        NameAssigner.assignSpecialNames(data.system);<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                                }<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                        }<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                        <a name="line.109"></a>
+<span class="sourceLineNo">110</span>                        for (StarSystemData data : systems) {<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                                int index = mainCandidates.indexOf(data);<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                                if (index &gt;= 0 &amp;&amp; index &lt; numMain) continue;<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                                <a name="line.113"></a>
+<span class="sourceLineNo">114</span>                                populateNonMain(data);<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                                <a name="line.115"></a>
+<span class="sourceLineNo">116</span>                                data.system.addTag(Tags.THEME_INTERESTING);<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                                data.system.addTag(Tags.THEME_RUINS);<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                                data.system.addTag(Tags.THEME_RUINS_SECONDARY);<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                                ruinSystems.add(data);<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                        }<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                        <a name="line.121"></a>
+<span class="sourceLineNo">122</span>//                      if (count == 1) {<a name="line.122"></a>
+<span class="sourceLineNo">123</span>//                              System.out.println("RANDOM INDEX " + count + ": " + random.nextLong());<a name="line.123"></a>
+<span class="sourceLineNo">124</span>//                      }<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                        count++;<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                }<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                <a name="line.127"></a>
+<span class="sourceLineNo">128</span>                SpecialCreationContext specialContext = new SpecialCreationContext();<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                specialContext.themeId = getThemeId();<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                SalvageSpecialAssigner.assignSpecials(ruinSystems, specialContext);<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                <a name="line.131"></a>
+<span class="sourceLineNo">132</span>                if (DEBUG) System.out.println("Finished generating systems with ruins\n\n\n\n\n");<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                <a name="line.133"></a>
+<span class="sourceLineNo">134</span>        }<a name="line.134"></a>
+<span class="sourceLineNo">135</span>        <a name="line.135"></a>
+<span class="sourceLineNo">136</span><a name="line.136"></a>
+<span class="sourceLineNo">137</span>        <a name="line.137"></a>
+<span class="sourceLineNo">138</span>        public void populateNonMain(StarSystemData data) {<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                if (DEBUG) System.out.println(" Generating secondary ruins in " + data.system.getName());<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                boolean special = data.isBlackHole() || data.isNebula() || data.isPulsar();<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                if (special) {<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                        addResearchStations(data, 0.75f, 1, 1, createStringPicker(Entities.STATION_RESEARCH, 10f));<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                }<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                <a name="line.144"></a>
+<span class="sourceLineNo">145</span>                if (random.nextFloat() &lt; 0.5f) return;<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                <a name="line.146"></a>
+<span class="sourceLineNo">147</span>                if (!data.resourceRich.isEmpty()) {<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                        addMiningStations(data, 0.5f, 1, 1, createStringPicker(Entities.STATION_MINING, 10f));<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                }<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                <a name="line.150"></a>
+<span class="sourceLineNo">151</span>                if (!special &amp;&amp; !data.habitable.isEmpty()) {<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                        // ruins on planet, or orbital station<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                        addHabCenters(data, 0.25f, 1, 1, createStringPicker(Entities.ORBITAL_HABITAT, 10f));<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                }<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                <a name="line.155"></a>
+<span class="sourceLineNo">156</span>                WeightedRandomPicker&lt;String&gt; factions = SalvageSpecialAssigner.getNearbyFactions(random, data.system.getCenter(),<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                                                                                                                                                        15f, 10f, 10f);<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                <a name="line.158"></a>
+<span class="sourceLineNo">159</span>                addShipGraveyard(data, 0.05f, 1, 1, factions);<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                <a name="line.160"></a>
+<span class="sourceLineNo">161</span>                addDebrisFields(data, 0.25f, 1, 2);<a name="line.161"></a>
+<span class="sourceLineNo">162</span><a name="line.162"></a>
+<span class="sourceLineNo">163</span>                addDerelictShips(data, 0.5f, 0, 3, factions);<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                <a name="line.164"></a>
+<span class="sourceLineNo">165</span>                addCaches(data, 0.25f, 0, 2, createStringPicker( <a name="line.165"></a>
+<span class="sourceLineNo">166</span>                                Entities.WEAPONS_CACHE, 4f,<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                                Entities.WEAPONS_CACHE_SMALL, 10f,<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                                Entities.WEAPONS_CACHE_HIGH, 4f,<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                                Entities.WEAPONS_CACHE_SMALL_HIGH, 10f,<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                                Entities.WEAPONS_CACHE_LOW, 4f,<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                                Entities.WEAPONS_CACHE_SMALL_LOW, 10f,<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                                Entities.SUPPLY_CACHE, 4f,<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                                Entities.SUPPLY_CACHE_SMALL, 10f,<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                                Entities.EQUIPMENT_CACHE, 4f,<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                                Entities.EQUIPMENT_CACHE_SMALL, 10f<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                                ));<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                <a name="line.177"></a>
+<span class="sourceLineNo">178</span>        }<a name="line.178"></a>
+<span class="sourceLineNo">179</span>        <a name="line.179"></a>
+<span class="sourceLineNo">180</span>        <a name="line.180"></a>
+<span class="sourceLineNo">181</span>        public void populateMain(StarSystemData data) {<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                <a name="line.182"></a>
+<span class="sourceLineNo">183</span>                if (DEBUG) System.out.println(" Generating ruins in " + data.system.getName());<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                <a name="line.184"></a>
+<span class="sourceLineNo">185</span>                StarSystemAPI system = data.system;<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                <a name="line.186"></a>
+<span class="sourceLineNo">187</span>                int maxHabCenters = 1 + random.nextInt(3);<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                <a name="line.188"></a>
+<span class="sourceLineNo">189</span>                HabitationLevel level = HabitationLevel.LOW;<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                if (maxHabCenters == 2) level = HabitationLevel.MEDIUM;<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                if (maxHabCenters &gt;= 3) level = HabitationLevel.HIGH;<a name="line.191"></a>
+<span class="sourceLineNo">192</span><a name="line.192"></a>
+<span class="sourceLineNo">193</span>                addHabCenters(data, 1, maxHabCenters, maxHabCenters, createStringPicker(Entities.ORBITAL_HABITAT, 10f));<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                <a name="line.194"></a>
+<span class="sourceLineNo">195</span>                // add various stations, orbiting entities, etc<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                float probGate = 1f;<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                float probRelay = 1f;<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                float probMining = 0.5f;<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                float probResearch = 0.25f;<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                <a name="line.200"></a>
+<span class="sourceLineNo">201</span>                switch (level) {<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                case HIGH:<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                        probGate = 0.5f;<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                        probRelay = 1f;<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                        break;<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                case MEDIUM:<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                        probGate = 0.3f;<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                        probRelay = 0.75f;<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                        break;<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                case LOW:<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                        probGate = 0.2f;<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                        probRelay = 0.5f;<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                        break;<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                }<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                <a name="line.215"></a>
+<span class="sourceLineNo">216</span>//              MN-6186477243757813340          <a name="line.216"></a>
+<span class="sourceLineNo">217</span>//              float test = Misc.getDistance(data.system.getLocation(), new Vector2f(48500, -22000));<a name="line.217"></a>
+<span class="sourceLineNo">218</span>//              if (test &lt; 1000) {<a name="line.218"></a>
+<span class="sourceLineNo">219</span>//                      System.out.println("HERE: " + random.nextLong());<a name="line.219"></a>
+<span class="sourceLineNo">220</span>//              }<a name="line.220"></a>
+<span class="sourceLineNo">221</span>//              if (data.system.getName().toLowerCase().contains("cadmus")) {<a name="line.221"></a>
+<span class="sourceLineNo">222</span>//                      System.out.println("wefwefwefew");<a name="line.222"></a>
+<span class="sourceLineNo">223</span>//              }<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                //addCommRelay(data, probRelay);<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                <a name="line.225"></a>
+<span class="sourceLineNo">226</span>                addObjectives(data, probRelay);<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                <a name="line.227"></a>
+<span class="sourceLineNo">228</span>                <a name="line.228"></a>
+<span class="sourceLineNo">229</span>                WeightedRandomPicker&lt;String&gt; factions = SalvageSpecialAssigner.getNearbyFactions(random, system.getCenter(),<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                                                                                                15f, 5f, 5f);<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                addInactiveGate(data, probGate, 0.75f, 0.75f, factions);<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                <a name="line.232"></a>
+<span class="sourceLineNo">233</span>                addShipGraveyard(data, 0.25f, 1, 1, factions);<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                <a name="line.234"></a>
+<span class="sourceLineNo">235</span>                addMiningStations(data, probMining, 1, 1, createStringPicker(Entities.STATION_MINING, 10f));<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                <a name="line.236"></a>
+<span class="sourceLineNo">237</span>                addResearchStations(data, probResearch, 1, 1, createStringPicker(Entities.STATION_RESEARCH, 10f));<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                <a name="line.238"></a>
+<span class="sourceLineNo">239</span>                <a name="line.239"></a>
+<span class="sourceLineNo">240</span>                //addDebrisFields(data, 0.75f, 1, 5, Factions.REMNANTS, 0.2f, 1, 3);<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                addDebrisFields(data, 0.75f, 1, 5);<a name="line.241"></a>
+<span class="sourceLineNo">242</span><a name="line.242"></a>
+<span class="sourceLineNo">243</span>                addDerelictShips(data, 0.75f, 0, 7, factions);<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                <a name="line.244"></a>
+<span class="sourceLineNo">245</span>                <a name="line.245"></a>
+<span class="sourceLineNo">246</span>                WeightedRandomPicker&lt;String&gt; caches = createStringPicker( <a name="line.246"></a>
+<span class="sourceLineNo">247</span>                                Entities.SUPPLY_CACHE, 10f,<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                                Entities.SUPPLY_CACHE_SMALL, 10f,<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                                Entities.EQUIPMENT_CACHE, 10f,<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                                Entities.EQUIPMENT_CACHE_SMALL, 10f<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                                );<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                <a name="line.252"></a>
+<span class="sourceLineNo">253</span>                <a name="line.253"></a>
+<span class="sourceLineNo">254</span>                float r = random.nextFloat();<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                if (r &lt; 0.33f) {<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                        caches.add(Entities.WEAPONS_CACHE, 10f);<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                        caches.add(Entities.WEAPONS_CACHE_SMALL, 10f);<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                } else if (r &lt; 0.67f) {<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                        caches.add(Entities.WEAPONS_CACHE_LOW, 10f);<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                        caches.add(Entities.WEAPONS_CACHE_SMALL_LOW, 10f);<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                } else {<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                        caches.add(Entities.WEAPONS_CACHE_HIGH, 10f);<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                        caches.add(Entities.WEAPONS_CACHE_SMALL_HIGH, 10f);<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                }<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                <a name="line.265"></a>
+<span class="sourceLineNo">266</span>                addCaches(data, 0.75f, 0, 3, caches);<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                <a name="line.267"></a>
+<span class="sourceLineNo">268</span>        }<a name="line.268"></a>
+<span class="sourceLineNo">269</span>        <a name="line.269"></a>
+<span class="sourceLineNo">270</span>        <a name="line.270"></a>
+<span class="sourceLineNo">271</span>        <a name="line.271"></a>
+<span class="sourceLineNo">272</span>        public List&lt;StarSystemData&gt; getSortedSystemsSuitedToBePopulated(List&lt;StarSystemData&gt; systems) {<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                List&lt;StarSystemData&gt; result = new ArrayList&lt;StarSystemData&gt;();<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                <a name="line.274"></a>
+<span class="sourceLineNo">275</span>                for (StarSystemData data : systems) {<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                        if (data.isBlackHole() || data.isNebula() || data.isPulsar()) continue;<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                        <a name="line.277"></a>
+<span class="sourceLineNo">278</span>                        if (data.planets.size() &gt;= 4 || data.habitable.size() &gt;= 1) {<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                                result.add(data);<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                        }<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                }<a name="line.281"></a>
+<span class="sourceLineNo">282</span>                <a name="line.282"></a>
+<span class="sourceLineNo">283</span>                Collections.sort(systems, new Comparator&lt;StarSystemData&gt;() {<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                        public int compare(StarSystemData o1, StarSystemData o2) {<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                                float s1 = getMainCenterScore(o1);<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                                float s2 = getMainCenterScore(o2);<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                                return (int) Math.signum(s2 - s1);<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                        }<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                });<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                <a name="line.290"></a>
+<span class="sourceLineNo">291</span>                return result;<a name="line.291"></a>
+<span class="sourceLineNo">292</span>        }<a name="line.292"></a>
+<span class="sourceLineNo">293</span>        <a name="line.293"></a>
+<span class="sourceLineNo">294</span>        public float getMainCenterScore(StarSystemData data) {<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                float total = 0f;<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                total += data.planets.size() * 1f;<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                total += data.habitable.size() * 2f;<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                total += data.resourceRich.size() * 0.25f;<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                return total;<a name="line.299"></a>
+<span class="sourceLineNo">300</span>        }<a name="line.300"></a>
+<span class="sourceLineNo">301</span>        <a name="line.301"></a>
+<span class="sourceLineNo">302</span>        <a name="line.302"></a>
+<span class="sourceLineNo">303</span>        <a name="line.303"></a>
+<span class="sourceLineNo">304</span>        /**<a name="line.304"></a>
+<span class="sourceLineNo">305</span>         * Sorted by *descending* distance from sortFrom.<a name="line.305"></a>
+<span class="sourceLineNo">306</span>         * @param context<a name="line.306"></a>
+<span class="sourceLineNo">307</span>         * @param sortFrom<a name="line.307"></a>
+<span class="sourceLineNo">308</span>         * @return<a name="line.308"></a>
+<span class="sourceLineNo">309</span>         */<a name="line.309"></a>
+<span class="sourceLineNo">310</span>        protected List&lt;Constellation&gt; getSortedAvailableConstellations(ThemeGenContext context, boolean emptyOk, final Vector2f sortFrom, List&lt;Constellation&gt; exclude) {<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                List&lt;Constellation&gt; constellations = new ArrayList&lt;Constellation&gt;();<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                for (Constellation c : context.constellations) {<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                        if (context.majorThemes.containsKey(c)) continue;<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                        if (!emptyOk &amp;&amp; constellationIsEmpty(c)) continue;<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                        <a name="line.315"></a>
+<span class="sourceLineNo">316</span>                        constellations.add(c);<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                }<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                <a name="line.318"></a>
+<span class="sourceLineNo">319</span>                if (exclude != null) {<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                        constellations.removeAll(exclude);<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                }<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                <a name="line.322"></a>
+<span class="sourceLineNo">323</span>                Collections.sort(constellations, new Comparator&lt;Constellation&gt;() {<a name="line.323"></a>
+<span class="sourceLineNo">324</span>                        public int compare(Constellation o1, Constellation o2) {<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                                float d1 = Misc.getDistance(o1.getLocation(), sortFrom);<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                                float d2 = Misc.getDistance(o2.getLocation(), sortFrom);<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                                return (int) Math.signum(d2 - d1);<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                        }<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                });<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                return constellations;<a name="line.330"></a>
+<span class="sourceLineNo">331</span>        }<a name="line.331"></a>
+<span class="sourceLineNo">332</span>        <a name="line.332"></a>
+<span class="sourceLineNo">333</span>        <a name="line.333"></a>
+<span class="sourceLineNo">334</span>        public static boolean constellationIsEmpty(Constellation c) {<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                for (StarSystemAPI s : c.getSystems()) {<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                        if (!systemIsEmpty(s)) return false;<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                }<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                return true;<a name="line.338"></a>
+<span class="sourceLineNo">339</span>        }<a name="line.339"></a>
+<span class="sourceLineNo">340</span>        public static boolean systemIsEmpty(StarSystemAPI system) {<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                for (PlanetAPI p : system.getPlanets()) {<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                        if (!p.isStar()) return false;<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                }<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                return true;<a name="line.344"></a>
+<span class="sourceLineNo">345</span>        }<a name="line.345"></a>
+<span class="sourceLineNo">346</span>        <a name="line.346"></a>
+<span class="sourceLineNo">347</span>        <a name="line.347"></a>
+<span class="sourceLineNo">348</span>        <a name="line.348"></a>
+<span class="sourceLineNo">349</span>        <a name="line.349"></a>
+<span class="sourceLineNo">350</span>        @Override<a name="line.350"></a>
+<span class="sourceLineNo">351</span>        public int getOrder() {<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                return 2000;<a name="line.352"></a>
+<span class="sourceLineNo">353</span>        }<a name="line.353"></a>
+<span class="sourceLineNo">354</span><a name="line.354"></a>
+<span class="sourceLineNo">355</span><a name="line.355"></a>
+<span class="sourceLineNo">356</span>        <a name="line.356"></a>
+<span class="sourceLineNo">357</span>        <a name="line.357"></a>
+<span class="sourceLineNo">358</span>}<a name="line.358"></a>
+<span class="sourceLineNo">359</span><a name="line.359"></a>
+<span class="sourceLineNo">360</span><a name="line.360"></a>
+<span class="sourceLineNo">361</span><a name="line.361"></a>
+<span class="sourceLineNo">362</span><a name="line.362"></a>
+<span class="sourceLineNo">363</span><a name="line.363"></a>
+<span class="sourceLineNo">364</span><a name="line.364"></a>
+<span class="sourceLineNo">365</span><a name="line.365"></a>
+<span class="sourceLineNo">366</span><a name="line.366"></a>
+<span class="sourceLineNo">367</span><a name="line.367"></a>
+<span class="sourceLineNo">368</span><a name="line.368"></a>
+<span class="sourceLineNo">369</span><a name="line.369"></a>
+<span class="sourceLineNo">370</span><a name="line.370"></a>
+<span class="sourceLineNo">371</span><a name="line.371"></a>
+<span class="sourceLineNo">372</span><a name="line.372"></a>
+<span class="sourceLineNo">373</span><a name="line.373"></a>
+<span class="sourceLineNo">374</span><a name="line.374"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

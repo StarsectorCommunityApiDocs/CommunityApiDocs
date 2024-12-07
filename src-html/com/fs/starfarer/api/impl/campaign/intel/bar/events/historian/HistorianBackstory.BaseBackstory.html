@@ -1,0 +1,340 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.intel.bar.events.historian;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.util.List;<a name="line.3"></a>
+<span class="sourceLineNo">004</span><a name="line.4"></a>
+<span class="sourceLineNo">005</span>public class HistorianBackstory {<a name="line.5"></a>
+<span class="sourceLineNo">006</span>        public static interface HistorianBackstoryInfo {<a name="line.6"></a>
+<span class="sourceLineNo">007</span>                String getText();<a name="line.7"></a>
+<span class="sourceLineNo">008</span>                float getWeight();<a name="line.8"></a>
+<span class="sourceLineNo">009</span>                String getId();<a name="line.9"></a>
+<span class="sourceLineNo">010</span>        }<a name="line.10"></a>
+<span class="sourceLineNo">011</span>        <a name="line.11"></a>
+<span class="sourceLineNo">012</span>        public static class BaseBackstory implements HistorianBackstoryInfo {<a name="line.12"></a>
+<span class="sourceLineNo">013</span>                public String getText() {<a name="line.13"></a>
+<span class="sourceLineNo">014</span>                        return null;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>                }<a name="line.15"></a>
+<span class="sourceLineNo">016</span>                public String getId() {<a name="line.16"></a>
+<span class="sourceLineNo">017</span>                        String name = getClass().getName();<a name="line.17"></a>
+<span class="sourceLineNo">018</span>                        name = name.substring(name.lastIndexOf('.') + 1);<a name="line.18"></a>
+<span class="sourceLineNo">019</span>                        return name;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>                }<a name="line.20"></a>
+<span class="sourceLineNo">021</span>                public float getWeight() {<a name="line.21"></a>
+<span class="sourceLineNo">022</span>                        return 10;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>                }<a name="line.23"></a>
+<span class="sourceLineNo">024</span>        }<a name="line.24"></a>
+<span class="sourceLineNo">025</span><a name="line.25"></a>
+<span class="sourceLineNo">026</span>        public static void init(List&lt;HistorianBackstoryInfo&gt; backstory) {<a name="line.26"></a>
+<span class="sourceLineNo">027</span>                // this now lives in rules.csv<a name="line.27"></a>
+<span class="sourceLineNo">028</span>/*              <a name="line.28"></a>
+<span class="sourceLineNo">029</span>                //final HistorianData hd = HistorianData.getInstance();<a name="line.29"></a>
+<span class="sourceLineNo">030</span>                // 1 Historian personal<a name="line.30"></a>
+<span class="sourceLineNo">031</span>                backstory.add(new BaseBackstory() {<a name="line.31"></a>
+<span class="sourceLineNo">032</span>                        @Override<a name="line.32"></a>
+<span class="sourceLineNo">033</span>                        public String getText() {<a name="line.33"></a>
+<span class="sourceLineNo">034</span>                                HistorianData hd = HistorianData.getInstance();<a name="line.34"></a>
+<span class="sourceLineNo">035</span>                                return "\" Sometimes I ponder what my life would be like in the Domain - an uncollapsed Domain? I suspect someone who goes needling " +<a name="line.35"></a>
+<span class="sourceLineNo">036</span>                                "around asking uncomfortable questions might get in trouble,\" " + hd.getHeOrShe() + " barks a laugh, then lowers " + hd.getHisOrHer() +<a name="line.36"></a>
+<span class="sourceLineNo">037</span>                                " face. \"Although I've managed to produce enough trouble for myself in the here-and-now, haven't I? If you don't anger the institutions, " +<a name="line.37"></a>
+<span class="sourceLineNo">038</span>                                "you're not doing good work, I think.";<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                        }<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                });<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                <a name="line.41"></a>
+<span class="sourceLineNo">042</span>                // 2 Infernium<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                backstory.add(new BaseBackstory() {<a name="line.43"></a>
+<span class="sourceLineNo">044</span>                        @Override<a name="line.44"></a>
+<span class="sourceLineNo">045</span>                        public String getText() {<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                                HistorianData hd = HistorianData.getInstance();<a name="line.46"></a>
+<span class="sourceLineNo">047</span>                                return "\"Oh 'Infernium', yes yes. It's a bit of Luddic vernacular; refers to antimatter starship fuel, though what they mean, " +<a name="line.47"></a>
+<span class="sourceLineNo">048</span>                                "and here " + hd.getHeOrShe() + " stresses the word, \"is rather more. In certain texts the term encompasses all AM applications, " + <a name="line.48"></a>
+<span class="sourceLineNo">049</span>                                "or even all high-energy processes. 'The get of Mammon and Belial', one inventive firebrand called it. I like that one. I've always " +<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                                "enjoyed the dramatic rhetoric of Luddic folk-preachers.\"";<a name="line.50"></a>
+<span class="sourceLineNo">051</span>                        }<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                });<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                <a name="line.53"></a>
+<span class="sourceLineNo">054</span>                // 3 Kanta<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                backstory.add(new BaseBackstory() {<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                        @Override<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                        public String getText() {<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                                //HistorianData hd = HistorianData.getInstance();<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                                return "\"Now I may be old, but there's older by far. If the records are to be believed - and I do believe, the Hegemony keeps very good records - " +<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                                                "then the pirate Warlord Kanta was born well before the Collapse. Or shall we call her ex-Domain Armada officer Jorien Kanta? " +<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                                                "Oh yes, she had a name like anyone else once. One wonders if it's very expensive biomods or periodic cryosleep that keeps her going. " +<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                                                "I'd love to find out...\"";<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                        }<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                });<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                <a name="line.65"></a>
+<span class="sourceLineNo">066</span>                // 4. Andrada<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                backstory.add(new BaseBackstory() {<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                        @Override<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                        public String getText() {<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                                HistorianData hd = HistorianData.getInstance();<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                                return "\"Hmm, history is not all study of 'great leaders', but one can't help but admire a narrative of glorious victory, hubris, and " +<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                                                "ignominious end. Philip Andrada, for instance,\" " + hd.getHisOrHer() + " gaze drifts into the past, \"I remember like it was " +<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                                                "yesterday. He embodied all that was proud and good in the Hegemony. Practically deified on every holo after defeating " +<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                                                "Warlord Loke; oh, how we celebrated at that news! It was the defeat of chaos itself, the dawn of a golden age. So it felt, once.\n\n" +<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                                                "His turn wounded us; it wounded the Hegemony itself, and very deeply.\" " + hd.getUCHeOrShe() + " nods to " + hd.getHimOrHerself() + <a name="line.75"></a>
+<span class="sourceLineNo">076</span>                                                " and drifts back into some old memory.";<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                        }<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                });<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                <a name="line.79"></a>
+<span class="sourceLineNo">080</span>                // 5. cryosleep<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                backstory.add(new BaseBackstory() {<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                        @Override<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                        public String getText() {<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                                HistorianData hd = HistorianData.getInstance();<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                                return "\"I've considered cryosleep. Pay the fee, jump ahead a hundred cycles to see how it all turned out. As a historian, "+<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                                "by the stars, it's quite an appeal. On the other hand - yes, yes - I know the statistics, the failure rates are low nowadays if " +<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                                "you find a good vault. But it still scares me. You could just go to sleep and never wake up.\" " + hd.getUCHeOrShe() + " laughs darkly, " +<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                                "\"Though that's every day, isn't it? Ah, I have too much work to do anyway...\"";<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                        }<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                });<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                <a name="line.91"></a>
+<span class="sourceLineNo">092</span>                // 6 aliens<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                backstory.add(new BaseBackstory() {<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                        @Override<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                        public String getText() {<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                                HistorianData hd = HistorianData.getInstance();<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                                return "\"Aliens! Hah. No, there's nothing well documented enough to be considered,\" " + hd.getHeOrShe() + " stresses this point, " +<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                                                "\"Legitimate History. Yes yes, if you want to experience xenolife, visit Jangala and take your pills and quarantine shower.\"\n\n" +<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                                                "\"But that's simply not what is meant, is it. We want there to be someone else out there like us, someone to talk to, someone to tell us " +<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                                                "we're not alone, someone to give us answers. Someone who cares. Perhaps we're looking in the wrong place? Or thinking in " +<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                                                "the wrong way?\" " + hd.getUCHeOrShe() + " dismisses the thought with a shake of " + hd.getHisOrHer() + " head. \"Eh, " +<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                                                "speculation. Not my trade.\"";<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                        }<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                });<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                <a name="line.105"></a>
+<span class="sourceLineNo">106</span>                // 7 aliens again<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                backstory.add(new BaseBackstory() {<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                        @Override<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                        public String getText() {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                                HistorianData hd = HistorianData.getInstance();<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                                return "\"We've all heard the story about the Onslaught battleship, the only thing that can stand against the alien threat.\" " + <a name="line.111"></a>
+<span class="sourceLineNo">112</span>                                hd.getHeOrShe() + " scoffs, and waves a dismissive hand, \"As if we live in some milfic holo about brave heroes and vile villains. " +<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                                "Grand historical context-breaking contact doesn't work that way, at least in our body of knowledge; it's more confusing, " +<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                                "messy, chaotic. It undermines the entire cognitive-ideological basis of society. And always, so many die.\"\n\n" + hd.getUCHeOrShe() +<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                                " gets a distant look for a moment, then breaks into a sardonic smile. \"Not so unlike the Collapse eh? Must be aliens.\" " +<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                                hd.getHeOrShe() + " winks. \"For sure.\"";<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                        }<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                });<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                <a name="line.119"></a>
+<span class="sourceLineNo">120</span>                // 8 Old Earth<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                backstory.add(new BaseBackstory() {<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                        @Override<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                        public String getText() {<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                                HistorianData hd = HistorianData.getInstance();<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                                return "\"Old Earth, mother Terra. From whence we came, long gone. The Luddics aren't completely wrong in their stories, though " +<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                                                "they, hm, possess few qualms about 'improving' most details to appeal to a quotidian morale framing. The historical record " +<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                                                "is far more complex, far more difficult. Far more relatable in the end, I believe. Every day we survive by powerful " +<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                                                "technologies which any one of us barely understands and which may unleash truly apocalytpic destruction. Mistakes are made, " +<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                                                "tragedy results; it's only a question of scale.\"\n\n" + hd.getUCHeOrShe() + " considers this for a moment, then begins mumbling " +<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                                                "a critical response to " + hd.getHisOrHer() + " own thoughts, \"But scale can indeed fundamentally change the quality of " +<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                                                "phenomena, hence the contextualization of the moral dimension, hmm, entirely! Hmm... \"";<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                        }<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                });<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                <a name="line.134"></a>
+<span class="sourceLineNo">135</span>                // 9 technology<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                backstory.add(new BaseBackstory() {<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                        @Override<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                        public String getText() {<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                                HistorianData hd = HistorianData.getInstance();<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                                return "\"Though we're freed from the Domain's technology restrictions - despite Hegemony attempts to carry on that legacy,\" " + hd.getHeOrShe() +<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                                                " gives a half shrug to their efficacy at this effort, \"- this age has not seen any great leaps of technological development. " +<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                                                "Why not? The ban has been lifted!\"\n\n" +<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                                                "Perhaps it is that development of highly complex, advanced technologies requires a stable foundation: a large population base with " +<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                                                "excess engineering and theoretical capacity, a willingness to devote resources to pursuits beyond mere survival. Or war. And yes, " +<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                                                "war drives investment of a sort. But imagine the possibilities if billions of credits had not been vaporized. Alongside so many foolish youths " +<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                                                "I once knew. " + hd.getUCHeOrShe() + " goes very quiet for a moment. \"Those old production chips and nanoforges offer a ladder with the " +<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                                                "middle rungs missing. We fight to be the one to reach for the top, doomed to fall.\"";<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                        }<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                });<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                <a name="line.150"></a>
+<span class="sourceLineNo">151</span>                // 10 the Domain, gates<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                backstory.add(new BaseBackstory() {<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                        @Override<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                        public String getText() {<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                                HistorianData hd = HistorianData.getInstance();<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                                return "\"The Domain split key industries into separate worlds, and yes, with redundancies - set well apart from one another. " +<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                                                "If one world which produces hyperdrives tried to leverage their specialization against the Domain, well, what good are they " +<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                                                "without raw materials? Or AM fuel? Or, indeed, the basic necessities of life and access to markets?\"\n\n" +<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                                                "\"How can one rebel when the Domain need only control the local Gate to lay siege? Which one world could possibly stand against the " +<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                                                "entire Domain?\"" + hd.getUCHeOrShe() + " gives a grim smirk. \"Now we're stuck here, besieged by the Domain. There's no one " + <a name="line.160"></a>
+<span class="sourceLineNo">161</span>                                                "to accept our surrender but some dead Gates.\"";<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                        }<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                });<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                <a name="line.164"></a>
+<span class="sourceLineNo">165</span>                // 11 Galatia Academy<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                backstory.add(new BaseBackstory() {<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                        @Override<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                        public String getText() {<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                                HistorianData hd = HistorianData.getInstance();<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                                return "\"The Galatia Academy? Oh yes, yes, I once attended. And taught there too, if you'd believe it. For quite a few cycles. " +<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                                                "They figured me out as a troublemaker soon enough, but I was slippery. I played the game. Me! Hah, would you believe that? " +<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                                                hd.getUCHeOrShe() + " laughs at some old memory. \"Made a few enemies too, I did.\"\n\n" + <a name="line.172"></a>
+<span class="sourceLineNo">173</span>                                                "\"Did you hear who they put in charge of the Academy? Anahita Baird! Can you believe it? The wolf is tending the sheep now, and that's the " +<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                                                "truth. The Hegemony has no idea what they've done,\" " + hd.getHeOrShe() + " cackles. \"No idea!\"";<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                        }<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                });<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                <a name="line.177"></a>
+<span class="sourceLineNo">178</span>                // 12 Baikal Daud<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                backstory.add(new BaseBackstory() {<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                        @Override<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                        public String getText() {<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                                HistorianData hd = HistorianData.getInstance();<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                                return "\"With Baikal Daud in the office of High Hegemon, I can't help but wonder at what mark his administration will make on the " +<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                                                "Phoenix of the Persean Sector. The old guard still dominates the navy - that's the Eventide contingent. Those families go back " +<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                                                "to the arrival of the 14th in the Sector. It's not an old aristocracy by any historical standard, but the pattern is " +<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                                                "established quickly enough given the correct conditions. Where was I- yes, Daud. Man of the people. Ruffles feathers. Like when he " +<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                                                "intervened personally in the Sphinx ensigns scandal. Hegemons simply don't do that. But he's a born leader, none can deny it. That's " +<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                                                "what is really going to get him in trouble.\" " + hd.getUCHeOrShe() + " stares out at nothing, thoughtfully.";<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                        }<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                });<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                <a name="line.191"></a>
+<span class="sourceLineNo">192</span>                // 13 Artemisia Sun<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                backstory.add(new BaseBackstory() {<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                        @Override<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                        public String getText() {<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                                HistorianData hd = HistorianData.getInstance();<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                                return "\"In my circles- that's historians, mind you, not just old folks hanging around the bar,\" " + hd.getHeOrShe() + " chuckles at " +<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                                hd.getHisOrHer() + " self-deprecation, \"-We've made a rule not to argue about Artemisia Sun unless legitimate new information appears. " +<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                                "And it never does!\" " + hd.getUCHeOrShe() + " pauses for a moment. \"But you're not a historian, so the rule doesn't apply. Great!\"\n\n" +<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                                "\"So: Why was she voted off the board just in time for the crucial military disaster of the Second AI War, then able to sweep back into " +<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                                "her office with the credibility of all who opposed her absolutely annihilated? Was it merely a ruthless recovery, or was it a calculated " +<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                                "sacrifice of Tri-Tachyon assets in order to consolidate personal power?\" " + hd.getUCHeOrShe() + " smiles. \"Maybe we can hash this theory " +<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                                "all the way through one of these days.\"";<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                        }<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                });<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                <a name="line.206"></a>
+<span class="sourceLineNo">207</span>                // 14 Ludd<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                backstory.add(new BaseBackstory() {<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                        @Override<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                        public String getText() {<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                                HistorianData hd = HistorianData.getInstance();<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                                return "\"How we long for some incidental recording of even one of Ludd's speeches or acts. Incredible, is it not, how all evidence seems " +<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                                                "to have disappeared? This, hrm, 'miracle' is of course a point of faith among followers of the Church of Galactic Redemption.\"\n\n" + <a name="line.213"></a>
+<span class="sourceLineNo">214</span>                                                hd.getUCHeOrShe() + " raises an eyebrow at you. \"And, officially, a point of policy for the Hegemony, which seeks to appease these faithful.\" " +<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                                                hd.getUCHeOrShe() + " furrows " + hd.getHisOrHer() + " brow in frustration, \"As a historian, of course, this vexes me to no end. " +<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                                                "History as experienced by the common person may be a story society tells itself, and distorted as such. Even still! It must be grounded " +<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                                                "in facts!\"\n\n" + <a name="line.217"></a>
+<span class="sourceLineNo">218</span>                                                "\"Of course if I did discover a holovid of Ludd's Trial, some fanatic would murder me soon enough for releasing it. Not that I could " +<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                                                "help myself.\" " + hd.getUCHeOrShe() + " smiles impishly, then considers. \"If you do ever find one, you'd give me a copy, wouldn't you?\"";<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                        }<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                });<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                <a name="line.222"></a>
+<span class="sourceLineNo">223</span>                // 15 smuggling<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                backstory.add(new BaseBackstory() {<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                        @Override<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                        public String getText() {<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                                HistorianData hd = HistorianData.getInstance();<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                                return "\"You wouldn't believe how much of my work involves reviewing cargo manifests. I have an old student who works on Agreus " +<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                                                "who sends me copies they lift off scrapped memory cores. Most of the real secrets are wiped, of course, but the story is there, " +<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                                                "between the lines. History is written in logistics!\n\n" + <a name="line.230"></a>
+<span class="sourceLineNo">231</span>                                                "Take for instance the quantity of food and supplies that disappear en route on trade routes that skim the " +<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                                                "edges of the Core Worlds. A simple statistical sampling suggests that a significant percent of all economic activity in the " +<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                                                "Sector is 'off the books', as they say, and a significant portion of that goes straight to what are called 'pirates' and " +<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                                                "so-called 'decivilized' demographics.\"\n\n " +<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                                                hd.getUCHeOrShe() + " shakes " + hd.getHisOrHer() + " head, smiling. \"Simply astounding.\"";<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                        }<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                });<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                <a name="line.238"></a>
+<span class="sourceLineNo">239</span>                // 16 the start of the Hegemony<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                backstory.add(new BaseBackstory() {<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                        @Override<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                        public String getText() {<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                                HistorianData hd = HistorianData.getInstance();<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                                return "\"Ah, like I was just telling those young folks over there,\" the historian waves " + hd.getHisOrHer() + " hand toward a small group " +<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                                                " which seems to be conspicuously avoiding eye contact, \"- after the trials of the Cold Passage, the 14th Battlegroup limped across " +<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                                                "the Persean frontiers to discover the Sector dominated by the Warlord Leonis. The joint command of the 14th struck down that cruel " +<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                                                "reign and were hailed as liberators, laying the groundwork for Admiral Kali Molina to make a declaration of Hegemony over the former " +<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                                                "Domain colonies of this Sector with the Eventide Diktat of c49.\n\n"<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                                                + "The untarnished Hegemony of that time was too overshadowed by memories " +<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                                                "of the Domain to truly appreciate the political capital at the High Hegemon's command. Short-term thinking prevailed in anticipation " +<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                                                "of Gate reactivation. Indeed,\"" + hd.getUCHeOrShe() + " gets a look of sad understanding, \"How could they have known that " +<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                                                                "a state of discontinuity would last so long?\"";<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                        }<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                });<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                */<a name="line.255"></a>
+<span class="sourceLineNo">256</span>        }<a name="line.256"></a>
+<span class="sourceLineNo">257</span>}<a name="line.257"></a>
+<span class="sourceLineNo">258</span><a name="line.258"></a>
+<span class="sourceLineNo">259</span><a name="line.259"></a>
+<span class="sourceLineNo">260</span><a name="line.260"></a>
+<span class="sourceLineNo">261</span><a name="line.261"></a>
+<span class="sourceLineNo">262</span><a name="line.262"></a>
+<span class="sourceLineNo">263</span><a name="line.263"></a>
+<span class="sourceLineNo">264</span><a name="line.264"></a>
+<span class="sourceLineNo">265</span><a name="line.265"></a>
+<span class="sourceLineNo">266</span><a name="line.266"></a>
+<span class="sourceLineNo">267</span><a name="line.267"></a>
+<span class="sourceLineNo">268</span><a name="line.268"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

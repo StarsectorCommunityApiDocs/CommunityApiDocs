@@ -1,0 +1,407 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.intel;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import java.util.Set;<a name="line.4"></a>
+<span class="sourceLineNo">005</span><a name="line.5"></a>
+<span class="sourceLineNo">006</span>import org.lwjgl.input.Keyboard;<a name="line.6"></a>
+<span class="sourceLineNo">007</span><a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.Global;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.campaign.FactionAPI;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.campaign.InteractionDialogAPI;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.campaign.SectorEntityToken;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.campaign.TextPanelAPI;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.campaign.econ.CommodityOnMarketAPI;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.campaign.econ.MonthlyReport;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.campaign.econ.MonthlyReport.FDNode;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.campaign.listeners.EconomyTickListener;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.impl.campaign.ids.Factions;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import com.fs.starfarer.api.impl.campaign.ids.Tags;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import com.fs.starfarer.api.impl.campaign.intel.events.SindrianDiktatHostileActivityFactor;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import com.fs.starfarer.api.impl.campaign.rulecmd.HA_CMD;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import com.fs.starfarer.api.impl.campaign.shared.SharedData;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import com.fs.starfarer.api.ui.ButtonAPI;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>import com.fs.starfarer.api.ui.IntelUIAPI;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>import com.fs.starfarer.api.ui.LabelAPI;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>import com.fs.starfarer.api.ui.SectorMapAPI;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>import com.fs.starfarer.api.ui.TooltipMakerAPI;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>import com.fs.starfarer.api.ui.TooltipMakerAPI.TooltipCreator;<a name="line.27"></a>
+<span class="sourceLineNo">028</span>import com.fs.starfarer.api.util.Misc;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>public class SindrianDiktatFuelDeal extends BaseIntelPlugin implements EconomyTickListener {<a name="line.30"></a>
+<span class="sourceLineNo">031</span>        <a name="line.31"></a>
+<span class="sourceLineNo">032</span>        public static enum AgreementEndingType {<a name="line.32"></a>
+<span class="sourceLineNo">033</span>                BROKEN,<a name="line.33"></a>
+<span class="sourceLineNo">034</span>        }<a name="line.34"></a>
+<span class="sourceLineNo">035</span>        <a name="line.35"></a>
+<span class="sourceLineNo">036</span>        public static float REP_FOR_BREAKING_DEAL = 0.5f;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>        <a name="line.37"></a>
+<span class="sourceLineNo">038</span>        public static String KEY = "$sindrianDiktatDeal_ref";<a name="line.38"></a>
+<span class="sourceLineNo">039</span>        public static SindrianDiktatFuelDeal get() {<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                return (SindrianDiktatFuelDeal) Global.getSector().getMemoryWithoutUpdate().get(KEY);<a name="line.40"></a>
+<span class="sourceLineNo">041</span>        }<a name="line.41"></a>
+<span class="sourceLineNo">042</span>        <a name="line.42"></a>
+<span class="sourceLineNo">043</span>        public static String BUTTON_END = "End";<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        <a name="line.44"></a>
+<span class="sourceLineNo">045</span>        public static String UPDATE_PARAM_ACCEPTED = "update_param_accepted";<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        <a name="line.46"></a>
+<span class="sourceLineNo">047</span>        protected FactionAPI faction = null;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        protected AgreementEndingType endType = null;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        <a name="line.49"></a>
+<span class="sourceLineNo">050</span>        public SindrianDiktatFuelDeal(InteractionDialogAPI dialog) {<a name="line.50"></a>
+<span class="sourceLineNo">051</span>                this.faction = Global.getSector().getFaction(Factions.DIKTAT);<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                <a name="line.52"></a>
+<span class="sourceLineNo">053</span>                setImportant(true);<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                SindrianDiktatHostileActivityFactor.setMadeDeal(true);<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                <a name="line.55"></a>
+<span class="sourceLineNo">056</span>                TextPanelAPI text = null;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                if (dialog != null) text = dialog.getTextPanel();<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                <a name="line.58"></a>
+<span class="sourceLineNo">059</span>                Global.getSector().getListenerManager().addListener(this);<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                Global.getSector().getMemoryWithoutUpdate().set(KEY, this);<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                <a name="line.61"></a>
+<span class="sourceLineNo">062</span>                Global.getSector().getIntelManager().addIntel(this, true);<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                <a name="line.63"></a>
+<span class="sourceLineNo">064</span>                sendUpdate(UPDATE_PARAM_ACCEPTED, text);<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                <a name="line.65"></a>
+<span class="sourceLineNo">066</span>                HA_CMD.avertOrEndDiktatAttackAsNecessary();<a name="line.66"></a>
+<span class="sourceLineNo">067</span>        }<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        <a name="line.68"></a>
+<span class="sourceLineNo">069</span>        @Override<a name="line.69"></a>
+<span class="sourceLineNo">070</span>        protected void notifyEnding() {<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                super.notifyEnding();<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                <a name="line.72"></a>
+<span class="sourceLineNo">073</span>                SindrianDiktatHostileActivityFactor.setMadeDeal(false);<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                Global.getSector().getListenerManager().removeListener(this);<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                Global.getSector().getMemoryWithoutUpdate().unset(KEY);<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        }<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        <a name="line.77"></a>
+<span class="sourceLineNo">078</span>        @Override<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        protected void notifyEnded() {<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                super.notifyEnded();<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        }<a name="line.81"></a>
+<span class="sourceLineNo">082</span><a name="line.82"></a>
+<span class="sourceLineNo">083</span>        protected Object readResolve() {<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                return this;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        }<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        <a name="line.86"></a>
+<span class="sourceLineNo">087</span>        public String getBaseName() {<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                return "Sindrian Diktat Fuel Accord";<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        }<a name="line.89"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
+<span class="sourceLineNo">091</span>        public String getAcceptedPostfix() {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                return "Accepted";<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        }<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                <a name="line.94"></a>
+<span class="sourceLineNo">095</span>        public String getBrokenPostfix() {<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                return "Ended";<a name="line.96"></a>
+<span class="sourceLineNo">097</span><a name="line.97"></a>
+<span class="sourceLineNo">098</span>        }<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        <a name="line.99"></a>
+<span class="sourceLineNo">100</span>        public String getName() {<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                String postfix = "";<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                if (isEnding() &amp;&amp; endType != null) {<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                        switch (endType) {<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                        case BROKEN:<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                                postfix = " - " + getBrokenPostfix();<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                                break;<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                        }<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                }<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                if (isSendingUpdate() &amp;&amp; getListInfoParam() == UPDATE_PARAM_ACCEPTED) {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                        postfix =  " - " + getAcceptedPostfix();<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                }<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                return getBaseName() + postfix;<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        }<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        <a name="line.114"></a>
+<span class="sourceLineNo">115</span>        @Override<a name="line.115"></a>
+<span class="sourceLineNo">116</span>        public FactionAPI getFactionForUIColors() {<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                return faction;<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        }<a name="line.118"></a>
+<span class="sourceLineNo">119</span><a name="line.119"></a>
+<span class="sourceLineNo">120</span>        public String getSmallDescriptionTitle() {<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                return getName();<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        }<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        <a name="line.123"></a>
+<span class="sourceLineNo">124</span>        protected void addBulletPoints(TooltipMakerAPI info, ListInfoMode mode) {<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                Color h = Misc.getHighlightColor();<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                Color g = Misc.getGrayColor();<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                float pad = 3f;<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                float opad = 10f;<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                <a name="line.129"></a>
+<span class="sourceLineNo">130</span>                float initPad = pad;<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                if (mode == ListInfoMode.IN_DESC) initPad = opad;<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                <a name="line.132"></a>
+<span class="sourceLineNo">133</span>                Color tc = getBulletColorForMode(mode);<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                <a name="line.134"></a>
+<span class="sourceLineNo">135</span>                bullet(info);<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                boolean isUpdate = getListInfoParam() != null;<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                <a name="line.137"></a>
+<span class="sourceLineNo">138</span>//              if (getListInfoParam() == UPDATE_PARAM_ACCEPTED) {<a name="line.138"></a>
+<span class="sourceLineNo">139</span>//                      return;<a name="line.139"></a>
+<span class="sourceLineNo">140</span>//              }<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                <a name="line.141"></a>
+<span class="sourceLineNo">142</span>                <a name="line.142"></a>
+<span class="sourceLineNo">143</span>        <a name="line.143"></a>
+<span class="sourceLineNo">144</span>                unindent(info);<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        }<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        <a name="line.146"></a>
+<span class="sourceLineNo">147</span>        <a name="line.147"></a>
+<span class="sourceLineNo">148</span>        public void createSmallDescription(TooltipMakerAPI info, float width, float height) {<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                Color h = Misc.getHighlightColor();<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                Color g = Misc.getGrayColor();<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                Color tc = Misc.getTextColor();<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                float pad = 3f;<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                float opad = 10f;<a name="line.153"></a>
+<span class="sourceLineNo">154</span><a name="line.154"></a>
+<span class="sourceLineNo">155</span>                info.addImage(getFaction().getLogo(), width, 128, opad);<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                <a name="line.156"></a>
+<span class="sourceLineNo">157</span>                if (isEnding() || isEnded()) {<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                        info.addPara("You are no longer abiding by your agreement with the Sindrian Diktat.", opad);<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                        return;<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                }<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                <a name="line.161"></a>
+<span class="sourceLineNo">162</span>                float feeFraction = Global.getSettings().getFloat("diktatFuelFeeFraction");<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                <a name="line.163"></a>
+<span class="sourceLineNo">164</span>                LabelAPI label = info.addPara("You've made an agreement with the Sindrian Diktat, paying a sizeable "<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                                + "fee, %s of your gross fuel exports, in exchange for them not bombarding "<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                                + "your fuel production facilities from orbit.", <a name="line.166"></a>
+<span class="sourceLineNo">167</span>                                opad, h, "" + (int) Math.round(feeFraction * 100f) + "%");<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                label.setHighlight("Sindrian Diktat", "" + (int) Math.round(feeFraction * 100f) + "%");<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                label.setHighlightColors(faction.getBaseUIColor(), h);<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                <a name="line.170"></a>
+<span class="sourceLineNo">171</span>                info.addPara("You can end this agreement, but there "<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                                + "would be no possibility of re-negotiating a similar one in the future.", opad);<a name="line.172"></a>
+<span class="sourceLineNo">173</span>        <a name="line.173"></a>
+<span class="sourceLineNo">174</span>                ButtonAPI button = info.addButton("End the agreement", BUTTON_END, <a name="line.174"></a>
+<span class="sourceLineNo">175</span>                                getFactionForUIColors().getBaseUIColor(), getFactionForUIColors().getDarkUIColor(),<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                                (int)(width), 20f, opad * 1f);<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                button.setShortcut(Keyboard.KEY_U, true);<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                <a name="line.178"></a>
+<span class="sourceLineNo">179</span>        }<a name="line.179"></a>
+<span class="sourceLineNo">180</span>        <a name="line.180"></a>
+<span class="sourceLineNo">181</span>        <a name="line.181"></a>
+<span class="sourceLineNo">182</span>        public String getIcon() {<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                return faction.getCrest();<a name="line.183"></a>
+<span class="sourceLineNo">184</span>        }<a name="line.184"></a>
+<span class="sourceLineNo">185</span>        <a name="line.185"></a>
+<span class="sourceLineNo">186</span>        public Set&lt;String&gt; getIntelTags(SectorMapAPI map) {<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                Set&lt;String&gt; tags = super.getIntelTags(map);<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                tags.add(Tags.INTEL_AGREEMENTS);<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                tags.add(faction.getId());<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                return tags;<a name="line.190"></a>
+<span class="sourceLineNo">191</span>        }<a name="line.191"></a>
+<span class="sourceLineNo">192</span>        <a name="line.192"></a>
+<span class="sourceLineNo">193</span>        @Override<a name="line.193"></a>
+<span class="sourceLineNo">194</span>        public String getImportantIcon() {<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                return Global.getSettings().getSpriteName("intel", "important_accepted_mission");<a name="line.195"></a>
+<span class="sourceLineNo">196</span>        }<a name="line.196"></a>
+<span class="sourceLineNo">197</span><a name="line.197"></a>
+<span class="sourceLineNo">198</span>        @Override<a name="line.198"></a>
+<span class="sourceLineNo">199</span>        public SectorEntityToken getMapLocation(SectorMapAPI map) {<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                return null;<a name="line.200"></a>
+<span class="sourceLineNo">201</span>        }<a name="line.201"></a>
+<span class="sourceLineNo">202</span><a name="line.202"></a>
+<span class="sourceLineNo">203</span>        <a name="line.203"></a>
+<span class="sourceLineNo">204</span>        public FactionAPI getFaction() {<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                return faction;<a name="line.205"></a>
+<span class="sourceLineNo">206</span>        }<a name="line.206"></a>
+<span class="sourceLineNo">207</span>        <a name="line.207"></a>
+<span class="sourceLineNo">208</span>        public void endAgreement(AgreementEndingType type, InteractionDialogAPI dialog) {<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                if (!isEnded() &amp;&amp; !isEnding()) {<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                        endType = type;<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                        setImportant(false);<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                        endImmediately();<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                        <a name="line.213"></a>
+<span class="sourceLineNo">214</span>                        if (dialog != null) {<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                                sendUpdate(new Object(), dialog.getTextPanel());<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                        }<a name="line.216"></a>
+<span class="sourceLineNo">217</span><a name="line.217"></a>
+<span class="sourceLineNo">218</span>                        if (type == AgreementEndingType.BROKEN) {<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                                SindrianDiktatHostileActivityFactor.setBrokeDeal(true);<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                                <a name="line.220"></a>
+<span class="sourceLineNo">221</span>                                //Misc.incrUntrustwortyCount();<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                                <a name="line.222"></a>
+<span class="sourceLineNo">223</span>                                TextPanelAPI text = dialog == null ? null : dialog.getTextPanel();<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                                Misc.adjustRep(Factions.DIKTAT, -REP_FOR_BREAKING_DEAL, text);<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                        }<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                }<a name="line.226"></a>
+<span class="sourceLineNo">227</span>        }<a name="line.227"></a>
+<span class="sourceLineNo">228</span>        <a name="line.228"></a>
+<span class="sourceLineNo">229</span>        <a name="line.229"></a>
+<span class="sourceLineNo">230</span>        @Override<a name="line.230"></a>
+<span class="sourceLineNo">231</span>        public void buttonPressConfirmed(Object buttonId, IntelUIAPI ui) {<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                if (buttonId == BUTTON_END) {<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                        endAgreement(AgreementEndingType.BROKEN, null);<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                }<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                super.buttonPressConfirmed(buttonId, ui);<a name="line.235"></a>
+<span class="sourceLineNo">236</span>        }<a name="line.236"></a>
+<span class="sourceLineNo">237</span><a name="line.237"></a>
+<span class="sourceLineNo">238</span><a name="line.238"></a>
+<span class="sourceLineNo">239</span>        @Override<a name="line.239"></a>
+<span class="sourceLineNo">240</span>        public void createConfirmationPrompt(Object buttonId, TooltipMakerAPI prompt) {<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                if (buttonId == BUTTON_END) {<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                        prompt.addPara("The terms of the agreement are so onerous that your reputation at large "<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                                        + "would not suffer for unilaterally breaking it, "<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                                        + "though your standing with the Sindrian Diktat specifically "<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                                        + "would of course be affected.", 0f,<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                                        faction.getBaseUIColor(), faction.getDisplayName());                            <a name="line.246"></a>
+<span class="sourceLineNo">247</span>                }<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                        <a name="line.248"></a>
+<span class="sourceLineNo">249</span>        }<a name="line.249"></a>
+<span class="sourceLineNo">250</span>        <a name="line.250"></a>
+<span class="sourceLineNo">251</span>        @Override<a name="line.251"></a>
+<span class="sourceLineNo">252</span>        public boolean doesButtonHaveConfirmDialog(Object buttonId) {<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                if (buttonId == BUTTON_END) {<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                        return true;<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                }<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                return super.doesButtonHaveConfirmDialog(buttonId);<a name="line.256"></a>
+<span class="sourceLineNo">257</span>        }<a name="line.257"></a>
+<span class="sourceLineNo">258</span>        <a name="line.258"></a>
+<span class="sourceLineNo">259</span>        public void reportEconomyMonthEnd() {<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                <a name="line.260"></a>
+<span class="sourceLineNo">261</span>        }<a name="line.261"></a>
+<span class="sourceLineNo">262</span><a name="line.262"></a>
+<span class="sourceLineNo">263</span>        public void reportEconomyTick(int iterIndex) {<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                int numIter = Global.getSettings().getInt("economyIterPerMonth");<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                if (iterIndex != numIter - 1) return;<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                <a name="line.266"></a>
+<span class="sourceLineNo">267</span>                float feeFraction = Global.getSettings().getFloat("diktatFuelFeeFraction");<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                <a name="line.268"></a>
+<span class="sourceLineNo">269</span>                MonthlyReport report = SharedData.getData().getCurrentReport();<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                FDNode marketsNode = report.getNode(MonthlyReport.OUTPOSTS);<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                if (marketsNode == null) return;<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                <a name="line.272"></a>
+<span class="sourceLineNo">273</span>                float exportIncome = computeFuelExportIncome(marketsNode);<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                int credits = (int) (exportIncome * feeFraction);<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                <a name="line.275"></a>
+<span class="sourceLineNo">276</span>                if (credits &lt;= 0) return;<a name="line.276"></a>
+<span class="sourceLineNo">277</span><a name="line.277"></a>
+<span class="sourceLineNo">278</span>                FDNode node = getMonthlyReportNode();<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                node.upkeep += credits;<a name="line.279"></a>
+<span class="sourceLineNo">280</span>        }<a name="line.280"></a>
+<span class="sourceLineNo">281</span>        <a name="line.281"></a>
+<span class="sourceLineNo">282</span>        public float computeFuelExportIncome(FDNode curr) {<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                float total = 0f;<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                if (curr.custom instanceof CommodityOnMarketAPI) {<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                        CommodityOnMarketAPI com = (CommodityOnMarketAPI) curr.custom;<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                        if (com.isFuel()) {<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                                total += curr.income;<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                        }<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                }<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                for (FDNode child : curr.getChildren().values()) {<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                        total += computeFuelExportIncome(child);<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                }<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                return total;<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                <a name="line.294"></a>
+<span class="sourceLineNo">295</span>        }<a name="line.295"></a>
+<span class="sourceLineNo">296</span>        <a name="line.296"></a>
+<span class="sourceLineNo">297</span>        public FDNode getMonthlyReportNode() {<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                MonthlyReport report = SharedData.getData().getCurrentReport();<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                FDNode marketsNode = report.getNode(MonthlyReport.OUTPOSTS);<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                if (marketsNode.name == null) {<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                        marketsNode.name = "Colonies";<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                        marketsNode.custom = MonthlyReport.OUTPOSTS;<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                        marketsNode.tooltipCreator = report.getMonthlyReportTooltip();<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                }<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                <a name="line.305"></a>
+<span class="sourceLineNo">306</span>                FDNode paymentNode = report.getNode(marketsNode, "diktat_fuel_fees"); <a name="line.306"></a>
+<span class="sourceLineNo">307</span>                paymentNode.name = "Sindrian Diktat fuel accord fees";<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                paymentNode.icon = faction.getCrest();<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                <a name="line.309"></a>
+<span class="sourceLineNo">310</span>                if (paymentNode.tooltipCreator == null) {<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                        paymentNode.tooltipCreator = new TooltipCreator() {<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                                public boolean isTooltipExpandable(Object tooltipParam) {<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                                        return false;<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                                }<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                                public float getTooltipWidth(Object tooltipParam) {<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                                        return 450;<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                                }<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                                public void createTooltip(TooltipMakerAPI tooltip, boolean expanded, Object tooltipParam) {<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                                        tooltip.addPara("Fees paid to the Sindrian Diktat in exchange for their refraining "<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                                                        + "from interfering in your fuel production business. From orbit.", 0f);<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                                }<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                        };<a name="line.322"></a>
+<span class="sourceLineNo">323</span>                }<a name="line.323"></a>
+<span class="sourceLineNo">324</span>                <a name="line.324"></a>
+<span class="sourceLineNo">325</span>                return paymentNode;<a name="line.325"></a>
+<span class="sourceLineNo">326</span>        }<a name="line.326"></a>
+<span class="sourceLineNo">327</span>        <a name="line.327"></a>
+<span class="sourceLineNo">328</span>        <a name="line.328"></a>
+<span class="sourceLineNo">329</span>}<a name="line.329"></a>
+<span class="sourceLineNo">330</span><a name="line.330"></a>
+<span class="sourceLineNo">331</span><a name="line.331"></a>
+<span class="sourceLineNo">332</span><a name="line.332"></a>
+<span class="sourceLineNo">333</span><a name="line.333"></a>
+<span class="sourceLineNo">334</span><a name="line.334"></a>
+<span class="sourceLineNo">335</span><a name="line.335"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

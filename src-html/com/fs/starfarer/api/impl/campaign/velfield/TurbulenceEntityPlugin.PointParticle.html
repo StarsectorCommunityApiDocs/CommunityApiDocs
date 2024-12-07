@@ -1,0 +1,734 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.velfield;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import java.util.ArrayList;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import java.util.Iterator;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import java.util.List;<a name="line.6"></a>
+<span class="sourceLineNo">007</span><a name="line.7"></a>
+<span class="sourceLineNo">008</span>import org.lwjgl.input.Keyboard;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import org.lwjgl.input.Mouse;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import org.lwjgl.opengl.GL11;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import org.lwjgl.opengl.GL14;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import org.lwjgl.util.vector.Vector2f;<a name="line.12"></a>
+<span class="sourceLineNo">013</span><a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.Global;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.campaign.CampaignEngineLayers;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.campaign.SectorEntityToken;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.combat.ViewportAPI;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import com.fs.starfarer.api.graphics.SpriteAPI;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import com.fs.starfarer.api.impl.campaign.BaseCustomEntityPlugin;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import com.fs.starfarer.api.impl.campaign.velfield.TurbulenceCalc2.TurbulenceParams;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import com.fs.starfarer.api.util.FaderUtil;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import com.fs.starfarer.api.util.Misc;<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span>public class TurbulenceEntityPlugin extends BaseCustomEntityPlugin {<a name="line.24"></a>
+<span class="sourceLineNo">025</span><a name="line.25"></a>
+<span class="sourceLineNo">026</span>        public static class PointParticle {<a name="line.26"></a>
+<span class="sourceLineNo">027</span>                float size = 6f;<a name="line.27"></a>
+<span class="sourceLineNo">028</span>                float mass = 0.0001f;<a name="line.28"></a>
+<span class="sourceLineNo">029</span>                Vector2f loc = new Vector2f();<a name="line.29"></a>
+<span class="sourceLineNo">030</span>                Vector2f vel = new Vector2f();<a name="line.30"></a>
+<span class="sourceLineNo">031</span>                Color color;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>                float remaining;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>                float elapsed;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>        }<a name="line.34"></a>
+<span class="sourceLineNo">035</span>        <a name="line.35"></a>
+<span class="sourceLineNo">036</span>        public static class ParticleData {<a name="line.36"></a>
+<span class="sourceLineNo">037</span>                public SpriteAPI sprite;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>                public Vector2f offset = new Vector2f();<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                public Vector2f vel = new Vector2f();<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                public float scale = 1f;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                public float scaleIncreaseRate = 1f;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                public float turnDir = 1f;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                public float angle = 1f;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>                <a name="line.44"></a>
+<span class="sourceLineNo">045</span>                public float maxDur;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                public FaderUtil fader;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>                public float elapsed = 0f;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>                public float baseSize;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>                public float mass;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                protected Color color;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>                <a name="line.51"></a>
+<span class="sourceLineNo">052</span>                public ParticleData(float baseSize, float mass, float durIn, float durOut, float endSizeMult, float maxAngVel, Color color, String spriteSheetKey) {<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                        this.color = color;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                        if (spriteSheetKey == null) {<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                                spriteSheetKey = "nebula_particles";<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                        }<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                        sprite = Global.getSettings().getSprite("misc", spriteSheetKey);<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                        //sprite = Global.getSettings().getSprite("graphics/fx/hit_glow.png");<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                        //sprite = Global.getSettings().getSprite("graphics/fx/particlealpha32sq.png");<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                        //sprite = Global.getSettings().getSprite("graphics/fx/particlealpha64linear.png");<a name="line.60"></a>
+<span class="sourceLineNo">061</span>//                      queueResource(Type.TEXTURE, "graphics/fx/particlealpha32sq.png", 1);<a name="line.61"></a>
+<span class="sourceLineNo">062</span>//                      queueResource(Type.TEXTURE, "graphics/fx/particleline32ln.png", 1);<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                        //sprite = Global.getSettings().getSprite("misc", "dust_particles");<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                        float i = Misc.random.nextInt(4);<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                        float j = Misc.random.nextInt(4);<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                        sprite.setTexWidth(0.25f);<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                        sprite.setTexHeight(0.25f);<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                        sprite.setTexX(i * 0.25f);<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                        sprite.setTexY(j * 0.25f);<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                        sprite.setAdditiveBlend();<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                        <a name="line.71"></a>
+<span class="sourceLineNo">072</span>                        this.mass = mass;<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                        angle = (float) Math.random() * 360f;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                        <a name="line.74"></a>
+<span class="sourceLineNo">075</span>                        this.maxDur = durIn + durOut;<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                        scaleIncreaseRate = endSizeMult / maxDur;<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                        if (endSizeMult &lt; 1f) {<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                                scaleIncreaseRate = -1f * endSizeMult;<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                        }<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                        scale = 1f;<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                        <a name="line.81"></a>
+<span class="sourceLineNo">082</span>                        this.baseSize = baseSize;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                        turnDir = Math.signum((float) Math.random() - 0.5f) * maxAngVel * (float) Math.random();<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                        <a name="line.84"></a>
+<span class="sourceLineNo">085</span>                        fader = new FaderUtil(0f, durIn, durOut);<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                        fader.setBounceDown(true);<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                        fader.forceOut();<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                        fader.fadeIn();<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                }<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                <a name="line.90"></a>
+<span class="sourceLineNo">091</span>                public void advance(float amount, VelocityField field, float fieldX, float fieldY, float fieldFacing) {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                        if (field.isInsideField(offset.x, offset.y, new Vector2f(fieldX, fieldY), fieldFacing)) {<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                                Vector2f fVel = field.getVelocity(offset.x, offset.y, new Vector2f(fieldX, fieldY), fieldFacing);<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                                float accelAmount = 1f / mass;<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                                if (accelAmount &gt; 1f) accelAmount = 1f;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                                accelAmount *= 60f;<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                                //p.vel.set(vel);<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                                Vector2f diff = Vector2f.sub(fVel, vel, new Vector2f());<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                                vel.x += diff.x * accelAmount * amount;<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                                vel.y += diff.y * accelAmount * amount;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                        } else {<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                                fader.fadeOut();<a name="line.102"></a>
+<span class="sourceLineNo">103</span>//                              if (p.elapsed &gt; 0.5f) {<a name="line.103"></a>
+<span class="sourceLineNo">104</span>//                                      p.remaining = Math.min(p.remaining, 0.5f);<a name="line.104"></a>
+<span class="sourceLineNo">105</span>//                              }<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                        }<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                        <a name="line.107"></a>
+<span class="sourceLineNo">108</span>                        scale += scaleIncreaseRate * amount;<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                        <a name="line.109"></a>
+<span class="sourceLineNo">110</span>                        offset.x += vel.x * amount;<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                        offset.y += vel.y * amount;<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                                <a name="line.112"></a>
+<span class="sourceLineNo">113</span>                        angle += turnDir * amount;<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                        <a name="line.114"></a>
+<span class="sourceLineNo">115</span>                        elapsed += amount;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>//                      if (maxDur - elapsed &lt;= fader.getDurationOut() + 0.1f) {<a name="line.116"></a>
+<span class="sourceLineNo">117</span>//                              fader.fadeOut();<a name="line.117"></a>
+<span class="sourceLineNo">118</span>//                      }<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                        fader.advance(amount);<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                }<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        }<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        <a name="line.122"></a>
+<span class="sourceLineNo">123</span>        protected List&lt;ParticleData&gt; particles = new ArrayList&lt;ParticleData&gt;();<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        protected List&lt;ParticleData&gt; darkParticles = new ArrayList&lt;ParticleData&gt;();<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        <a name="line.125"></a>
+<span class="sourceLineNo">126</span>        protected VelocityField field;<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        protected List&lt;PointParticle&gt; testParticles = new ArrayList&lt;PointParticle&gt;();<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        <a name="line.128"></a>
+<span class="sourceLineNo">129</span>        protected int frame = 0;<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        protected float distanceTravelled;<a name="line.130"></a>
+<span class="sourceLineNo">131</span> <a name="line.131"></a>
+<span class="sourceLineNo">132</span>        public VelocityField getField() {<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                return field;<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        }<a name="line.134"></a>
+<span class="sourceLineNo">135</span><a name="line.135"></a>
+<span class="sourceLineNo">136</span>        public void setField(VelocityField field) {<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                this.field = field;<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        }<a name="line.138"></a>
+<span class="sourceLineNo">139</span><a name="line.139"></a>
+<span class="sourceLineNo">140</span>        public void init(SectorEntityToken entity, Object pluginParams) {<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                super.init(entity, pluginParams);<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                readResolve();<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        }<a name="line.143"></a>
+<span class="sourceLineNo">144</span>        <a name="line.144"></a>
+<span class="sourceLineNo">145</span>        Object readResolve() {<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                return this;<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        }<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        <a name="line.148"></a>
+<span class="sourceLineNo">149</span>        public float getRenderRange() {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                float cells = Math.max(field.field.length, field.field[0].length);<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                return cells * 1.5f * field.cellSize;<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        }<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        <a name="line.153"></a>
+<span class="sourceLineNo">154</span>        public void advance(float amount) {<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                //float days = Global.getSector().getClock().convertToDays(amount);<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                <a name="line.156"></a>
+<span class="sourceLineNo">157</span>                //field.getField()[10][10].set(0, 1000f);<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                //if (field.getField()[10][0].y == 0) {<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                if (Keyboard.isKeyDown(Keyboard.KEY_P) || true) {<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                        //field.getField()[10][0].set(0, 21f * 21f * 100f);<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                        //field.getField()[10][10].set(0, 100f);<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                        <a name="line.162"></a>
+<span class="sourceLineNo">163</span>                        for (int i = 0; i &lt; field.getField()[0].length; i++) {<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                                //field.getField()[5][i].set((float) Math.random() * 20f - 10f, 100f + i * 10);<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                                //field.getField()[5][i].set((float) Math.random() * 20f - 10f, 1000f);<a name="line.165"></a>
+<span class="sourceLineNo">166</span>//                              field.getField()[4][i].set(500f, 500f);<a name="line.166"></a>
+<span class="sourceLineNo">167</span>//                              field.getField()[6][i].set(-500f, 500f);<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                                //field.getField()[5][i].set(0, 1000f);<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                                //field.getField()[10][i].set(0, 1000f);<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                                <a name="line.170"></a>
+<span class="sourceLineNo">171</span>//                              if (i % 4 == 0) {<a name="line.171"></a>
+<span class="sourceLineNo">172</span>//                                      field.getField()[4][i].set(200f, 500f + (20 - i) * 10f);<a name="line.172"></a>
+<span class="sourceLineNo">173</span>//                              } else if (i % 4 == 2){<a name="line.173"></a>
+<span class="sourceLineNo">174</span>//                                      field.getField()[6][i].set(-200f, 500f + (20 - i) * 10f);<a name="line.174"></a>
+<span class="sourceLineNo">175</span>//                              } else {<a name="line.175"></a>
+<span class="sourceLineNo">176</span>//                                      field.getField()[5][i].set(0, 500f + (20 - i) * 10f);<a name="line.176"></a>
+<span class="sourceLineNo">177</span>//                              }<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                                //field.getField()[5][i].set(0, 500f + (20 - i) * 10f);<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                                int x = field.getField().length / 2;<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                                field.getField()[x][i].set(0, 500f);<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                                <a name="line.181"></a>
+<span class="sourceLineNo">182</span>                                <a name="line.182"></a>
+<span class="sourceLineNo">183</span>//                              field.getField()[4][i].set(500f, 500f);<a name="line.183"></a>
+<span class="sourceLineNo">184</span>//                              field.getField()[6][i].set(-500f, 500f);<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                                //field.getField()[5][i].y += 2000f * amount;<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                                <a name="line.186"></a>
+<span class="sourceLineNo">187</span>//                              field.getField()[1][i].set(-200f, -200f);<a name="line.187"></a>
+<span class="sourceLineNo">188</span>//                              field.getField()[9][i].set(200f, -200f);<a name="line.188"></a>
+<span class="sourceLineNo">189</span>//                              field.getField()[3][i].set((float) Math.random() * 20f - 10f - 0, 100f + i * 20);<a name="line.189"></a>
+<span class="sourceLineNo">190</span>//                              field.getField()[7][i].set((float) Math.random() * 20f - 10f + 0, 100f + i * 20);<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                        }<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                        <a name="line.192"></a>
+<span class="sourceLineNo">193</span>//                      for (int i = 1; i &lt; 20; i++) {<a name="line.193"></a>
+<span class="sourceLineNo">194</span>//                              if (i % 2 == 0) {<a name="line.194"></a>
+<span class="sourceLineNo">195</span>//                                      field.getField()[0][i].set(200f, 0);<a name="line.195"></a>
+<span class="sourceLineNo">196</span>//                              } else {<a name="line.196"></a>
+<span class="sourceLineNo">197</span>//                                      field.getField()[10][i].set(-200f, 0);<a name="line.197"></a>
+<span class="sourceLineNo">198</span>//                              }<a name="line.198"></a>
+<span class="sourceLineNo">199</span>//                      }<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                        <a name="line.200"></a>
+<span class="sourceLineNo">201</span>//                      for (int i = 15; i &lt;= 20; i++) {<a name="line.201"></a>
+<span class="sourceLineNo">202</span>//                              field.getField()[8][i].set((float) Math.random() * 20f - 10f - 20, -100f);<a name="line.202"></a>
+<span class="sourceLineNo">203</span>//                              field.getField()[12][i].set((float) Math.random() * 20f - 10f + 20, -100f);<a name="line.203"></a>
+<span class="sourceLineNo">204</span>//                      }<a name="line.204"></a>
+<span class="sourceLineNo">205</span>//                      field.getField()[10][1].set(0, 1000f);<a name="line.205"></a>
+<span class="sourceLineNo">206</span>//                      field.getField()[10][2].set(0, 1000f);<a name="line.206"></a>
+<span class="sourceLineNo">207</span>//                      field.getField()[9][0].set(0, 1000f);<a name="line.207"></a>
+<span class="sourceLineNo">208</span>//                      field.getField()[11][0].set(0, 1000f);<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                }<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                <a name="line.210"></a>
+<span class="sourceLineNo">211</span>                frame++;<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                <a name="line.212"></a>
+<span class="sourceLineNo">213</span>                TurbulenceParams params = new TurbulenceParams();<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                params.field = field;<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                params.effectWidth = 210f;<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                params.effectLength = 410f;<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                params.maxDispersionAngle = 120f;<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                params.energyTransferMult = 5f;<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                params.dampenFactor = 0.2f;<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                params.maxVelocity = 1000f;<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                <a name="line.221"></a>
+<span class="sourceLineNo">222</span>//              params.maxDispersionAngle = 180f;<a name="line.222"></a>
+<span class="sourceLineNo">223</span>//              params.maxDispersionAngle = 160f;<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                params.maxDispersionAngle = 0f;<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                params.maxVelocity = 1000f;<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                params.energyTransferMult = 6f;<a name="line.226"></a>
+<span class="sourceLineNo">227</span>//              params.effectWidth = 410f;<a name="line.227"></a>
+<span class="sourceLineNo">228</span>//              params.effectLength = 810f;<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                <a name="line.229"></a>
+<span class="sourceLineNo">230</span>                params.propagationAmount = 6f * amount;<a name="line.230"></a>
+<span class="sourceLineNo">231</span>//              if (frame % 2 == 0) {<a name="line.231"></a>
+<span class="sourceLineNo">232</span>//                      params.propagationAmount = 12f * amount;<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                        TurbulenceCalc2.advance(params);<a name="line.233"></a>
+<span class="sourceLineNo">234</span>//              }<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                        <a name="line.235"></a>
+<span class="sourceLineNo">236</span>//              for (int i = 0; i &lt; 10; i++) {<a name="line.236"></a>
+<span class="sourceLineNo">237</span>//                      TurbulenceCalc2.advance(field, 210f, 410f, 6f * amount);<a name="line.237"></a>
+<span class="sourceLineNo">238</span>//              }<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                //TurbulenceCalc2.advance(field, 410f, 620f, 1f);<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                <a name="line.240"></a>
+<span class="sourceLineNo">241</span>                <a name="line.241"></a>
+<span class="sourceLineNo">242</span>                float facing = entity.getFacing();<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                float x = entity.getLocation().x;<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                float y = entity.getLocation().y;<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                float w = field.getCellSize() * (field.getField().length - 1);<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                float h = field.getCellSize() * (field.getField()[0].length - 1);<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                <a name="line.247"></a>
+<span class="sourceLineNo">248</span>                //while (testParticles.size() &lt; 5000) {<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                while (testParticles.size() &lt; 500) {<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                        Vector2f loc = new Vector2f();<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                        //loc.x = w * (float) Math.random() + x;<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                        loc.x = w * 0.4f + w * 0.2f * (float) Math.random() ;<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                        loc.y = h * (1f - (float) Math.random()) ;<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                        loc = Misc.rotateAroundOrigin(loc, entity.getFacing());<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                        loc.x += x;<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                        loc.y += y;<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                        //float size = 3f + 2f * (float) Math.random();<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                        float size = 2f;<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                        float mass = 0.0001f;<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                        //mass = (float) Math.random() * 10f;<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                        mass = (float) Math.random() * 10f;<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                        //mass = 100f;<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                        float dur = 0f + 4f * Misc.random.nextFloat();<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                        addTestParticle(loc, getRandomColor(), size, mass, dur);<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                        <a name="line.265"></a>
+<span class="sourceLineNo">266</span>                }<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                <a name="line.267"></a>
+<span class="sourceLineNo">268</span>//              while (particles.size() &lt; 1000) {<a name="line.268"></a>
+<span class="sourceLineNo">269</span>//                      Vector2f loc = new Vector2f();<a name="line.269"></a>
+<span class="sourceLineNo">270</span>//                      //loc.x = w * (float) Math.random() + x;<a name="line.270"></a>
+<span class="sourceLineNo">271</span>//                      loc.x = w * 0.49f + w * 0.02f * (float) Math.random() + x;<a name="line.271"></a>
+<span class="sourceLineNo">272</span>//                      loc.x = w * 0.4f + w * 0.2f * (float) Math.random() + x;<a name="line.272"></a>
+<span class="sourceLineNo">273</span>//                      loc.x = w * 0.2f + w * 0.6f * (float) Math.random() + x;<a name="line.273"></a>
+<span class="sourceLineNo">274</span>//                      //loc.y = h * (1f - (float) Math.random() * (float) Math.random()) + y;<a name="line.274"></a>
+<span class="sourceLineNo">275</span>//                      loc.y = h * (1f - (float) Math.random()) + y;<a name="line.275"></a>
+<span class="sourceLineNo">276</span>//                      float size = 250f + 20f * (float) Math.random();<a name="line.276"></a>
+<span class="sourceLineNo">277</span>//                      size = 6f + 2f * (float) Math.random();<a name="line.277"></a>
+<span class="sourceLineNo">278</span>//                      size = 12f;<a name="line.278"></a>
+<span class="sourceLineNo">279</span>//                      size = 100f;<a name="line.279"></a>
+<span class="sourceLineNo">280</span>//                      float mass = 0.0001f;<a name="line.280"></a>
+<span class="sourceLineNo">281</span>//                      mass = (float) Math.random() * 10f;<a name="line.281"></a>
+<span class="sourceLineNo">282</span>//                      //mass = 100f;<a name="line.282"></a>
+<span class="sourceLineNo">283</span>//                      float dur = 0.5f + 3.5f * Misc.random.nextFloat();<a name="line.283"></a>
+<span class="sourceLineNo">284</span>//                      Color c = getRandomColor();<a name="line.284"></a>
+<span class="sourceLineNo">285</span>//                      //c = Misc.scaleAlpha(c, 0.25f);<a name="line.285"></a>
+<span class="sourceLineNo">286</span>//                      addTexturedParticle(loc, c, mass, size, 10f, 0.5f, dur - 0.5f);<a name="line.286"></a>
+<span class="sourceLineNo">287</span>//              }<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                <a name="line.288"></a>
+<span class="sourceLineNo">289</span>                Iterator&lt;PointParticle&gt; iter = testParticles.iterator();<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                while (iter.hasNext()) {<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                        PointParticle p = iter.next();<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                        p.remaining -= amount;<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                        p.elapsed += amount;<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                        if (p.remaining &lt;= 0) {<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                                iter.remove();<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                                continue;<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                        }<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                        <a name="line.298"></a>
+<span class="sourceLineNo">299</span>                        if (field.isInsideField(p.loc.x, p.loc.y, new Vector2f(x, y), facing)) {<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                                Vector2f vel = field.getVelocity(p.loc.x, p.loc.y, new Vector2f(x, y), facing);<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                                float accelAmount = 1f / p.mass;<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                                if (accelAmount &gt; 1f) accelAmount = 1f;<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                                accelAmount *= 60f;<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                                //p.vel.set(vel);<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                                Vector2f diff = Vector2f.sub(vel, p.vel, new Vector2f());<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                                p.vel.x += diff.x * accelAmount * amount;<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                                p.vel.y += diff.y * accelAmount * amount;<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                        } else {<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                                if (p.elapsed &gt; 0.5f) {<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                                        p.remaining = Math.min(p.remaining, 0.5f);<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                                }<a name="line.311"></a>
+<span class="sourceLineNo">312</span>//                              iter.remove();<a name="line.312"></a>
+<span class="sourceLineNo">313</span>//                              continue;<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                        }<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                        <a name="line.315"></a>
+<span class="sourceLineNo">316</span>                        p.loc.x += p.vel.x * amount;<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                        p.loc.y += p.vel.y * amount;<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                }<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                <a name="line.319"></a>
+<span class="sourceLineNo">320</span><a name="line.320"></a>
+<span class="sourceLineNo">321</span>                List&lt;ParticleData&gt; remove = new ArrayList&lt;ParticleData&gt;();<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                for (ParticleData p : particles) {<a name="line.322"></a>
+<span class="sourceLineNo">323</span>                        p.advance(amount, field, x, y, facing);<a name="line.323"></a>
+<span class="sourceLineNo">324</span>                        if (p.elapsed &gt;= p.maxDur) {<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                                remove.add(p);<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                        }<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                }<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                particles.removeAll(remove);<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                <a name="line.329"></a>
+<span class="sourceLineNo">330</span>                remove = new ArrayList&lt;ParticleData&gt;();<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                for (ParticleData p : darkParticles) {<a name="line.331"></a>
+<span class="sourceLineNo">332</span>                        p.advance(amount, field, x, y, facing);<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                        if (p.elapsed &gt;= p.maxDur) {<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                                remove.add(p);<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                        }<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                }<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                darkParticles.removeAll(remove);<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                <a name="line.338"></a>
+<span class="sourceLineNo">339</span>                <a name="line.339"></a>
+<span class="sourceLineNo">340</span>                Vector2f vel = new Vector2f(0f, Misc.getSpeedForBurnLevel(30f));<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                Vector2f dv = new Vector2f(vel.x * amount, vel.y * amount);<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                <a name="line.342"></a>
+<span class="sourceLineNo">343</span>                distanceTravelled += dv.length();<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                <a name="line.344"></a>
+<span class="sourceLineNo">345</span>//              while (distanceTravelled &gt; field.getCellSize()) {<a name="line.345"></a>
+<span class="sourceLineNo">346</span>//                      dv = Misc.normalise(dv);<a name="line.346"></a>
+<span class="sourceLineNo">347</span>//                      dv.scale(distanceTravelled);<a name="line.347"></a>
+<span class="sourceLineNo">348</span>////                    entity.getLocation().x += dv.x;<a name="line.348"></a>
+<span class="sourceLineNo">349</span>////                    entity.getLocation().y += dv.y;<a name="line.349"></a>
+<span class="sourceLineNo">350</span>//                      field.shiftDown();<a name="line.350"></a>
+<span class="sourceLineNo">351</span>//                      <a name="line.351"></a>
+<span class="sourceLineNo">352</span>//                      distanceTravelled -= field.getCellSize();<a name="line.352"></a>
+<span class="sourceLineNo">353</span>//              }<a name="line.353"></a>
+<span class="sourceLineNo">354</span>        }<a name="line.354"></a>
+<span class="sourceLineNo">355</span><a name="line.355"></a>
+<span class="sourceLineNo">356</span>        public void render(CampaignEngineLayers layer, ViewportAPI viewport) {<a name="line.356"></a>
+<span class="sourceLineNo">357</span>        <a name="line.357"></a>
+<span class="sourceLineNo">358</span>                float mx = Mouse.getX();<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                float my = Mouse.getY();<a name="line.359"></a>
+<span class="sourceLineNo">360</span>                <a name="line.360"></a>
+<span class="sourceLineNo">361</span>                float wmx = Global.getSector().getViewport().convertScreenXToWorldX(mx);<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                float wmy = Global.getSector().getViewport().convertScreenYToWorldY(my);<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                <a name="line.363"></a>
+<span class="sourceLineNo">364</span>                entity.setFacing(0f);<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                <a name="line.365"></a>
+<span class="sourceLineNo">366</span>                float facing = entity.getFacing();<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                float x = entity.getLocation().x;<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                float y = entity.getLocation().y;<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                <a name="line.369"></a>
+<span class="sourceLineNo">370</span>                GL11.glDisable(GL11.GL_TEXTURE_2D);<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                GL11.glEnable(GL11.GL_BLEND);<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                <a name="line.373"></a>
+<span class="sourceLineNo">374</span>                if (false || Keyboard.isKeyDown(Keyboard.KEY_O)) {<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                        GL11.glPushMatrix();<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                        GL11.glTranslatef(x, y, 0);<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                        GL11.glRotatef(facing, 0, 0, 1);<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                        <a name="line.378"></a>
+<span class="sourceLineNo">379</span>                        GL11.glPointSize(20f);<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                        GL11.glEnable(GL11.GL_POINT_SMOOTH);<a name="line.380"></a>
+<span class="sourceLineNo">381</span>                        GL11.glBegin(GL11.GL_POINTS);<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                        GL11.glColor4f(1f,0,0,0.75f);<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                        for (int i = 0; i &lt; field.field.length; i++) {<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                                for (int j = 0; j &lt; field.field[0].length; j++) {<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                                        float cx = i * field.cellSize;<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                                        float cy = j * field.cellSize;<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                                        GL11.glVertex2f(cx, cy);<a name="line.387"></a>
+<span class="sourceLineNo">388</span>                                }<a name="line.388"></a>
+<span class="sourceLineNo">389</span>                        }<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                        GL11.glEnd();<a name="line.390"></a>
+<span class="sourceLineNo">391</span>                        <a name="line.391"></a>
+<span class="sourceLineNo">392</span>                        GL11.glLineWidth(1);<a name="line.392"></a>
+<span class="sourceLineNo">393</span>                        GL11.glEnable(GL11.GL_LINE_SMOOTH);<a name="line.393"></a>
+<span class="sourceLineNo">394</span>                        GL11.glDisable(GL11.GL_BLEND);<a name="line.394"></a>
+<span class="sourceLineNo">395</span>                        GL11.glBegin(GL11.GL_LINES);<a name="line.395"></a>
+<span class="sourceLineNo">396</span>                        <a name="line.396"></a>
+<span class="sourceLineNo">397</span>                        GL11.glColor4f(1f,1f,0,1f);<a name="line.397"></a>
+<span class="sourceLineNo">398</span>                        float scale = 1f;<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                        for (int i = 0; i &lt; field.field.length; i++) {<a name="line.399"></a>
+<span class="sourceLineNo">400</span>                                for (int j = 0; j &lt; field.field[0].length; j++) {<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                                        Vector2f vel = field.field[i][j];<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                                        <a name="line.402"></a>
+<span class="sourceLineNo">403</span>        //                              float cx = x + i * field.cellSize;<a name="line.403"></a>
+<span class="sourceLineNo">404</span>        //                              float cy = y + j * field.cellSize;<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                                        float cx = i * field.cellSize;<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                                        float cy = j * field.cellSize;<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                                        <a name="line.407"></a>
+<span class="sourceLineNo">408</span>                                        GL11.glVertex2f(cx, cy);<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                                        GL11.glVertex2f(cx + vel.x * scale, cy + vel.y * scale);<a name="line.409"></a>
+<span class="sourceLineNo">410</span>                                }<a name="line.410"></a>
+<span class="sourceLineNo">411</span>                        }<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                        <a name="line.412"></a>
+<span class="sourceLineNo">413</span>                        GL11.glEnd();<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                        <a name="line.414"></a>
+<span class="sourceLineNo">415</span>                        <a name="line.415"></a>
+<span class="sourceLineNo">416</span>                        GL11.glPopMatrix();<a name="line.416"></a>
+<span class="sourceLineNo">417</span>        <a name="line.417"></a>
+<span class="sourceLineNo">418</span>                        <a name="line.418"></a>
+<span class="sourceLineNo">419</span>        <a name="line.419"></a>
+<span class="sourceLineNo">420</span>                        GL11.glPointSize(6f);<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                        GL11.glEnable(GL11.GL_POINT_SMOOTH);<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                        GL11.glBegin(GL11.GL_POINTS);<a name="line.422"></a>
+<span class="sourceLineNo">423</span>                        GL11.glColor4f(1,1,0,1);<a name="line.423"></a>
+<span class="sourceLineNo">424</span>                        GL11.glVertex2f(wmx, wmy);<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                        GL11.glEnd();<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                        GL11.glLineWidth(1);<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                        GL11.glEnable(GL11.GL_LINE_SMOOTH);<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                        GL11.glBegin(GL11.GL_LINES);<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                        <a name="line.429"></a>
+<span class="sourceLineNo">430</span>                        GL11.glColor4f(1,1,0,1);<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                        Vector2f vel = field.getVelocity(wmx, wmy, new Vector2f(x, y), facing);<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                        GL11.glVertex2f(wmx, wmy);<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                        GL11.glVertex2f(wmx + vel.x, wmy + vel.y);<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                        <a name="line.434"></a>
+<span class="sourceLineNo">435</span>                        GL11.glEnd();<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                }<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                <a name="line.437"></a>
+<span class="sourceLineNo">438</span>                <a name="line.438"></a>
+<span class="sourceLineNo">439</span>                <a name="line.439"></a>
+<span class="sourceLineNo">440</span>                GL11.glEnable(GL11.GL_POINT_SMOOTH);<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                GL11.glEnable(GL11.GL_BLEND);<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                float zoom = Global.getSector().getViewport().getViewMult(); <a name="line.443"></a>
+<span class="sourceLineNo">444</span>                //System.out.println(zoom);<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                GL11.glPointSize(2f / zoom);<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                GL11.glBegin(GL11.GL_POINTS);<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                for (PointParticle p : testParticles) {<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                        if (true) break;<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                        if (!viewport.isNearViewport(p.loc, 5)) continue;<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                        float a = 1f;<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                        if (p.remaining &lt;= 0.5f) {<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                                a = p.remaining / 0.5f;<a name="line.452"></a>
+<span class="sourceLineNo">453</span>                        } else if (p.elapsed &lt; 0.5f) {<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                                a = p.elapsed / 0.5f;<a name="line.454"></a>
+<span class="sourceLineNo">455</span>                        }<a name="line.455"></a>
+<span class="sourceLineNo">456</span>                        //a *= 0.5f;<a name="line.456"></a>
+<span class="sourceLineNo">457</span>                        Misc.setColor(p.color, a);<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                        GL11.glVertex2f(p.loc.x, p.loc.y);<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                        <a name="line.459"></a>
+<span class="sourceLineNo">460</span>                        float zf = 1f;<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                        if (zoom &lt; 1.75f &amp;&amp; false) {<a name="line.461"></a>
+<span class="sourceLineNo">462</span>//                              float zf = (1.75f - zoom) / 0.25f;<a name="line.462"></a>
+<span class="sourceLineNo">463</span>//                              if (zf &lt; 0) zf = 0;<a name="line.463"></a>
+<span class="sourceLineNo">464</span>//                              if (zf &gt; 1) zf = 1;<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                                Vector2f dir = Misc.normalise(new Vector2f(p.vel));<a name="line.465"></a>
+<span class="sourceLineNo">466</span>                                float spread = 0.5f;<a name="line.466"></a>
+<span class="sourceLineNo">467</span>                                //spread = 1f;<a name="line.467"></a>
+<span class="sourceLineNo">468</span>                                a *= 0.65f;<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                                Misc.setColor(p.color, a * zf);<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                                GL11.glVertex2f(p.loc.x + dir.x * spread, p.loc.y + dir.y * spread);<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                                if (zoom &lt; 1.5f) {<a name="line.471"></a>
+<span class="sourceLineNo">472</span>//                                      zf = (1.5f - zoom) / 0.25f;<a name="line.472"></a>
+<span class="sourceLineNo">473</span>//                                      if (zf &lt; 0) zf = 0;<a name="line.473"></a>
+<span class="sourceLineNo">474</span>//                                      if (zf &gt; 1) zf = 1;<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                                        Misc.setColor(p.color, a * zf);<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                                        GL11.glVertex2f(p.loc.x - dir.x * spread, p.loc.y - dir.y * spread);<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                                }<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                                <a name="line.478"></a>
+<span class="sourceLineNo">479</span>                                if (zoom &lt; 1.25f) {<a name="line.479"></a>
+<span class="sourceLineNo">480</span>                                        spread *= 2f;<a name="line.480"></a>
+<span class="sourceLineNo">481</span>                                        a *= 0.65f;<a name="line.481"></a>
+<span class="sourceLineNo">482</span>//                                      zf = (1.25f - zoom) / 0.25f;<a name="line.482"></a>
+<span class="sourceLineNo">483</span>//                                      if (zf &lt; 0) zf = 0;<a name="line.483"></a>
+<span class="sourceLineNo">484</span>//                                      if (zf &gt; 1) zf = 1;<a name="line.484"></a>
+<span class="sourceLineNo">485</span>                                        Misc.setColor(p.color, a * zf);<a name="line.485"></a>
+<span class="sourceLineNo">486</span>                                        GL11.glVertex2f(p.loc.x + dir.x * spread, p.loc.y + dir.y * spread);<a name="line.486"></a>
+<span class="sourceLineNo">487</span>                                        if (zoom &lt; 1f) {<a name="line.487"></a>
+<span class="sourceLineNo">488</span>//                                              zf = (1f - zoom) / 0.25f;<a name="line.488"></a>
+<span class="sourceLineNo">489</span>//                                              if (zf &lt; 0) zf = 0;<a name="line.489"></a>
+<span class="sourceLineNo">490</span>//                                              if (zf &gt; 1) zf = 1;<a name="line.490"></a>
+<span class="sourceLineNo">491</span>                                                Misc.setColor(p.color, a * zf);<a name="line.491"></a>
+<span class="sourceLineNo">492</span>                                                GL11.glVertex2f(p.loc.x - dir.x * spread, p.loc.y - dir.y * spread);<a name="line.492"></a>
+<span class="sourceLineNo">493</span>                                        }<a name="line.493"></a>
+<span class="sourceLineNo">494</span>                                }<a name="line.494"></a>
+<span class="sourceLineNo">495</span>                        }<a name="line.495"></a>
+<span class="sourceLineNo">496</span>                        <a name="line.496"></a>
+<span class="sourceLineNo">497</span>//                      for (int i = 0; i &lt; 4; i++) {<a name="line.497"></a>
+<span class="sourceLineNo">498</span>//                              a *= 0.75f;<a name="line.498"></a>
+<span class="sourceLineNo">499</span>//                              Misc.setColor(p.color, a);<a name="line.499"></a>
+<span class="sourceLineNo">500</span>//                              GL11.glVertex2f(p.loc.x - dir.x * spread/zoom, p.loc.y - dir.y * spread/zoom);<a name="line.500"></a>
+<span class="sourceLineNo">501</span>//                              spread += 0.5f;<a name="line.501"></a>
+<span class="sourceLineNo">502</span>//                      }<a name="line.502"></a>
+<span class="sourceLineNo">503</span>                        <a name="line.503"></a>
+<span class="sourceLineNo">504</span>                }<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                GL11.glEnd();<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                <a name="line.506"></a>
+<span class="sourceLineNo">507</span>                GL11.glLineWidth(3.5f);<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                GL11.glLineWidth(2f);<a name="line.508"></a>
+<span class="sourceLineNo">509</span>                //GL11.glLineWidth(1.5f);<a name="line.509"></a>
+<span class="sourceLineNo">510</span>                GL11.glEnable(GL11.GL_LINE_SMOOTH);<a name="line.510"></a>
+<span class="sourceLineNo">511</span>                GL11.glBegin(GL11.GL_LINES);<a name="line.511"></a>
+<span class="sourceLineNo">512</span>                for (PointParticle p : testParticles) {<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                        //if (true) break;<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                        if (!viewport.isNearViewport(p.loc, 500)) continue;<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                        float a = 1f;<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                        if (p.remaining &lt;= 0.5f) {<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                                a = p.remaining / 0.5f;<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                        } else if (p.elapsed &lt; 0.5f) {<a name="line.518"></a>
+<span class="sourceLineNo">519</span>                                a = p.elapsed / 0.5f;<a name="line.519"></a>
+<span class="sourceLineNo">520</span>                        }<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                        <a name="line.521"></a>
+<span class="sourceLineNo">522</span>//                      Vector2f currVel = new Vector2f(p.loc);<a name="line.522"></a>
+<span class="sourceLineNo">523</span>//                      Vector2f currLoc = new Vector2f(p.vel);<a name="line.523"></a>
+<span class="sourceLineNo">524</span>                        //Vector2f prevVel = new Vector2f(p.vel);<a name="line.524"></a>
+<span class="sourceLineNo">525</span>                        Vector2f prev = new Vector2f(p.loc);<a name="line.525"></a>
+<span class="sourceLineNo">526</span>                        float prevAlpha = 0f;<a name="line.526"></a>
+<span class="sourceLineNo">527</span>                        float interval = 1/60f;<a name="line.527"></a>
+<span class="sourceLineNo">528</span>                        float iter = 15f;<a name="line.528"></a>
+<span class="sourceLineNo">529</span>                        <a name="line.529"></a>
+<span class="sourceLineNo">530</span>                        for (int i = 0; i &lt; iter; i++) {<a name="line.530"></a>
+<span class="sourceLineNo">531</span>                                //boolean inField = field.isInsideField(p.loc.x, p.loc.y, new Vector2f(x, y), facing);<a name="line.531"></a>
+<span class="sourceLineNo">532</span>                                //boolean inField = true;<a name="line.532"></a>
+<span class="sourceLineNo">533</span>                                Vector2f vel = field.getVelocity(prev.x, prev.y, new Vector2f(x, y), facing);<a name="line.533"></a>
+<span class="sourceLineNo">534</span>                                //Vector2f vel = new Vector2f(100f, 0f);<a name="line.534"></a>
+<span class="sourceLineNo">535</span>                                Vector2f loc = new Vector2f(prev);<a name="line.535"></a>
+<span class="sourceLineNo">536</span>                                loc.x -= vel.x * interval;<a name="line.536"></a>
+<span class="sourceLineNo">537</span>                                loc.y -= vel.y * interval;<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                                <a name="line.538"></a>
+<span class="sourceLineNo">539</span>//                              float velDelta = Vector2f.sub(vel, prevVel, new Vector2f()).length();<a name="line.539"></a>
+<span class="sourceLineNo">540</span>//                              float baseAlpha = 1f;<a name="line.540"></a>
+<span class="sourceLineNo">541</span>                                float baseAlpha = 0.5f;<a name="line.541"></a>
+<span class="sourceLineNo">542</span>//                              baseAlpha += 0.5f * velDelta / 50f;<a name="line.542"></a>
+<span class="sourceLineNo">543</span>//                              baseAlpha *= 0.5f;<a name="line.543"></a>
+<span class="sourceLineNo">544</span>//                              //baseAlpha = 0.5f;<a name="line.544"></a>
+<span class="sourceLineNo">545</span>//                              if (baseAlpha &gt; 1f) baseAlpha = 1f;<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                                <a name="line.546"></a>
+<span class="sourceLineNo">547</span>                                float alpha = baseAlpha * a * (iter - i) / iter;<a name="line.547"></a>
+<span class="sourceLineNo">548</span>                                //if (!inField) alpha = 0f;<a name="line.548"></a>
+<span class="sourceLineNo">549</span>                                <a name="line.549"></a>
+<span class="sourceLineNo">550</span>                                Misc.setColor(p.color, prevAlpha);<a name="line.550"></a>
+<span class="sourceLineNo">551</span>                                GL11.glVertex2f(prev.x, prev.y);<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                                Misc.setColor(p.color, alpha);<a name="line.552"></a>
+<span class="sourceLineNo">553</span>                                GL11.glVertex2f(loc.x, loc.y);<a name="line.553"></a>
+<span class="sourceLineNo">554</span>                                <a name="line.554"></a>
+<span class="sourceLineNo">555</span>                                prevAlpha = alpha;<a name="line.555"></a>
+<span class="sourceLineNo">556</span>                                prev = loc;<a name="line.556"></a>
+<span class="sourceLineNo">557</span>                                //prevVel = vel;<a name="line.557"></a>
+<span class="sourceLineNo">558</span>                        }<a name="line.558"></a>
+<span class="sourceLineNo">559</span><a name="line.559"></a>
+<span class="sourceLineNo">560</span>//                      Vector2f dir = Misc.normalise(new Vector2f(p.vel));<a name="line.560"></a>
+<span class="sourceLineNo">561</span>//                      float len = 5f;<a name="line.561"></a>
+<span class="sourceLineNo">562</span>//                      len = p.vel.length() / 10f;<a name="line.562"></a>
+<span class="sourceLineNo">563</span>//                      if (len &gt; 30) len = 30;<a name="line.563"></a>
+<span class="sourceLineNo">564</span>//                      //a *= 0.75f;<a name="line.564"></a>
+<span class="sourceLineNo">565</span>//                      Misc.setColor(p.color, a);<a name="line.565"></a>
+<span class="sourceLineNo">566</span>//                      GL11.glVertex2f(p.loc.x, p.loc.y);<a name="line.566"></a>
+<span class="sourceLineNo">567</span>//                      Misc.setColor(p.color, 0f);<a name="line.567"></a>
+<span class="sourceLineNo">568</span>//                      GL11.glVertex2f(p.loc.x - dir.x * len, p.loc.y - dir.y * len);<a name="line.568"></a>
+<span class="sourceLineNo">569</span>                }<a name="line.569"></a>
+<span class="sourceLineNo">570</span>                GL11.glEnd();<a name="line.570"></a>
+<span class="sourceLineNo">571</span>                <a name="line.571"></a>
+<span class="sourceLineNo">572</span>                renderTextureParticles(layer, viewport);<a name="line.572"></a>
+<span class="sourceLineNo">573</span>        }<a name="line.573"></a>
+<span class="sourceLineNo">574</span>        <a name="line.574"></a>
+<span class="sourceLineNo">575</span>        public void renderTextureParticles(CampaignEngineLayers layer, ViewportAPI viewport) {<a name="line.575"></a>
+<span class="sourceLineNo">576</span>                float b = viewport.getAlphaMult();<a name="line.576"></a>
+<span class="sourceLineNo">577</span>                <a name="line.577"></a>
+<span class="sourceLineNo">578</span>                CampaignEngineLayers normalLayer = layer;<a name="line.578"></a>
+<span class="sourceLineNo">579</span>                CampaignEngineLayers darkLayer = layer;<a name="line.579"></a>
+<span class="sourceLineNo">580</span>                if (layer == normalLayer) {<a name="line.580"></a>
+<span class="sourceLineNo">581</span>                        for (ParticleData p : particles) {<a name="line.581"></a>
+<span class="sourceLineNo">582</span>                                float size = p.baseSize * p.scale;<a name="line.582"></a>
+<span class="sourceLineNo">583</span>                                Vector2f loc = p.offset;<a name="line.583"></a>
+<span class="sourceLineNo">584</span>                                <a name="line.584"></a>
+<span class="sourceLineNo">585</span>                                float alphaMult = 1f;<a name="line.585"></a>
+<span class="sourceLineNo">586</span>                                <a name="line.586"></a>
+<span class="sourceLineNo">587</span>                                p.sprite.setAngle(p.angle);<a name="line.587"></a>
+<span class="sourceLineNo">588</span>                                p.sprite.setSize(size, size);<a name="line.588"></a>
+<span class="sourceLineNo">589</span>                                p.sprite.setAlphaMult(b * alphaMult * p.fader.getBrightness());<a name="line.589"></a>
+<span class="sourceLineNo">590</span>                                p.sprite.setColor(p.color);<a name="line.590"></a>
+<span class="sourceLineNo">591</span>                                p.sprite.renderAtCenter(loc.x, loc.y);<a name="line.591"></a>
+<span class="sourceLineNo">592</span>                        }<a name="line.592"></a>
+<span class="sourceLineNo">593</span>                } <a name="line.593"></a>
+<span class="sourceLineNo">594</span>                if (layer == darkLayer) {<a name="line.594"></a>
+<span class="sourceLineNo">595</span>                        GL14.glBlendEquation(GL14.GL_FUNC_REVERSE_SUBTRACT);<a name="line.595"></a>
+<span class="sourceLineNo">596</span>                        <a name="line.596"></a>
+<span class="sourceLineNo">597</span>                        for (ParticleData p : darkParticles) {<a name="line.597"></a>
+<span class="sourceLineNo">598</span>                                //float size = proj.getProjectileSpec().getWidth() * 0.6f;<a name="line.598"></a>
+<span class="sourceLineNo">599</span>                                float size = p.baseSize * p.scale;<a name="line.599"></a>
+<span class="sourceLineNo">600</span>                                <a name="line.600"></a>
+<span class="sourceLineNo">601</span>                                Vector2f loc = p.offset;<a name="line.601"></a>
+<span class="sourceLineNo">602</span>                                <a name="line.602"></a>
+<span class="sourceLineNo">603</span>                                float alphaMult = 1f;<a name="line.603"></a>
+<span class="sourceLineNo">604</span>                                <a name="line.604"></a>
+<span class="sourceLineNo">605</span>                                p.sprite.setAngle(p.angle);<a name="line.605"></a>
+<span class="sourceLineNo">606</span>                                p.sprite.setSize(size, size);<a name="line.606"></a>
+<span class="sourceLineNo">607</span>                                p.sprite.setAlphaMult(b * alphaMult * p.fader.getBrightness());<a name="line.607"></a>
+<span class="sourceLineNo">608</span>                                p.sprite.setColor(p.color);<a name="line.608"></a>
+<span class="sourceLineNo">609</span>                                p.sprite.renderAtCenter(loc.x, loc.y);<a name="line.609"></a>
+<span class="sourceLineNo">610</span>                        }<a name="line.610"></a>
+<span class="sourceLineNo">611</span>                        <a name="line.611"></a>
+<span class="sourceLineNo">612</span>                        GL14.glBlendEquation(GL14.GL_FUNC_ADD);<a name="line.612"></a>
+<span class="sourceLineNo">613</span>                }<a name="line.613"></a>
+<span class="sourceLineNo">614</span>        }<a name="line.614"></a>
+<span class="sourceLineNo">615</span>        public void addTestParticle(Vector2f loc, Color color, float size, float mass, float dur) {<a name="line.615"></a>
+<span class="sourceLineNo">616</span>                PointParticle p = new PointParticle();<a name="line.616"></a>
+<span class="sourceLineNo">617</span>                p.loc.set(loc);<a name="line.617"></a>
+<span class="sourceLineNo">618</span>                p.mass = mass;<a name="line.618"></a>
+<span class="sourceLineNo">619</span>                p.remaining = dur;<a name="line.619"></a>
+<span class="sourceLineNo">620</span>                p.size = size;<a name="line.620"></a>
+<span class="sourceLineNo">621</span>                p.color = color;<a name="line.621"></a>
+<span class="sourceLineNo">622</span>                testParticles.add(p);<a name="line.622"></a>
+<span class="sourceLineNo">623</span>        }<a name="line.623"></a>
+<span class="sourceLineNo">624</span>        <a name="line.624"></a>
+<span class="sourceLineNo">625</span>        public void addTexturedParticle(Vector2f loc, Color color, float mass, float size, float endSizeMult, float durIn, float durOut) {<a name="line.625"></a>
+<span class="sourceLineNo">626</span>                ParticleData p = new ParticleData(size, mass, durIn, durOut, endSizeMult, 30f, color, null);<a name="line.626"></a>
+<span class="sourceLineNo">627</span>                p.offset.set(loc);<a name="line.627"></a>
+<span class="sourceLineNo">628</span>                particles.add(p);<a name="line.628"></a>
+<span class="sourceLineNo">629</span>//              p = new ParticleData(size * 0.8f, mass, durIn, durOut, endSizeMult, 30f, color, null);<a name="line.629"></a>
+<span class="sourceLineNo">630</span>//              p.offset.set(loc);<a name="line.630"></a>
+<span class="sourceLineNo">631</span>//              darkParticles.add(p);<a name="line.631"></a>
+<span class="sourceLineNo">632</span>        }<a name="line.632"></a>
+<span class="sourceLineNo">633</span><a name="line.633"></a>
+<span class="sourceLineNo">634</span>        public Color getRandomColor() {<a name="line.634"></a>
+<span class="sourceLineNo">635</span>//              if (true) {<a name="line.635"></a>
+<span class="sourceLineNo">636</span>//                      return new Color(0.5f, 1f, 0.8f, 1f);<a name="line.636"></a>
+<span class="sourceLineNo">637</span>//              }<a name="line.637"></a>
+<span class="sourceLineNo">638</span>                float r = 0.5f;<a name="line.638"></a>
+<span class="sourceLineNo">639</span>                float g = 0.3f + 0.3f * (float) Math.random();<a name="line.639"></a>
+<span class="sourceLineNo">640</span>                float b = 0.75f + 0.25f * (float) Math.random();<a name="line.640"></a>
+<span class="sourceLineNo">641</span>                float a = 0.85f + 0.15f * (float) Math.random();<a name="line.641"></a>
+<span class="sourceLineNo">642</span>                if (r &lt; 0) r = 0;<a name="line.642"></a>
+<span class="sourceLineNo">643</span>                if (r &gt; 1) r = 1;<a name="line.643"></a>
+<span class="sourceLineNo">644</span>                if (g &lt; 0) g = 0;<a name="line.644"></a>
+<span class="sourceLineNo">645</span>                if (g &gt; 1) g = 1;<a name="line.645"></a>
+<span class="sourceLineNo">646</span>                if (b &lt; 0) b = 0;<a name="line.646"></a>
+<span class="sourceLineNo">647</span>                if (b &gt; 1) b = 1;<a name="line.647"></a>
+<span class="sourceLineNo">648</span>                if (a &lt; 0) a = 0;<a name="line.648"></a>
+<span class="sourceLineNo">649</span>                if (a &gt; 1) a = 1;<a name="line.649"></a>
+<span class="sourceLineNo">650</span>                a *= 0.33f;<a name="line.650"></a>
+<span class="sourceLineNo">651</span>                a = 1f;<a name="line.651"></a>
+<span class="sourceLineNo">652</span>                Color c = new Color(r, g, b, a);<a name="line.652"></a>
+<span class="sourceLineNo">653</span>                return c;<a name="line.653"></a>
+<span class="sourceLineNo">654</span>        }<a name="line.654"></a>
+<span class="sourceLineNo">655</span>}<a name="line.655"></a>
+<span class="sourceLineNo">656</span><a name="line.656"></a>
+<span class="sourceLineNo">657</span><a name="line.657"></a>
+<span class="sourceLineNo">658</span><a name="line.658"></a>
+<span class="sourceLineNo">659</span><a name="line.659"></a>
+<span class="sourceLineNo">660</span><a name="line.660"></a>
+<span class="sourceLineNo">661</span><a name="line.661"></a>
+<span class="sourceLineNo">662</span><a name="line.662"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

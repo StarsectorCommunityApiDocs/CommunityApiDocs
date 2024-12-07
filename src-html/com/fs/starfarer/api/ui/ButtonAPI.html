@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.ui;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>public interface ButtonAPI extends UIComponentAPI {<a name="line.3"></a>
+<span class="sourceLineNo">004</span>        <a name="line.4"></a>
+<span class="sourceLineNo">005</span>        public static enum UICheckboxSize {<a name="line.5"></a>
+<span class="sourceLineNo">006</span>                TINY,<a name="line.6"></a>
+<span class="sourceLineNo">007</span>                SMALL,<a name="line.7"></a>
+<span class="sourceLineNo">008</span>                LARGE,<a name="line.8"></a>
+<span class="sourceLineNo">009</span>        }<a name="line.9"></a>
+<span class="sourceLineNo">010</span>        <a name="line.10"></a>
+<span class="sourceLineNo">011</span>        void setShortcut(int key, boolean putLast);<a name="line.11"></a>
+<span class="sourceLineNo">012</span>        void setEnabled(boolean enabled);<a name="line.12"></a>
+<span class="sourceLineNo">013</span>        boolean isEnabled();<a name="line.13"></a>
+<span class="sourceLineNo">014</span>        void setButtonPressedSound(String buttonPressedSound);<a name="line.14"></a>
+<span class="sourceLineNo">015</span>        void setMouseOverSound(String mouseOverSound);<a name="line.15"></a>
+<span class="sourceLineNo">016</span>        void setButtonDisabledPressedSound(String buttonDisabledPressedSound);<a name="line.16"></a>
+<span class="sourceLineNo">017</span>        boolean isChecked();<a name="line.17"></a>
+<span class="sourceLineNo">018</span>        void setChecked(boolean checked);<a name="line.18"></a>
+<span class="sourceLineNo">019</span>        void highlight();<a name="line.19"></a>
+<span class="sourceLineNo">020</span>        void unhighlight();<a name="line.20"></a>
+<span class="sourceLineNo">021</span>        boolean isHighlighted();<a name="line.21"></a>
+<span class="sourceLineNo">022</span>        void setHighlightBrightness(float highlightBrightness);<a name="line.22"></a>
+<span class="sourceLineNo">023</span>        float getHighlightBrightness();<a name="line.23"></a>
+<span class="sourceLineNo">024</span>        void setQuickMode(boolean quickMode);<a name="line.24"></a>
+<span class="sourceLineNo">025</span>        void setClickable(boolean clickable);<a name="line.25"></a>
+<span class="sourceLineNo">026</span>        float getGlowBrightness();<a name="line.26"></a>
+<span class="sourceLineNo">027</span>        void setGlowBrightness(float glowBrightness);<a name="line.27"></a>
+<span class="sourceLineNo">028</span>        <a name="line.28"></a>
+<span class="sourceLineNo">029</span>        /**<a name="line.29"></a>
+<span class="sourceLineNo">030</span>         * Only works for certain types of basic buttons.<a name="line.30"></a>
+<span class="sourceLineNo">031</span>         * @param text<a name="line.31"></a>
+<span class="sourceLineNo">032</span>         */<a name="line.32"></a>
+<span class="sourceLineNo">033</span>        void setText(String text);<a name="line.33"></a>
+<span class="sourceLineNo">034</span>        /**<a name="line.34"></a>
+<span class="sourceLineNo">035</span>         * Only works for certain types of basic buttons.<a name="line.35"></a>
+<span class="sourceLineNo">036</span>         */<a name="line.36"></a>
+<span class="sourceLineNo">037</span>        String getText();<a name="line.37"></a>
+<span class="sourceLineNo">038</span>        <a name="line.38"></a>
+<span class="sourceLineNo">039</span>        <a name="line.39"></a>
+<span class="sourceLineNo">040</span>        void setSkipPlayingPressedSoundOnce(boolean skipPlayingPressedSoundOnce);<a name="line.40"></a>
+<span class="sourceLineNo">041</span>        void setHighlightBounceDown(boolean b);<a name="line.41"></a>
+<span class="sourceLineNo">042</span>        void setShowTooltipWhileInactive(boolean showTooltipWhileInactive);<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        void setRightClicksOkWhenDisabled(boolean rightClicksOkWhenDisabled);<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        void setFlashBrightness(float flashBrightness);<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        void flash(boolean withSound, float in, float out);<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        void flash(boolean withSound);<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        void flash();<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        void setPerformActionWhenDisabled(boolean performActionWhenDisabled);<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        boolean isPerformActionWhenDisabled();<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        boolean isSkipPlayingPressedSoundOnce();<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        Object getCustomData();<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        void setCustomData(Object customData);<a name="line.52"></a>
+<span class="sourceLineNo">053</span>}<a name="line.53"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

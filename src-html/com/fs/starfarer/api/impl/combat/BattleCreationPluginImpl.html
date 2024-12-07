@@ -1,0 +1,889 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.combat;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import java.util.ArrayList;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import java.util.Arrays;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import java.util.List;<a name="line.6"></a>
+<span class="sourceLineNo">007</span>import java.util.Random;<a name="line.7"></a>
+<span class="sourceLineNo">008</span><a name="line.8"></a>
+<span class="sourceLineNo">009</span>import org.lwjgl.util.vector.Vector2f;<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.Global;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.campaign.BattleCreationPlugin;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.campaign.CampaignFleetAPI;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.campaign.CampaignTerrainAPI;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.campaign.CustomCampaignEntityAPI;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.campaign.LocationAPI;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.campaign.PlanetAPI;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import com.fs.starfarer.api.campaign.SectorEntityToken;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import com.fs.starfarer.api.campaign.StarSystemAPI;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import com.fs.starfarer.api.combat.BaseEveryFrameCombatPlugin;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import com.fs.starfarer.api.combat.BattleCreationContext;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import com.fs.starfarer.api.combat.CombatEngineAPI;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>import com.fs.starfarer.api.combat.MissileAPI;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>import com.fs.starfarer.api.combat.ShipAPI;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>import com.fs.starfarer.api.fleet.FleetGoal;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>import com.fs.starfarer.api.fleet.FleetMemberAPI;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>import com.fs.starfarer.api.impl.campaign.ids.Planets;<a name="line.27"></a>
+<span class="sourceLineNo">028</span>import com.fs.starfarer.api.impl.campaign.ids.Tags;<a name="line.28"></a>
+<span class="sourceLineNo">029</span>import com.fs.starfarer.api.impl.campaign.ids.Terrain;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>import com.fs.starfarer.api.impl.campaign.terrain.HyperspaceAbyssPluginImpl;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import com.fs.starfarer.api.impl.campaign.terrain.PulsarBeamTerrainPlugin;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import com.fs.starfarer.api.impl.campaign.terrain.StarCoronaTerrainPlugin;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import com.fs.starfarer.api.input.InputEventAPI;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import com.fs.starfarer.api.mission.FleetSide;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import com.fs.starfarer.api.mission.MissionDefinitionAPI;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import com.fs.starfarer.api.util.Misc;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import com.fs.starfarer.api.util.WeightedRandomPicker;<a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+<span class="sourceLineNo">039</span>public class BattleCreationPluginImpl implements BattleCreationPlugin {<a name="line.39"></a>
+<span class="sourceLineNo">040</span><a name="line.40"></a>
+<span class="sourceLineNo">041</span>        public interface NebulaTextureProvider {<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                String getNebulaTex();<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                String getNebulaMapTex();<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        }<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        <a name="line.45"></a>
+<span class="sourceLineNo">046</span>        <a name="line.46"></a>
+<span class="sourceLineNo">047</span>        public static float ABYSS_SHIP_SPEED_PENALTY = 20f;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        public static float ABYSS_MISSILE_SPEED_PENALTY = 20f;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        //public static float ABYSS_MISSILE_FLIGHT_TIME_MULT = 1.25f;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        public static float ABYSS_OVERLAY_ALPHA = 0.2f;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        <a name="line.51"></a>
+<span class="sourceLineNo">052</span>        protected float width, height;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>        <a name="line.53"></a>
+<span class="sourceLineNo">054</span>        protected float xPad = 2000;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>        protected float yPad = 2000;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>        <a name="line.56"></a>
+<span class="sourceLineNo">057</span>        protected List&lt;String&gt; objs = null;<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>        protected float prevXDir = 0;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>        protected float prevYDir = 0;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>        protected boolean escape;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>        <a name="line.62"></a>
+<span class="sourceLineNo">063</span>        protected BattleCreationContext context;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        protected MissionDefinitionAPI loader;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        <a name="line.65"></a>
+<span class="sourceLineNo">066</span>        public void initBattle(final BattleCreationContext context, MissionDefinitionAPI loader) {<a name="line.66"></a>
+<span class="sourceLineNo">067</span><a name="line.67"></a>
+<span class="sourceLineNo">068</span>                this.context = context;<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                this.loader = loader;<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                CampaignFleetAPI playerFleet = context.getPlayerFleet();<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                CampaignFleetAPI otherFleet = context.getOtherFleet();<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                FleetGoal playerGoal = context.getPlayerGoal();<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                FleetGoal enemyGoal = context.getOtherGoal();<a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>                // doesn't work for consecutive engagements; haven't investigated why<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                //Random random = Misc.getRandom(Misc.getNameBasedSeed(otherFleet), 23);<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                <a name="line.77"></a>
+<span class="sourceLineNo">078</span>                Random random = Misc.getRandom(Misc.getSalvageSeed(otherFleet) *<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                                (long)otherFleet.getFleetData().getNumMembers(), 23);<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                //System.out.println("RNG: " + random.nextLong());<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                //random = new Random(1213123L);<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                //Random random = Misc.random;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                <a name="line.83"></a>
+<span class="sourceLineNo">084</span>                escape = playerGoal == FleetGoal.ESCAPE || enemyGoal == FleetGoal.ESCAPE;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                <a name="line.85"></a>
+<span class="sourceLineNo">086</span>                int maxFP = (int) Global.getSettings().getFloat("maxNoObjectiveBattleSize");<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                int fpOne = 0;<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                int fpTwo = 0;<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                for (FleetMemberAPI member : playerFleet.getFleetData().getMembersListCopy()) {<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                        if (member.canBeDeployedForCombat() || playerGoal == FleetGoal.ESCAPE) {<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                                fpOne += member.getUnmodifiedDeploymentPointsCost();<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                        }<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                }<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                for (FleetMemberAPI member : otherFleet.getFleetData().getMembersListCopy()) {<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                        if (member.canBeDeployedForCombat() || playerGoal == FleetGoal.ESCAPE) {<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                                fpTwo += member.getUnmodifiedDeploymentPointsCost();<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                        }<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                }<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                <a name="line.99"></a>
+<span class="sourceLineNo">100</span>                int smaller = Math.min(fpOne, fpTwo);<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                <a name="line.101"></a>
+<span class="sourceLineNo">102</span>                boolean withObjectives = smaller &gt; maxFP;<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                if (!context.objectivesAllowed) {<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                        withObjectives = false;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                }<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                <a name="line.106"></a>
+<span class="sourceLineNo">107</span>                int numObjectives = 0;<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                if (withObjectives) {<a name="line.108"></a>
+<span class="sourceLineNo">109</span>//                      if (fpOne + fpTwo &gt; maxFP + 70) {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>//                              numObjectives = 3 <a name="line.110"></a>
+<span class="sourceLineNo">111</span>//                              numObjectives = 3 + (int)(Math.random() * 2.0);<a name="line.111"></a>
+<span class="sourceLineNo">112</span>//                      } else {<a name="line.112"></a>
+<span class="sourceLineNo">113</span>//                              numObjectives = 2 + (int)(Math.random() * 2.0);<a name="line.113"></a>
+<span class="sourceLineNo">114</span>//                      }<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                        if (fpOne + fpTwo &gt; maxFP + 70) {<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                                numObjectives = 4;<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                                //numObjectives = 3 + (int)(Math.random() * 2.0);<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                        } else {<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                                numObjectives = 3 + random.nextInt(2);<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                                //numObjectives = 2 + (int)(Math.random() * 2.0);<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                        }<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                }<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                <a name="line.123"></a>
+<span class="sourceLineNo">124</span>                // shouldn't be possible, but..<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                if (numObjectives &gt; 4) {<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                        numObjectives = 4;<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                }<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                <a name="line.128"></a>
+<span class="sourceLineNo">129</span>                int baseCommandPoints = (int) Global.getSettings().getFloat("startingCommandPoints");<a name="line.129"></a>
+<span class="sourceLineNo">130</span><a name="line.130"></a>
+<span class="sourceLineNo">131</span>                // <a name="line.131"></a>
+<span class="sourceLineNo">132</span>                loader.initFleet(FleetSide.PLAYER, "ISS", playerGoal, false,<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                                context.getPlayerCommandPoints() - baseCommandPoints,<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                                (int) playerFleet.getCommanderStats().getCommandPoints().getModifiedValue() - baseCommandPoints);<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                loader.initFleet(FleetSide.ENEMY, "", enemyGoal, true, <a name="line.135"></a>
+<span class="sourceLineNo">136</span>                                (int) otherFleet.getCommanderStats().getCommandPoints().getModifiedValue() - baseCommandPoints);<a name="line.136"></a>
+<span class="sourceLineNo">137</span><a name="line.137"></a>
+<span class="sourceLineNo">138</span>                List&lt;FleetMemberAPI&gt; playerShips = playerFleet.getFleetData().getCombatReadyMembersListCopy();<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                if (playerGoal == FleetGoal.ESCAPE) {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                        playerShips = playerFleet.getFleetData().getMembersListCopy();<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                }<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                for (FleetMemberAPI member : playerShips) {<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                        loader.addFleetMember(FleetSide.PLAYER, member);<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                }<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                <a name="line.145"></a>
+<span class="sourceLineNo">146</span>                <a name="line.146"></a>
+<span class="sourceLineNo">147</span>                List&lt;FleetMemberAPI&gt; enemyShips = otherFleet.getFleetData().getCombatReadyMembersListCopy();<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                if (enemyGoal == FleetGoal.ESCAPE) {<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                        enemyShips = otherFleet.getFleetData().getMembersListCopy();<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                }<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                for (FleetMemberAPI member : enemyShips) {<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                        loader.addFleetMember(FleetSide.ENEMY, member);<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                }<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                <a name="line.154"></a>
+<span class="sourceLineNo">155</span>                width = 18000f;<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                height = 18000f;<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                <a name="line.157"></a>
+<span class="sourceLineNo">158</span>                if (escape) {<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                        width = 18000f;<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                        //height = 24000f;<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                        height = 18000f;<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                } else if (withObjectives) {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                        width = 24000f;<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                        if (numObjectives == 2) {<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                                height = 14000f;<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                        } else {<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                                height = 18000f;<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                        }<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                }<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                <a name="line.170"></a>
+<span class="sourceLineNo">171</span>                createMap(random);<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                <a name="line.172"></a>
+<span class="sourceLineNo">173</span>                context.setInitialDeploymentBurnDuration(1.5f);<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                context.setNormalDeploymentBurnDuration(6f);<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                context.setEscapeDeploymentBurnDuration(1.5f);<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                <a name="line.176"></a>
+<span class="sourceLineNo">177</span>                xPad = 2000f;<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                yPad = 3000f;<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                <a name="line.179"></a>
+<span class="sourceLineNo">180</span>                if (escape) {<a name="line.180"></a>
+<span class="sourceLineNo">181</span>//                      addEscapeObjectives(loader, 4);<a name="line.181"></a>
+<span class="sourceLineNo">182</span>//                      context.setInitialEscapeRange(7000f);<a name="line.182"></a>
+<span class="sourceLineNo">183</span>//                      context.setFlankDeploymentDistance(9000f);<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                        addEscapeObjectives(loader, 2, random);<a name="line.184"></a>
+<span class="sourceLineNo">185</span>//                      context.setInitialEscapeRange(4000f);<a name="line.185"></a>
+<span class="sourceLineNo">186</span>//                      context.setFlankDeploymentDistance(8000f);<a name="line.186"></a>
+<span class="sourceLineNo">187</span><a name="line.187"></a>
+<span class="sourceLineNo">188</span>                        context.setInitialEscapeRange(Global.getSettings().getFloat("escapeStartDistance"));<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                        context.setFlankDeploymentDistance(Global.getSettings().getFloat("escapeFlankDistance"));<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                        <a name="line.190"></a>
+<span class="sourceLineNo">191</span>                        loader.addPlugin(new EscapeRevealPlugin(context));<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                } else {<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                        if (withObjectives) {<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                                addObjectives(loader, numObjectives, random);<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                                context.setStandoffRange(height - 4500f);<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                        } else {<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                                context.setStandoffRange(6000f);<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                        }<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                        <a name="line.199"></a>
+<span class="sourceLineNo">200</span>                        context.setFlankDeploymentDistance(height/2f); // matters for Force Concentration<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                }<a name="line.201"></a>
+<span class="sourceLineNo">202</span>        }<a name="line.202"></a>
+<span class="sourceLineNo">203</span>        <a name="line.203"></a>
+<span class="sourceLineNo">204</span>        public void afterDefinitionLoad(final CombatEngineAPI engine) {<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                if (coronaIntensity &gt; 0 &amp;&amp; (corona != null || pulsar != null)) {<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                        String name = "Corona";<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                        if (pulsar != null) name = pulsar.getTerrainName();<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                        else if (corona != null) name = corona.getTerrainName();<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                        <a name="line.209"></a>
+<span class="sourceLineNo">210</span>                        final String name2 = name;<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                        <a name="line.211"></a>
+<span class="sourceLineNo">212</span>//                      CombatFleetManagerAPI manager = engine.getFleetManager(FleetSide.PLAYER);<a name="line.212"></a>
+<span class="sourceLineNo">213</span>//                      for (FleetMemberAPI member : manager.getReservesCopy()) {<a name="line.213"></a>
+<span class="sourceLineNo">214</span>//                      }<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                        final Object key1 = new Object();<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                        final Object key2 = new Object();<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                        final String icon = Global.getSettings().getSpriteName("ui", "icon_tactical_cr_penalty");<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                        engine.addPlugin(new BaseEveryFrameCombatPlugin() {<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                                @Override<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                                public void advance(float amount, List&lt;InputEventAPI&gt; events) {<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                                        engine.maintainStatusForPlayerShip(key1, icon, name2, "reduced peak time", true);<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                                        engine.maintainStatusForPlayerShip(key2, icon, name2, "faster CR degradation", true);<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                                }<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                        });<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                }<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                <a name="line.226"></a>
+<span class="sourceLineNo">227</span>                if (abyssalDepth &gt; 0) {<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                        Color color = Misc.scaleColor(Color.white, 1f - abyssalDepth);<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                        engine.setBackgroundColor(color);<a name="line.229"></a>
+<span class="sourceLineNo">230</span><a name="line.230"></a>
+<span class="sourceLineNo">231</span>                        color = Misc.scaleAlpha(Color.black, abyssalDepth * ABYSS_OVERLAY_ALPHA);<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                        engine.setBackgroundGlowColor(color);<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                        engine.setBackgroundGlowColorNonAdditive(true);<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                        <a name="line.234"></a>
+<span class="sourceLineNo">235</span>                        if (abyssalDepth &gt; HyperspaceAbyssPluginImpl.DEPTH_THRESHOLD_FOR_NO_DUST_PARTICLES_IN_COMBAT) {<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                                engine.setRenderStarfield(false);<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                        }<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                        <a name="line.238"></a>
+<span class="sourceLineNo">239</span>                        final Object key1 = new Object();<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                        final Object key2 = new Object();<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                        final String icon = Global.getSettings().getSpriteName("ui", "icon_tactical_engine_damage");<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                        final String name = "Abyssal hyperspace";<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                        engine.addPlugin(new BaseEveryFrameCombatPlugin() {<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                                @Override<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                                public void advance(float amount, List&lt;InputEventAPI&gt; events) {<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                                        String percentSpeed = "-" + (int)Math.round(ABYSS_SHIP_SPEED_PENALTY) + "%";<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                                        String percentMissile = "-" + (int)Math.round(ABYSS_MISSILE_SPEED_PENALTY) + "%";<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                                        engine.maintainStatusForPlayerShip(key1, icon, name, percentSpeed + " top speed", true);<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                                        engine.maintainStatusForPlayerShip(key2, icon, name, percentMissile + " missle speed / range", true);<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                                        <a name="line.250"></a>
+<span class="sourceLineNo">251</span>                                        String modId = "abyssal";<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                                        float modW = -0.0f * abyssalDepth;<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                                        float modL = -0.33f * abyssalDepth;<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                                        float modG = -0.5f * abyssalDepth;<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                                        <a name="line.255"></a>
+<span class="sourceLineNo">256</span>                                        for (ShipAPI curr : engine.getShips()) {<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                                                if (curr.isHulk()) continue;<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                                                <a name="line.258"></a>
+<span class="sourceLineNo">259</span>                                                curr.getEngineController().fadeToOtherColor(this, Color.black, null, 1f, abyssalDepth * 0.4f);<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                                                curr.getEngineController().extendFlame(this, modL, modW, modG);<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                                                <a name="line.261"></a>
+<span class="sourceLineNo">262</span>                                                curr.getMutableStats().getMaxSpeed().modifyMult(modId, <a name="line.262"></a>
+<span class="sourceLineNo">263</span>                                                                                        1f - abyssalDepth * ABYSS_SHIP_SPEED_PENALTY * 0.01f);<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                                                curr.getMutableStats().getMissileWeaponRangeBonus().modifyMult(modId, <a name="line.264"></a>
+<span class="sourceLineNo">265</span>                                                                                        1f - abyssalDepth * ABYSS_MISSILE_SPEED_PENALTY * 0.01f);<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                                                curr.getMutableStats().getMissileMaxSpeedBonus().modifyMult(modId,<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                                                                                        1f - abyssalDepth * ABYSS_MISSILE_SPEED_PENALTY * 0.01f);<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                                        }<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                                        <a name="line.269"></a>
+<span class="sourceLineNo">270</span>                                        for (MissileAPI missile : engine.getMissiles()) {<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                                                missile.getEngineController().fadeToOtherColor(this, Color.black, null, 1f, abyssalDepth * 0.4f);<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                                                missile.getEngineController().extendFlame(this, modL, modW, 0f);<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                                        }<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                                                <a name="line.274"></a>
+<span class="sourceLineNo">275</span>                                }<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                        });<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                        <a name="line.277"></a>
+<span class="sourceLineNo">278</span>                }<a name="line.278"></a>
+<span class="sourceLineNo">279</span>        }<a name="line.279"></a>
+<span class="sourceLineNo">280</span>        <a name="line.280"></a>
+<span class="sourceLineNo">281</span>        <a name="line.281"></a>
+<span class="sourceLineNo">282</span>        protected float abyssalDepth = 0f;<a name="line.282"></a>
+<span class="sourceLineNo">283</span>        protected float coronaIntensity = 0f;<a name="line.283"></a>
+<span class="sourceLineNo">284</span>        protected StarCoronaTerrainPlugin corona = null;<a name="line.284"></a>
+<span class="sourceLineNo">285</span>        protected PulsarBeamTerrainPlugin pulsar = null;<a name="line.285"></a>
+<span class="sourceLineNo">286</span>        protected void createMap(Random random) {<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                loader.initMap((float)-width/2f, (float)width/2f, (float)-height/2f, (float)height/2f);<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                <a name="line.288"></a>
+<span class="sourceLineNo">289</span>                CampaignFleetAPI playerFleet = context.getPlayerFleet();<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                String nebulaTex = null;<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                String nebulaMapTex = null;<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                boolean inNebula = false;<a name="line.292"></a>
+<span class="sourceLineNo">293</span><a name="line.293"></a>
+<span class="sourceLineNo">294</span>                boolean protectedFromCorona = false;<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                for (CustomCampaignEntityAPI curr : playerFleet.getContainingLocation().getCustomEntitiesWithTag(Tags.PROTECTS_FROM_CORONA_IN_BATTLE)) {<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                        if (Misc.getDistance(curr.getLocation(), playerFleet.getLocation()) &lt;= curr.getRadius() + Global.getSector().getPlayerFleet().getRadius() + 10f) {<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                                protectedFromCorona = true;<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                                break;<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                        }<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                }<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                <a name="line.301"></a>
+<span class="sourceLineNo">302</span>                abyssalDepth = Misc.getAbyssalDepth(playerFleet);<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                <a name="line.303"></a>
+<span class="sourceLineNo">304</span>                float numRings = 0;<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                <a name="line.305"></a>
+<span class="sourceLineNo">306</span>                Color coronaColor = null;<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                // this assumes that all nebula in a system are of the same color<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                for (CampaignTerrainAPI terrain : playerFleet.getContainingLocation().getTerrainCopy()) {<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                        //if (terrain.getType().equals(Terrain.NEBULA)) {<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                        if (terrain.getPlugin() instanceof NebulaTextureProvider) {<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                                if (terrain.getPlugin().containsEntity(playerFleet)) {<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                                        inNebula = true;<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                                        if (terrain.getPlugin() instanceof NebulaTextureProvider) {<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                                                NebulaTextureProvider provider = (NebulaTextureProvider) terrain.getPlugin();<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                                                nebulaTex = provider.getNebulaTex();<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                                                nebulaMapTex = provider.getNebulaMapTex();<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                                        }<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                                } else {<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                                        if (nebulaTex == null) {<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                                                if (terrain.getPlugin() instanceof NebulaTextureProvider) {<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                                                        NebulaTextureProvider provider = (NebulaTextureProvider) terrain.getPlugin();<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                                                        nebulaTex = provider.getNebulaTex();<a name="line.322"></a>
+<span class="sourceLineNo">323</span>                                                        nebulaMapTex = provider.getNebulaMapTex();<a name="line.323"></a>
+<span class="sourceLineNo">324</span>                                                }       <a name="line.324"></a>
+<span class="sourceLineNo">325</span>                                        }<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                                }<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                        } else if (terrain.getPlugin() instanceof StarCoronaTerrainPlugin &amp;&amp; pulsar == null &amp;&amp; !protectedFromCorona) {<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                                StarCoronaTerrainPlugin plugin = (StarCoronaTerrainPlugin) terrain.getPlugin();<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                                if (plugin.containsEntity(playerFleet)) {<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                                        float angle = Misc.getAngleInDegrees(terrain.getLocation(), playerFleet.getLocation());<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                                        Color color = plugin.getAuroraColorForAngle(angle);<a name="line.331"></a>
+<span class="sourceLineNo">332</span>                                        float intensity = plugin.getIntensityAtPoint(playerFleet.getLocation());<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                                        intensity = 0.4f + 0.6f * intensity;<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                                        int alpha = (int)(80f * intensity);<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                                        color = Misc.setAlpha(color, alpha);<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                                        if (coronaColor == null || coronaColor.getAlpha() &lt; alpha) {<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                                                coronaColor = color;<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                                                coronaIntensity = intensity;<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                                                corona = plugin;<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                                        }<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                                }<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                        } else if (terrain.getPlugin() instanceof PulsarBeamTerrainPlugin &amp;&amp; !protectedFromCorona) {<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                                PulsarBeamTerrainPlugin plugin = (PulsarBeamTerrainPlugin) terrain.getPlugin();<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                                if (plugin.containsEntity(playerFleet)) {<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                                        float angle = Misc.getAngleInDegreesStrict(terrain.getLocation(), playerFleet.getLocation());<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                                        Color color = plugin.getPulsarColorForAngle(angle);<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                                        float intensity = plugin.getIntensityAtPoint(playerFleet.getLocation());<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                                        intensity = 0.4f + 0.6f * intensity;<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                                        int alpha = (int)(80f * intensity);<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                                        color = Misc.setAlpha(color, alpha);<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                                        if (coronaColor == null || coronaColor.getAlpha() &lt; alpha) {<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                                                coronaColor = color;<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                                                coronaIntensity = intensity;<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                                                pulsar = plugin;<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                                                corona = null;<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                                        }<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                                }<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                        } else if (terrain.getType().equals(Terrain.RING)) {<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                                if (terrain.getPlugin().containsEntity(playerFleet)) {<a name="line.359"></a>
+<span class="sourceLineNo">360</span>                                        numRings++;<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                                }<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                        }<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                }<a name="line.363"></a>
+<span class="sourceLineNo">364</span>                if (nebulaTex != null) {<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                        loader.setNebulaTex(nebulaTex);<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                        loader.setNebulaMapTex(nebulaMapTex);<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                }<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                <a name="line.368"></a>
+<span class="sourceLineNo">369</span>                if (coronaColor != null) {<a name="line.369"></a>
+<span class="sourceLineNo">370</span>                        loader.setBackgroundGlowColor(coronaColor);<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                }<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                <a name="line.372"></a>
+<span class="sourceLineNo">373</span>                int numNebula = 15;<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                if (inNebula) {<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                        numNebula = 100;<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                }<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                if (!inNebula &amp;&amp; playerFleet.isInHyperspace()) {<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                        numNebula = 0;<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                }<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                <a name="line.380"></a>
+<span class="sourceLineNo">381</span>                for (int i = 0; i &lt; numNebula; i++) {<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                        float x = random.nextFloat() * width - width/2;<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                        float y = random.nextFloat() * height - height/2;<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                        float radius = 100f + random.nextFloat() * 400f;<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                        if (inNebula) {<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                                radius += 100f + 500f * random.nextFloat();<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                        }<a name="line.387"></a>
+<span class="sourceLineNo">388</span>                        loader.addNebula(x, y, radius);<a name="line.388"></a>
+<span class="sourceLineNo">389</span>                }<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                <a name="line.390"></a>
+<span class="sourceLineNo">391</span>                float numAsteroidsWithinRange = countNearbyAsteroids(playerFleet);<a name="line.391"></a>
+<span class="sourceLineNo">392</span>                <a name="line.392"></a>
+<span class="sourceLineNo">393</span>                int numAsteroids = Math.min(400, (int)((numAsteroidsWithinRange + 1f) * 20f));<a name="line.393"></a>
+<span class="sourceLineNo">394</span>                <a name="line.394"></a>
+<span class="sourceLineNo">395</span>                loader.addAsteroidField(0, 0, random.nextFloat() * 360f, width,<a name="line.395"></a>
+<span class="sourceLineNo">396</span>                                                                20f, 70f, numAsteroids);<a name="line.396"></a>
+<span class="sourceLineNo">397</span>                <a name="line.397"></a>
+<span class="sourceLineNo">398</span>                if (numRings &gt; 0) {<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                        int numRingAsteroids = (int) (numRings * 300 + (numRings * 600f) * random.nextFloat());<a name="line.399"></a>
+<span class="sourceLineNo">400</span>                        //int numRingAsteroids = (int) (numRings * 1600 + (numRings * 600f) * (float) Math.random());<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                        if (numRingAsteroids &gt; 1500) {<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                                numRingAsteroids = 1500;<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                        }<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                        loader.addRingAsteroids(0, 0, random.nextFloat() * 360f, width,<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                                        100f, 200f, numRingAsteroids);<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                }<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                <a name="line.407"></a>
+<span class="sourceLineNo">408</span>                //setRandomBackground(loader);<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                loader.setBackgroundSpriteName(playerFleet.getContainingLocation().getBackgroundTextureFilename());<a name="line.409"></a>
+<span class="sourceLineNo">410</span>//              loader.setBackgroundSpriteName("graphics/backgrounds/hyperspace_bg_cool.jpg");<a name="line.410"></a>
+<span class="sourceLineNo">411</span>//              loader.setBackgroundSpriteName("graphics/ships/onslaught/onslaught_base.png");<a name="line.411"></a>
+<span class="sourceLineNo">412</span><a name="line.412"></a>
+<span class="sourceLineNo">413</span>                if (playerFleet.getContainingLocation() == Global.getSector().getHyperspace()) {<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                        loader.setHyperspaceMode(true);<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                } else {<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                        loader.setHyperspaceMode(false);<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                }<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                <a name="line.418"></a>
+<span class="sourceLineNo">419</span>                //addMultiplePlanets();<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                addClosestPlanet();<a name="line.420"></a>
+<span class="sourceLineNo">421</span>        }<a name="line.421"></a>
+<span class="sourceLineNo">422</span>        <a name="line.422"></a>
+<span class="sourceLineNo">423</span>        protected void addClosestPlanet() {<a name="line.423"></a>
+<span class="sourceLineNo">424</span>                float bgWidth = 2048f;<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                float bgHeight = 2048f;<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                <a name="line.426"></a>
+<span class="sourceLineNo">427</span>                PlanetAPI planet = getClosestPlanet(context.getPlayerFleet());<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                if (planet == null) return;<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                <a name="line.429"></a>
+<span class="sourceLineNo">430</span>                float dist = Vector2f.sub(context.getPlayerFleet().getLocation(), planet.getLocation(), new Vector2f()).length() - planet.getRadius();<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                if (dist &lt; 0) dist = 0;<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                float baseRadius = planet.getRadius();<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                float scaleFactor = 1.5f;<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                float maxRadius = 500f;<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                float minRadius = 100f;<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                                <a name="line.436"></a>
+<span class="sourceLineNo">437</span>//              if (planet.isStar()) {<a name="line.437"></a>
+<span class="sourceLineNo">438</span>//                      scaleFactor = 0.01f;<a name="line.438"></a>
+<span class="sourceLineNo">439</span>//                      maxRadius = 20f;<a name="line.439"></a>
+<span class="sourceLineNo">440</span>//              }<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                <a name="line.441"></a>
+<span class="sourceLineNo">442</span>                float maxDist = SINGLE_PLANET_MAX_DIST - planet.getRadius();<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                if (maxDist &lt; 1) maxDist = 1;<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                <a name="line.444"></a>
+<span class="sourceLineNo">445</span>                <a name="line.445"></a>
+<span class="sourceLineNo">446</span>                boolean playerHasStation = false;<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                boolean enemyHasStation = false;<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                <a name="line.448"></a>
+<span class="sourceLineNo">449</span>                for (FleetMemberAPI curr : context.getPlayerFleet().getFleetData().getMembersListCopy()) {<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                        if (curr.isStation()) {<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                                playerHasStation = true;<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                                break;<a name="line.452"></a>
+<span class="sourceLineNo">453</span>                        }<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                }<a name="line.454"></a>
+<span class="sourceLineNo">455</span>                <a name="line.455"></a>
+<span class="sourceLineNo">456</span>                for (FleetMemberAPI curr : context.getOtherFleet().getFleetData().getMembersListCopy()) {<a name="line.456"></a>
+<span class="sourceLineNo">457</span>                        if (curr.isStation()) {<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                                enemyHasStation = true;<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                                break;<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                        }<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                }<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                <a name="line.462"></a>
+<span class="sourceLineNo">463</span>                float planetYOffset = 0;<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                <a name="line.464"></a>
+<span class="sourceLineNo">465</span>                if (playerHasStation) {<a name="line.465"></a>
+<span class="sourceLineNo">466</span>                        planetYOffset = -bgHeight / 2f * 0.5f;<a name="line.466"></a>
+<span class="sourceLineNo">467</span>                }<a name="line.467"></a>
+<span class="sourceLineNo">468</span>                if (enemyHasStation) {<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                        planetYOffset = bgHeight / 2f * 0.5f;<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                }<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                <a name="line.471"></a>
+<span class="sourceLineNo">472</span>                <a name="line.472"></a>
+<span class="sourceLineNo">473</span>                float f = (maxDist - dist) / maxDist * 0.65f + 0.35f;<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                float radius = baseRadius * f * scaleFactor;<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                if (radius &gt; maxRadius) radius = maxRadius;<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                if (radius &lt; minRadius) radius = minRadius;<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                loader.setPlanetBgSize(bgWidth * f, bgHeight * f);<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                loader.addPlanet(0f, planetYOffset, radius, planet, 0f, true);<a name="line.478"></a>
+<span class="sourceLineNo">479</span>        }<a name="line.479"></a>
+<span class="sourceLineNo">480</span>        <a name="line.480"></a>
+<span class="sourceLineNo">481</span>        protected void addMultiplePlanets() {<a name="line.481"></a>
+<span class="sourceLineNo">482</span>                float bgWidth = 2048f;<a name="line.482"></a>
+<span class="sourceLineNo">483</span>                float bgHeight = 2048f;<a name="line.483"></a>
+<span class="sourceLineNo">484</span>                loader.setPlanetBgSize(bgWidth, bgHeight);<a name="line.484"></a>
+<span class="sourceLineNo">485</span>                <a name="line.485"></a>
+<span class="sourceLineNo">486</span>                <a name="line.486"></a>
+<span class="sourceLineNo">487</span>                List&lt;NearbyPlanetData&gt; planets = getNearbyPlanets(context.getPlayerFleet());<a name="line.487"></a>
+<span class="sourceLineNo">488</span>                if (!planets.isEmpty()) {<a name="line.488"></a>
+<span class="sourceLineNo">489</span>                        float maxDist = PLANET_MAX_DIST;<a name="line.489"></a>
+<span class="sourceLineNo">490</span>                        for (NearbyPlanetData data : planets) {<a name="line.490"></a>
+<span class="sourceLineNo">491</span>                                float dist = Vector2f.sub(context.getPlayerFleet().getLocation(), data.planet.getLocation(), new Vector2f()).length();<a name="line.491"></a>
+<span class="sourceLineNo">492</span>                                float baseRadius = data.planet.getRadius();<a name="line.492"></a>
+<span class="sourceLineNo">493</span>                                float scaleFactor = 1.5f;<a name="line.493"></a>
+<span class="sourceLineNo">494</span>                                float maxRadius = 500f;<a name="line.494"></a>
+<span class="sourceLineNo">495</span>                                <a name="line.495"></a>
+<span class="sourceLineNo">496</span>                                if (data.planet.isStar()) {<a name="line.496"></a>
+<span class="sourceLineNo">497</span>                                        // skip stars in combat, bright and annoying<a name="line.497"></a>
+<span class="sourceLineNo">498</span>                                        continue;<a name="line.498"></a>
+<span class="sourceLineNo">499</span>//                                      scaleFactor = 0.1f;<a name="line.499"></a>
+<span class="sourceLineNo">500</span>//                                      maxRadius = 50f;<a name="line.500"></a>
+<span class="sourceLineNo">501</span>                                }<a name="line.501"></a>
+<span class="sourceLineNo">502</span>                                <a name="line.502"></a>
+<span class="sourceLineNo">503</span>                                float f = (maxDist - dist) / maxDist * 0.65f + 0.35f;<a name="line.503"></a>
+<span class="sourceLineNo">504</span>                                float radius = baseRadius * f * scaleFactor;<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                                if (radius &gt; maxRadius) radius = maxRadius;<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                                <a name="line.506"></a>
+<span class="sourceLineNo">507</span>                                loader.addPlanet(data.offset.x * bgWidth / PLANET_AREA_WIDTH * scaleFactor,<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                                                                 data.offset.y * bgHeight / PLANET_AREA_HEIGHT * scaleFactor,<a name="line.508"></a>
+<span class="sourceLineNo">509</span>                                                                 radius, data.planet.getTypeId(), 0f, true);<a name="line.509"></a>
+<span class="sourceLineNo">510</span>                        }<a name="line.510"></a>
+<span class="sourceLineNo">511</span>                        <a name="line.511"></a>
+<span class="sourceLineNo">512</span>                }<a name="line.512"></a>
+<span class="sourceLineNo">513</span>        }<a name="line.513"></a>
+<span class="sourceLineNo">514</span>        <a name="line.514"></a>
+<span class="sourceLineNo">515</span>        <a name="line.515"></a>
+<span class="sourceLineNo">516</span>        protected void setRandomBackground(MissionDefinitionAPI loader, Random random) {<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                // these have to be loaded using the graphics section in settings.json<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                String [] bgs = new String [] {<a name="line.518"></a>
+<span class="sourceLineNo">519</span>                                "graphics/backgrounds/background1.jpg",<a name="line.519"></a>
+<span class="sourceLineNo">520</span>                                "graphics/backgrounds/background2.jpg",<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                                "graphics/backgrounds/background3.jpg",<a name="line.521"></a>
+<span class="sourceLineNo">522</span>                                "graphics/backgrounds/background4.jpg"<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                };<a name="line.523"></a>
+<span class="sourceLineNo">524</span>                String pick = bgs[Math.min(bgs.length - 1, (int)(random.nextDouble() * bgs.length))];<a name="line.524"></a>
+<span class="sourceLineNo">525</span>                loader.setBackgroundSpriteName(pick);<a name="line.525"></a>
+<span class="sourceLineNo">526</span>        }<a name="line.526"></a>
+<span class="sourceLineNo">527</span><a name="line.527"></a>
+<span class="sourceLineNo">528</span>        protected static String COMM = "comm_relay";<a name="line.528"></a>
+<span class="sourceLineNo">529</span>        protected static String SENSOR = "sensor_array";<a name="line.529"></a>
+<span class="sourceLineNo">530</span>        protected static String NAV = "nav_buoy";<a name="line.530"></a>
+<span class="sourceLineNo">531</span>        <a name="line.531"></a>
+<span class="sourceLineNo">532</span>        protected void addObjectives(MissionDefinitionAPI loader, int num, Random random) {<a name="line.532"></a>
+<span class="sourceLineNo">533</span>                //if (true) return;<a name="line.533"></a>
+<span class="sourceLineNo">534</span>                <a name="line.534"></a>
+<span class="sourceLineNo">535</span>                objs = new ArrayList&lt;String&gt;(Arrays.asList(new String [] {<a name="line.535"></a>
+<span class="sourceLineNo">536</span>                                SENSOR,<a name="line.536"></a>
+<span class="sourceLineNo">537</span>                                SENSOR,<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                                NAV,<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                                NAV,<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                                //COMM,<a name="line.540"></a>
+<span class="sourceLineNo">541</span>                                //COMM,<a name="line.541"></a>
+<span class="sourceLineNo">542</span>                }));<a name="line.542"></a>
+<span class="sourceLineNo">543</span><a name="line.543"></a>
+<span class="sourceLineNo">544</span>                if (num == 2) { // minimum is 3 now, so this shouldn't happen<a name="line.544"></a>
+<span class="sourceLineNo">545</span>                        objs = new ArrayList&lt;String&gt;(Arrays.asList(new String [] {<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                                        SENSOR,<a name="line.546"></a>
+<span class="sourceLineNo">547</span>                                        SENSOR,<a name="line.547"></a>
+<span class="sourceLineNo">548</span>                                        NAV,<a name="line.548"></a>
+<span class="sourceLineNo">549</span>                                        NAV,<a name="line.549"></a>
+<span class="sourceLineNo">550</span>                                        COMM,<a name="line.550"></a>
+<span class="sourceLineNo">551</span>                        }));<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                        addObjectiveAt(0.25f, 0.5f, 0f, 0f, random);<a name="line.552"></a>
+<span class="sourceLineNo">553</span>                        addObjectiveAt(0.75f, 0.5f, 0f, 0f, random);<a name="line.553"></a>
+<span class="sourceLineNo">554</span>                } else if (num == 3) {<a name="line.554"></a>
+<span class="sourceLineNo">555</span>                        float r = random.nextFloat();<a name="line.555"></a>
+<span class="sourceLineNo">556</span>                        if (r &lt; 0.33f) {<a name="line.556"></a>
+<span class="sourceLineNo">557</span>                                addObjectiveAt(0.25f, 0.7f, 1f, 1f, random);<a name="line.557"></a>
+<span class="sourceLineNo">558</span>                                addObjectiveAt(0.25f, 0.3f, 1f, 1f, random);<a name="line.558"></a>
+<span class="sourceLineNo">559</span>                                addObjectiveAt(0.75f, 0.5f, 1f, 1f, COMM, random);<a name="line.559"></a>
+<span class="sourceLineNo">560</span>                        } else if (r &lt; 0.67f) {<a name="line.560"></a>
+<span class="sourceLineNo">561</span>                                addObjectiveAt(0.75f, 0.7f, 1f, 1f, random);<a name="line.561"></a>
+<span class="sourceLineNo">562</span>                                addObjectiveAt(0.75f, 0.3f, 1f, 1f, random);<a name="line.562"></a>
+<span class="sourceLineNo">563</span>                                addObjectiveAt(0.25f, 0.5f, 1f, 1f, COMM, random);<a name="line.563"></a>
+<span class="sourceLineNo">564</span>                        } else {<a name="line.564"></a>
+<span class="sourceLineNo">565</span>                                if (random.nextFloat() &lt; 0.5f) {<a name="line.565"></a>
+<span class="sourceLineNo">566</span>                                        addObjectiveAt(0.22f, 0.7f, 1f, 1f, random);<a name="line.566"></a>
+<span class="sourceLineNo">567</span>                                        addObjectiveAt(0.5f, 0.5f, 1f, 1f, COMM, random);<a name="line.567"></a>
+<span class="sourceLineNo">568</span>                                        addObjectiveAt(0.78f, 0.3f, 1f, 1f, random);<a name="line.568"></a>
+<span class="sourceLineNo">569</span>                                } else {<a name="line.569"></a>
+<span class="sourceLineNo">570</span>                                        addObjectiveAt(0.22f, 0.3f, 1f, 1f, random);<a name="line.570"></a>
+<span class="sourceLineNo">571</span>                                        addObjectiveAt(0.5f, 0.5f, 1f, 1f, COMM, random);<a name="line.571"></a>
+<span class="sourceLineNo">572</span>                                        addObjectiveAt(0.78f, 0.7f, 1f, 1f, random);<a name="line.572"></a>
+<span class="sourceLineNo">573</span>                                }<a name="line.573"></a>
+<span class="sourceLineNo">574</span>                        }<a name="line.574"></a>
+<span class="sourceLineNo">575</span>                } else if (num == 4) {<a name="line.575"></a>
+<span class="sourceLineNo">576</span>                        float r = random.nextFloat();<a name="line.576"></a>
+<span class="sourceLineNo">577</span>                        if (r &lt; 0.33f) {<a name="line.577"></a>
+<span class="sourceLineNo">578</span>                                String [] maybeRelays = pickCommRelays(2, 2, false, true, true, false, random);<a name="line.578"></a>
+<span class="sourceLineNo">579</span>                                addObjectiveAt(0.25f, 0.25f, 2f, 1f, maybeRelays[0], random);<a name="line.579"></a>
+<span class="sourceLineNo">580</span>                                addObjectiveAt(0.25f, 0.75f, 2f, 1f, maybeRelays[1], random);<a name="line.580"></a>
+<span class="sourceLineNo">581</span>                                addObjectiveAt(0.75f, 0.25f, 2f, 1f, maybeRelays[2], random);<a name="line.581"></a>
+<span class="sourceLineNo">582</span>                                addObjectiveAt(0.75f, 0.75f, 2f, 1f, maybeRelays[3], random);<a name="line.582"></a>
+<span class="sourceLineNo">583</span>                        } else if (r &lt; 0.67f) {<a name="line.583"></a>
+<span class="sourceLineNo">584</span>                                String [] maybeRelays = pickCommRelays(1, 2, true, false, true, false, random);<a name="line.584"></a>
+<span class="sourceLineNo">585</span>                                addObjectiveAt(0.25f, 0.5f, 1f, 1f, maybeRelays[0], random);<a name="line.585"></a>
+<span class="sourceLineNo">586</span>                                addObjectiveAt(0.5f, 0.75f, 1f, 1f, maybeRelays[1], random);<a name="line.586"></a>
+<span class="sourceLineNo">587</span>                                addObjectiveAt(0.75f, 0.5f, 1f, 1f, maybeRelays[2], random);<a name="line.587"></a>
+<span class="sourceLineNo">588</span>                                addObjectiveAt(0.5f, 0.25f, 1f, 1f, maybeRelays[3], random);<a name="line.588"></a>
+<span class="sourceLineNo">589</span>                        } else {<a name="line.589"></a>
+<span class="sourceLineNo">590</span>                                if (random.nextFloat() &lt; 0.5f) {<a name="line.590"></a>
+<span class="sourceLineNo">591</span>                                        String [] maybeRelays = pickCommRelays(1, 2, true, false, true, false, random);<a name="line.591"></a>
+<span class="sourceLineNo">592</span>                                        addObjectiveAt(0.25f, 0.25f, 1f, 0f, maybeRelays[0], random);<a name="line.592"></a>
+<span class="sourceLineNo">593</span>                                        addObjectiveAt(0.4f, 0.6f, 1f, 0f, maybeRelays[1], random);<a name="line.593"></a>
+<span class="sourceLineNo">594</span>                                        addObjectiveAt(0.6f, 0.4f, 1f, 0f, maybeRelays[2], random);<a name="line.594"></a>
+<span class="sourceLineNo">595</span>                                        addObjectiveAt(0.75f, 0.75f, 1f, 0f, maybeRelays[3], random);<a name="line.595"></a>
+<span class="sourceLineNo">596</span>                                } else {<a name="line.596"></a>
+<span class="sourceLineNo">597</span>                                        String [] maybeRelays = pickCommRelays(1, 2, false, true, false, true, random);<a name="line.597"></a>
+<span class="sourceLineNo">598</span>                                        addObjectiveAt(0.25f, 0.75f, 1f, 0f, maybeRelays[0], random);<a name="line.598"></a>
+<span class="sourceLineNo">599</span>                                        addObjectiveAt(0.4f, 0.4f, 1f, 0f, maybeRelays[1], random);<a name="line.599"></a>
+<span class="sourceLineNo">600</span>                                        addObjectiveAt(0.6f, 0.6f, 1f, 0f, maybeRelays[2], random);<a name="line.600"></a>
+<span class="sourceLineNo">601</span>                                        addObjectiveAt(0.75f, 0.25f, 1f, 0f, maybeRelays[3], random);<a name="line.601"></a>
+<span class="sourceLineNo">602</span>                                }<a name="line.602"></a>
+<span class="sourceLineNo">603</span>                        }<a name="line.603"></a>
+<span class="sourceLineNo">604</span>                }<a name="line.604"></a>
+<span class="sourceLineNo">605</span>        }<a name="line.605"></a>
+<span class="sourceLineNo">606</span>        <a name="line.606"></a>
+<span class="sourceLineNo">607</span>        protected String [] pickCommRelays(int min, int max, boolean comm1, boolean comm2, boolean comm3, boolean comm4, Random random) {<a name="line.607"></a>
+<span class="sourceLineNo">608</span>                String [] result = new String [4];<a name="line.608"></a>
+<span class="sourceLineNo">609</span>                <a name="line.609"></a>
+<span class="sourceLineNo">610</span>                WeightedRandomPicker&lt;Integer&gt; picker = new WeightedRandomPicker&lt;Integer&gt;(random);<a name="line.610"></a>
+<span class="sourceLineNo">611</span>                if (comm1) picker.add(0);<a name="line.611"></a>
+<span class="sourceLineNo">612</span>                if (comm2) picker.add(1);<a name="line.612"></a>
+<span class="sourceLineNo">613</span>                if (comm3) picker.add(2);<a name="line.613"></a>
+<span class="sourceLineNo">614</span>                if (comm4) picker.add(3);<a name="line.614"></a>
+<span class="sourceLineNo">615</span>                <a name="line.615"></a>
+<span class="sourceLineNo">616</span>                int num = min + random.nextInt(max - min + 1);<a name="line.616"></a>
+<span class="sourceLineNo">617</span>                <a name="line.617"></a>
+<span class="sourceLineNo">618</span>                for (int i = 0; i &lt; num &amp;&amp; !picker.isEmpty(); i++) {<a name="line.618"></a>
+<span class="sourceLineNo">619</span>                        result[picker.pickAndRemove()] = COMM;<a name="line.619"></a>
+<span class="sourceLineNo">620</span>                }<a name="line.620"></a>
+<span class="sourceLineNo">621</span>                return result;<a name="line.621"></a>
+<span class="sourceLineNo">622</span>        }<a name="line.622"></a>
+<span class="sourceLineNo">623</span>        <a name="line.623"></a>
+<span class="sourceLineNo">624</span>        <a name="line.624"></a>
+<span class="sourceLineNo">625</span>        protected void addEscapeObjectives(MissionDefinitionAPI loader, int num, Random random) {<a name="line.625"></a>
+<span class="sourceLineNo">626</span>                objs = new ArrayList&lt;String&gt;(Arrays.asList(new String [] {<a name="line.626"></a>
+<span class="sourceLineNo">627</span>                                SENSOR,<a name="line.627"></a>
+<span class="sourceLineNo">628</span>                                SENSOR,<a name="line.628"></a>
+<span class="sourceLineNo">629</span>                                NAV,<a name="line.629"></a>
+<span class="sourceLineNo">630</span>                                NAV,<a name="line.630"></a>
+<span class="sourceLineNo">631</span>                                COMM,<a name="line.631"></a>
+<span class="sourceLineNo">632</span>                }));<a name="line.632"></a>
+<span class="sourceLineNo">633</span>                <a name="line.633"></a>
+<span class="sourceLineNo">634</span>                if (num == 2) {<a name="line.634"></a>
+<span class="sourceLineNo">635</span>                        float r = random.nextFloat();<a name="line.635"></a>
+<span class="sourceLineNo">636</span>                        if (r &lt; 0.33f) {<a name="line.636"></a>
+<span class="sourceLineNo">637</span>                                addObjectiveAt(0.25f, 0.25f, 1f, 1f, random);<a name="line.637"></a>
+<span class="sourceLineNo">638</span>                                addObjectiveAt(0.75f, 0.75f, 1f, 1f, random);<a name="line.638"></a>
+<span class="sourceLineNo">639</span>                        } else if (r &lt; 0.67f) {<a name="line.639"></a>
+<span class="sourceLineNo">640</span>                                addObjectiveAt(0.75f, 0.25f, 1f, 1f, random);<a name="line.640"></a>
+<span class="sourceLineNo">641</span>                                addObjectiveAt(0.25f, 0.75f, 1f, 1f, random);<a name="line.641"></a>
+<span class="sourceLineNo">642</span>                        } else {<a name="line.642"></a>
+<span class="sourceLineNo">643</span>                                addObjectiveAt(0.5f, 0.25f, 4f, 2f, random);<a name="line.643"></a>
+<span class="sourceLineNo">644</span>                                addObjectiveAt(0.5f, 0.75f, 4f, 2f, random);<a name="line.644"></a>
+<span class="sourceLineNo">645</span>                        }<a name="line.645"></a>
+<span class="sourceLineNo">646</span>                } else if (num == 3) {<a name="line.646"></a>
+<span class="sourceLineNo">647</span>                        float r = random.nextFloat();<a name="line.647"></a>
+<span class="sourceLineNo">648</span>                        if (r &lt; 0.33f) {<a name="line.648"></a>
+<span class="sourceLineNo">649</span>                                addObjectiveAt(0.25f, 0.75f, 1f, 1f, random);<a name="line.649"></a>
+<span class="sourceLineNo">650</span>                                addObjectiveAt(0.25f, 0.25f, 1f, 1f, random);<a name="line.650"></a>
+<span class="sourceLineNo">651</span>                                addObjectiveAt(0.75f, 0.5f, 1f, 6f, random);<a name="line.651"></a>
+<span class="sourceLineNo">652</span>                        } else if (r &lt; 0.67f) {<a name="line.652"></a>
+<span class="sourceLineNo">653</span>                                addObjectiveAt(0.25f, 0.5f, 1f, 6f, random);<a name="line.653"></a>
+<span class="sourceLineNo">654</span>                                addObjectiveAt(0.75f, 0.75f, 1f, 1f, random);<a name="line.654"></a>
+<span class="sourceLineNo">655</span>                                addObjectiveAt(0.75f, 0.25f, 1f, 1f, random);<a name="line.655"></a>
+<span class="sourceLineNo">656</span>                        } else {<a name="line.656"></a>
+<span class="sourceLineNo">657</span>                                addObjectiveAt(0.5f, 0.25f, 4f, 1f, random);<a name="line.657"></a>
+<span class="sourceLineNo">658</span>                                addObjectiveAt(0.5f, 0.5f, 4f, 1f, random);<a name="line.658"></a>
+<span class="sourceLineNo">659</span>                                addObjectiveAt(0.5f, 0.75f, 4f, 1f, random);<a name="line.659"></a>
+<span class="sourceLineNo">660</span>                        }<a name="line.660"></a>
+<span class="sourceLineNo">661</span>                } else if (num == 4) {<a name="line.661"></a>
+<span class="sourceLineNo">662</span>                        float r = random.nextFloat();<a name="line.662"></a>
+<span class="sourceLineNo">663</span>                        if (r &lt; 0.33f) {<a name="line.663"></a>
+<span class="sourceLineNo">664</span>                                addObjectiveAt(0.25f, 0.25f, 1f, 1f, random);<a name="line.664"></a>
+<span class="sourceLineNo">665</span>                                addObjectiveAt(0.25f, 0.75f, 1f, 1f, random);<a name="line.665"></a>
+<span class="sourceLineNo">666</span>                                addObjectiveAt(0.75f, 0.25f, 1f, 1f, random);<a name="line.666"></a>
+<span class="sourceLineNo">667</span>                                addObjectiveAt(0.75f, 0.75f, 1f, 1f, random);<a name="line.667"></a>
+<span class="sourceLineNo">668</span>                        } else if (r &lt; 0.67f) {<a name="line.668"></a>
+<span class="sourceLineNo">669</span>                                addObjectiveAt(0.35f, 0.25f, 2f, 0f, random);<a name="line.669"></a>
+<span class="sourceLineNo">670</span>                                addObjectiveAt(0.65f, 0.35f, 2f, 0f, random);<a name="line.670"></a>
+<span class="sourceLineNo">671</span>                                addObjectiveAt(0.5f, 0.6f, 4f, 1f, random);<a name="line.671"></a>
+<span class="sourceLineNo">672</span>                                addObjectiveAt(0.5f, 0.8f, 4f, 1f, random);<a name="line.672"></a>
+<span class="sourceLineNo">673</span>                        } else {<a name="line.673"></a>
+<span class="sourceLineNo">674</span>                                addObjectiveAt(0.65f, 0.25f, 2f, 0f, random);<a name="line.674"></a>
+<span class="sourceLineNo">675</span>                                addObjectiveAt(0.35f, 0.35f, 2f, 0f, random);<a name="line.675"></a>
+<span class="sourceLineNo">676</span>                                addObjectiveAt(0.5f, 0.6f, 4f, 1f, random);<a name="line.676"></a>
+<span class="sourceLineNo">677</span>                                addObjectiveAt(0.5f, 0.8f, 4f, 1f, random);<a name="line.677"></a>
+<span class="sourceLineNo">678</span>                        }<a name="line.678"></a>
+<span class="sourceLineNo">679</span>                }<a name="line.679"></a>
+<span class="sourceLineNo">680</span>        }       <a name="line.680"></a>
+<span class="sourceLineNo">681</span><a name="line.681"></a>
+<span class="sourceLineNo">682</span>        protected void addObjectiveAt(float xMult, float yMult, float xOff, float yOff, Random random) {<a name="line.682"></a>
+<span class="sourceLineNo">683</span>                addObjectiveAt(xMult, yMult, xOff, yOff, null, random);<a name="line.683"></a>
+<span class="sourceLineNo">684</span>        }<a name="line.684"></a>
+<span class="sourceLineNo">685</span>        protected void addObjectiveAt(float xMult, float yMult, float xOff, float yOff, String type, Random random) {<a name="line.685"></a>
+<span class="sourceLineNo">686</span>                //String type = pickAny();<a name="line.686"></a>
+<span class="sourceLineNo">687</span>                if (type == null) {<a name="line.687"></a>
+<span class="sourceLineNo">688</span>                        type = pickAny(random);<a name="line.688"></a>
+<span class="sourceLineNo">689</span>                        if (objs != null &amp;&amp; objs.size() &gt; 0) {<a name="line.689"></a>
+<span class="sourceLineNo">690</span>                                int index = (int) (random.nextDouble() * objs.size());<a name="line.690"></a>
+<span class="sourceLineNo">691</span>                                type = objs.remove(index); <a name="line.691"></a>
+<span class="sourceLineNo">692</span>                        }<a name="line.692"></a>
+<span class="sourceLineNo">693</span>                }<a name="line.693"></a>
+<span class="sourceLineNo">694</span>                <a name="line.694"></a>
+<span class="sourceLineNo">695</span>                float minX = -width/2 + xPad;<a name="line.695"></a>
+<span class="sourceLineNo">696</span>                float minY = -height/2 + yPad;<a name="line.696"></a>
+<span class="sourceLineNo">697</span>                <a name="line.697"></a>
+<span class="sourceLineNo">698</span>                float x = (width - xPad * 2f) * xMult + minX;<a name="line.698"></a>
+<span class="sourceLineNo">699</span>                float y = (height - yPad * 2f) * yMult + minY;<a name="line.699"></a>
+<span class="sourceLineNo">700</span>                <a name="line.700"></a>
+<span class="sourceLineNo">701</span>                x = ((int) x / 1000) * 1000f;<a name="line.701"></a>
+<span class="sourceLineNo">702</span>                y = ((int) y / 1000) * 1000f;<a name="line.702"></a>
+<span class="sourceLineNo">703</span>                <a name="line.703"></a>
+<span class="sourceLineNo">704</span>                float offsetX = Math.round((random.nextFloat() - 0.5f) * xOff * 1f) * 1000f;<a name="line.704"></a>
+<span class="sourceLineNo">705</span>                float offsetY = Math.round((random.nextFloat() - 0.5f) * yOff * 1f) * 1000f;<a name="line.705"></a>
+<span class="sourceLineNo">706</span>                <a name="line.706"></a>
+<span class="sourceLineNo">707</span>//              offsetX = 0;<a name="line.707"></a>
+<span class="sourceLineNo">708</span>//              offsetY = 0;<a name="line.708"></a>
+<span class="sourceLineNo">709</span>                <a name="line.709"></a>
+<span class="sourceLineNo">710</span>                float xDir = (float) Math.signum(offsetX);<a name="line.710"></a>
+<span class="sourceLineNo">711</span>                float yDir = (float) Math.signum(offsetY);<a name="line.711"></a>
+<span class="sourceLineNo">712</span>                <a name="line.712"></a>
+<span class="sourceLineNo">713</span>                if (xDir == prevXDir &amp;&amp; xOff &gt; 0) {<a name="line.713"></a>
+<span class="sourceLineNo">714</span>                        xDir = -xDir;<a name="line.714"></a>
+<span class="sourceLineNo">715</span>                        offsetX = Math.abs(offsetX) * -prevXDir;<a name="line.715"></a>
+<span class="sourceLineNo">716</span>                }<a name="line.716"></a>
+<span class="sourceLineNo">717</span>                <a name="line.717"></a>
+<span class="sourceLineNo">718</span>                if (yDir == prevYDir &amp;&amp; yOff &gt; 0) {<a name="line.718"></a>
+<span class="sourceLineNo">719</span>                        yDir = -yDir;<a name="line.719"></a>
+<span class="sourceLineNo">720</span>                        offsetY = Math.abs(offsetY) * -prevYDir;<a name="line.720"></a>
+<span class="sourceLineNo">721</span>                }<a name="line.721"></a>
+<span class="sourceLineNo">722</span>                <a name="line.722"></a>
+<span class="sourceLineNo">723</span>                prevXDir = xDir;<a name="line.723"></a>
+<span class="sourceLineNo">724</span>                prevYDir = yDir;<a name="line.724"></a>
+<span class="sourceLineNo">725</span>                <a name="line.725"></a>
+<span class="sourceLineNo">726</span>                x += offsetX;<a name="line.726"></a>
+<span class="sourceLineNo">727</span>                y += offsetY;<a name="line.727"></a>
+<span class="sourceLineNo">728</span>                <a name="line.728"></a>
+<span class="sourceLineNo">729</span>                loader.addObjective(x, y, type);<a name="line.729"></a>
+<span class="sourceLineNo">730</span>                <a name="line.730"></a>
+<span class="sourceLineNo">731</span>                if (random.nextFloat() &gt; 0.6f &amp;&amp; loader.hasNebula()) {<a name="line.731"></a>
+<span class="sourceLineNo">732</span>                        float nebulaSize = random.nextFloat() * 1500f + 500f;<a name="line.732"></a>
+<span class="sourceLineNo">733</span>                        loader.addNebula(x, y, nebulaSize);<a name="line.733"></a>
+<span class="sourceLineNo">734</span>                }<a name="line.734"></a>
+<span class="sourceLineNo">735</span>        }<a name="line.735"></a>
+<span class="sourceLineNo">736</span>        <a name="line.736"></a>
+<span class="sourceLineNo">737</span>        protected String pickAny(Random random) {<a name="line.737"></a>
+<span class="sourceLineNo">738</span>                float r = random.nextFloat();<a name="line.738"></a>
+<span class="sourceLineNo">739</span>                if (r &lt; 0.33f) return "nav_buoy";<a name="line.739"></a>
+<span class="sourceLineNo">740</span>                else if (r &lt; 0.67f) return "sensor_array";<a name="line.740"></a>
+<span class="sourceLineNo">741</span>                else return "comm_relay"; <a name="line.741"></a>
+<span class="sourceLineNo">742</span>        }<a name="line.742"></a>
+<span class="sourceLineNo">743</span><a name="line.743"></a>
+<span class="sourceLineNo">744</span>        protected float countNearbyAsteroids(CampaignFleetAPI playerFleet) {<a name="line.744"></a>
+<span class="sourceLineNo">745</span>                float numAsteroidsWithinRange = 0;<a name="line.745"></a>
+<span class="sourceLineNo">746</span>                LocationAPI loc = playerFleet.getContainingLocation();<a name="line.746"></a>
+<span class="sourceLineNo">747</span>                if (loc instanceof StarSystemAPI) {<a name="line.747"></a>
+<span class="sourceLineNo">748</span>                        StarSystemAPI system = (StarSystemAPI) loc;<a name="line.748"></a>
+<span class="sourceLineNo">749</span>                        List&lt;SectorEntityToken&gt; asteroids = system.getAsteroids();<a name="line.749"></a>
+<span class="sourceLineNo">750</span>                        for (SectorEntityToken asteroid : asteroids) {<a name="line.750"></a>
+<span class="sourceLineNo">751</span>                                float range = Vector2f.sub(playerFleet.getLocation(), asteroid.getLocation(), new Vector2f()).length();<a name="line.751"></a>
+<span class="sourceLineNo">752</span>                                if (range &lt; 300) numAsteroidsWithinRange ++;<a name="line.752"></a>
+<span class="sourceLineNo">753</span>                        }<a name="line.753"></a>
+<span class="sourceLineNo">754</span>                }<a name="line.754"></a>
+<span class="sourceLineNo">755</span>                return numAsteroidsWithinRange;<a name="line.755"></a>
+<span class="sourceLineNo">756</span>        }<a name="line.756"></a>
+<span class="sourceLineNo">757</span>        <a name="line.757"></a>
+<span class="sourceLineNo">758</span>        protected static class NearbyPlanetData {<a name="line.758"></a>
+<span class="sourceLineNo">759</span>                protected Vector2f offset;<a name="line.759"></a>
+<span class="sourceLineNo">760</span>                protected PlanetAPI planet;<a name="line.760"></a>
+<span class="sourceLineNo">761</span>                public NearbyPlanetData(Vector2f offset, PlanetAPI planet) {<a name="line.761"></a>
+<span class="sourceLineNo">762</span>                        this.offset = offset;<a name="line.762"></a>
+<span class="sourceLineNo">763</span>                        this.planet = planet;<a name="line.763"></a>
+<span class="sourceLineNo">764</span>                }<a name="line.764"></a>
+<span class="sourceLineNo">765</span>        }<a name="line.765"></a>
+<span class="sourceLineNo">766</span>        <a name="line.766"></a>
+<span class="sourceLineNo">767</span>        protected static float PLANET_AREA_WIDTH = 2000;<a name="line.767"></a>
+<span class="sourceLineNo">768</span>        protected static float PLANET_AREA_HEIGHT = 2000;<a name="line.768"></a>
+<span class="sourceLineNo">769</span>        protected static float PLANET_MAX_DIST = (float) Math.sqrt(PLANET_AREA_WIDTH/2f * PLANET_AREA_WIDTH/2f + PLANET_AREA_HEIGHT/2f * PLANET_AREA_WIDTH/2f);<a name="line.769"></a>
+<span class="sourceLineNo">770</span>        <a name="line.770"></a>
+<span class="sourceLineNo">771</span>        protected static float SINGLE_PLANET_MAX_DIST = 1000f;<a name="line.771"></a>
+<span class="sourceLineNo">772</span>        <a name="line.772"></a>
+<span class="sourceLineNo">773</span>        protected List&lt;NearbyPlanetData&gt; getNearbyPlanets(CampaignFleetAPI playerFleet) {<a name="line.773"></a>
+<span class="sourceLineNo">774</span>                LocationAPI loc = playerFleet.getContainingLocation();<a name="line.774"></a>
+<span class="sourceLineNo">775</span>                List&lt;NearbyPlanetData&gt; result = new ArrayList&lt;NearbyPlanetData&gt;();<a name="line.775"></a>
+<span class="sourceLineNo">776</span>                if (loc instanceof StarSystemAPI) {<a name="line.776"></a>
+<span class="sourceLineNo">777</span>                        StarSystemAPI system = (StarSystemAPI) loc;<a name="line.777"></a>
+<span class="sourceLineNo">778</span>                        List&lt;PlanetAPI&gt; planets = system.getPlanets();<a name="line.778"></a>
+<span class="sourceLineNo">779</span>                        for (PlanetAPI planet : planets) {<a name="line.779"></a>
+<span class="sourceLineNo">780</span>                                float diffX = planet.getLocation().x - playerFleet.getLocation().x;<a name="line.780"></a>
+<span class="sourceLineNo">781</span>                                float diffY = planet.getLocation().y - playerFleet.getLocation().y;<a name="line.781"></a>
+<span class="sourceLineNo">782</span>                                <a name="line.782"></a>
+<span class="sourceLineNo">783</span>                                if (Math.abs(diffX) &lt; PLANET_AREA_WIDTH/2f &amp;&amp; Math.abs(diffY) &lt; PLANET_AREA_HEIGHT/2f) {<a name="line.783"></a>
+<span class="sourceLineNo">784</span>                                        result.add(new NearbyPlanetData(new Vector2f(diffX, diffY), planet));<a name="line.784"></a>
+<span class="sourceLineNo">785</span>                                }<a name="line.785"></a>
+<span class="sourceLineNo">786</span>                        }<a name="line.786"></a>
+<span class="sourceLineNo">787</span>                }<a name="line.787"></a>
+<span class="sourceLineNo">788</span>                return result;<a name="line.788"></a>
+<span class="sourceLineNo">789</span>        }<a name="line.789"></a>
+<span class="sourceLineNo">790</span>        <a name="line.790"></a>
+<span class="sourceLineNo">791</span>        protected PlanetAPI getClosestPlanet(CampaignFleetAPI playerFleet) {<a name="line.791"></a>
+<span class="sourceLineNo">792</span>                LocationAPI loc = playerFleet.getContainingLocation();<a name="line.792"></a>
+<span class="sourceLineNo">793</span>                PlanetAPI closest = null;<a name="line.793"></a>
+<span class="sourceLineNo">794</span>                float minDist = Float.MAX_VALUE;<a name="line.794"></a>
+<span class="sourceLineNo">795</span>                if (loc instanceof StarSystemAPI) {<a name="line.795"></a>
+<span class="sourceLineNo">796</span>                        StarSystemAPI system = (StarSystemAPI) loc;<a name="line.796"></a>
+<span class="sourceLineNo">797</span>                        List&lt;PlanetAPI&gt; planets = system.getPlanets();<a name="line.797"></a>
+<span class="sourceLineNo">798</span>                        for (PlanetAPI planet : planets) {<a name="line.798"></a>
+<span class="sourceLineNo">799</span>                                if (planet.isStar()) continue;<a name="line.799"></a>
+<span class="sourceLineNo">800</span>                                if (Planets.PLANET_LAVA.equals(planet.getTypeId())) continue;<a name="line.800"></a>
+<span class="sourceLineNo">801</span>                                if (Planets.PLANET_LAVA_MINOR.equals(planet.getTypeId())) continue;<a name="line.801"></a>
+<span class="sourceLineNo">802</span>                                if (planet.getSpec().isDoNotShowInCombat()) continue;<a name="line.802"></a>
+<span class="sourceLineNo">803</span>                                <a name="line.803"></a>
+<span class="sourceLineNo">804</span>                                float dist = Vector2f.sub(context.getPlayerFleet().getLocation(), planet.getLocation(), new Vector2f()).length();<a name="line.804"></a>
+<span class="sourceLineNo">805</span>                                if (dist &lt; minDist &amp;&amp; dist &lt; SINGLE_PLANET_MAX_DIST) {<a name="line.805"></a>
+<span class="sourceLineNo">806</span>                                        closest = planet;<a name="line.806"></a>
+<span class="sourceLineNo">807</span>                                        minDist = dist;<a name="line.807"></a>
+<span class="sourceLineNo">808</span>                                }<a name="line.808"></a>
+<span class="sourceLineNo">809</span>                        }<a name="line.809"></a>
+<span class="sourceLineNo">810</span>                }<a name="line.810"></a>
+<span class="sourceLineNo">811</span>                return closest;<a name="line.811"></a>
+<span class="sourceLineNo">812</span>        }<a name="line.812"></a>
+<span class="sourceLineNo">813</span>}<a name="line.813"></a>
+<span class="sourceLineNo">814</span><a name="line.814"></a>
+<span class="sourceLineNo">815</span><a name="line.815"></a>
+<span class="sourceLineNo">816</span><a name="line.816"></a>
+<span class="sourceLineNo">817</span><a name="line.817"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

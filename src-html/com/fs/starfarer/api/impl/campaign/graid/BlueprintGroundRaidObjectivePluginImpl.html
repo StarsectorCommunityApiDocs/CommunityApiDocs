@@ -1,0 +1,372 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.graid;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import java.util.LinkedHashSet;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import java.util.Random;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import java.util.Set;<a name="line.6"></a>
+<span class="sourceLineNo">007</span><a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.Global;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.campaign.CargoAPI;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.campaign.CargoAPI.CargoItemType;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.campaign.CargoStackAPI;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.campaign.FactionAPI;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.campaign.SpecialItemData;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.campaign.TextPanelAPI;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.campaign.econ.CommoditySpecAPI;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.campaign.econ.Industry;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.campaign.econ.MarketAPI;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import com.fs.starfarer.api.campaign.econ.MutableCommodityQuantity;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import com.fs.starfarer.api.impl.campaign.ids.Commodities;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import com.fs.starfarer.api.impl.campaign.ids.Industries;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import com.fs.starfarer.api.impl.campaign.ids.Items;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import com.fs.starfarer.api.impl.campaign.ids.Tags;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>import com.fs.starfarer.api.impl.campaign.rulecmd.salvage.MarketCMD.RaidDangerLevel;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>import com.fs.starfarer.api.ui.TooltipMakerAPI;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>import com.fs.starfarer.api.util.Misc;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>import com.fs.starfarer.api.util.Pair;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>import com.fs.starfarer.api.util.WeightedRandomPicker;<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>public class BlueprintGroundRaidObjectivePluginImpl extends BaseGroundRaidObjectivePluginImpl {<a name="line.29"></a>
+<span class="sourceLineNo">030</span>        <a name="line.30"></a>
+<span class="sourceLineNo">031</span>        public static float PROBABILITY_TO_DROP_BP_NOT_DROPPED_BEFORE = 0.8f;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>        <a name="line.32"></a>
+<span class="sourceLineNo">033</span>        protected int bpUseScale = 0;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>        public BlueprintGroundRaidObjectivePluginImpl(MarketAPI market) {<a name="line.34"></a>
+<span class="sourceLineNo">035</span>                super(market, Commodities.BLUEPRINTS);<a name="line.35"></a>
+<span class="sourceLineNo">036</span>                setSource(computeSource());<a name="line.36"></a>
+<span class="sourceLineNo">037</span>        }<a name="line.37"></a>
+<span class="sourceLineNo">038</span>        <a name="line.38"></a>
+<span class="sourceLineNo">039</span>        @Override<a name="line.39"></a>
+<span class="sourceLineNo">040</span>        public void setSource(Industry source) {<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                super.setSource(source);<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                RaidDangerLevel level = getDangerLevel();<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                int marines = level.marineTokens;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>                if (source != null) {<a name="line.44"></a>
+<span class="sourceLineNo">045</span>                        marines = source.adjustMarineTokensToRaidItem(id, null, marines); <a name="line.45"></a>
+<span class="sourceLineNo">046</span>                }<a name="line.46"></a>
+<span class="sourceLineNo">047</span>                setMarinesRequired(marines);<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        }<a name="line.48"></a>
+<span class="sourceLineNo">049</span><a name="line.49"></a>
+<span class="sourceLineNo">050</span>        public int getProjectedCreditsValue() {<a name="line.50"></a>
+<span class="sourceLineNo">051</span>                return 0;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        }<a name="line.52"></a>
+<span class="sourceLineNo">053</span>        <a name="line.53"></a>
+<span class="sourceLineNo">054</span>        public CommoditySpecAPI getCommoditySpec() {<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                return Global.getSettings().getCommoditySpec(id);<a name="line.55"></a>
+<span class="sourceLineNo">056</span>        }<a name="line.56"></a>
+<span class="sourceLineNo">057</span>        <a name="line.57"></a>
+<span class="sourceLineNo">058</span>        public RaidDangerLevel getDangerLevel() {<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                RaidDangerLevel level = getCommoditySpec().getBaseDanger();<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                if (source != null) {<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                        level = source.adjustItemDangerLevel(id, null, level);<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                }<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                return level;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        }<a name="line.64"></a>
+<span class="sourceLineNo">065</span><a name="line.65"></a>
+<span class="sourceLineNo">066</span>        public float getQuantitySortValue() {<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                CommoditySpecAPI spec = getCommoditySpec();<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                float add = 0;<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                if (spec != null) {<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                        add = spec.getOrder();<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                }<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                return QUANTITY_SORT_TIER_2 + add; <a name="line.72"></a>
+<span class="sourceLineNo">073</span>        }<a name="line.73"></a>
+<span class="sourceLineNo">074</span>        <a name="line.74"></a>
+<span class="sourceLineNo">075</span>        public String getQuantityString(int marines) {<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                Pair&lt;Integer, Integer&gt; q = getQuantityRange();<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                return "" + q.one + "-" + q.two;<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        }<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        <a name="line.79"></a>
+<span class="sourceLineNo">080</span>        @Override<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        public String getValueString(int marines) {<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                return "";<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        }<a name="line.83"></a>
+<span class="sourceLineNo">084</span><a name="line.84"></a>
+<span class="sourceLineNo">085</span>        public int getValue(int marines) {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                return 0;<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        }<a name="line.87"></a>
+<span class="sourceLineNo">088</span><a name="line.88"></a>
+<span class="sourceLineNo">089</span>        public Pair&lt;Integer, Integer&gt; getQuantityRange() {<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                Pair&lt;Integer, Integer&gt; q = new Pair&lt;Integer, Integer&gt;();<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                int scale = bpUseScale - 995;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                //scale = bpUseScale;<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                if (scale &lt;= 0) {<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                        q.one = 0;<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                        q.two = 0;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                } else if (scale &lt;= 5) {<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                        q.one = 1;<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                        q.two = 2;<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                } else if (scale &lt;= 7) {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                        q.one = 2;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                        q.two = 3;<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                } else {<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                        q.one = 3;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                        q.two = 4;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                }<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                <a name="line.106"></a>
+<span class="sourceLineNo">107</span>                return q;<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        }<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        <a name="line.109"></a>
+<span class="sourceLineNo">110</span>        public float getQuantity(int marines) {<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                return getQuantityRange().one;<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        }<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        <a name="line.113"></a>
+<span class="sourceLineNo">114</span>        public Industry computeSource() {<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                Industry best = null;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                int score = 0;<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                RaidDangerLevel base = getCommoditySpec().getBaseDanger();<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                for (Industry ind : market.getIndustries()) {<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                        if (!ind.getSpec().hasTag(Industries.TAG_USES_BLUEPRINTS)) continue;<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                        <a name="line.120"></a>
+<span class="sourceLineNo">121</span>                        int scale = 0;<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                        for (MutableCommodityQuantity q : ind.getAllSupply()) {<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                                scale = Math.max(scale, q.getQuantity().getModifiedInt());<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                        }<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                        for (MutableCommodityQuantity q : ind.getAllDemand()) {<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                                scale = Math.max(scale, q.getQuantity().getModifiedInt());<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                        }<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                        int currScore = scale;<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                        RaidDangerLevel danger = ind.adjustItemDangerLevel(Commodities.BLUEPRINTS, null, base);<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                        currScore += 1000 - danger.ordinal();<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                        if (currScore &gt; score) {<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                                score = currScore;<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                                best = ind;<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                        }<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                }<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                bpUseScale = score;<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                return best;<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        }<a name="line.138"></a>
+<span class="sourceLineNo">139</span><a name="line.139"></a>
+<span class="sourceLineNo">140</span>        public String getName() {<a name="line.140"></a>
+<span class="sourceLineNo">141</span>//              if (bpTypeId != null &amp;&amp; data != null) {<a name="line.141"></a>
+<span class="sourceLineNo">142</span>//                      CargoStackAPI stack = Global.getFactory().createCargoStack(CargoItemType.SPECIAL, <a name="line.142"></a>
+<span class="sourceLineNo">143</span>//                                                                                                              new SpecialItemData(bpTypeId, data), null);<a name="line.143"></a>
+<span class="sourceLineNo">144</span>//                      return stack.getDisplayName();<a name="line.144"></a>
+<span class="sourceLineNo">145</span>//              }<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                return "Blueprints";<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        }<a name="line.147"></a>
+<span class="sourceLineNo">148</span><a name="line.148"></a>
+<span class="sourceLineNo">149</span>        public CargoStackAPI getStackForIcon() {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                CargoStackAPI stack = Global.getFactory().createCargoStack(CargoItemType.RESOURCES, Commodities.BLUEPRINTS, null);<a name="line.150"></a>
+<span class="sourceLineNo">151</span>//              if (bpTypeId != null &amp;&amp; data != null) {<a name="line.151"></a>
+<span class="sourceLineNo">152</span>//                      stack = Global.getFactory().createCargoStack(CargoItemType.SPECIAL, <a name="line.152"></a>
+<span class="sourceLineNo">153</span>//                                                                                                              new SpecialItemData(bpTypeId, data), null);<a name="line.153"></a>
+<span class="sourceLineNo">154</span>//              }<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                return stack;<a name="line.155"></a>
+<span class="sourceLineNo">156</span>        }<a name="line.156"></a>
+<span class="sourceLineNo">157</span>        <a name="line.157"></a>
+<span class="sourceLineNo">158</span>        @SuppressWarnings("unchecked")<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        public Set&lt;String&gt; getDropped() {<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                String key = "BlueprintGroundRaidObjectivePluginImpl_dropped";<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                Object data = Global.getSector().getPersistentData().get(key);<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                if (data == null) {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                        data = new LinkedHashSet&lt;String&gt;();<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                        Global.getSector().getPersistentData().put(key, data);<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                }<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                return (Set&lt;String&gt;) data;<a name="line.166"></a>
+<span class="sourceLineNo">167</span>        }<a name="line.167"></a>
+<span class="sourceLineNo">168</span>        <a name="line.168"></a>
+<span class="sourceLineNo">169</span>        protected CargoAPI looted = Global.getFactory().createCargo(true);<a name="line.169"></a>
+<span class="sourceLineNo">170</span>        <a name="line.170"></a>
+<span class="sourceLineNo">171</span>        public int performRaid(CargoAPI loot, Random random, float lootMult, TextPanelAPI text) {<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                if (marinesAssigned &lt;= 0) return 0;<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                <a name="line.173"></a>
+<span class="sourceLineNo">174</span>                //random = new Random();<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                <a name="line.175"></a>
+<span class="sourceLineNo">176</span>                String ship    = "MarketCMD_ship____";<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                String weapon  = "MarketCMD_weapon__";<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                String fighter = "MarketCMD_fighter_";<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                <a name="line.179"></a>
+<span class="sourceLineNo">180</span>                FactionAPI playerFaction = Global.getSector().getPlayerFaction();<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                <a name="line.181"></a>
+<span class="sourceLineNo">182</span>                Set&lt;String&gt; droppedBefore = getDropped();<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                <a name="line.183"></a>
+<span class="sourceLineNo">184</span>                WeightedRandomPicker&lt;String&gt; notDroppedBefore = new WeightedRandomPicker&lt;String&gt;(random);<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                WeightedRandomPicker&lt;String&gt; other = new WeightedRandomPicker&lt;String&gt;(random);<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                for (String id : market.getFaction().getKnownShips()) {<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                        if (Global.getSettings().getHullSpec(id).hasTag(Tags.NO_BP_DROP)) continue;<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                        <a name="line.188"></a>
+<span class="sourceLineNo">189</span>                        String id2 = ship + id;<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                        if (!playerFaction.knowsShip(id) &amp;&amp; !droppedBefore.contains(id2)) {<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                                notDroppedBefore.add(id2, 1f);<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                        } else {<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                                other.add(id2, 1f);<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                        }<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                }<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                for (String id : market.getFaction().getKnownWeapons()) {<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                        if (Global.getSettings().getWeaponSpec(id).hasTag(Tags.NO_BP_DROP)) continue;<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                        <a name="line.198"></a>
+<span class="sourceLineNo">199</span>                        String id2 = weapon + id;<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                        if (!playerFaction.knowsWeapon(id) &amp;&amp; !droppedBefore.contains(id2)) {<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                                notDroppedBefore.add(weapon + id, 1f);<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                        } else {<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                                other.add(weapon + id, 1f);<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                        }<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                }<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                for (String id : market.getFaction().getKnownFighters()) {<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                        if (Global.getSettings().getFighterWingSpec(id).hasTag(Tags.NO_BP_DROP)) continue;<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                        <a name="line.208"></a>
+<span class="sourceLineNo">209</span>                        String id2 = fighter + id;<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                        if (!playerFaction.knowsFighter(id) &amp;&amp; !droppedBefore.contains(id2)) {<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                                notDroppedBefore.add(fighter + id, 1f);<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                        } else {<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                                other.add(fighter + id, 1f);<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                        }<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                }<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                <a name="line.216"></a>
+<span class="sourceLineNo">217</span>                looted.clear();<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                <a name="line.218"></a>
+<span class="sourceLineNo">219</span>                Pair&lt;Integer, Integer&gt; q = getQuantityRange();<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                int num = q.one + random.nextInt(q.two - q.one + 1);<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                for (int i = 0; i &lt; num &amp;&amp; (!notDroppedBefore.isEmpty() || !other.isEmpty()); i++) {<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                        String id = null;<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                        if (random.nextFloat() &lt; PROBABILITY_TO_DROP_BP_NOT_DROPPED_BEFORE) {<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                                id = notDroppedBefore.pickAndRemove();<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                        }<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                         <a name="line.226"></a>
+<span class="sourceLineNo">227</span>                        if (id == null) {<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                                id = other.pickAndRemove();<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                        }<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                        if (id == null) continue;<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                        <a name="line.231"></a>
+<span class="sourceLineNo">232</span>                        droppedBefore.add(id);<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                        <a name="line.233"></a>
+<span class="sourceLineNo">234</span>                        if (id.startsWith(ship)) {<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                                String specId = id.substring(ship.length());<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                                //if (Global.getSettings().getHullSpec(specId).hasTag(Tags.NO_BP_DROP)) continue;<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                                looted.addSpecial(new SpecialItemData(Items.SHIP_BP, specId), 1);<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                        } else if (id.startsWith(weapon)) {<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                                String specId = id.substring(weapon.length());<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                                //if (Global.getSettings().getWeaponSpec(specId).hasTag(Tags.NO_BP_DROP)) continue;<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                                looted.addSpecial(new SpecialItemData(Items.WEAPON_BP, specId), 1);<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                        } else if (id.startsWith(fighter)) {<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                                String specId = id.substring(fighter.length());<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                                //if (Global.getSettings().getFighterWingSpec(specId).hasTag(Tags.NO_BP_DROP)) continue;<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                                looted.addSpecial(new SpecialItemData(Items.FIGHTER_BP, specId), 1);<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                        }<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                }<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                <a name="line.248"></a>
+<span class="sourceLineNo">249</span>                int totalValue = 0;<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                for (CargoStackAPI stack : looted.getStacksCopy()) {<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                        totalValue += stack.getBaseValuePerUnit() * stack.getSize();<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                }<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                <a name="line.253"></a>
+<span class="sourceLineNo">254</span>                loot.addAll(looted);<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                <a name="line.255"></a>
+<span class="sourceLineNo">256</span>                xpGained = (int) (totalValue * XP_GAIN_VALUE_MULT);<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                return xpGained;<a name="line.257"></a>
+<span class="sourceLineNo">258</span>        }<a name="line.258"></a>
+<span class="sourceLineNo">259</span><a name="line.259"></a>
+<span class="sourceLineNo">260</span>        <a name="line.260"></a>
+<span class="sourceLineNo">261</span>        <a name="line.261"></a>
+<span class="sourceLineNo">262</span>        public CargoAPI getLooted() {<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                return looted;<a name="line.263"></a>
+<span class="sourceLineNo">264</span>        }<a name="line.264"></a>
+<span class="sourceLineNo">265</span>        <a name="line.265"></a>
+<span class="sourceLineNo">266</span>        <a name="line.266"></a>
+<span class="sourceLineNo">267</span>        @Override<a name="line.267"></a>
+<span class="sourceLineNo">268</span>        public boolean hasTooltip() {<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                return true;<a name="line.269"></a>
+<span class="sourceLineNo">270</span>        }<a name="line.270"></a>
+<span class="sourceLineNo">271</span><a name="line.271"></a>
+<span class="sourceLineNo">272</span>        @Override<a name="line.272"></a>
+<span class="sourceLineNo">273</span>        public void createTooltip(TooltipMakerAPI t, boolean expanded) {<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                float opad = 10f;<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                float pad = 3f;<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                Color h = Misc.getHighlightColor();<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                Color bad = Misc.getNegativeHighlightColor();<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                Color good = Misc.getPositiveHighlightColor();<a name="line.278"></a>
+<span class="sourceLineNo">279</span><a name="line.279"></a>
+<span class="sourceLineNo">280</span>                // scale<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                // value not being predictable<a name="line.281"></a>
+<span class="sourceLineNo">282</span>                // unknown blueprints being targeted<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                <a name="line.283"></a>
+<span class="sourceLineNo">284</span>                t.addPara("Blueprints that enable heavy industry to construct ships, ship weapons, and fighter LPCs. " +<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                                "Availability based on the scale of the biggest blueprint-using industry at the colony.", 0f);<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                <a name="line.286"></a>
+<span class="sourceLineNo">287</span>//              t.addPara("The value of the recovered blueprints can vary wildly, but your marines will focus on " +<a name="line.287"></a>
+<span class="sourceLineNo">288</span>//                              "acquiring unknown blueprints first.", opad);<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                t.addPara("The value of the recovered blueprints can vary wildly.", opad);<a name="line.289"></a>
+<span class="sourceLineNo">290</span>        }<a name="line.290"></a>
+<span class="sourceLineNo">291</span><a name="line.291"></a>
+<span class="sourceLineNo">292</span>}<a name="line.292"></a>
+<span class="sourceLineNo">293</span><a name="line.293"></a>
+<span class="sourceLineNo">294</span><a name="line.294"></a>
+<span class="sourceLineNo">295</span><a name="line.295"></a>
+<span class="sourceLineNo">296</span><a name="line.296"></a>
+<span class="sourceLineNo">297</span><a name="line.297"></a>
+<span class="sourceLineNo">298</span><a name="line.298"></a>
+<span class="sourceLineNo">299</span><a name="line.299"></a>
+<span class="sourceLineNo">300</span><a name="line.300"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

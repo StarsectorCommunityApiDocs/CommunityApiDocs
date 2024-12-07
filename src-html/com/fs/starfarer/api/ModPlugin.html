@@ -1,0 +1,215 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import com.fs.starfarer.api.combat.AutofireAIPlugin;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import com.fs.starfarer.api.combat.DroneLauncherShipSystemAPI;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import com.fs.starfarer.api.combat.MissileAIPlugin;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import com.fs.starfarer.api.combat.MissileAPI;<a name="line.6"></a>
+<span class="sourceLineNo">007</span>import com.fs.starfarer.api.combat.ShipAIPlugin;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.combat.ShipAPI;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.combat.WeaponAPI;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.fleet.FleetMemberAPI;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.thoughtworks.xstream.XStream;<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>/**<a name="line.13"></a>
+<span class="sourceLineNo">014</span> * &lt;b&gt;NOTE: Instead of implementing this interface, extend BaseModPlugin instead.&lt;/b&gt; <a name="line.14"></a>
+<span class="sourceLineNo">015</span> * <a name="line.15"></a>
+<span class="sourceLineNo">016</span> * A new instance of a mod's modPlugin class will be created when the game starts.<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * <a name="line.17"></a>
+<span class="sourceLineNo">018</span> * @author Alex Mosolov<a name="line.18"></a>
+<span class="sourceLineNo">019</span> *<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * Copyright 2012 Fractal Softworks, LLC<a name="line.20"></a>
+<span class="sourceLineNo">021</span> */<a name="line.21"></a>
+<span class="sourceLineNo">022</span>public interface ModPlugin {<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span>        /**<a name="line.24"></a>
+<span class="sourceLineNo">025</span>         * Called after all the core loading has finished and all the scripts have finished being compiled.<a name="line.25"></a>
+<span class="sourceLineNo">026</span>         * Gives the mod an opportunity to load its own data using the relevant SettingsAPI methods.<a name="line.26"></a>
+<span class="sourceLineNo">027</span>         * <a name="line.27"></a>
+<span class="sourceLineNo">028</span>         * @throws Exception<a name="line.28"></a>
+<span class="sourceLineNo">029</span>         */<a name="line.29"></a>
+<span class="sourceLineNo">030</span>        void onApplicationLoad() throws Exception;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>        <a name="line.31"></a>
+<span class="sourceLineNo">032</span>        /**<a name="line.32"></a>
+<span class="sourceLineNo">033</span>         * Called when a new game is being created. This is the preferred way to generate the contents of the Sector,<a name="line.33"></a>
+<span class="sourceLineNo">034</span>         * and is meant to replace generators.csv (which remains used for backwards compatibility).<a name="line.34"></a>
+<span class="sourceLineNo">035</span>         */<a name="line.35"></a>
+<span class="sourceLineNo">036</span>        void onNewGame();<a name="line.36"></a>
+<span class="sourceLineNo">037</span>        <a name="line.37"></a>
+<span class="sourceLineNo">038</span>        /**<a name="line.38"></a>
+<span class="sourceLineNo">039</span>         * Called before onGameLoad() and only if this mod was not previously enabled for the loaded saved game, or if this is<a name="line.39"></a>
+<span class="sourceLineNo">040</span>         * a new game.<a name="line.40"></a>
+<span class="sourceLineNo">041</span>         * @param wasEnabledBefore true if the mod was enabled for this saved game at some point in the past, though not immediately prior (or this method wouldn't be called at all).<a name="line.41"></a>
+<span class="sourceLineNo">042</span>         */<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        void onEnabled(boolean wasEnabledBefore);<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        <a name="line.44"></a>
+<span class="sourceLineNo">045</span>        /**<a name="line.45"></a>
+<span class="sourceLineNo">046</span>         * Called after a game has been loaded. Also called when a new game is created, after the onNewGame() plugins for all the<a name="line.46"></a>
+<span class="sourceLineNo">047</span>         * mods have been called.<a name="line.47"></a>
+<span class="sourceLineNo">048</span>         */<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        void onGameLoad(boolean newGame);<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        <a name="line.50"></a>
+<span class="sourceLineNo">051</span>        /**<a name="line.51"></a>
+<span class="sourceLineNo">052</span>         * Called before a game is saved.<a name="line.52"></a>
+<span class="sourceLineNo">053</span>         */<a name="line.53"></a>
+<span class="sourceLineNo">054</span>        void beforeGameSave();<a name="line.54"></a>
+<span class="sourceLineNo">055</span>        <a name="line.55"></a>
+<span class="sourceLineNo">056</span>        /**<a name="line.56"></a>
+<span class="sourceLineNo">057</span>         * Called after a game is saved.<a name="line.57"></a>
+<span class="sourceLineNo">058</span>         */<a name="line.58"></a>
+<span class="sourceLineNo">059</span>        void afterGameSave();<a name="line.59"></a>
+<span class="sourceLineNo">060</span>        <a name="line.60"></a>
+<span class="sourceLineNo">061</span>        <a name="line.61"></a>
+<span class="sourceLineNo">062</span>        /**<a name="line.62"></a>
+<span class="sourceLineNo">063</span>         * Called if saving the game failed for some reason, such as running out of memory.<a name="line.63"></a>
+<span class="sourceLineNo">064</span>         */<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        void onGameSaveFailed();<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        <a name="line.66"></a>
+<span class="sourceLineNo">067</span>        void onNewGameAfterProcGen();<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        <a name="line.68"></a>
+<span class="sourceLineNo">069</span>        /**<a name="line.69"></a>
+<span class="sourceLineNo">070</span>         * Called after the economy is loaded from economy.json and the initial steps are taken.<a name="line.70"></a>
+<span class="sourceLineNo">071</span>         * At this point, calling get getMarket() on entities will return the proper market.<a name="line.71"></a>
+<span class="sourceLineNo">072</span>         * The sequence of calls is:<a name="line.72"></a>
+<span class="sourceLineNo">073</span>         * onNewGame(); // can add markets to the economy here programmatically<a name="line.73"></a>
+<span class="sourceLineNo">074</span>         * //load economy and step it<a name="line.74"></a>
+<span class="sourceLineNo">075</span>         * onNewGameAfterEconomyLoad();<a name="line.75"></a>
+<span class="sourceLineNo">076</span>         */<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        void onNewGameAfterEconomyLoad();<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        <a name="line.78"></a>
+<span class="sourceLineNo">079</span>        <a name="line.79"></a>
+<span class="sourceLineNo">080</span>        /**<a name="line.80"></a>
+<span class="sourceLineNo">081</span>         * After the new game has stepped through its initial 2 months.<a name="line.81"></a>
+<span class="sourceLineNo">082</span>         */<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        void onNewGameAfterTimePass();<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        <a name="line.84"></a>
+<span class="sourceLineNo">085</span>        <a name="line.85"></a>
+<span class="sourceLineNo">086</span>        <a name="line.86"></a>
+<span class="sourceLineNo">087</span>        /**<a name="line.87"></a>
+<span class="sourceLineNo">088</span>         * Called after F8 is pressed in combat while in devMode.<a name="line.88"></a>
+<span class="sourceLineNo">089</span>         * Note: the game becomes potentially unstable after an F8-dev mode reload. That is,<a name="line.89"></a>
+<span class="sourceLineNo">090</span>         * crashes may occur that would not have occured otherwise and are not indicative of bugs.<a name="line.90"></a>
+<span class="sourceLineNo">091</span>         */<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        void onDevModeF8Reload();<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        <a name="line.93"></a>
+<span class="sourceLineNo">094</span>        /**<a name="line.94"></a>
+<span class="sourceLineNo">095</span>         * Called to pick an AI implementation for a specific ship. Here instead of in CampaignPlugin to support custom<a name="line.95"></a>
+<span class="sourceLineNo">096</span>         * AI for missions.<a name="line.96"></a>
+<span class="sourceLineNo">097</span>         * <a name="line.97"></a>
+<span class="sourceLineNo">098</span>         * @param member Can be null.<a name="line.98"></a>
+<span class="sourceLineNo">099</span>         * @param ship Can not be null. Could be a ship or a fighter.<a name="line.99"></a>
+<span class="sourceLineNo">100</span>         * @return null, or a custom AI implementation.<a name="line.100"></a>
+<span class="sourceLineNo">101</span>         */<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        PluginPick&lt;ShipAIPlugin&gt; pickShipAI(FleetMemberAPI member, ShipAPI ship);<a name="line.102"></a>
+<span class="sourceLineNo">103</span>        <a name="line.103"></a>
+<span class="sourceLineNo">104</span>        /**<a name="line.104"></a>
+<span class="sourceLineNo">105</span>         * Called to pick an AI implementation for a specific weapon.<a name="line.105"></a>
+<span class="sourceLineNo">106</span>         * @param weapon<a name="line.106"></a>
+<span class="sourceLineNo">107</span>         * @return<a name="line.107"></a>
+<span class="sourceLineNo">108</span>         */<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        PluginPick&lt;AutofireAIPlugin&gt; pickWeaponAutofireAI(WeaponAPI weapon);<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        <a name="line.110"></a>
+<span class="sourceLineNo">111</span>        <a name="line.111"></a>
+<span class="sourceLineNo">112</span>        /**<a name="line.112"></a>
+<span class="sourceLineNo">113</span>         * Called to pick drone AI implementation.<a name="line.113"></a>
+<span class="sourceLineNo">114</span>         * @param drone<a name="line.114"></a>
+<span class="sourceLineNo">115</span>         * @param mothership<a name="line.115"></a>
+<span class="sourceLineNo">116</span>         * @param system use getSpecJson() to get at the system spec, if needed.<a name="line.116"></a>
+<span class="sourceLineNo">117</span>         * @return<a name="line.117"></a>
+<span class="sourceLineNo">118</span>         */<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        PluginPick&lt;ShipAIPlugin&gt; pickDroneAI(ShipAPI drone, ShipAPI mothership, DroneLauncherShipSystemAPI system);<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        <a name="line.120"></a>
+<span class="sourceLineNo">121</span>        <a name="line.121"></a>
+<span class="sourceLineNo">122</span>        /**<a name="line.122"></a>
+<span class="sourceLineNo">123</span>         * Called to pick missile AI implementation.<a name="line.123"></a>
+<span class="sourceLineNo">124</span>         * @param drone<a name="line.124"></a>
+<span class="sourceLineNo">125</span>         * @param launchingShip<a name="line.125"></a>
+<span class="sourceLineNo">126</span>         * @return<a name="line.126"></a>
+<span class="sourceLineNo">127</span>         */<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        PluginPick&lt;MissileAIPlugin&gt; pickMissileAI(MissileAPI missile, ShipAPI launchingShip);<a name="line.128"></a>
+<span class="sourceLineNo">129</span><a name="line.129"></a>
+<span class="sourceLineNo">130</span>        <a name="line.130"></a>
+<span class="sourceLineNo">131</span>        <a name="line.131"></a>
+<span class="sourceLineNo">132</span>        void configureXStream(XStream x);<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        <a name="line.133"></a>
+<span class="sourceLineNo">134</span>}<a name="line.134"></a>
+<span class="sourceLineNo">135</span><a name="line.135"></a>
+<span class="sourceLineNo">136</span><a name="line.136"></a>
+<span class="sourceLineNo">137</span><a name="line.137"></a>
+<span class="sourceLineNo">138</span><a name="line.138"></a>
+<span class="sourceLineNo">139</span><a name="line.139"></a>
+<span class="sourceLineNo">140</span><a name="line.140"></a>
+<span class="sourceLineNo">141</span><a name="line.141"></a>
+<span class="sourceLineNo">142</span><a name="line.142"></a>
+<span class="sourceLineNo">143</span><a name="line.143"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

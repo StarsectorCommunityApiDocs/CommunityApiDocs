@@ -1,0 +1,327 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.missions.academy;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
+<span class="sourceLineNo">004</span><a name="line.4"></a>
+<span class="sourceLineNo">005</span>import com.fs.starfarer.api.Global;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import com.fs.starfarer.api.campaign.FactionAPI;<a name="line.6"></a>
+<span class="sourceLineNo">007</span>import com.fs.starfarer.api.campaign.SectorEntityToken;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.campaign.StarSystemAPI;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.campaign.econ.MarketAPI;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.characters.PersonAPI;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.impl.campaign.ids.Factions;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.impl.campaign.ids.FleetTypes;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.impl.campaign.ids.People;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.impl.campaign.ids.Tags;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.ui.TooltipMakerAPI;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.util.Misc;<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span>public class GAKallichore extends GABaseMission {<a name="line.18"></a>
+<span class="sourceLineNo">019</span><a name="line.19"></a>
+<span class="sourceLineNo">020</span>        public static enum Stage {<a name="line.20"></a>
+<span class="sourceLineNo">021</span>                TALK_TO_ARROYO,<a name="line.21"></a>
+<span class="sourceLineNo">022</span>                VISIT_ARROYO,<a name="line.22"></a>
+<span class="sourceLineNo">023</span>                TALK_TO_GARGOYLE,<a name="line.23"></a>
+<span class="sourceLineNo">024</span>                GET_HACK_HARDWARE,<a name="line.24"></a>
+<span class="sourceLineNo">025</span>                INSTALL_HACK,<a name="line.25"></a>
+<span class="sourceLineNo">026</span>                RETRIEVE_ARCHIVE,<a name="line.26"></a>
+<span class="sourceLineNo">027</span>                RETURN_TO_ACADEMY,<a name="line.27"></a>
+<span class="sourceLineNo">028</span>                COMPLETED,<a name="line.28"></a>
+<span class="sourceLineNo">029</span>        }<a name="line.29"></a>
+<span class="sourceLineNo">030</span>        <a name="line.30"></a>
+<span class="sourceLineNo">031</span>        protected PersonAPI baird;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>        protected PersonAPI arroyo;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>        protected PersonAPI gargoyle;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>        protected PersonAPI loke;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>        protected SectorEntityToken relay;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>        <a name="line.36"></a>
+<span class="sourceLineNo">037</span>        @Override<a name="line.37"></a>
+<span class="sourceLineNo">038</span>        protected boolean create(MarketAPI createdAt, boolean barEvent) {<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                // if already accepted by the player, abort<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                if (!setGlobalReference("$gaKA_ref", "$gaKA_inProgress")) {<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                        return false;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                }<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                <a name="line.43"></a>
+<span class="sourceLineNo">044</span>                setName("The Kallichore Archive");<a name="line.44"></a>
+<span class="sourceLineNo">045</span>                <a name="line.45"></a>
+<span class="sourceLineNo">046</span>                baird = getImportantPerson(People.BAIRD);<a name="line.46"></a>
+<span class="sourceLineNo">047</span>                arroyo = getImportantPerson(People.ARROYO);<a name="line.47"></a>
+<span class="sourceLineNo">048</span>                gargoyle = getImportantPerson(People.GARGOYLE);<a name="line.48"></a>
+<span class="sourceLineNo">049</span>                loke = getImportantPerson(People.CLONE_LOKE);<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                if (baird == null) return false;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>                if (arroyo == null) return false;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                if (gargoyle == null) return false;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                if (loke == null) return false;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                <a name="line.54"></a>
+<span class="sourceLineNo">055</span>                // if the player destroyed Aztlan Relay before this point, uhh. Need to do something, probably.<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                relay = Global.getSector().getEntityById("aztlan_relay");<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                if (relay == null) return false;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                <a name="line.58"></a>
+<span class="sourceLineNo">059</span>                StarSystemAPI mayasura = gargoyle.getMarket().getStarSystem();<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                StarSystemAPI galatia = baird.getMarket().getStarSystem();<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                if (mayasura == null || galatia == null) return false;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                <a name="line.62"></a>
+<span class="sourceLineNo">063</span>                MarketAPI coatl = Global.getSector().getEconomy().getMarket("coatl");<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                if (coatl == null) return false;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                <a name="line.65"></a>
+<span class="sourceLineNo">066</span>                setStoryMission();<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                <a name="line.67"></a>
+<span class="sourceLineNo">068</span>                setStartingStage(Stage.TALK_TO_ARROYO);<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                addSuccessStages(Stage.COMPLETED);<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                <a name="line.70"></a>
+<span class="sourceLineNo">071</span>                makeImportant(arroyo, "$gaKA_contact", Stage.TALK_TO_ARROYO);<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                makeImportant(arroyo.getMarket(), "$gaKA_visitChalet", Stage.VISIT_ARROYO);<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                makeImportant(gargoyle, "$gaKA_contact", Stage.TALK_TO_GARGOYLE);<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                makeImportant(loke.getMarket(), "$gaKA_getHack", Stage.GET_HACK_HARDWARE);<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                makeImportant(relay, "$gaKA_installHack", Stage.INSTALL_HACK);<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                makeImportant(gargoyle, "$gaKA_contactRetrieve", Stage.RETRIEVE_ARCHIVE);<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                makeImportant(baird.getMarket(), "$gaKA_returnHere", Stage.RETURN_TO_ACADEMY);<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                <a name="line.78"></a>
+<span class="sourceLineNo">079</span>                setStageOnGlobalFlag(Stage.VISIT_ARROYO, "$gaKA_visitArroyo");<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                setStageOnGlobalFlag(Stage.TALK_TO_GARGOYLE, "$gaKA_talkToGargoyle");<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                setStageOnGlobalFlag(Stage.GET_HACK_HARDWARE, "$gaKA_getHackHardware");<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                setStageOnGlobalFlag(Stage.INSTALL_HACK, "$gaKA_installHack");<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                setStageOnGlobalFlag(Stage.RETRIEVE_ARCHIVE, "$gaKA_retrieveArchive");<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                setStageOnGlobalFlag(Stage.RETURN_TO_ACADEMY, "$gaKA_returnToAcademy");<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                setStageOnGlobalFlag(Stage.COMPLETED, "$gaKA_completed");<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                <a name="line.86"></a>
+<span class="sourceLineNo">087</span>                <a name="line.87"></a>
+<span class="sourceLineNo">088</span>                beginStageTrigger(Stage.TALK_TO_ARROYO);<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                triggerUnhideCommListing(arroyo);<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                endTrigger();<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                beginStageTrigger(Stage.TALK_TO_GARGOYLE);<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                triggerUnhideCommListing(gargoyle);<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                endTrigger();<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                <a name="line.94"></a>
+<span class="sourceLineNo">095</span>                beginStageTrigger(Stage.RETURN_TO_ACADEMY);<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                triggerHideCommListing(gargoyle);<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                endTrigger();<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                <a name="line.98"></a>
+<span class="sourceLineNo">099</span>                <a name="line.99"></a>
+<span class="sourceLineNo">100</span>                beginStageTrigger(Stage.RETURN_TO_ACADEMY);<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                SectorEntityToken fleetLocation = gargoyle.getMarket().getPrimaryEntity();<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                triggerCreateFleet(FleetSize.VERY_LARGE, FleetQuality.DEFAULT, <a name="line.102"></a>
+<span class="sourceLineNo">103</span>                                                                Factions.HEGEMONY, FleetTypes.TASK_FORCE, fleetLocation);<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                triggerAutoAdjustFleetStrengthModerate();<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                triggerMakeAllFleetFlagsPermanent();<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                triggerMakeFleetIgnoreOtherFleets();<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                triggerMakeFleetIgnoredByOtherFleets();<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                triggerSetPatrol();<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                triggerPickLocationAtClosestToEntityJumpPoint(mayasura, fleetLocation, 4000f);<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                triggerPickLocationTowardsEntity(null, 30f, 5000f); // towards the jump-point we just picked<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                triggerSpawnFleetAtPickedLocation(null, null);<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                triggerFleetSetPatrolActionText("standing off with Port Tse Station");<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                triggerFleetSetPatrolLeashRange(100f);<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                triggerOrderFleetPatrol(fleetLocation);<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                triggerOrderFleetEBurn(1f);<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                triggerIncreaseMarketHostileTimeout(gargoyle.getMarket(), 90f);<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                endTrigger();<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        <a name="line.118"></a>
+<span class="sourceLineNo">119</span>                beginWithinHyperspaceRangeTrigger(gargoyle.getMarket(), 1f, true, Stage.RETURN_TO_ACADEMY);<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                triggerCreateFleet(FleetSize.LARGE, FleetQuality.SMOD_1, <a name="line.120"></a>
+<span class="sourceLineNo">121</span>                                                Factions.HEGEMONY, FleetTypes.TASK_FORCE, mayasura);<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                triggerSetFleetOfficers(OfficerNum.MORE, OfficerQuality.HIGHER);<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                triggerMakeHostileAndAggressive();<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                //triggerMakeNoRepImpact(); // this happens in dialog instead<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                triggerFleetAllowLongPursuit();<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                triggerSetFleetAlwaysPursue();<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                triggerSetPatrol();<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                triggerPickLocationTowardsEntity(galatia.getHyperspaceAnchor(), 90f, getUnits(0.5f));<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                triggerSpawnFleetAtPickedLocation("$gaKA_patrol", null);<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                triggerOrderFleetInterceptPlayer();<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                triggerOrderFleetEBurn(1f);<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                triggerFleetMakeImportant(null, Stage.RETURN_TO_ACADEMY);<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                endTrigger();<a name="line.133"></a>
+<span class="sourceLineNo">134</span><a name="line.134"></a>
+<span class="sourceLineNo">135</span>                triggerCreateMediumPatrol(coatl, Factions.HEGEMONY, relay, Stage.INSTALL_HACK, 0f);<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                <a name="line.136"></a>
+<span class="sourceLineNo">137</span>                beginStageTrigger(Stage.COMPLETED);<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                triggerRemoveTags(relay, Tags.STORY_CRITICAL);<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                triggerMakeNonStoryCritical(gargoyle.getMarket(), arroyo.getMarket(), loke.getMarket(), coatl);<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                triggerMovePersonToMarket(gargoyle, baird.getMarket(), true);<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                triggerUnhideCommListing(gargoyle);<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                endTrigger();<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                <a name="line.143"></a>
+<span class="sourceLineNo">144</span>                <a name="line.144"></a>
+<span class="sourceLineNo">145</span>                // post-hack (and probably post-mission) consequences<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                float baseDelay = 90f;<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                //baseDelay = 0f;<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                beginStageTrigger(Stage.RETRIEVE_ARCHIVE);<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                triggerSetGlobalMemoryValueAfterDelay(genDelay(baseDelay), "$gaKA_triTachyonVisit", true);<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                triggerSetGlobalMemoryValueAfterDelay(genDelay(baseDelay), "$gaKA_hegemonyVisit", true);<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                endTrigger();<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                <a name="line.152"></a>
+<span class="sourceLineNo">153</span>                beginStageTrigger(Stage.COMPLETED);<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                //triggerSetGlobalMemoryValueAfterDelay(genDelay(2f), "$gaKA_missionCompleted", true);<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                triggerSetGlobalMemoryValue("$gaKA_missionCompleted", true);<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                endTrigger();<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                <a name="line.157"></a>
+<span class="sourceLineNo">158</span>                <a name="line.158"></a>
+<span class="sourceLineNo">159</span>//              //debug trigger to unhide comm entries and set mission stage to retrieving data<a name="line.159"></a>
+<span class="sourceLineNo">160</span>//              beginStageTrigger(Stage.TALK_TO_ARROYO);<a name="line.160"></a>
+<span class="sourceLineNo">161</span>//              triggerUnhideCommListing(gargoyle);<a name="line.161"></a>
+<span class="sourceLineNo">162</span>//              triggerSetGlobalMemoryValue("$gaKA_retrieveArchive", true);<a name="line.162"></a>
+<span class="sourceLineNo">163</span>//              endTrigger();<a name="line.163"></a>
+<span class="sourceLineNo">164</span>//              // end debug trigger<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                <a name="line.165"></a>
+<span class="sourceLineNo">166</span>                <a name="line.166"></a>
+<span class="sourceLineNo">167</span>                return true;<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                <a name="line.168"></a>
+<span class="sourceLineNo">169</span>        }<a name="line.169"></a>
+<span class="sourceLineNo">170</span>        <a name="line.170"></a>
+<span class="sourceLineNo">171</span>        protected void updateInteractionDataImpl() {<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                set("$gaKA_stage", getCurrentStage());<a name="line.172"></a>
+<span class="sourceLineNo">173</span>        }<a name="line.173"></a>
+<span class="sourceLineNo">174</span>        <a name="line.174"></a>
+<span class="sourceLineNo">175</span>        @Override<a name="line.175"></a>
+<span class="sourceLineNo">176</span>        public void addDescriptionForNonEndStage(TooltipMakerAPI info, float width, float height) {<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                float opad = 10f;<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                Color h = Misc.getHighlightColor();<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                FactionAPI heg = Global.getSector().getFaction(Factions.HEGEMONY);<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                if (currentStage == Stage.RETURN_TO_ACADEMY) {<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                        info.addPara("You've recovered the data archive of the Academy's previous Provost, Tomas Kallichore, " + <a name="line.181"></a>
+<span class="sourceLineNo">182</span>                                        "which contains the results of failed gate activation experiments.", opad);<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                } else {<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                        info.addPara("Recover the data archive of the Academy's previous Provost, Tomas Kallichore, " + <a name="line.184"></a>
+<span class="sourceLineNo">185</span>                                        "which contains the results of failed gate activation experiments.", opad);<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                        info.addPara("The archive is " +<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                                        "currently in the ultra-secure data vaults of the Hegemony Ministry of Technology Standards.", opad, <a name="line.187"></a>
+<span class="sourceLineNo">188</span>                                        heg.getBaseUIColor(), "Hegemony");<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                }<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                <a name="line.190"></a>
+<span class="sourceLineNo">191</span>                if (currentStage == Stage.TALK_TO_ARROYO) {<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                        info.addPara(getGoTalkToPersonText(arroyo) + ". He has a relationship with Provost Baird that "<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                                        + "can be leveraged to compel his cooperation.", opad);<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                } else if (currentStage == Stage.VISIT_ARROYO) {<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                        info.addPara("Visit " + arroyo.getNameString() + " in person, at his planetside chalet.", opad);<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                } else if (currentStage == Stage.TALK_TO_GARGOYLE) {<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                        info.addPara(getGoTalkToPersonText(gargoyle) + ", a hacker, to arrange a break in to the data vaults. " +<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                                        "Arroyo is sure a job \"as stupid as you're proposing\" " +<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                                        "will prove irresistible.", opad);<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                } else if (currentStage == Stage.GET_HACK_HARDWARE) {<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                        info.addPara(getGoToMarketText(loke.getMarket()) + " and pick up the hack device from a " +<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                                                                                                "storage unit.", opad);<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                } else if (currentStage == Stage.INSTALL_HACK) {<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                        info.addPara(getGoToSystemTextShort(relay.getStarSystem()) + " and install the hack transmitter " +<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                                        "on " + relay.getName() + ".", opad);<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                } else if (currentStage == Stage.RETRIEVE_ARCHIVE) {<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                        info.addPara(getGoToMarketText(gargoyle.getMarket()) + <a name="line.207"></a>
+<span class="sourceLineNo">208</span>                                                " and retrieve Kallichore's archive from Gargoyle.", opad);<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                } else if (currentStage == Stage.RETURN_TO_ACADEMY) {<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                        info.addPara("Return to the Galatia Academy and talk to Provost Baird.", opad);                 <a name="line.210"></a>
+<span class="sourceLineNo">211</span>                }<a name="line.211"></a>
+<span class="sourceLineNo">212</span>        }<a name="line.212"></a>
+<span class="sourceLineNo">213</span><a name="line.213"></a>
+<span class="sourceLineNo">214</span>        @Override<a name="line.214"></a>
+<span class="sourceLineNo">215</span>        public boolean addNextStepText(TooltipMakerAPI info, Color tc, float pad) {<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                Color h = Misc.getHighlightColor();<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                if (currentStage == Stage.TALK_TO_ARROYO) {<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                        info.addPara(getGoTalkToPersonText(arroyo), tc, pad);<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                        return true;<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                } else if (currentStage == Stage.VISIT_ARROYO) {<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                        info.addPara("Visit " + arroyo.getNameString() + " in person, at his planetside chalet", tc, pad);<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                        return true;<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                } else if (currentStage == Stage.TALK_TO_GARGOYLE) {<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                        info.addPara(getGoTalkToPersonText(gargoyle), tc, pad);<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                        return true;<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                } else if (currentStage == Stage.GET_HACK_HARDWARE) {<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                        info.addPara(getGoToMarketText(loke.getMarket()) + " and pick up the hack device", tc, pad);<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                        return true;<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                } else if (currentStage == Stage.INSTALL_HACK) {<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                        info.addPara(getGoToSystemTextShort(relay.getStarSystem()) + " and install the hack transmitter " +<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                                        "on the " + relay.getName() + "", tc, pad);<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                        return true;<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                } else if (currentStage == Stage.RETRIEVE_ARCHIVE) {<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                        info.addPara(getGoToMarketText(gargoyle.getMarket()) + <a name="line.234"></a>
+<span class="sourceLineNo">235</span>                                                " and retrieve Kallichore's archive", tc, pad);<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                } else if (currentStage == Stage.RETURN_TO_ACADEMY) {<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                        info.addPara("Return to the Galatia Academy and talk to Provost Baird", tc, pad);                       <a name="line.237"></a>
+<span class="sourceLineNo">238</span>                }<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                return false;<a name="line.239"></a>
+<span class="sourceLineNo">240</span>        }<a name="line.240"></a>
+<span class="sourceLineNo">241</span><a name="line.241"></a>
+<span class="sourceLineNo">242</span>        @Override<a name="line.242"></a>
+<span class="sourceLineNo">243</span>        public String getPostfixForState() {<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                if (startingStage != null) {<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                        return "";<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                }<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                return super.getPostfixForState();<a name="line.247"></a>
+<span class="sourceLineNo">248</span>        }<a name="line.248"></a>
+<span class="sourceLineNo">249</span>        <a name="line.249"></a>
+<span class="sourceLineNo">250</span>}<a name="line.250"></a>
+<span class="sourceLineNo">251</span><a name="line.251"></a>
+<span class="sourceLineNo">252</span><a name="line.252"></a>
+<span class="sourceLineNo">253</span><a name="line.253"></a>
+<span class="sourceLineNo">254</span><a name="line.254"></a>
+<span class="sourceLineNo">255</span><a name="line.255"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

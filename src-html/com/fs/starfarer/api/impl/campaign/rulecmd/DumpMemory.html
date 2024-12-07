@@ -1,0 +1,190 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.rulecmd;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import java.util.ArrayList;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import java.util.Collections;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import java.util.List;<a name="line.6"></a>
+<span class="sourceLineNo">007</span>import java.util.Map;<a name="line.7"></a>
+<span class="sourceLineNo">008</span><a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.Global;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.campaign.InteractionDialogAPI;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.campaign.rules.MemKeys;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.campaign.rules.MemoryAPI;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.impl.campaign.DebugFlags;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.util.Misc;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.util.Misc.Token;<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span>/**<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * Usage: AbortWait $waitHandle<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * <a name="line.19"></a>
+<span class="sourceLineNo">020</span> * @author Alex Mosolov<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * Copyright 2014 Fractal Softworks, LLC<a name="line.22"></a>
+<span class="sourceLineNo">023</span> */<a name="line.23"></a>
+<span class="sourceLineNo">024</span>public class DumpMemory extends BaseCommandPlugin {<a name="line.24"></a>
+<span class="sourceLineNo">025</span><a name="line.25"></a>
+<span class="sourceLineNo">026</span>        public static final String OPTION_ID = "DumpMemory.option_dump_memory";<a name="line.26"></a>
+<span class="sourceLineNo">027</span>        <a name="line.27"></a>
+<span class="sourceLineNo">028</span>        public boolean execute(String ruleId, InteractionDialogAPI dialog, List&lt;Token&gt; params, Map&lt;String, MemoryAPI&gt; memoryMap) {<a name="line.28"></a>
+<span class="sourceLineNo">029</span>                //if (dialog == null) return false;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>                <a name="line.30"></a>
+<span class="sourceLineNo">031</span>                //System.out.println("Transponder: " + dialog.getInteractionTarget().isTransponderOn());<a name="line.31"></a>
+<span class="sourceLineNo">032</span>                <a name="line.32"></a>
+<span class="sourceLineNo">033</span>                List&lt;String&gt; memKeys = new ArrayList&lt;String&gt;(memoryMap.keySet());<a name="line.33"></a>
+<span class="sourceLineNo">034</span>                Collections.sort(memKeys);<a name="line.34"></a>
+<span class="sourceLineNo">035</span>                memKeys.remove(MemKeys.LOCAL);<a name="line.35"></a>
+<span class="sourceLineNo">036</span>                memKeys.add(MemKeys.LOCAL);<a name="line.36"></a>
+<span class="sourceLineNo">037</span>                <a name="line.37"></a>
+<span class="sourceLineNo">038</span>                Color HIGHLIGHT_COLOR = Global.getSettings().getColor("buttonShortcut");<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                Color GRAY_COLOR = new Color(100,100,100);<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                <a name="line.40"></a>
+<span class="sourceLineNo">041</span>                <a name="line.41"></a>
+<span class="sourceLineNo">042</span>                for (String memKey : memKeys) {<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                        String text = "";<a name="line.43"></a>
+<span class="sourceLineNo">044</span>                        MemoryAPI memory = memoryMap.get(memKey);<a name="line.44"></a>
+<span class="sourceLineNo">045</span>                        //text += memKey.toUpperCase() + "\n";<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                        List&lt;String&gt; keys = new ArrayList&lt;String&gt;(memory.getKeys());<a name="line.46"></a>
+<span class="sourceLineNo">047</span>                        Collections.sort(keys);<a name="line.47"></a>
+<span class="sourceLineNo">048</span>                        <a name="line.48"></a>
+<span class="sourceLineNo">049</span>                        List&lt;Color&gt; highlightColors = new ArrayList&lt;Color&gt;();<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                        List&lt;String&gt; highlightList = new ArrayList&lt;String&gt;();<a name="line.50"></a>
+<span class="sourceLineNo">051</span>                        for (String key : keys) {<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                                Object value = memory.get(key);<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                                <a name="line.53"></a>
+<span class="sourceLineNo">054</span>                                String varName = "$" + memKey + ".";<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                                if (memKey.equals(MemKeys.LOCAL)) {<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                                        varName = "$";<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                                }<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                                if (key.startsWith("$")) {<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                                        varName += key.substring(1);<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                                        //highlightList.add(key.substring(1));<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                                } else {<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                                        varName += key;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                                        //highlightList.add(key);<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                                }<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                                <a name="line.65"></a>
+<span class="sourceLineNo">066</span>                                if (varName.length() &gt; 35) {<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                                        varName = varName.substring(0, 35) + "...";<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                                }<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                                <a name="line.69"></a>
+<span class="sourceLineNo">070</span>                                highlightColors.add(HIGHLIGHT_COLOR);<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                                highlightList.add(varName);<a name="line.71"></a>
+<span class="sourceLineNo">072</span><a name="line.72"></a>
+<span class="sourceLineNo">073</span>                                text += varName;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                                if (value instanceof Boolean || value instanceof String || value instanceof Float || value instanceof Integer || value instanceof Long) {<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                                        text += " = " + value.toString();<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                                } else if (value != null) {<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                                        text += " = " + value.getClass().getSimpleName() + "@" + value.hashCode();<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                                } else {<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                                        text += " = " + "null";<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                                }<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                                float expire = memory.getExpire(key);<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                                if (expire &gt;= 0) {<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                                        String eText = "(e=" + (float)((int)(expire * 10)/10f) + ")";<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                                        if (expire == 0) {<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                                                eText = "(e=0)";<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                                        }<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                                        highlightColors.add(GRAY_COLOR);<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                                        highlightList.add(eText);<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                                        text += " " + eText;<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                                }<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                                text += "\n";<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                        }<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                        if (dialog != null) {<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                                //dialog.getTextPanel().setFontSmallInsignia();<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                                dialog.getTextPanel().addParagraph(text);<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                                dialog.getTextPanel().setHighlightColorsInLastPara(highlightColors.toArray(new Color[0]));<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                                dialog.getTextPanel().highlightInLastPara(highlightList.toArray(new String [0]));<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                                //dialog.getTextPanel().setFontInsignia();<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                        } else {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                                if (DebugFlags.PRINT_RULES_DEBUG_INFO) {<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                                        System.out.println(text);       <a name="line.101"></a>
+<span class="sourceLineNo">102</span>                                }<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                        }<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                        //dialog.getTextPanel().highlightInLastPara(HIGHLIGHT_COLOR, highlightList.toArray(new String [0]));<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                }<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                <a name="line.106"></a>
+<span class="sourceLineNo">107</span>                return true;<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        }<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        <a name="line.109"></a>
+<span class="sourceLineNo">110</span>        public static void addOption(InteractionDialogAPI dialog) {<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                dialog.getOptionPanel().addOption("&gt;&gt; (dev) dump memory", DumpMemory.OPTION_ID, Misc.getGrayColor(), null);<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        }<a name="line.112"></a>
+<span class="sourceLineNo">113</span>}<a name="line.113"></a>
+<span class="sourceLineNo">114</span><a name="line.114"></a>
+<span class="sourceLineNo">115</span><a name="line.115"></a>
+<span class="sourceLineNo">116</span><a name="line.116"></a>
+<span class="sourceLineNo">117</span><a name="line.117"></a>
+<span class="sourceLineNo">118</span><a name="line.118"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>
