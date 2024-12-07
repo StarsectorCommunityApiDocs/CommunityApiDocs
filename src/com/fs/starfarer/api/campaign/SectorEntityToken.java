@@ -35,6 +35,11 @@ public interface SectorEntityToken extends HasMemory {
 	boolean isPlayerFleet();
 	
 	MarketAPI getMarket();
+
+	/**
+	 * Sets market for specified planet object.
+	 * @param market Specify the market object to add to planet.
+	 */
 	void setMarket(MarketAPI market);
 	
 	/**
