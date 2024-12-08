@@ -106,17 +106,17 @@ public interface OptionPanelAPI {
 	 *	options.addOptionConfirmation(
 	 *		"myData (can be any type)",
 	 *		new BaseStoryPointActionDelegate() {
-	 *			\@Override
+	 *			{@code @Override}
 	 *			public String getLogText(){ return "this appears in the log"; }
-	 *			\@Override
+	 *			{@code @Override}
 	 *			public int getRequiredStoryPoints(){ return 1; }
-	 *			\@Override
+	 *			{@code @Override}
 	 *			public float getBonusXPFraction(){ return 0f; } // a value between 0 and 1. 1 Means 100% bonus XP
-	 *			\@Override
+	 *			{@code @Override}
 	 *			public boolean withSPInfo(){ return true; }
-	 *			\@Override
+	 *			{@code @Override}
 	 *			public String getTitle(){ return "title to display in confirmation box"; }
-	 *			\@Override
+	 *			{@code @Override}
 	 *			public void createDescription(TooltipMakerAPI info){ info.addPara("description text in confirmation box", 1f); }
 	 *		}
 	 *	);
