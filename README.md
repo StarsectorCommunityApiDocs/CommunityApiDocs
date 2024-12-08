@@ -154,7 +154,7 @@ Therefore, I would suggest you write the code example in a java file, such as e.
 (File > New > Scratch File > Java).
 
 Then, copy the code from that scratch file and paste it into your documentation. You should wrap the block in both a
-<pre></pre> and <code></code> tag and escape any @... within the code as {@code @...}.
+\<pre>\</pre> and \<code>\</code> tag and escape any @... within the code as {@code @...}.
 
 The result could look something like this:
 
