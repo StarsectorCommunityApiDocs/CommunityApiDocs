@@ -90,14 +90,18 @@ folder called .ssh. Inside that folder, there should be one or more files ending
 one of those files match the key displayed in GitHub. If not, create a new key, following the tutorial linked above.
 </details>
 
-#### 
+#### Including the community docs as a submodule
 
-#### Git CLI
+If you are familiar with git submodules or not using **IntelliJ**, you might want to include the api as a submodule to
+your project. A submodule is essentially a nested git repo, or a repo within a repo.
+
+##### Git CLI
 <details>
 
-This part is only relevant if you use the **git command line interface**.
+This part details how to add the submodule via **git command line interface**. 
+Other git clients will offer similar functionality.
 
-To easily be able to use the git CLI, make sure to add the submodule via SSH rather than HTTP:
+To easily be able to use the git CLI, make sure to add the submodule via SSH:
 
 ```shell
 git submodule add git@github.com:StarsectorCommunityApiDocs/CommunityApiDocs.git
@@ -105,9 +109,18 @@ git submodule add git@github.com:StarsectorCommunityApiDocs/CommunityApiDocs.git
 
 If you want to commit/push your changes, simply navigate into the CommunityApiDocs folder and follow your
 usual workflow for commiting/pushing. No additional steps are required.
+
+After you have commited changes in the submodule, you will notice that the submodule will have changed in your parent
+repository. You can just add & commit the changed submodule.
+
+If you clone your repository at a later date, simply clone it with the --recurse-submodules flag or run
+```shell
+git submodule update --init
+```
+after cloning.
 </details>
 
-#### Gradle
+##### Gradle
 <details>
 This part is only relevant if you are using **Gradle** as a build system.
 
