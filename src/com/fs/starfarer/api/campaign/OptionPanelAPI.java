@@ -79,7 +79,7 @@ public interface OptionPanelAPI {
 	 * This is what you want to use to add a story point option to a dialog.
 	 * Using this method will handle everything a story option needs (story point cost, confirmation, ...), though
 	 * you will need to set the color of the option manually.
-	 * The alternative is to use use {@link SetStoryOption}.
+	 * The alternative is to use use {@link com.fs.starfarer.api.impl.campaign.rulecmd.SetStoryOption}.
 	 *
 	 * <p>Example:
 	 * <pre>
