@@ -74,6 +74,38 @@ public interface OptionPanelAPI {
 	
 	void addOptionConfirmation(Object optionId, String text, String yes, String no);
 	boolean hasOption(Object data);
+
+	/**
+	 * This is what you want to use to add a story point option to a dialog.
+	 * Using this method will handle everything a story option needs (story point cost, confirmation, ...), though
+	 * you will need to set the color of the option manually.
+	 * The alternative is to use use {@link SetStoryOption}.
+	 *
+	 * {@snippet:
+	 *   // given an object of type OptionPanelAPI named options
+	 *   options.addOption("My story option [1SP, 0% XP]", "myData (can be any type)", Misc.getStoryOptionColor(), "tooltip (can be null)")
+	 *   options.addOptionConfirmation(
+	 *                     "myData (can be any type)",
+	 *                     object : StoryPointActionDelegate{
+	 * 							@Override
+	 * 							String getLogText(){ return "this appears in the log"; }
+	 * 							@Override
+	 * 	 						Int getRequiredStoryPoints(){ return 1; }
+	 * 							@Override
+	 * 	 						Float getBonusXPFraction(){ return 0f; } // a value between 0 and 1. 1 Means 100% bonus XP
+	 * 							@Override
+	 * 	 						Boolean withSPInfo(){ return true; }
+	 * 							@Override
+	 * 							String getTitle(){ return "title to display in confirmation box"; }
+	 * 							@Override
+	 * 							void createDescription(TooltipMakerAPI info){ info.addPara("description text in confirmation box", 1f) }
+	 *                     }
+	 *                 )
+	 * }
+	 *
+	 * @param data must be the same thing you passed to addOption
+	 * @param confirmDelegate an object implementing the StoryPointActionDelegate interface. cf. example
+	 */
 	void addOptionConfirmation(Object data, StoryPointActionDelegate confirmDelegate);
 	void addOptionTooltipAppender(Object data, OptionTooltipCreator optionTooltipCreator);
 	void setOptionText(String text, Object data);
