@@ -143,6 +143,47 @@ _Needs work_
 
 Read: https://codelucky.com/java-documentation/
 
+#### Writing code examples
+
+For more complex to use methods/classes/interfaces, it makes a lot of sense to provide code examples to give other modders
+a good idea how a possible usage could look like. Unfortunately, adding code examples to javadoc can be a bit tricky at
+times. Some examples, like the ones provided in the article above, simply do not work. Furthermore, IntelliJ seems to
+get in the way rather than help when writing code examples within javadoc.
+
+Therefore, I would suggest you write the code example in a java file, such as e.g. a scratch file 
+(File > New > Scratch File > Java).
+
+Then, copy the code from that scratch file and paste it into your documentation. You should wrap the block in both a
+<pre></pre> and <code></code> tag and escape any @... within the code as {@code @...}.
+
+The result could look something like this:
+
+```java
+ /**
+  * <p>Example:
+  * <pre>
+  * <code>
+  *    // given an object of type OptionPanelAPI named options
+  *	options.addOption("My story option [1SP, 0% XP]", "myData (can be any type)", Misc.getStoryOptionColor(), "tooltip (can be null)");
+  *	options.addOptionConfirmation(
+  *		"myData (can be any type)",
+  *		new BaseStoryPointActionDelegate() {
+  *			{@code @Override}
+  *			public String getLogText(){ return "this appears in the log"; }
+  *			{@code @Override}
+  *			public int getRequiredStoryPoints(){ return 1; }
+  *         // [...]  remaining methods not shown for brevity
+  *		}
+  *	);
+  * </code>
+  * </pre>
+  */
+ void addOptionConfirmation();
+```
+
+Note that IntelliJ tends to display the indentation of comments wrong and generally speaking mess up your indentation.
+I don't know why and don't know how to fix that.
+
 ## For Maintainers
 
 ### Tasks
