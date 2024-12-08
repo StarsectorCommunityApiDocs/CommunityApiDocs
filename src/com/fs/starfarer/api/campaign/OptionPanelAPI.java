@@ -102,7 +102,7 @@ public interface OptionPanelAPI {
 	 * <p>Example:
 	 * <pre>
 	 * <code>
-	 *  // given an object of type OptionPanelAPI named options
+	 *    // given an object of type OptionPanelAPI named options
 	 *	options.addOption("My story option [1SP, 0% XP]", "myData (can be any type)", Misc.getStoryOptionColor(), "tooltip (can be null)");
 	 *	options.addOptionConfirmation(
 	 *		"myData (can be any type)",

@@ -17,51 +17,51 @@ import com.fs.starfarer.api.combat.EngagementResultAPI;
  *
  * <p>Example
  * <pre>
- *     {@code
- *     		// This is a simple dialog with some text, an image and an option.
- *     		// Note: For simplicity sake, error handling and null-checking is omitted in this example *
- *     		class MyDialog implements InteractionDialogPlugin{
- *     			interface ExecutableOptionData{
- *     			 	void execute();
- *     			}
- *     			private InteractionDialogAPI dialog = null;
- *     		 	//@Override
- *     		 	void init(InteractionDialogAPI dialog){
- *     		     	this.dialog = dialog;
- *     		     	dialog.getTextPanel().addParagraph("Some text")
- *     		     	dialog.getOptionPanel().addOption(
- *     		     		"OptionName",
- *     		     		new ExecutableOptionData(){
- *     		     		 	//@Override
- *     		     		 	void execute(){
- *     		     		 	  // implementation of what the option should do when clicked
- *     		     		 	  // For instance, for a leave option:
- *     		     		 	  dialog.dismiss();
- *     		     		 	  // If your GUI e.g. moves to another stage after this, you should clear the options and
- *     		     		 	  // create new options in here. It might also make sense to move this ExecutableOptionData
- *     		     		 	  // to another file, if the implementation gets too long.
- *     		     		 	}
- *     		     		}
- *     		     	);
- *     		     	String spriteName = Global.getSettings().getSpriteName("spriteCategory", "mySpriteName");
- *     		     	dialog.getVisualPanel().showImageVisual(
- *     		     		spriteName,
- *     		     		Global.getSettings().getSprite(spriteName).width
- *     		     		Global.getSettings().getSprite(spriteName).height
- *     		     	);
- *     		 	}
- *     		 	//@Override
- *     		 	void optionSelected(String optionText, Object optionData){
- *     		 	    ExecutableOptionData option = (ExecutableOptionData)optionData;
- *     		 	    if(option == null){ return; }
- *     		 	    option.execute();
- *     		 	}
+ *  <code>
+ *		// This is a simple dialog with some text, an image and an option.
+ *		// Note: For simplicity sake, error handling and null-checking is omitted in this example *
+ *		class MyDialog implements InteractionDialogPlugin{
+ *			interface ExecutableOptionData{
+ *				void execute();
+ *			}
+ *			private InteractionDialogAPI dialog = null;
+ *			{@code @Override}
+ *			void init(InteractionDialogAPI dialog){
+ *				this.dialog = dialog;
+ *				dialog.getTextPanel().addParagraph("Some text")
+ *				dialog.getOptionPanel().addOption(
+ *					"OptionName",
+ *					new ExecutableOptionData(){
+ *						{@code @Override}
+ *						void execute(){
+ *						  // implementation of what the option should do when clicked
+ *						  // For instance, for a leave option:
+ *						  dialog.dismiss();
+ *						  // If your GUI e.g. moves to another stage after this, you should clear the options and
+ *						  // create new options in here. It might also make sense to move this ExecutableOptionData
+ *						  // to another file, if the implementation gets too long.
+ *						}
+ *					}
+ *				);
+ *				String spriteName = Global.getSettings().getSpriteName("spriteCategory", "mySpriteName");
+ *				dialog.getVisualPanel().showImageVisual(
+ *					spriteName,
+ *					Global.getSettings().getSprite(spriteName).width
+ *					Global.getSettings().getSprite(spriteName).height
+ *				);
+ *			}
+ *			{@code @Override}
+ *			void optionSelected(String optionText, Object optionData){
+ *				ExecutableOptionData option = (ExecutableOptionData)optionData;
+ *				if(option == null){ return; }
+ *				option.execute();
+ *			}
  *
- *     		 	// Override the remaining methods (Ctrl+O in IntelliJ), but leave their implementation empty if their
- *     		 	// return type is void, or return null otherwise.
+ *			// Override the remaining methods (Ctrl+O in IntelliJ), but leave their implementation empty if their
+ *			// return type is void, or return null otherwise.
  *
- *     		}
- *     }
+ *		}
+ *  </code>
  *
  * </pre>
  *
