@@ -25,14 +25,14 @@ import com.fs.starfarer.api.combat.EngagementResultAPI;
  *     			 	void execute();
  *     			}
  *     			private InteractionDialogAPI dialog = null;
- *     		 	@Override
+ *     		 	&#64;Override
  *     		 	void init(InteractionDialogAPI dialog){
  *     		     	this.dialog = dialog;
  *     		     	dialog.getTextPanel().addParagraph("Some text")
  *     		     	dialog.getOptionPanel().addOption(
  *     		     		"OptionName",
  *     		     		new ExecutableOptionData(){
- *     		     		 	@Override
+ *     		     		 	&#64;Override
  *     		     		 	void execute(){
  *     		     		 	  // implementation of what the option should do when clicked
  *     		     		 	  // For instance, for a leave option:
@@ -50,7 +50,7 @@ import com.fs.starfarer.api.combat.EngagementResultAPI;
  *     		     		Global.getSettings().getSprite(spriteName).height
  *     		     	);
  *     		 	}
- *     		 	@Override
+ *     		 	&#64;Override
  *     		 	void optionSelected(String optionText, Object optionData){
  *     		 	    ExecutableOptionData option = (ExecutableOptionData)optionData;
  *     		 	    if(option == null){ return; }
