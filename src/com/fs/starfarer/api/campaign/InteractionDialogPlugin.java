@@ -19,20 +19,20 @@ import com.fs.starfarer.api.combat.EngagementResultAPI;
  * <pre>
  *     {@code
  *     		// This is a simple dialog with some text, an image and an option.
- *     		// Note: For simplicity sake, error handling and null-checking is omitted in this example
+ *     		// Note: For simplicity sake, error handling and null-checking is omitted in this example *
  *     		class MyDialog implements InteractionDialogPlugin{
  *     			interface ExecutableOptionData{
  *     			 	void execute();
  *     			}
  *     			private InteractionDialogAPI dialog = null;
- *     		 	&#64;Override
+ *     		 	//@Override
  *     		 	void init(InteractionDialogAPI dialog){
  *     		     	this.dialog = dialog;
  *     		     	dialog.getTextPanel().addParagraph("Some text")
  *     		     	dialog.getOptionPanel().addOption(
  *     		     		"OptionName",
  *     		     		new ExecutableOptionData(){
- *     		     		 	&#64;Override
+ *     		     		 	//@Override
  *     		     		 	void execute(){
  *     		     		 	  // implementation of what the option should do when clicked
  *     		     		 	  // For instance, for a leave option:
@@ -50,7 +50,7 @@ import com.fs.starfarer.api.combat.EngagementResultAPI;
  *     		     		Global.getSettings().getSprite(spriteName).height
  *     		     	);
  *     		 	}
- *     		 	&#64;Override
+ *     		 	//@Override
  *     		 	void optionSelected(String optionText, Object optionData){
  *     		 	    ExecutableOptionData option = (ExecutableOptionData)optionData;
  *     		 	    if(option == null){ return; }
