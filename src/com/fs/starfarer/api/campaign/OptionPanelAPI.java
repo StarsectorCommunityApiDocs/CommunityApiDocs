@@ -81,7 +81,9 @@ public interface OptionPanelAPI {
 	 * you will need to set the color of the option manually.
 	 * The alternative is to use use {@link SetStoryOption}.
 	 *
-	 * {@snippet:
+	 * <p>Example:
+	 * <pre>
+	 * {@code
 	 *   // given an object of type OptionPanelAPI named options
 	 *   options.addOption("My story option [1SP, 0% XP]", "myData (can be any type)", Misc.getStoryOptionColor(), "tooltip (can be null)")
 	 *   options.addOptionConfirmation(
@@ -102,6 +104,7 @@ public interface OptionPanelAPI {
 	 *                     }
 	 *                 )
 	 * }
+	 * </pre>
 	 *
 	 * @param data must be the same thing you passed to addOption
 	 * @param confirmDelegate an object implementing the StoryPointActionDelegate interface. cf. example
