@@ -89,17 +89,17 @@ public interface OptionPanelAPI {
 	 *   options.addOptionConfirmation(
 	 *                     "myData (can be any type)",
 	 *                     object : StoryPointActionDelegate{
-	 * 							@Override
+	 * 							{@literal @}Override
 	 * 							String getLogText(){ return "this appears in the log"; }
-	 * 							@Override
+	 * 							{@literal @}Override
 	 * 	 						Int getRequiredStoryPoints(){ return 1; }
-	 * 							@Override
+	 * 							{@literal @}Override
 	 * 	 						Float getBonusXPFraction(){ return 0f; } // a value between 0 and 1. 1 Means 100% bonus XP
-	 * 							@Override
+	 * 							{@literal @}Override
 	 * 	 						Boolean withSPInfo(){ return true; }
-	 * 							@Override
+	 * 							{@literal @}Override
 	 * 							String getTitle(){ return "title to display in confirmation box"; }
-	 * 							@Override
+	 * 							{@literal @}Override
 	 * 							void createDescription(TooltipMakerAPI info){ info.addPara("description text in confirmation box", 1f) }
 	 *                     }
 	 *                 )
