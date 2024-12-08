@@ -19,6 +19,22 @@ public interface OptionPanelAPI {
 	void setTooltipHighlightColors(Object data, Color ... colors);
 	
 	void clearOptions();
+
+	/**
+	 * Adds an additional selectable option to the dialog.
+	 * Options are appended in the order that this method is called.
+	 *
+	 * It usually makes sense to call clearOptions() before adding options to ensure that
+	 * options don't pile up.
+	 *
+	 * @param text will be displayed in the option list
+	 * @param data can be anything. This is used to identify the option, i.e. other methods that modify options need you
+	 *             to pass the exact same thing you pass here. People often times use Strings or enums as option data.
+	 *             Alternatively, you can use objects that implement an interface with e.g. an execute-method, to make the
+	 *             option data directly contain the logic that should be executed when the option is selected by the player.
+	 *             The value passed here is available in the optionSelected method of {@link com.fs.starfarer.api.campaign.InteractionDialogPlugin}.
+	 *             Cast the optionData parameter to the type you used here to evaluate it.
+	 */
 	void addOption(String text, Object data);
 	void addOption(String text, Object data, String tooltip);
 	void addOption(String text, Object data, Color color, String tooltip);
@@ -116,6 +132,15 @@ public interface OptionPanelAPI {
 	boolean optionHasConfirmDelegate(Object data);
 	Object getOptionDataBeingConfirmed();
 	void removeOption(Object data);
-	
+
+	/**
+	 * Calling this will not do everything neccessary to turn an option into a story point option.
+	 * Use addOptionConfirmation instead. I believe this method is only used to modify existing story options.
+	 * This method needs additional documentation, as I am not 100% sure what its purpose is.
+	 *
+	 * @param data identifier for the option
+	 * @param params
+	 * @param delegate
+	 */
 	void setStoryOptionParams(Object data, StoryOptionParams params, StoryPointActionDelegate delegate);
 }
