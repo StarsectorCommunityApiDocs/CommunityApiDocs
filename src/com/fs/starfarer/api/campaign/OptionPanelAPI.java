@@ -99,27 +99,29 @@ public interface OptionPanelAPI {
 	 *
 	 * <p>Example:
 	 * <pre>
+	 * <code>
 	 * {@code
 	 *   // given an object of type OptionPanelAPI named options
 	 *	options.addOption("My story option [1SP, 0% XP]", "myData (can be any type)", Misc.getStoryOptionColor(), "tooltip (can be null)");
 	 *	options.addOptionConfirmation(
 	 *		"myData (can be any type)",
 	 *		new BaseStoryPointActionDelegate() {
-	 *			{@literal @}Override
+	 *			@Override
 	 *			public String getLogText(){ return "this appears in the log"; }
-	 *			{@literal @}Override
+	 *			@Override
 	 *			public int getRequiredStoryPoints(){ return 1; }
-	 *			{@literal @}Override
+	 *			@Override
 	 *			public float getBonusXPFraction(){ return 0f; } // a value between 0 and 1. 1 Means 100% bonus XP
-	 *			{@literal @}Override
+	 *			@Override
 	 *			public boolean withSPInfo(){ return true; }
-	 *			{@literal @}Override
+	 *			@Override
 	 *			public String getTitle(){ return "title to display in confirmation box"; }
-	 *			{@literal @}Override
+	 *			@Override
 	 *			public void createDescription(TooltipMakerAPI info){ info.addPara("description text in confirmation box", 1f); }
 	 *		}
 	 *	);
 	 * }
+	 * </code>
 	 * </pre>
 	 *
 	 * @param data must be the same thing you passed to addOption
