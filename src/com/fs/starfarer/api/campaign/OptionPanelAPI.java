@@ -85,24 +85,24 @@ public interface OptionPanelAPI {
 	 * <pre>
 	 * {@code
 	 *   // given an object of type OptionPanelAPI named options
-	 *   options.addOption("My story option [1SP, 0% XP]", "myData (can be any type)", Misc.getStoryOptionColor(), "tooltip (can be null)")
-	 *   options.addOptionConfirmation(
-	 *                     "myData (can be any type)",
-	 *                     object : StoryPointActionDelegate{
-	 * 							{@literal @}Override
-	 * 							String getLogText(){ return "this appears in the log"; }
-	 * 							{@literal @}Override
-	 * 	 						Int getRequiredStoryPoints(){ return 1; }
-	 * 							{@literal @}Override
-	 * 	 						Float getBonusXPFraction(){ return 0f; } // a value between 0 and 1. 1 Means 100% bonus XP
-	 * 							{@literal @}Override
-	 * 	 						Boolean withSPInfo(){ return true; }
-	 * 							{@literal @}Override
-	 * 							String getTitle(){ return "title to display in confirmation box"; }
-	 * 							{@literal @}Override
-	 * 							void createDescription(TooltipMakerAPI info){ info.addPara("description text in confirmation box", 1f) }
-	 *                     }
-	 *                 )
+	 *	options.addOption("My story option [1SP, 0% XP]", "myData (can be any type)", Misc.getStoryOptionColor(), "tooltip (can be null)");
+	 *	options.addOptionConfirmation(
+	 *		"myData (can be any type)",
+	 *		new BaseStoryPointActionDelegate() {
+	 *			{@literal @}Override
+	 *			public String getLogText(){ return "this appears in the log"; }
+	 *			{@literal @}Override
+	 *			public int getRequiredStoryPoints(){ return 1; }
+	 *			{@literal @}Override
+	 *			public float getBonusXPFraction(){ return 0f; } // a value between 0 and 1. 1 Means 100% bonus XP
+	 *			{@literal @}Override
+	 *			public boolean withSPInfo(){ return true; }
+	 *			{@literal @}Override
+	 *			public String getTitle(){ return "title to display in confirmation box"; }
+	 *			{@literal @}Override
+	 *			public void createDescription(TooltipMakerAPI info){ info.addPara("description text in confirmation box", 1f); }
+	 *		}
+	 *	);
 	 * }
 	 * </pre>
 	 *
