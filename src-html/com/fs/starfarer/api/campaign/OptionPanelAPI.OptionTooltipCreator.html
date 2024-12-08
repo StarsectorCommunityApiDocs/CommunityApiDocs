@@ -93,24 +93,24 @@
 <span class="sourceLineNo">085</span>         * &lt;pre&gt;<a name="line.85"></a>
 <span class="sourceLineNo">086</span>         * {@code<a name="line.86"></a>
 <span class="sourceLineNo">087</span>         *   // given an object of type OptionPanelAPI named options<a name="line.87"></a>
-<span class="sourceLineNo">088</span>         *   options.addOption("My story option [1SP, 0% XP]", "myData (can be any type)", Misc.getStoryOptionColor(), "tooltip (can be null)")<a name="line.88"></a>
-<span class="sourceLineNo">089</span>         *   options.addOptionConfirmation(<a name="line.89"></a>
-<span class="sourceLineNo">090</span>         *                     "myData (can be any type)",<a name="line.90"></a>
-<span class="sourceLineNo">091</span>         *                     object : StoryPointActionDelegate{<a name="line.91"></a>
-<span class="sourceLineNo">092</span>         *                                                      {@literal @}Override<a name="line.92"></a>
-<span class="sourceLineNo">093</span>         *                                                      String getLogText(){ return "this appears in the log"; }<a name="line.93"></a>
-<span class="sourceLineNo">094</span>         *                                                      {@literal @}Override<a name="line.94"></a>
-<span class="sourceLineNo">095</span>         *                                                      Int getRequiredStoryPoints(){ return 1; }<a name="line.95"></a>
-<span class="sourceLineNo">096</span>         *                                                      {@literal @}Override<a name="line.96"></a>
-<span class="sourceLineNo">097</span>         *                                                      Float getBonusXPFraction(){ return 0f; } // a value between 0 and 1. 1 Means 100% bonus XP<a name="line.97"></a>
-<span class="sourceLineNo">098</span>         *                                                      {@literal @}Override<a name="line.98"></a>
-<span class="sourceLineNo">099</span>         *                                                      Boolean withSPInfo(){ return true; }<a name="line.99"></a>
-<span class="sourceLineNo">100</span>         *                                                      {@literal @}Override<a name="line.100"></a>
-<span class="sourceLineNo">101</span>         *                                                      String getTitle(){ return "title to display in confirmation box"; }<a name="line.101"></a>
-<span class="sourceLineNo">102</span>         *                                                      {@literal @}Override<a name="line.102"></a>
-<span class="sourceLineNo">103</span>         *                                                      void createDescription(TooltipMakerAPI info){ info.addPara("description text in confirmation box", 1f) }<a name="line.103"></a>
-<span class="sourceLineNo">104</span>         *                     }<a name="line.104"></a>
-<span class="sourceLineNo">105</span>         *                 )<a name="line.105"></a>
+<span class="sourceLineNo">088</span>         *      options.addOption("My story option [1SP, 0% XP]", "myData (can be any type)", Misc.getStoryOptionColor(), "tooltip (can be null)");<a name="line.88"></a>
+<span class="sourceLineNo">089</span>         *      options.addOptionConfirmation(<a name="line.89"></a>
+<span class="sourceLineNo">090</span>         *              "myData (can be any type)",<a name="line.90"></a>
+<span class="sourceLineNo">091</span>         *              new BaseStoryPointActionDelegate() {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>         *                      {@literal @}Override<a name="line.92"></a>
+<span class="sourceLineNo">093</span>         *                      public String getLogText(){ return "this appears in the log"; }<a name="line.93"></a>
+<span class="sourceLineNo">094</span>         *                      {@literal @}Override<a name="line.94"></a>
+<span class="sourceLineNo">095</span>         *                      public int getRequiredStoryPoints(){ return 1; }<a name="line.95"></a>
+<span class="sourceLineNo">096</span>         *                      {@literal @}Override<a name="line.96"></a>
+<span class="sourceLineNo">097</span>         *                      public float getBonusXPFraction(){ return 0f; } // a value between 0 and 1. 1 Means 100% bonus XP<a name="line.97"></a>
+<span class="sourceLineNo">098</span>         *                      {@literal @}Override<a name="line.98"></a>
+<span class="sourceLineNo">099</span>         *                      public boolean withSPInfo(){ return true; }<a name="line.99"></a>
+<span class="sourceLineNo">100</span>         *                      {@literal @}Override<a name="line.100"></a>
+<span class="sourceLineNo">101</span>         *                      public String getTitle(){ return "title to display in confirmation box"; }<a name="line.101"></a>
+<span class="sourceLineNo">102</span>         *                      {@literal @}Override<a name="line.102"></a>
+<span class="sourceLineNo">103</span>         *                      public void createDescription(TooltipMakerAPI info){ info.addPara("description text in confirmation box", 1f); }<a name="line.103"></a>
+<span class="sourceLineNo">104</span>         *              }<a name="line.104"></a>
+<span class="sourceLineNo">105</span>         *      );<a name="line.105"></a>
 <span class="sourceLineNo">106</span>         * }<a name="line.106"></a>
 <span class="sourceLineNo">107</span>         * &lt;/pre&gt;<a name="line.107"></a>
 <span class="sourceLineNo">108</span>         *<a name="line.108"></a>
