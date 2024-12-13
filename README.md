@@ -36,10 +36,8 @@ instructions for other IDEs._
 
 _If you are setting up a new mod and have already followed these steps for a different mod, skip to step 4 (add git root)._
 
-1. Request to join the Team here: <https://github.com/orgs/StarsectorCommunityApiDocs/teams> (search for "Contributor").
-   1. If that doesn't work, ping an owner on Discord or something.
-   2. Unfortunately, there is no way to automatically add you to the team, so you will need to wait for a maintainer to
-      approve your request (if someone knows a way, please let us know).
+1. Ping @Wisp (wispborne) or @Jannes (desperatepeter) on Discord, and we will send you an invitation.
+   2. Unfortunately, directly requesting membership or automating invitations doesn't seem to work. Please let us know if you know of a way
 3. Clone the repo:
     1. If you haven't already, connect IntelliJ to your GitHub account by going to `File -> Settings -> Version Control
        -> GitHub` and adding your account there.
