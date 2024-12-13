@@ -98,9 +98,9 @@ public interface SectorEntityToken extends HasMemory {
 	 *
 	 * @param focus The entity to orbit around.
 	 * @param angle The initial angle the orbit will start at, relative to focus.
-	 * @param orbitRadius The radius of the orbit in standard units. This entity will maintain radius as a constant distance from the target.
-	 * @param orbitDays The orbit will make a complete rotation after this many days. CANNOT BE ZERO, OR ELSE THE ORBIT BREAKS AND CANNOT BE SERIALIZED!
-	 *
+	 * @param orbitRadius The radius of the orbit.
+	 * @param orbitDays The orbit will make a complete rotation after this many days.
+	 * Negative values cause the orbit to move counterclockwise. Warning: If set to zero, will cause numerous issues including preventing serialization.
      */
 	void setCircularOrbit(SectorEntityToken focus, float angle, float orbitRadius, float orbitDays);
 	/**
@@ -109,19 +109,20 @@ public interface SectorEntityToken extends HasMemory {
 	 *
 	 * @param focus The entity to orbit around.
 	 * @param angle The initial angle the orbit will start at, relative to focus.
-	 * @param orbitRadius The radius of the orbit in standard units. This entity will maintain radius as a constant distance from the target.
-	 * @param orbitDays The orbit will make a complete rotation after this many days. CANNOT BE ZERO, OR ELSE THE ORBIT BREAKS AND CANNOT BE SERIALIZED!
-	 *
+	 * @param orbitRadius The radius of the orbit.
+	 * @param orbitDays The orbit will make a complete rotation after this many days.
+	 * Negative values cause the orbit to move counterclockwise. Warning: If set to zero, will cause numerous issues including preventing serialization.
 	 */
 	void setCircularOrbitPointingDown(SectorEntityToken focus, float angle, float orbitRadius, float orbitDays);
 	/**
 	 * Causes this entity to enter a circular, fixed orbit around focus.
-	 * This orbit causes the orbiting entity to spin independantly of the orbit.
+	 * This orbit causes the orbiting entity to spin independently of the orbit.
 	 *
 	 * @param focus The entity to orbit around.
 	 * @param angle The initial angle the orbit will start at, relative to focus.
-	 * @param orbitRadius The radius of the orbit in standard units. This entity will maintain radius as a constant distance from the target.
-	 * @param orbitDays The orbit will make a complete rotation after this many days. CANNOT BE ZERO, OR ELSE THE ORBIT BREAKS AND CANNOT BE SERIALIZED!
+	 * @param orbitRadius The radius of the orbit.
+	 * @param orbitDays The orbit will make a complete rotation after this many days.
+	 * Negative values cause the orbit to move counterclockwise. Warning: If set to zero, will cause numerous issues including preventing serialization.
 	 * @param minSpin The minimum speed at which this entity will spin.
 	 * @param maxSpin The maximum speed at which this entity will spin. The speed is randomly picked between minSpin and maxSpin.
 	 */
