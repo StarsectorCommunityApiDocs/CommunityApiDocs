@@ -93,8 +93,38 @@ public interface SectorEntityToken extends HasMemory {
 	Collection<String> getTags();
 	void clearTags();
 	void setFixedLocation(float x, float y);
+	/**
+	 * Causes this entity to enter a circular, fixed orbit around focus.
+	 *
+	 * @param focus The entity to orbit around.
+	 * @param angle The initial angle the orbit will start at, relative to focus.
+	 * @param orbitRadius The radius of the orbit in standard units. This entity will maintain radius as a constant distance from the target.
+	 * @param orbitDays The orbit will make a complete rotation after this many days. CANNOT BE ZERO, OR ELSE THE ORBIT BREAKS AND CANNOT BE SERIALIZED!
+	 *
+     */
 	void setCircularOrbit(SectorEntityToken focus, float angle, float orbitRadius, float orbitDays);
+	/**
+	 * Causes this entity to enter a circular, fixed orbit around focus.
+	 * This orbit causes the orbiting entity to always have the bottom of its sprite pointing at the focus.
+	 *
+	 * @param focus The entity to orbit around.
+	 * @param angle The initial angle the orbit will start at, relative to focus.
+	 * @param orbitRadius The radius of the orbit in standard units. This entity will maintain radius as a constant distance from the target.
+	 * @param orbitDays The orbit will make a complete rotation after this many days. CANNOT BE ZERO, OR ELSE THE ORBIT BREAKS AND CANNOT BE SERIALIZED!
+	 *
+	 */
 	void setCircularOrbitPointingDown(SectorEntityToken focus, float angle, float orbitRadius, float orbitDays);
+	/**
+	 * Causes this entity to enter a circular, fixed orbit around focus.
+	 * This orbit causes the orbiting entity to spin independantly of the orbit.
+	 *
+	 * @param focus The entity to orbit around.
+	 * @param angle The initial angle the orbit will start at, relative to focus.
+	 * @param orbitRadius The radius of the orbit in standard units. This entity will maintain radius as a constant distance from the target.
+	 * @param orbitDays The orbit will make a complete rotation after this many days. CANNOT BE ZERO, OR ELSE THE ORBIT BREAKS AND CANNOT BE SERIALIZED!
+	 * @param minSpin The minimum speed at which this entity will spin.
+	 * @param maxSpin The maximum speed at which this entity will spin. The speed is randomly picked between minSpin and maxSpin.
+	 */
 	void setCircularOrbitWithSpin(SectorEntityToken focus, float angle, float orbitRadius, float orbitDays, float minSpin, float maxSpin);
 	/**
 	 * Will cause the relevant updateFacts() methods to run to update the entity's
