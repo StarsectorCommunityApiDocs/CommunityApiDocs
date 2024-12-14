@@ -128,6 +128,7 @@ public class BaseModPlugin implements ModPlugin {
 	 * This code gets executed whenever the game selects an autofire AI for a weapon, which is usually at start of combat
 	 * This is mainly relevant if your weapon has some quirks that the regular AI doesn't understand.
 	 *
+	 * <p>Example:</p>
 	 * <pre>
 	 *     <code>
 	 *         if(weapon.getId().equals("myWeaponId")){
