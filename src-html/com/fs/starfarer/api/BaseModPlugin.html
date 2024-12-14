@@ -23,83 +23,181 @@
 <span class="sourceLineNo">015</span> * intend to implement all the methods. This will also help avoid your mod breaking<a name="line.15"></a>
 <span class="sourceLineNo">016</span> * when new methods are added to ModPlugin, since default implemenations will be<a name="line.16"></a>
 <span class="sourceLineNo">017</span> * added here and your implementation will inherit them.<a name="line.17"></a>
-<span class="sourceLineNo">018</span> * <a name="line.18"></a>
-<span class="sourceLineNo">019</span> * @author Alex Mosolov<a name="line.19"></a>
-<span class="sourceLineNo">020</span> * <a name="line.20"></a>
+<span class="sourceLineNo">018</span> *<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * While having a ModPlugin for your mod is not strictly necessary, it serves as an entry point for all kinds<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * of useful things, such as faction initialization, adding custom scripts and picking AI plugins.<a name="line.20"></a>
 <span class="sourceLineNo">021</span> *<a name="line.21"></a>
-<span class="sourceLineNo">022</span> * Copyright 2013 Fractal Softworks, LLC<a name="line.22"></a>
-<span class="sourceLineNo">023</span> */<a name="line.23"></a>
-<span class="sourceLineNo">024</span>public class BaseModPlugin implements ModPlugin {<a name="line.24"></a>
-<span class="sourceLineNo">025</span>        <a name="line.25"></a>
-<span class="sourceLineNo">026</span>        public void afterGameSave() {<a name="line.26"></a>
-<span class="sourceLineNo">027</span>                <a name="line.27"></a>
-<span class="sourceLineNo">028</span>        }<a name="line.28"></a>
-<span class="sourceLineNo">029</span><a name="line.29"></a>
-<span class="sourceLineNo">030</span>        public void beforeGameSave() {<a name="line.30"></a>
-<span class="sourceLineNo">031</span>                <a name="line.31"></a>
-<span class="sourceLineNo">032</span>        }<a name="line.32"></a>
-<span class="sourceLineNo">033</span>        <a name="line.33"></a>
-<span class="sourceLineNo">034</span>        public void onGameSaveFailed() {<a name="line.34"></a>
-<span class="sourceLineNo">035</span>                <a name="line.35"></a>
-<span class="sourceLineNo">036</span>        }<a name="line.36"></a>
-<span class="sourceLineNo">037</span><a name="line.37"></a>
-<span class="sourceLineNo">038</span>        public void onApplicationLoad() throws Exception {<a name="line.38"></a>
-<span class="sourceLineNo">039</span>                <a name="line.39"></a>
-<span class="sourceLineNo">040</span>        }<a name="line.40"></a>
-<span class="sourceLineNo">041</span><a name="line.41"></a>
-<span class="sourceLineNo">042</span>        public void onEnabled(boolean wasEnabledBefore) {<a name="line.42"></a>
-<span class="sourceLineNo">043</span>                <a name="line.43"></a>
-<span class="sourceLineNo">044</span>        }<a name="line.44"></a>
-<span class="sourceLineNo">045</span><a name="line.45"></a>
-<span class="sourceLineNo">046</span>        public void onGameLoad(boolean newGame) {<a name="line.46"></a>
-<span class="sourceLineNo">047</span>                <a name="line.47"></a>
-<span class="sourceLineNo">048</span>        }<a name="line.48"></a>
-<span class="sourceLineNo">049</span><a name="line.49"></a>
-<span class="sourceLineNo">050</span>        public void onNewGame() {<a name="line.50"></a>
-<span class="sourceLineNo">051</span>                <a name="line.51"></a>
-<span class="sourceLineNo">052</span>        }<a name="line.52"></a>
-<span class="sourceLineNo">053</span>        <a name="line.53"></a>
-<span class="sourceLineNo">054</span>        public void onNewGameAfterEconomyLoad() {<a name="line.54"></a>
-<span class="sourceLineNo">055</span>                <a name="line.55"></a>
-<span class="sourceLineNo">056</span>        }<a name="line.56"></a>
-<span class="sourceLineNo">057</span><a name="line.57"></a>
-<span class="sourceLineNo">058</span>        public PluginPick&lt;ShipAIPlugin&gt; pickShipAI(FleetMemberAPI member, ShipAPI ship) {<a name="line.58"></a>
-<span class="sourceLineNo">059</span>                return null;<a name="line.59"></a>
-<span class="sourceLineNo">060</span>        }<a name="line.60"></a>
-<span class="sourceLineNo">061</span><a name="line.61"></a>
-<span class="sourceLineNo">062</span>        public PluginPick&lt;AutofireAIPlugin&gt; pickWeaponAutofireAI(WeaponAPI weapon) {<a name="line.62"></a>
-<span class="sourceLineNo">063</span>                return null;<a name="line.63"></a>
-<span class="sourceLineNo">064</span>        }<a name="line.64"></a>
-<span class="sourceLineNo">065</span><a name="line.65"></a>
-<span class="sourceLineNo">066</span>        public PluginPick&lt;ShipAIPlugin&gt; pickDroneAI(ShipAPI drone,<a name="line.66"></a>
-<span class="sourceLineNo">067</span>                        ShipAPI mothership, DroneLauncherShipSystemAPI system) {<a name="line.67"></a>
-<span class="sourceLineNo">068</span>                return null;<a name="line.68"></a>
-<span class="sourceLineNo">069</span>        }<a name="line.69"></a>
-<span class="sourceLineNo">070</span><a name="line.70"></a>
-<span class="sourceLineNo">071</span>        public PluginPick&lt;MissileAIPlugin&gt; pickMissileAI(MissileAPI missile,<a name="line.71"></a>
-<span class="sourceLineNo">072</span>                        ShipAPI launchingShip) {<a name="line.72"></a>
-<span class="sourceLineNo">073</span>                return null;<a name="line.73"></a>
-<span class="sourceLineNo">074</span>        }<a name="line.74"></a>
-<span class="sourceLineNo">075</span><a name="line.75"></a>
-<span class="sourceLineNo">076</span>        public void onNewGameAfterTimePass() {<a name="line.76"></a>
-<span class="sourceLineNo">077</span>                <a name="line.77"></a>
-<span class="sourceLineNo">078</span>        }<a name="line.78"></a>
-<span class="sourceLineNo">079</span><a name="line.79"></a>
-<span class="sourceLineNo">080</span>        public void configureXStream(XStream x) {<a name="line.80"></a>
-<span class="sourceLineNo">081</span>                <a name="line.81"></a>
-<span class="sourceLineNo">082</span>        }<a name="line.82"></a>
-<span class="sourceLineNo">083</span><a name="line.83"></a>
-<span class="sourceLineNo">084</span>        public void onNewGameAfterProcGen() {<a name="line.84"></a>
-<span class="sourceLineNo">085</span>                // TODO Auto-generated method stub<a name="line.85"></a>
-<span class="sourceLineNo">086</span>                <a name="line.86"></a>
-<span class="sourceLineNo">087</span>        }<a name="line.87"></a>
-<span class="sourceLineNo">088</span><a name="line.88"></a>
-<span class="sourceLineNo">089</span>        public void onDevModeF8Reload() {<a name="line.89"></a>
-<span class="sourceLineNo">090</span>                // TODO Auto-generated method stub<a name="line.90"></a>
+<span class="sourceLineNo">022</span> * You need to instruct the game to load your implementation of this class by e.g. adding it to your mod_info.json:<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * "modPlugin":"my.package.name.MyModBasePlugin"<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * <a name="line.24"></a>
+<span class="sourceLineNo">025</span> * @author Alex Mosolov<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * <a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> * Copyright 2013 Fractal Softworks, LLC<a name="line.28"></a>
+<span class="sourceLineNo">029</span> */<a name="line.29"></a>
+<span class="sourceLineNo">030</span>public class BaseModPlugin implements ModPlugin {<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>        /**<a name="line.32"></a>
+<span class="sourceLineNo">033</span>         * code in here gets executed after the game gets saved. The main use for this is in combination with beforeGameSave.<a name="line.33"></a>
+<span class="sourceLineNo">034</span>         * If you did clean-up code in beforeGameSave, you can re-add your stuff in here.<a name="line.34"></a>
+<span class="sourceLineNo">035</span>         *<a name="line.35"></a>
+<span class="sourceLineNo">036</span>         * &lt;p&gt;Example:&lt;/p&gt;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>         * &lt;pre&gt;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>         *     &lt;code&gt;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>         *         Global.getSector().getListenerManager().addListener(new MyListener());<a name="line.39"></a>
+<span class="sourceLineNo">040</span>         *     &lt;/code&gt;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>         * &lt;/pre&gt;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>         */<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        public void afterGameSave() {<a name="line.43"></a>
+<span class="sourceLineNo">044</span>                <a name="line.44"></a>
+<span class="sourceLineNo">045</span>        }<a name="line.45"></a>
+<span class="sourceLineNo">046</span><a name="line.46"></a>
+<span class="sourceLineNo">047</span>        /**<a name="line.47"></a>
+<span class="sourceLineNo">048</span>         * code in here gets executed before the game gets saved. This is mainly useful for doing cleanup.<a name="line.48"></a>
+<span class="sourceLineNo">049</span>         * Anything that is part of the sector gets serialized when the game is saved. If you, for instance, add custom<a name="line.49"></a>
+<span class="sourceLineNo">050</span>         * listeners to the sector and the game gets saved, they are added to the save file. If you<a name="line.50"></a>
+<span class="sourceLineNo">051</span>         * then later e.g. rename the class of those listeners, that will break mod compatibility and users won't be able<a name="line.51"></a>
+<span class="sourceLineNo">052</span>         * to upgrade your mod in an ongoing campaign. Also, players won't be able to remove your mod from an ongoing<a name="line.52"></a>
+<span class="sourceLineNo">053</span>         * campaign. To avoid this issue, you can simply clean up anything that you added to the sector that doesn't need to<a name="line.53"></a>
+<span class="sourceLineNo">054</span>         * be saved in this method and then re-add it in the afterGameSave-method.<a name="line.54"></a>
+<span class="sourceLineNo">055</span>         *<a name="line.55"></a>
+<span class="sourceLineNo">056</span>         * &lt;p&gt;Example:&lt;/p&gt;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>         * &lt;pre&gt;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>         *     &lt;code&gt;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>         *                      while (Global.getSector().getListenerManager().hasListenerOfClass(MyListener.class)){<a name="line.59"></a>
+<span class="sourceLineNo">060</span>         *             Global.getSector().getListenerManager().removeListenerOfClass(MyListener.class);<a name="line.60"></a>
+<span class="sourceLineNo">061</span>         *         }<a name="line.61"></a>
+<span class="sourceLineNo">062</span>         *     &lt;/code&gt;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>         * &lt;/pre&gt;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>         */<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        public void beforeGameSave() {<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                <a name="line.66"></a>
+<span class="sourceLineNo">067</span>        }<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        <a name="line.68"></a>
+<span class="sourceLineNo">069</span>        public void onGameSaveFailed() {<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                <a name="line.70"></a>
+<span class="sourceLineNo">071</span>        }<a name="line.71"></a>
+<span class="sourceLineNo">072</span><a name="line.72"></a>
+<span class="sourceLineNo">073</span>        public void onApplicationLoad() throws Exception {<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                <a name="line.74"></a>
+<span class="sourceLineNo">075</span>        }<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span>        public void onEnabled(boolean wasEnabledBefore) {<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                <a name="line.78"></a>
+<span class="sourceLineNo">079</span>        }<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>        /**<a name="line.81"></a>
+<span class="sourceLineNo">082</span>         * Code in here gets executed whenever the game is loaded.<a name="line.82"></a>
+<span class="sourceLineNo">083</span>         *<a name="line.83"></a>
+<span class="sourceLineNo">084</span>         * In here, you should do all kinds of initialization logic, such as adding transient scripts,<a name="line.84"></a>
+<span class="sourceLineNo">085</span>         * registering campaign plugins, adding custom sensor ghots etc.<a name="line.85"></a>
+<span class="sourceLineNo">086</span>         *<a name="line.86"></a>
+<span class="sourceLineNo">087</span>         * @param newGame if true, a new campaign has just been started. Sector generation logic should only<a name="line.87"></a>
+<span class="sourceLineNo">088</span>         *                be executed if this is true.<a name="line.88"></a>
+<span class="sourceLineNo">089</span>         */<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        public void onGameLoad(boolean newGame) {<a name="line.90"></a>
 <span class="sourceLineNo">091</span>                <a name="line.91"></a>
 <span class="sourceLineNo">092</span>        }<a name="line.92"></a>
 <span class="sourceLineNo">093</span><a name="line.93"></a>
-<span class="sourceLineNo">094</span>}<a name="line.94"></a>
+<span class="sourceLineNo">094</span>        /**<a name="line.94"></a>
+<span class="sourceLineNo">095</span>         * I honestly don't know what the difference between this and onGameLoad(newGame = true) is.<a name="line.95"></a>
+<span class="sourceLineNo">096</span>         * If anyone knows, please replace this with proper documentation :)<a name="line.96"></a>
+<span class="sourceLineNo">097</span>         */<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        public void onNewGame() {<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                <a name="line.99"></a>
+<span class="sourceLineNo">100</span>        }<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        <a name="line.101"></a>
+<span class="sourceLineNo">102</span>        public void onNewGameAfterEconomyLoad() {<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                <a name="line.103"></a>
+<span class="sourceLineNo">104</span>        }<a name="line.104"></a>
+<span class="sourceLineNo">105</span><a name="line.105"></a>
+<span class="sourceLineNo">106</span>        /**<a name="line.106"></a>
+<span class="sourceLineNo">107</span>         * This gets called whenever the AI for a ship gets assigned.<a name="line.107"></a>
+<span class="sourceLineNo">108</span>         *<a name="line.108"></a>
+<span class="sourceLineNo">109</span>         * &lt;p&gt;Example:&lt;/p&gt;<a name="line.109"></a>
+<span class="sourceLineNo">110</span>         * &lt;pre&gt;<a name="line.110"></a>
+<span class="sourceLineNo">111</span>         *     &lt;code&gt;<a name="line.111"></a>
+<span class="sourceLineNo">112</span>         *                      if(ship.getVariant().getHullVariantId().equals("myVariantId")){<a name="line.112"></a>
+<span class="sourceLineNo">113</span>         *             return new PluginPick&lt;ShipAIPlugin&gt;(new MyAi(), CampaignPlugin.PickPriority.MOD_GENERAL)<a name="line.113"></a>
+<span class="sourceLineNo">114</span>         *         }<a name="line.114"></a>
+<span class="sourceLineNo">115</span>         *         return null;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>         *     &lt;/code&gt;<a name="line.116"></a>
+<span class="sourceLineNo">117</span>         * &lt;/pre&gt;<a name="line.117"></a>
+<span class="sourceLineNo">118</span>         *<a name="line.118"></a>
+<span class="sourceLineNo">119</span>         * @param member fleetMemeber of the ship in question. Can be used to inform your decision if/which AI to choose<a name="line.119"></a>
+<span class="sourceLineNo">120</span>         * @param ship the ship in question<a name="line.120"></a>
+<span class="sourceLineNo">121</span>         * @return a plugin pick containing the chosen ship AI, or simply null to use the default AI<a name="line.121"></a>
+<span class="sourceLineNo">122</span>         */<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        public PluginPick&lt;ShipAIPlugin&gt; pickShipAI(FleetMemberAPI member, ShipAPI ship) {<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                return null;<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        }<a name="line.125"></a>
+<span class="sourceLineNo">126</span><a name="line.126"></a>
+<span class="sourceLineNo">127</span>        /**<a name="line.127"></a>
+<span class="sourceLineNo">128</span>         * This code gets executed whenever the game selects an autofire AI for a weapon, which is usually at start of combat<a name="line.128"></a>
+<span class="sourceLineNo">129</span>         * This is mainly relevant if your weapon has some quirks that the regular AI doesn't understand.<a name="line.129"></a>
+<span class="sourceLineNo">130</span>         *<a name="line.130"></a>
+<span class="sourceLineNo">131</span>         * &lt;pre&gt;<a name="line.131"></a>
+<span class="sourceLineNo">132</span>         *     &lt;code&gt;<a name="line.132"></a>
+<span class="sourceLineNo">133</span>         *         if(weapon.getId().equals("myWeaponId")){<a name="line.133"></a>
+<span class="sourceLineNo">134</span>         *             return new PluginPick&lt;&gt;(new MyAi(), CampaignPlugin.PickPriority.MOD_GENERAL);<a name="line.134"></a>
+<span class="sourceLineNo">135</span>         *         }<a name="line.135"></a>
+<span class="sourceLineNo">136</span>         *         return null;<a name="line.136"></a>
+<span class="sourceLineNo">137</span>         *     &lt;/code&gt;<a name="line.137"></a>
+<span class="sourceLineNo">138</span>         * &lt;/pre&gt;<a name="line.138"></a>
+<span class="sourceLineNo">139</span>         *<a name="line.139"></a>
+<span class="sourceLineNo">140</span>         * @param weapon the weapon in question<a name="line.140"></a>
+<span class="sourceLineNo">141</span>         * @return a plugin pick containing the chosen AI, or simply null to use the default<a name="line.141"></a>
+<span class="sourceLineNo">142</span>         */<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        public PluginPick&lt;AutofireAIPlugin&gt; pickWeaponAutofireAI(WeaponAPI weapon) {<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                return null;<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        }<a name="line.145"></a>
+<span class="sourceLineNo">146</span><a name="line.146"></a>
+<span class="sourceLineNo">147</span>        public PluginPick&lt;ShipAIPlugin&gt; pickDroneAI(ShipAPI drone,<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                        ShipAPI mothership, DroneLauncherShipSystemAPI system) {<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                return null;<a name="line.149"></a>
+<span class="sourceLineNo">150</span>        }<a name="line.150"></a>
+<span class="sourceLineNo">151</span><a name="line.151"></a>
+<span class="sourceLineNo">152</span>        /**<a name="line.152"></a>
+<span class="sourceLineNo">153</span>         * This method is how you can assign custom AI to missiles. If you want to write your own missile AI,<a name="line.153"></a>
+<span class="sourceLineNo">154</span>         * I would recommend having a look at the MagicMissileAI available in MagicLib for inspiration.<a name="line.154"></a>
+<span class="sourceLineNo">155</span>         *<a name="line.155"></a>
+<span class="sourceLineNo">156</span>         * &lt;p&gt;Example:&lt;/p&gt;<a name="line.156"></a>
+<span class="sourceLineNo">157</span>         * &lt;pre&gt;<a name="line.157"></a>
+<span class="sourceLineNo">158</span>         *     &lt;code&gt;<a name="line.158"></a>
+<span class="sourceLineNo">159</span>         *         if(missile.getProjectileSpecId().equals("myMissileProjId")){<a name="line.159"></a>
+<span class="sourceLineNo">160</span>         *             return new PluginPick&lt;&gt;(new MyAi(), CampaignPlugin.PickPriority.MOD_GENERAL);<a name="line.160"></a>
+<span class="sourceLineNo">161</span>         *         }<a name="line.161"></a>
+<span class="sourceLineNo">162</span>         *         return null;<a name="line.162"></a>
+<span class="sourceLineNo">163</span>         *     &lt;/code&gt;<a name="line.163"></a>
+<span class="sourceLineNo">164</span>         * &lt;/pre&gt;<a name="line.164"></a>
+<span class="sourceLineNo">165</span>         * @param missile the missile in question. This is usually the main deciding factor.<a name="line.165"></a>
+<span class="sourceLineNo">166</span>         * @param launchingShip the ship that launched the missile. This can usually be ignored<a name="line.166"></a>
+<span class="sourceLineNo">167</span>         * @return a plugin pick containing the chosen AI, or simply null to use the default<a name="line.167"></a>
+<span class="sourceLineNo">168</span>         */<a name="line.168"></a>
+<span class="sourceLineNo">169</span>        public PluginPick&lt;MissileAIPlugin&gt; pickMissileAI(MissileAPI missile,<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                        ShipAPI launchingShip) {<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                return null;<a name="line.171"></a>
+<span class="sourceLineNo">172</span>        }<a name="line.172"></a>
+<span class="sourceLineNo">173</span><a name="line.173"></a>
+<span class="sourceLineNo">174</span>        public void onNewGameAfterTimePass() {<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                <a name="line.175"></a>
+<span class="sourceLineNo">176</span>        }<a name="line.176"></a>
+<span class="sourceLineNo">177</span><a name="line.177"></a>
+<span class="sourceLineNo">178</span>        public void configureXStream(XStream x) {<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                <a name="line.179"></a>
+<span class="sourceLineNo">180</span>        }<a name="line.180"></a>
+<span class="sourceLineNo">181</span><a name="line.181"></a>
+<span class="sourceLineNo">182</span>        public void onNewGameAfterProcGen() {<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                // TODO Auto-generated method stub<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                <a name="line.184"></a>
+<span class="sourceLineNo">185</span>        }<a name="line.185"></a>
+<span class="sourceLineNo">186</span><a name="line.186"></a>
+<span class="sourceLineNo">187</span>        public void onDevModeF8Reload() {<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                // TODO Auto-generated method stub<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                <a name="line.189"></a>
+<span class="sourceLineNo">190</span>        }<a name="line.190"></a>
+<span class="sourceLineNo">191</span><a name="line.191"></a>
+<span class="sourceLineNo">192</span>}<a name="line.192"></a>
 
 
 
