@@ -15,6 +15,9 @@ import com.thoughtworks.xstream.XStream;
  * intend to implement all the methods. This will also help avoid your mod breaking
  * when new methods are added to ModPlugin, since default implemenations will be
  * added here and your implementation will inherit them.
+ *
+ * <hr>
+ *
  * <p>
  * While having a ModPlugin for your mod is not strictly necessary, it serves as an entry point for all kinds
  * of useful things, such as faction initialization, adding custom scripts and picking AI plugins.
@@ -30,6 +33,10 @@ import com.thoughtworks.xstream.XStream;
 public class BaseModPlugin implements ModPlugin {
 
 	/**
+	 *
+	 * {@inheritDoc}
+	 * <hr>
+	 *
 	 * Code in here gets executed after the game gets saved. The main use for this is in combination with beforeGameSave.
 	 * If you did clean-up code in beforeGameSave, you can re-add your stuff in here.
 	 *
@@ -40,15 +47,17 @@ public class BaseModPlugin implements ModPlugin {
 	 *     </code>
 	 * </pre>
 	 *
-	 * Original doc:
-	 * <p>
-	 * {@inheritDoc}
 	 */
 	public void afterGameSave() {
 		
 	}
 
 	/**
+	 *
+	 * {@inheritDoc}
+	 *
+	 * <hr>
+	 *
 	 * Code in here gets executed before the game gets saved. This is mainly useful for doing cleanup.
 	 * Anything that is part of the sector gets serialized when the game is saved. If you, for instance, add custom
 	 * listeners to the sector and the game gets saved, they are added to the save file. If you
@@ -66,9 +75,6 @@ public class BaseModPlugin implements ModPlugin {
 	 *     </code>
 	 * </pre>
 	 *
-	 * Original doc:
-	 * <p>
-	 * {@inheritDoc}
 	 */
 	public void beforeGameSave() {
 		
@@ -96,14 +102,12 @@ public class BaseModPlugin implements ModPlugin {
 	}
 
 	/**
-	 * Code in here gets executed whenever the game is loaded.
+	 * {@inheritDoc}
+	 * <hr>
 	 * <p>
 	 * In here, you should do all kinds of initialization logic, such as adding transient scripts,
 	 * registering campaign plugins, adding custom sensor ghosts etc.
 	 * <p>
-	 * Original doc:
-	 * <p>
-	 * {@inheritDoc}
 	 *
 	 * @param newGame if true, a new campaign has just been started. Sector generation logic should only
 	 *                be executed if this is true.
@@ -127,7 +131,8 @@ public class BaseModPlugin implements ModPlugin {
 	}
 
 	/**
-	 * This gets called whenever the AI for a ship gets assigned.
+	 * {@inheritDoc}
+	 * <hr>
 	 *
 	 * <p>Example:</p>
 	 * <pre>
@@ -139,9 +144,6 @@ public class BaseModPlugin implements ModPlugin {
 	 *     </code>
 	 * </pre>
 	 * <p>
-	 * Original doc:
-	 * <p>
-	 * {@inheritDoc}
 	 *
 	 * @param member fleetMemeber of the ship in question. Can be used to inform your decision if/which AI to choose
 	 * @param ship the ship in question
@@ -152,6 +154,10 @@ public class BaseModPlugin implements ModPlugin {
 	}
 
 	/**
+	 *
+	 * {@inheritDoc}
+	 * <hr>
+	 *
 	 * This code gets executed whenever the game selects an autofire AI for a weapon, which is usually at start of combat
 	 * This is mainly relevant if your weapon has some quirks that the regular AI doesn't understand.
 	 *
@@ -165,9 +171,6 @@ public class BaseModPlugin implements ModPlugin {
 	 *     </code>
 	 * </pre>
 	 * <p>
-	 * Original doc:
-	 * <p>
-	 * {@inheritDoc}
 	 *
 	 * @param weapon the weapon in question
 	 * @return a plugin pick containing the chosen AI, or simply null to use the default
@@ -182,6 +185,10 @@ public class BaseModPlugin implements ModPlugin {
 	}
 
 	/**
+	 *
+	 * {@inheritDoc}
+	 * <hr>
+	 *
 	 * This method is how you can assign custom AI to missiles. If you want to write your own missile AI,
 	 * I would recommend having a look at the MagicMissileAI available in MagicLib for inspiration.
 	 *
@@ -194,9 +201,6 @@ public class BaseModPlugin implements ModPlugin {
 	 *         return null;
 	 *     </code>
 	 * </pre>
-	 * Original doc:
-	 * <p>
-	 * {@inheritDoc}
 	 *
 	 * @param missile the missile in question. This is usually the main deciding factor.
 	 * @param launchingShip the ship that launched the missile. This can usually be ignored
