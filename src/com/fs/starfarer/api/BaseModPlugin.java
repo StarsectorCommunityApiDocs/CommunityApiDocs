@@ -15,22 +15,22 @@ import com.thoughtworks.xstream.XStream;
  * intend to implement all the methods. This will also help avoid your mod breaking
  * when new methods are added to ModPlugin, since default implemenations will be
  * added here and your implementation will inherit them.
- *
+ * <p>
  * While having a ModPlugin for your mod is not strictly necessary, it serves as an entry point for all kinds
  * of useful things, such as faction initialization, adding custom scripts and picking AI plugins.
- *
+ * <p>
  * You need to instruct the game to load your implementation of this class by e.g. adding it to your mod_info.json:
  * "modPlugin":"my.package.name.MyModBasePlugin"
  * 
  * @author Alex Mosolov
- * 
+ *
  *
  * Copyright 2013 Fractal Softworks, LLC
  */
 public class BaseModPlugin implements ModPlugin {
 
 	/**
-	 * code in here gets executed after the game gets saved. The main use for this is in combination with beforeGameSave.
+	 * Code in here gets executed after the game gets saved. The main use for this is in combination with beforeGameSave.
 	 * If you did clean-up code in beforeGameSave, you can re-add your stuff in here.
 	 *
 	 * <p>Example:</p>
@@ -39,13 +39,17 @@ public class BaseModPlugin implements ModPlugin {
 	 *         Global.getSector().getListenerManager().addListener(new MyListener());
 	 *     </code>
 	 * </pre>
+	 *
+	 * Original doc:
+	 * <p>
+	 * {@inheritDoc}
 	 */
 	public void afterGameSave() {
 		
 	}
 
 	/**
-	 * code in here gets executed before the game gets saved. This is mainly useful for doing cleanup.
+	 * Code in here gets executed before the game gets saved. This is mainly useful for doing cleanup.
 	 * Anything that is part of the sector gets serialized when the game is saved. If you, for instance, add custom
 	 * listeners to the sector and the game gets saved, they are added to the save file. If you
 	 * then later e.g. rename the class of those listeners, that will break mod compatibility and users won't be able
@@ -61,28 +65,45 @@ public class BaseModPlugin implements ModPlugin {
 	 *         }
 	 *     </code>
 	 * </pre>
+	 *
+	 * Original doc:
+	 * <p>
+	 * {@inheritDoc}
 	 */
 	public void beforeGameSave() {
 		
 	}
-	
+
+	/**
+	 * {@inheritDoc}
+	 */
 	public void onGameSaveFailed() {
 		
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void onApplicationLoad() throws Exception {
 		
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void onEnabled(boolean wasEnabledBefore) {
 		
 	}
 
 	/**
 	 * Code in here gets executed whenever the game is loaded.
-	 *
+	 * <p>
 	 * In here, you should do all kinds of initialization logic, such as adding transient scripts,
-	 * registering campaign plugins, adding custom sensor ghots etc.
+	 * registering campaign plugins, adding custom sensor ghosts etc.
+	 * <p>
+	 * Original doc:
+	 * <p>
+	 * {@inheritDoc}
 	 *
 	 * @param newGame if true, a new campaign has just been started. Sector generation logic should only
 	 *                be executed if this is true.
@@ -92,13 +113,15 @@ public class BaseModPlugin implements ModPlugin {
 	}
 
 	/**
-	 * I honestly don't know what the difference between this and onGameLoad(newGame = true) is.
-	 * If anyone knows, please replace this with proper documentation :)
+	 * {@inheritDoc}
 	 */
 	public void onNewGame() {
 		
 	}
-	
+
+	/**
+	 * {@inheritDoc}
+	 */
 	public void onNewGameAfterEconomyLoad() {
 		
 	}
@@ -115,6 +138,10 @@ public class BaseModPlugin implements ModPlugin {
 	 *         return null;
 	 *     </code>
 	 * </pre>
+	 * <p>
+	 * Original doc:
+	 * <p>
+	 * {@inheritDoc}
 	 *
 	 * @param member fleetMemeber of the ship in question. Can be used to inform your decision if/which AI to choose
 	 * @param ship the ship in question
@@ -137,6 +164,10 @@ public class BaseModPlugin implements ModPlugin {
 	 *         return null;
 	 *     </code>
 	 * </pre>
+	 * <p>
+	 * Original doc:
+	 * <p>
+	 * {@inheritDoc}
 	 *
 	 * @param weapon the weapon in question
 	 * @return a plugin pick containing the chosen AI, or simply null to use the default
@@ -163,6 +194,10 @@ public class BaseModPlugin implements ModPlugin {
 	 *         return null;
 	 *     </code>
 	 * </pre>
+	 * Original doc:
+	 * <p>
+	 * {@inheritDoc}
+	 *
 	 * @param missile the missile in question. This is usually the main deciding factor.
 	 * @param launchingShip the ship that launched the missile. This can usually be ignored
 	 * @return a plugin pick containing the chosen AI, or simply null to use the default
@@ -172,6 +207,9 @@ public class BaseModPlugin implements ModPlugin {
 		return null;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void onNewGameAfterTimePass() {
 		
 	}
@@ -185,6 +223,9 @@ public class BaseModPlugin implements ModPlugin {
 		
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public void onDevModeF8Reload() {
 		// TODO Auto-generated method stub
 		
