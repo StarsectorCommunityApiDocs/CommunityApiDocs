@@ -240,6 +240,41 @@ class BaseSomethingPlugin extends SomethingPlugin{
 }
 ```
 
+#### Extending existing documentation
+
+Some methods/classes already have documentation written by Alex. Often times, 
+these can be identified by the "@author Alex" tag. If you want to make extra sure, you can use git blame: If the documentation
+in question is part of the Starsector 0.97a-RC11 commit by wispborne, it is pre-written documentation by Alex.
+
+In order for users to easily be able to distinguish between pre-existing documentation and documentation added by the
+community, consider putting Alex's documentation at the top and separating it from the rest via \<hr>.
+
+```java
+
+/**
+ * This is some method doing something
+ * @author Alex
+ * 
+ * <hr>
+ * Please note that this method also does that other thing!
+ */
+void someMethod();
+```
+
+If you are documenting a class that implements an interface, you can copy the documentation of methods from the interface
+via {@inheritDoc}:
+
+```java
+class BaseSomethingPlugin extends SomethingPlugin{
+   /**
+    * {@inheritDoc}
+    * <hr>
+    * Additional documentation
+    */
+   void someMethod();
+}
+```
+
 ## For Maintainers
 
 ### Tasks
