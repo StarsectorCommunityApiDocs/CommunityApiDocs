@@ -181,7 +181,7 @@ The result could look something like this:
 
 Note that IntelliJ tends to display the indentation of comments wrong and generally speaking mess up your indentation.
 I don't know why and don't know how to fix that. Make sure to explicitly use spaces rather than tabs to indent, as IntelliJ
-for some unexplicable reason ignores the editor setting to use spaces for indentation in code examples in inline doc.
+for some inexplicable reason ignores the editor setting to use spaces for indentation in code examples in inline doc.
 
 #### Extending existing documentation
 
