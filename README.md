@@ -36,7 +36,7 @@ instructions for other IDEs._
 
 _If you are setting up a new mod and have already followed these steps for a different mod, skip to step 4 (add git root)._
 
-1. Ping @Wisp (wispborne) or @Jannes (desperatepeter) on Discord, and we will send you an invitation.
+1. Ping @Wisp (wispborne) or @Jannes (desperatepeter) on Discord with your GitHub username, and we will send you an invitation.
    2. Unfortunately, directly requesting membership or automating invitations doesn't seem to work. Please let us know if you know of a way
 3. Clone the repo:
     1. If you haven't already, connect IntelliJ to your GitHub account by going to `File -> Settings -> Version Control
