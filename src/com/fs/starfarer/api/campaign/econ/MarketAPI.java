@@ -169,7 +169,7 @@ public interface MarketAPI extends HasMemory {
 	
 	/**
 	 * Integer value from 0 to 10, inclusive.
-	 * @return
+	 * @return float value
 	 */
 	float getStabilityValue();
 	
