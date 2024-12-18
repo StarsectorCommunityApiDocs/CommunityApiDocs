@@ -68,7 +68,7 @@ public interface MarketAPI extends HasMemory {
 
 	List<MarketConditionAPI> getConditions();
 	/**
-	 * Adds market condition to specified MarketAPI object. Reference the MarketAPI enum SurveyLevel for full list.
+	 * Adds market condition to specified MarketAPI object.
 	 * Example: String "ORE_MODERATE" from Conditions class or "ore_moderate" id from market_conditions.csv.
 	 * @param id String id of condition.
 	 */
@@ -264,7 +264,7 @@ public interface MarketAPI extends HasMemory {
 	SurveyLevel getSurveyLevel();
 
 	/**
-	 * Sets the survey level of the specified market object.
+	 * Sets the survey level of the specified market object. Reference the MarketAPI enum SurveyLevel for full list.
 	 * Example: MarketAPI.SurveyLevel.FULL for fully surveyed market. Reference
 	 * @param MarketAPI SurveyLevel
 	 */
