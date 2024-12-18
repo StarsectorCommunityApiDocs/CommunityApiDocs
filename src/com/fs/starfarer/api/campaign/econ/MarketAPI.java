@@ -45,7 +45,11 @@ public interface MarketAPI extends HasMemory {
 	
 	SectorEntityToken getPrimaryEntity();
 	Set<SectorEntityToken> getConnectedEntities();
-	
+
+	/**
+	 * Returns string ID of the specified object.
+	 * @return String Id
+	 */
 	String getId();
 	String getName();
 	int getSize();
