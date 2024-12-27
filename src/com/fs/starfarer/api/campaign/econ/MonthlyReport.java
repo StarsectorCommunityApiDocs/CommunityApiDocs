@@ -41,10 +41,33 @@ public class MonthlyReport {
 	
 	/**
 	 * Financial data node for a monthly income/expenses report.
-	 * 
+	 *
+	 * <ul>
+	 *     <li>Represent a node in the monthly report panel.</li>
+	 *     <li>Example: com.fs.starfarer.api.impl.campaign.tutorial.GalatianAcademyStipend</li>
+	 *     <li>Example: com.fs.starfarer.api.impl.campaign.CoreScript.reportEconomyTick(int)</li>
+	 * </ul>
+	 *
+	 * <p>Adding custom node to monthly report under storage section</p>
+	 * <pre>
+	 * <code>
+	 *       MonthlyReport report = SharedData.getData().getCurrentReport();
+	 *         MonthlyReport.FDNode storageNode = report.getNode(MonthlyReport.STORAGE);
+	 *         //Check if the storageNode has been initialized in order to not override the node.
+	 *         if(storageNode.name == null) {
+	 *             storageNode.name = "Storage";
+	 *             storageNode.custom = MonthlyReport.STORAGE;
+	 *             storageNode.tooltipCreator = report.getMonthlyReportTooltip();
+	 *         }
+	 *         //Add in the custom node by getting the storageNode and create a new node from it
+	 *         MonthlyReport.FDNode anotherNode = report.getNode(storageNode, "A unique ID");
+	 *         anotherNode.name = "Another node inside storage node";
+	 * </code>
+	 * </pre>
 	 * @author Alex Mosolov
 	 *
 	 * Copyright 2017 Fractal Softworks, LLC
+	 *
 	 */
 	public static class FDNode {
 		protected LinkedHashMap<String, FDNode> children;
