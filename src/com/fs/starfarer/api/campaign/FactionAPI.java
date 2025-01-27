@@ -88,11 +88,39 @@ public interface FactionAPI extends HasMemory {
 
 	RepLevel getRelationshipLevel(FactionAPI faction);
 	RepLevel getRelationshipLevel(String id);
+
+	/**
+	 * True if the faction (identified by id) is equal to or friendlier than the given level.
+	 * @param id faction id
+	 * @param level the least friendly the faction can be
+	 */
 	boolean isAtWorst(String id, RepLevel level);
+	/**
+	 * True if the faction (identified by other) is equal to or friendlier than the given level.
+	 * @param other faction
+	 * @param level the least friendly the faction can be
+	 */
 	boolean isAtWorst(FactionAPI other, RepLevel level);
+	/**
+	 * True if the faction (identified by id) is equal to or more hostile than the given level.
+	 * @param id faction id
+	 * @param level the least hostile the faction can be
+	 */
 	boolean isAtBest(String id, RepLevel level);
+	/**
+	 * True if the faction (identified by other) is equal to or more hostile than the given level.
+	 * @param other faction
+	 * @param level the least hostile the faction can be
+	 */
 	boolean isAtBest(FactionAPI other, RepLevel level);
+	/**
+	 * True if the faction is hostile to the given faction.
+	 */
 	boolean isHostileTo(FactionAPI other);
+	/**
+	 * True if the faction is hostile to the given faction id.
+	 * @param other faction id
+	 */
 	boolean isHostileTo(String other);
 	
 //	boolean isNeutralTo(FactionAPI other);
