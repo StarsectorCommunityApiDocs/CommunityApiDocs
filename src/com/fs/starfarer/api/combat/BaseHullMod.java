@@ -129,7 +129,15 @@ public class BaseHullMod implements HullModEffect {
 	public void addPostDescriptionSection(TooltipMakerAPI tooltip, HullSize hullSize, ShipAPI ship, float width, boolean isForModSpec) {
 		
 	}
-	
+
+	/**
+	 * Determines whether the S-mod effect section should be displayed on the tooltip for a given ship.
+	 *
+	 * @param hullSize    the size of the ship's hull (e.g., frigate, destroyer).
+	 * @param ship        the {@link ShipAPI} instance representing the ship.
+	 * @param isForModSpec whether the check is for a mod specification or a specific ship.
+	 * @return {@code true} if the S-mod effect section should be displayed, {@code false} otherwise.
+	 */
 	public boolean hasSModEffectSection(HullSize hullSize, ShipAPI ship, boolean isForModSpec) {
 		if (!hasSModEffect()) return false;
 		GameState state = Global.getCurrentState();

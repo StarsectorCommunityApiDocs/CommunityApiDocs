@@ -176,7 +176,11 @@ import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import sun.misc.Cleaner;
 import sun.nio.ch.DirectBuffer;
 
-
+/**
+ * A random collection of utility methods.
+ * <p>
+ * Kotlin users: MagicLib contains extension methods for most of these functions.
+ */
 public class Misc {
 	
 	public static boolean CAN_SMOD_BUILT_IN = true;
