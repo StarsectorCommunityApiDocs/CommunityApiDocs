@@ -59,4 +59,13 @@ public interface SpriteAPI {
 	void setTexHeight(float texHeight);
 	void renderWithCorners(float blX, float blY, float tlX, float tlY, float trX, float trY, float brX, float brY);
 	Color getAverageBrightColor();
+	void renderNoBind(float x, float y);
+	void renderAtCenterNoBind(float x, float y);
+	int getBlendDest();
+	int getBlendSrc();
+	
+	float getTexX();
+	float getTexY();
+	float getTexWidth();
+	float getTexHeight();
 }

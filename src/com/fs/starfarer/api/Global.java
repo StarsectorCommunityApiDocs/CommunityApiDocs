@@ -15,6 +15,12 @@ import org.jetbrains.annotations.Nullable;
  * Copyright 2012 Fractal Softworks, LLC
  */
 public class Global {
+	
+	public static boolean CODEX_TOOLTIP_MODE = false;
+	
+	public static boolean LOADING_SAVE = false;
+	
+	
 	private static SettingsAPI settingsAPI;
 	private static SectorAPI sectorAPI;
 	private static FactoryAPI factory;
