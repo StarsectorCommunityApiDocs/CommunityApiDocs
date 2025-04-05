@@ -359,58 +359,59 @@
 <span class="sourceLineNo">351</span>                for (FleetMemberAPI member : fleet.getFleetData().getMembersListCopy()) {<a name="line.351"></a>
 <span class="sourceLineNo">352</span>                        if (member.isCapital()) {<a name="line.352"></a>
 <span class="sourceLineNo">353</span>                                member.setVariant(member.getVariant().clone(), false, false);<a name="line.353"></a>
-<span class="sourceLineNo">354</span>                                member.getVariant().setSource(VariantSource.REFIT);<a name="line.354"></a>
-<span class="sourceLineNo">355</span>                                member.getVariant().addTag(Tags.TAG_NO_AUTOFIT);<a name="line.355"></a>
-<span class="sourceLineNo">356</span>                                member.getVariant().addTag(Tags.VARIANT_CONSISTENT_WEAPON_DROPS);<a name="line.356"></a>
-<span class="sourceLineNo">357</span>                        }<a name="line.357"></a>
-<span class="sourceLineNo">358</span>                }<a name="line.358"></a>
-<span class="sourceLineNo">359</span>                <a name="line.359"></a>
-<span class="sourceLineNo">360</span>                market.getContainingLocation().addEntity(fleet);<a name="line.360"></a>
-<span class="sourceLineNo">361</span>                fleet.setFacing((float) Math.random() * 360f);<a name="line.361"></a>
-<span class="sourceLineNo">362</span>                // this will get overridden by the patrol assignment AI, depending on route-time elapsed etc<a name="line.362"></a>
-<span class="sourceLineNo">363</span>                fleet.setLocation(market.getPrimaryEntity().getLocation().x, market.getPrimaryEntity().getLocation().y);<a name="line.363"></a>
-<span class="sourceLineNo">364</span>                <a name="line.364"></a>
-<span class="sourceLineNo">365</span>                fleet.addScript(new PatrolAssignmentAIV4(fleet, route));<a name="line.365"></a>
-<span class="sourceLineNo">366</span>                <a name="line.366"></a>
-<span class="sourceLineNo">367</span>                //market.getContainingLocation().addEntity(fleet);<a name="line.367"></a>
-<span class="sourceLineNo">368</span>                //fleet.setLocation(market.getPrimaryEntity().getLocation().x, market.getPrimaryEntity().getLocation().y);<a name="line.368"></a>
-<span class="sourceLineNo">369</span>                <a name="line.369"></a>
-<span class="sourceLineNo">370</span>                if (custom.spawnFP &lt;= 0) {<a name="line.370"></a>
-<span class="sourceLineNo">371</span>                        custom.spawnFP = fleet.getFleetPoints();<a name="line.371"></a>
-<span class="sourceLineNo">372</span>                }<a name="line.372"></a>
-<span class="sourceLineNo">373</span>                <a name="line.373"></a>
-<span class="sourceLineNo">374</span>                return fleet;<a name="line.374"></a>
-<span class="sourceLineNo">375</span>        }<a name="line.375"></a>
-<span class="sourceLineNo">376</span>        <a name="line.376"></a>
-<span class="sourceLineNo">377</span>        public String getRouteSourceId() {<a name="line.377"></a>
-<span class="sourceLineNo">378</span>                return getMarket().getId() + "_" + "lionsguard";<a name="line.378"></a>
-<span class="sourceLineNo">379</span>        }<a name="line.379"></a>
-<span class="sourceLineNo">380</span><a name="line.380"></a>
-<span class="sourceLineNo">381</span>        @Override<a name="line.381"></a>
-<span class="sourceLineNo">382</span>        public boolean isAvailableToBuild() {<a name="line.382"></a>
-<span class="sourceLineNo">383</span>                return false;<a name="line.383"></a>
-<span class="sourceLineNo">384</span>        }<a name="line.384"></a>
-<span class="sourceLineNo">385</span>        <a name="line.385"></a>
-<span class="sourceLineNo">386</span>        public boolean showWhenUnavailable() {<a name="line.386"></a>
-<span class="sourceLineNo">387</span>                return false;<a name="line.387"></a>
-<span class="sourceLineNo">388</span>        }<a name="line.388"></a>
-<span class="sourceLineNo">389</span><a name="line.389"></a>
-<span class="sourceLineNo">390</span>        @Override<a name="line.390"></a>
-<span class="sourceLineNo">391</span>        public boolean canImprove() {<a name="line.391"></a>
-<span class="sourceLineNo">392</span>                return false;<a name="line.392"></a>
-<span class="sourceLineNo">393</span>        }<a name="line.393"></a>
-<span class="sourceLineNo">394</span>        <a name="line.394"></a>
-<span class="sourceLineNo">395</span>        @Override<a name="line.395"></a>
-<span class="sourceLineNo">396</span>        public RaidDangerLevel adjustCommodityDangerLevel(String commodityId, RaidDangerLevel level) {<a name="line.396"></a>
-<span class="sourceLineNo">397</span>                return level.next();<a name="line.397"></a>
-<span class="sourceLineNo">398</span>        }<a name="line.398"></a>
-<span class="sourceLineNo">399</span><a name="line.399"></a>
-<span class="sourceLineNo">400</span>        @Override<a name="line.400"></a>
-<span class="sourceLineNo">401</span>        public RaidDangerLevel adjustItemDangerLevel(String itemId, String data, RaidDangerLevel level) {<a name="line.401"></a>
-<span class="sourceLineNo">402</span>                return level.next();<a name="line.402"></a>
-<span class="sourceLineNo">403</span>        }<a name="line.403"></a>
-<span class="sourceLineNo">404</span>        <a name="line.404"></a>
-<span class="sourceLineNo">405</span>}<a name="line.405"></a>
+<span class="sourceLineNo">354</span>                                <a name="line.354"></a>
+<span class="sourceLineNo">355</span>                                member.getVariant().setSource(VariantSource.REFIT);<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                                member.getVariant().addTag(Tags.TAG_NO_AUTOFIT);<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                                member.getVariant().addTag(Tags.VARIANT_CONSISTENT_WEAPON_DROPS);<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                        }<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                }<a name="line.359"></a>
+<span class="sourceLineNo">360</span>                <a name="line.360"></a>
+<span class="sourceLineNo">361</span>                market.getContainingLocation().addEntity(fleet);<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                fleet.setFacing((float) Math.random() * 360f);<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                // this will get overridden by the patrol assignment AI, depending on route-time elapsed etc<a name="line.363"></a>
+<span class="sourceLineNo">364</span>                fleet.setLocation(market.getPrimaryEntity().getLocation().x, market.getPrimaryEntity().getLocation().y);<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                <a name="line.365"></a>
+<span class="sourceLineNo">366</span>                fleet.addScript(new PatrolAssignmentAIV4(fleet, route));<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                <a name="line.367"></a>
+<span class="sourceLineNo">368</span>                //market.getContainingLocation().addEntity(fleet);<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                //fleet.setLocation(market.getPrimaryEntity().getLocation().x, market.getPrimaryEntity().getLocation().y);<a name="line.369"></a>
+<span class="sourceLineNo">370</span>                <a name="line.370"></a>
+<span class="sourceLineNo">371</span>                if (custom.spawnFP &lt;= 0) {<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                        custom.spawnFP = fleet.getFleetPoints();<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                }<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                <a name="line.374"></a>
+<span class="sourceLineNo">375</span>                return fleet;<a name="line.375"></a>
+<span class="sourceLineNo">376</span>        }<a name="line.376"></a>
+<span class="sourceLineNo">377</span>        <a name="line.377"></a>
+<span class="sourceLineNo">378</span>        public String getRouteSourceId() {<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                return getMarket().getId() + "_" + "lionsguard";<a name="line.379"></a>
+<span class="sourceLineNo">380</span>        }<a name="line.380"></a>
+<span class="sourceLineNo">381</span><a name="line.381"></a>
+<span class="sourceLineNo">382</span>        @Override<a name="line.382"></a>
+<span class="sourceLineNo">383</span>        public boolean isAvailableToBuild() {<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                return false;<a name="line.384"></a>
+<span class="sourceLineNo">385</span>        }<a name="line.385"></a>
+<span class="sourceLineNo">386</span>        <a name="line.386"></a>
+<span class="sourceLineNo">387</span>        public boolean showWhenUnavailable() {<a name="line.387"></a>
+<span class="sourceLineNo">388</span>                return false;<a name="line.388"></a>
+<span class="sourceLineNo">389</span>        }<a name="line.389"></a>
+<span class="sourceLineNo">390</span><a name="line.390"></a>
+<span class="sourceLineNo">391</span>        @Override<a name="line.391"></a>
+<span class="sourceLineNo">392</span>        public boolean canImprove() {<a name="line.392"></a>
+<span class="sourceLineNo">393</span>                return false;<a name="line.393"></a>
+<span class="sourceLineNo">394</span>        }<a name="line.394"></a>
+<span class="sourceLineNo">395</span>        <a name="line.395"></a>
+<span class="sourceLineNo">396</span>        @Override<a name="line.396"></a>
+<span class="sourceLineNo">397</span>        public RaidDangerLevel adjustCommodityDangerLevel(String commodityId, RaidDangerLevel level) {<a name="line.397"></a>
+<span class="sourceLineNo">398</span>                return level.next();<a name="line.398"></a>
+<span class="sourceLineNo">399</span>        }<a name="line.399"></a>
+<span class="sourceLineNo">400</span><a name="line.400"></a>
+<span class="sourceLineNo">401</span>        @Override<a name="line.401"></a>
+<span class="sourceLineNo">402</span>        public RaidDangerLevel adjustItemDangerLevel(String itemId, String data, RaidDangerLevel level) {<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                return level.next();<a name="line.403"></a>
+<span class="sourceLineNo">404</span>        }<a name="line.404"></a>
+<span class="sourceLineNo">405</span>        <a name="line.405"></a>
+<span class="sourceLineNo">406</span>}<a name="line.406"></a>
 
 
 

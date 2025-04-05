@@ -1,0 +1,235 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.combat.dweller;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import com.fs.starfarer.api.combat.DamageType;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import com.fs.starfarer.api.combat.ShipAPI;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import com.fs.starfarer.api.impl.combat.dweller.DwellerCombatPlugin.DCPPlugin;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import com.fs.starfarer.api.impl.combat.dweller.DwellerShroud.DwellerShroudParams;<a name="line.6"></a>
+<span class="sourceLineNo">007</span><a name="line.7"></a>
+<span class="sourceLineNo">008</span>public class ShroudedEjectaShipCreator extends BaseDwellerShipCreator implements DCPPlugin {<a name="line.8"></a>
+<span class="sourceLineNo">009</span><a name="line.9"></a>
+<span class="sourceLineNo">010</span>        public static float EXPLOSION_DAMAGE = 2000f;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>        public static DamageType EXPLOSION_DAMAGE_TYPE = DamageType.ENERGY;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>        <a name="line.12"></a>
+<span class="sourceLineNo">013</span>        public static String ID_BODY_ONE = "id_body_one";<a name="line.13"></a>
+<span class="sourceLineNo">014</span>        public static String ID_BODY_TWO = "id_body_two";<a name="line.14"></a>
+<span class="sourceLineNo">015</span>        <a name="line.15"></a>
+<span class="sourceLineNo">016</span>        public static String TAG_MIRRORED_VORTEX = "tag_mirrored_vortex";<a name="line.16"></a>
+<span class="sourceLineNo">017</span>        <a name="line.17"></a>
+<span class="sourceLineNo">018</span>        @Override<a name="line.18"></a>
+<span class="sourceLineNo">019</span>        protected DwellerCombatPlugin createPlugin(ShipAPI ship) {<a name="line.19"></a>
+<span class="sourceLineNo">020</span>                //DwellerCombatPlugin plugin = super.createPlugin(ship);<a name="line.20"></a>
+<span class="sourceLineNo">021</span>                <a name="line.21"></a>
+<span class="sourceLineNo">022</span>                DwellerCombatPlugin plugin = DwellerCombatPlugin.getDwellerPluginFor(ship);<a name="line.22"></a>
+<span class="sourceLineNo">023</span>                if (plugin == null) {<a name="line.23"></a>
+<span class="sourceLineNo">024</span>                        plugin = new DwellerCombatPlugin(ship);<a name="line.24"></a>
+<span class="sourceLineNo">025</span>                }<a name="line.25"></a>
+<span class="sourceLineNo">026</span>                <a name="line.26"></a>
+<span class="sourceLineNo">027</span>                //plugin.setPlugin(this);<a name="line.27"></a>
+<span class="sourceLineNo">028</span>                <a name="line.28"></a>
+<span class="sourceLineNo">029</span>//              List&lt;DwellerShipPart&gt; parts = plugin.getParts();<a name="line.29"></a>
+<span class="sourceLineNo">030</span>//              parts.clear();<a name="line.30"></a>
+<span class="sourceLineNo">031</span>//              <a name="line.31"></a>
+<span class="sourceLineNo">032</span>//              float scale = 1f;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>//              //scale = 0.5f;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>//              <a name="line.34"></a>
+<span class="sourceLineNo">035</span>//              float spinMult = 1f;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>//              <a name="line.36"></a>
+<span class="sourceLineNo">037</span>//              boolean mirror = (float) Math.random() &gt; 0.5f;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>//              //mirror = true;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>//              if (mirror) {<a name="line.39"></a>
+<span class="sourceLineNo">040</span>//                      ship.addTag(TAG_MIRRORED_VORTEX);<a name="line.40"></a>
+<span class="sourceLineNo">041</span>//              }<a name="line.41"></a>
+<span class="sourceLineNo">042</span>//              <a name="line.42"></a>
+<span class="sourceLineNo">043</span>//              WobblyPart part = new WobblyPart("shrouded_vortex_base", 2f * scale, 1f, new Vector2f(0, 0), 0f);<a name="line.43"></a>
+<span class="sourceLineNo">044</span>//              part.setId(ID_BODY_ONE);<a name="line.44"></a>
+<span class="sourceLineNo">045</span>//              part.renderer.setMirror(mirror);<a name="line.45"></a>
+<span class="sourceLineNo">046</span>//              //part.setSpin(360f * spinMult, 360f * 2f * spinMult, 360f * spinMult);<a name="line.46"></a>
+<span class="sourceLineNo">047</span>//              parts.add(part);<a name="line.47"></a>
+<span class="sourceLineNo">048</span>//              <a name="line.48"></a>
+<span class="sourceLineNo">049</span>//              part = new WobblyPart("shrouded_vortex_base2", 3f * scale, 3, 3, 1f, new Vector2f(0, 0), 0f);<a name="line.49"></a>
+<span class="sourceLineNo">050</span>//              //part.setSpin(270f * spinMult, 360f * spinMult, 270f * spinMult);<a name="line.50"></a>
+<span class="sourceLineNo">051</span>//              part.setId(ID_BODY_TWO);<a name="line.51"></a>
+<span class="sourceLineNo">052</span>//              part.renderer.setMirror(mirror);<a name="line.52"></a>
+<span class="sourceLineNo">053</span>//              part.alphaMult = 0.5f;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>//              parts.add(part);<a name="line.54"></a>
+<span class="sourceLineNo">055</span>//              <a name="line.55"></a>
+<span class="sourceLineNo">056</span>////            Color glow = DwellerCombatPlugin.STANDARD_PART_GLOW_COLOR;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>////            <a name="line.57"></a>
+<span class="sourceLineNo">058</span>////            part = new WobblyPart("clusterA", 1f * scale, 3, 3, 2f, new Vector2f(70f * scale, 0), 0f);<a name="line.58"></a>
+<span class="sourceLineNo">059</span>////            part.color = glow;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>////            part.additiveBlend = true;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>////            //part.setWeaponActivated();<a name="line.61"></a>
+<span class="sourceLineNo">062</span>////            //parts.add(part);<a name="line.62"></a>
+<span class="sourceLineNo">063</span>////            <a name="line.63"></a>
+<span class="sourceLineNo">064</span>////            part = new WobblyPart("clusterB", 1f * scale, 3, 3, 2f, new Vector2f(30f * scale, 0), 0f);<a name="line.64"></a>
+<span class="sourceLineNo">065</span>////            part.color = glow;<a name="line.65"></a>
+<span class="sourceLineNo">066</span>////            part.additiveBlend = true;<a name="line.66"></a>
+<span class="sourceLineNo">067</span>////            //part.setFluxActivated();<a name="line.67"></a>
+<span class="sourceLineNo">068</span>//////          part.setWeaponActivated();<a name="line.68"></a>
+<span class="sourceLineNo">069</span>//////          part.setShieldActivated();<a name="line.69"></a>
+<span class="sourceLineNo">070</span>//////          part.setSystemActivated();<a name="line.70"></a>
+<span class="sourceLineNo">071</span>////            parts.add(part);<a name="line.71"></a>
+<span class="sourceLineNo">072</span>////            <a name="line.72"></a>
+<span class="sourceLineNo">073</span>////            part = new WobblyPart("coronet_stalks", 0.5f * scale, 3, 3, 2f, new Vector2f(100f * scale, 0), 0f);<a name="line.73"></a>
+<span class="sourceLineNo">074</span>////            part.color = glow;<a name="line.74"></a>
+<span class="sourceLineNo">075</span>////            part.additiveBlend = true;<a name="line.75"></a>
+<span class="sourceLineNo">076</span>//              //part.setShieldActivated();<a name="line.76"></a>
+<span class="sourceLineNo">077</span>//              //parts.add(part);<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                <a name="line.78"></a>
+<span class="sourceLineNo">079</span>                return plugin;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        }<a name="line.80"></a>
+<span class="sourceLineNo">081</span><a name="line.81"></a>
+<span class="sourceLineNo">082</span>        @Override<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        protected void modifyBaselineShroudParams(ShipAPI ship, DwellerShroudParams params) {<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                params.maxOffset = 120f;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                params.initialMembers = 30;<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                params.baseMembersToMaintain = params.initialMembers;<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                params.baseSpriteSize *= 1.33f;<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                //params.baseSpriteSize *= 1.5f;<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                <a name="line.89"></a>
+<span class="sourceLineNo">090</span>                params.spawnOffsetMult = 1f;<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                params.spawnOffsetMultForInitialSpawn = params.spawnOffsetMult;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                <a name="line.92"></a>
+<span class="sourceLineNo">093</span>                //params.negativeParticleAreaMult = 1.25f;<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                //params.negativeParticleDurMult *= 0.5f;<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                //params.negativeParticleSizeMult *= 1.4f;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                //params.negativeParticleGenRate *= 1f;<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                <a name="line.97"></a>
+<span class="sourceLineNo">098</span>//              params.negativeParticleGenRate = 0f;<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                //params.negativeParticleGenRate *= 0.5f;<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                params.negativeParticleNumBase = 3;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                params.negativeParticleHighContrastMode = true;<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                params.negativeParticleSizeMult = 1.5f;<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                <a name="line.103"></a>
+<span class="sourceLineNo">104</span>//              params.alphaMult = 0.25f;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>//              params.negativeParticleGenRate = 0f;<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                <a name="line.106"></a>
+<span class="sourceLineNo">107</span>                //params.overloadGlowSizeMult *= 0.5f;<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                <a name="line.108"></a>
+<span class="sourceLineNo">109</span>//              params.overloadArcThickness *= 0.5f;<a name="line.109"></a>
+<span class="sourceLineNo">110</span>//              params.overloadArcCoreThickness *= 0.5f;<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                <a name="line.111"></a>
+<span class="sourceLineNo">112</span>//              params.maxSpeed += 500f;<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                params.springStretchMult = 1f;<a name="line.113"></a>
+<span class="sourceLineNo">114</span>//              params.baseFriction *= 10f;<a name="line.114"></a>
+<span class="sourceLineNo">115</span>//              params.frictionRange *= 1f;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>        }<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        <a name="line.117"></a>
+<span class="sourceLineNo">118</span>        <a name="line.118"></a>
+<span class="sourceLineNo">119</span><a name="line.119"></a>
+<span class="sourceLineNo">120</span>        @Override<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        public void initInCombat(ShipAPI ship) {<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                super.initInCombat(ship);<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                <a name="line.123"></a>
+<span class="sourceLineNo">124</span>                ship.setExplosionScale(0f); // no explosion sound or visual, just dissipates and fades out<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        }<a name="line.125"></a>
+<span class="sourceLineNo">126</span><a name="line.126"></a>
+<span class="sourceLineNo">127</span>        @Override<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        public void advance(DwellerCombatPlugin plugin, float amount) {<a name="line.128"></a>
+<span class="sourceLineNo">129</span>//              CombatEntityAPI attachedTo = plugin.getAttachedTo();<a name="line.129"></a>
+<span class="sourceLineNo">130</span>//              if (attachedTo instanceof ShipAPI) {<a name="line.130"></a>
+<span class="sourceLineNo">131</span>//                      ShipAPI ship = (ShipAPI) attachedTo;<a name="line.131"></a>
+<span class="sourceLineNo">132</span>//                      float hullLevel = ship.getHullLevel();<a name="line.132"></a>
+<span class="sourceLineNo">133</span>//                      float mult = 1f - hullLevel;<a name="line.133"></a>
+<span class="sourceLineNo">134</span>//                      if (mult &lt; 0f) mult = 0f;<a name="line.134"></a>
+<span class="sourceLineNo">135</span>//                      if (mult &gt; 1f) mult = 1f;<a name="line.135"></a>
+<span class="sourceLineNo">136</span>//                      <a name="line.136"></a>
+<span class="sourceLineNo">137</span>//                      mult *= 3f;<a name="line.137"></a>
+<span class="sourceLineNo">138</span>//                      <a name="line.138"></a>
+<span class="sourceLineNo">139</span>//                      DwellerShipPart part = plugin.getPart(ID_BODY_ONE);<a name="line.139"></a>
+<span class="sourceLineNo">140</span>//                      if (part != null) {<a name="line.140"></a>
+<span class="sourceLineNo">141</span>//                              ((WobblyPart)part).getSpin().setValueMult(mult);<a name="line.141"></a>
+<span class="sourceLineNo">142</span>//                      }<a name="line.142"></a>
+<span class="sourceLineNo">143</span>//                      part = plugin.getPart(ID_BODY_TWO);<a name="line.143"></a>
+<span class="sourceLineNo">144</span>//                      if (part != null) {<a name="line.144"></a>
+<span class="sourceLineNo">145</span>//                              ((WobblyPart)part).getSpin().setValueMult(mult);<a name="line.145"></a>
+<span class="sourceLineNo">146</span>//                      }<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                        <a name="line.147"></a>
+<span class="sourceLineNo">148</span>//                      CombatEngineAPI engine = Global.getCombatEngine();<a name="line.148"></a>
+<span class="sourceLineNo">149</span>//                      engine.applyDamage(ship, ship.getLocation(), 100f, DamageType.ENERGY, 0f, true, false, ship, false);<a name="line.149"></a>
+<span class="sourceLineNo">150</span>//                      //ship.setCollisionClass(CollisionClass.SHIP);<a name="line.150"></a>
+<span class="sourceLineNo">151</span>//                      //ship.getAIFlags().setFlag(AIFlags.DO_NOT_BACK_OFF, 1f);<a name="line.151"></a>
+<span class="sourceLineNo">152</span>//              }<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        }<a name="line.153"></a>
+<span class="sourceLineNo">154</span>}<a name="line.154"></a>
+<span class="sourceLineNo">155</span><a name="line.155"></a>
+<span class="sourceLineNo">156</span><a name="line.156"></a>
+<span class="sourceLineNo">157</span><a name="line.157"></a>
+<span class="sourceLineNo">158</span><a name="line.158"></a>
+<span class="sourceLineNo">159</span><a name="line.159"></a>
+<span class="sourceLineNo">160</span><a name="line.160"></a>
+<span class="sourceLineNo">161</span><a name="line.161"></a>
+<span class="sourceLineNo">162</span><a name="line.162"></a>
+<span class="sourceLineNo">163</span><a name="line.163"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

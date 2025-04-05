@@ -104,7 +104,7 @@
 <span class="sourceLineNo">096</span>                                pickNext();<a name="line.96"></a>
 <span class="sourceLineNo">097</span>                        } else {<a name="line.97"></a>
 <span class="sourceLineNo">098</span>                                if (fleet.getFleetData().getMembersListCopy().contains(picked) &amp;&amp;<a name="line.98"></a>
-<span class="sourceLineNo">099</span>                                                DModManager.getNumDMods(picked.getVariant()) &gt; 0) {<a name="line.99"></a>
+<span class="sourceLineNo">099</span>                                                DModManager.getNumNonBuiltInDMods(picked.getVariant()) &gt; 0) {<a name="line.99"></a>
 <span class="sourceLineNo">100</span>                                        <a name="line.100"></a>
 <span class="sourceLineNo">101</span>                                        DModManager.removeDMod(picked.getVariant(), dmod);<a name="line.101"></a>
 <span class="sourceLineNo">102</span>                                        <a name="line.102"></a>
@@ -113,7 +113,7 @@
 <span class="sourceLineNo">105</span>                                        intel.setIcon(Global.getSettings().getSpriteName("intel", "repairs_finished"));<a name="line.105"></a>
 <span class="sourceLineNo">106</span>                                        Global.getSector().getCampaignUI().addMessage(intel, MessageClickAction.REFIT_TAB, picked);<a name="line.106"></a>
 <span class="sourceLineNo">107</span>                                        <a name="line.107"></a>
-<span class="sourceLineNo">108</span>                                        int dmods = DModManager.getNumDMods(picked.getVariant());<a name="line.108"></a>
+<span class="sourceLineNo">108</span>                                        int dmods = DModManager.getNumNonBuiltInDMods(picked.getVariant());<a name="line.108"></a>
 <span class="sourceLineNo">109</span>                                        if (dmods &lt;= 0) {<a name="line.109"></a>
 <span class="sourceLineNo">110</span>                                                restoreToNonDHull(picked.getVariant());<a name="line.110"></a>
 <span class="sourceLineNo">111</span>                                        }<a name="line.111"></a>
@@ -130,7 +130,7 @@
 <span class="sourceLineNo">122</span>                        } else {<a name="line.122"></a>
 <span class="sourceLineNo">123</span>                                seen.add(pickedNew.getId());<a name="line.123"></a>
 <span class="sourceLineNo">124</span>                                <a name="line.124"></a>
-<span class="sourceLineNo">125</span>                                float numDmods = DModManager.getNumDMods(pickedNew.getVariant());<a name="line.125"></a>
+<span class="sourceLineNo">125</span>                                float numDmods = DModManager.getNumNonBuiltInDMods(pickedNew.getVariant());<a name="line.125"></a>
 <span class="sourceLineNo">126</span>                                if (fleet.getFleetData().getMembersListCopy().contains(pickedNew) &amp;&amp; numDmods &gt; 0) {<a name="line.126"></a>
 <span class="sourceLineNo">127</span>                                        float probRemove = MIN_NEW_REMOVE_PROB + numDmods * NEW_REMOVE_PROB_PER_DMOD;<a name="line.127"></a>
 <span class="sourceLineNo">128</span>                                        if (newRandom.nextFloat() &lt; probRemove) {<a name="line.128"></a>
@@ -141,7 +141,7 @@
 <span class="sourceLineNo">133</span>                                                intel.setIcon(Global.getSettings().getSpriteName("intel", "repairs_finished"));<a name="line.133"></a>
 <span class="sourceLineNo">134</span>                                                Global.getSector().getCampaignUI().addMessage(intel, MessageClickAction.REFIT_TAB, pickedNew);<a name="line.134"></a>
 <span class="sourceLineNo">135</span>                                                <a name="line.135"></a>
-<span class="sourceLineNo">136</span>                                                int dmods = DModManager.getNumDMods(pickedNew.getVariant());<a name="line.136"></a>
+<span class="sourceLineNo">136</span>                                                int dmods = DModManager.getNumNonBuiltInDMods(pickedNew.getVariant());<a name="line.136"></a>
 <span class="sourceLineNo">137</span>                                                if (dmods &lt;= 0) {<a name="line.137"></a>
 <span class="sourceLineNo">138</span>                                                        restoreToNonDHull(pickedNew.getVariant());<a name="line.138"></a>
 <span class="sourceLineNo">139</span>                                                }<a name="line.139"></a>
@@ -235,7 +235,7 @@
 <span class="sourceLineNo">227</span>        }<a name="line.227"></a>
 <span class="sourceLineNo">228</span><a name="line.228"></a>
 <span class="sourceLineNo">229</span>        <a name="line.229"></a>
-<span class="sourceLineNo">230</span>        public static void restoreToNonDHull(ShipVariantAPI v) {<a name="line.230"></a>
+<span class="sourceLineNo">230</span>        public static ShipHullSpecAPI getBaseNonDHullFor(ShipVariantAPI v) {<a name="line.230"></a>
 <span class="sourceLineNo">231</span>                ShipHullSpecAPI base = v.getHullSpec().getDParentHull();<a name="line.231"></a>
 <span class="sourceLineNo">232</span>                <a name="line.232"></a>
 <span class="sourceLineNo">233</span>                // so that a skin with dmods can be "restored" - i.e. just dmods suppressed w/o changing to<a name="line.233"></a>
@@ -246,15 +246,20 @@
 <span class="sourceLineNo">238</span>                if (base == null &amp;&amp; v.getHullSpec().isRestoreToBase()) {<a name="line.238"></a>
 <span class="sourceLineNo">239</span>                        base = v.getHullSpec().getBaseHull();<a name="line.239"></a>
 <span class="sourceLineNo">240</span>                }<a name="line.240"></a>
-<span class="sourceLineNo">241</span>                <a name="line.241"></a>
-<span class="sourceLineNo">242</span>                if (base != null) {<a name="line.242"></a>
-<span class="sourceLineNo">243</span>                        //v.clearPermaMods();<a name="line.243"></a>
-<span class="sourceLineNo">244</span>                        v.setHullSpecAPI(base);<a name="line.244"></a>
-<span class="sourceLineNo">245</span>                }<a name="line.245"></a>
-<span class="sourceLineNo">246</span>        }<a name="line.246"></a>
-<span class="sourceLineNo">247</span>}<a name="line.247"></a>
-<span class="sourceLineNo">248</span><a name="line.248"></a>
-<span class="sourceLineNo">249</span><a name="line.249"></a>
+<span class="sourceLineNo">241</span>                return base;<a name="line.241"></a>
+<span class="sourceLineNo">242</span>        }<a name="line.242"></a>
+<span class="sourceLineNo">243</span>        <a name="line.243"></a>
+<span class="sourceLineNo">244</span>        public static void restoreToNonDHull(ShipVariantAPI v) {<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                ShipHullSpecAPI base = getBaseNonDHullFor(v);<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                <a name="line.246"></a>
+<span class="sourceLineNo">247</span>                if (base != null) {<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                        //v.clearPermaMods();<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                        v.setHullSpecAPI(base);<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                }<a name="line.250"></a>
+<span class="sourceLineNo">251</span>        }<a name="line.251"></a>
+<span class="sourceLineNo">252</span>}<a name="line.252"></a>
+<span class="sourceLineNo">253</span><a name="line.253"></a>
+<span class="sourceLineNo">254</span><a name="line.254"></a>
 
 
 

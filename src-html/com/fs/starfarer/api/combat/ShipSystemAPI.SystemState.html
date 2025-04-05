@@ -10,76 +10,80 @@
 <span class="sourceLineNo">002</span><a name="line.2"></a>
 <span class="sourceLineNo">003</span>import org.lwjgl.util.vector.Vector2f;<a name="line.3"></a>
 <span class="sourceLineNo">004</span><a name="line.4"></a>
-<span class="sourceLineNo">005</span>public interface ShipSystemAPI {<a name="line.5"></a>
-<span class="sourceLineNo">006</span>        <a name="line.6"></a>
-<span class="sourceLineNo">007</span>        public static enum SystemState {<a name="line.7"></a>
-<span class="sourceLineNo">008</span>                IDLE,<a name="line.8"></a>
-<span class="sourceLineNo">009</span>                IN,<a name="line.9"></a>
-<span class="sourceLineNo">010</span>                ACTIVE,<a name="line.10"></a>
-<span class="sourceLineNo">011</span>                OUT,<a name="line.11"></a>
-<span class="sourceLineNo">012</span>                COOLDOWN,<a name="line.12"></a>
-<span class="sourceLineNo">013</span>        }<a name="line.13"></a>
-<span class="sourceLineNo">014</span><a name="line.14"></a>
-<span class="sourceLineNo">015</span>        String getId();<a name="line.15"></a>
-<span class="sourceLineNo">016</span>        <a name="line.16"></a>
-<span class="sourceLineNo">017</span>        float getCooldownRemaining();<a name="line.17"></a>
-<span class="sourceLineNo">018</span>        boolean isOutOfAmmo();<a name="line.18"></a>
-<span class="sourceLineNo">019</span>        /**<a name="line.19"></a>
-<span class="sourceLineNo">020</span>         * @return true if the system is charging up, down, or is on.<a name="line.20"></a>
-<span class="sourceLineNo">021</span>         */<a name="line.21"></a>
-<span class="sourceLineNo">022</span>        boolean isActive();<a name="line.22"></a>
-<span class="sourceLineNo">023</span>        <a name="line.23"></a>
-<span class="sourceLineNo">024</span>        boolean isCoolingDown();<a name="line.24"></a>
+<span class="sourceLineNo">005</span>import com.fs.starfarer.api.plugins.ShipSystemStatsScript;<a name="line.5"></a>
+<span class="sourceLineNo">006</span><a name="line.6"></a>
+<span class="sourceLineNo">007</span>public interface ShipSystemAPI {<a name="line.7"></a>
+<span class="sourceLineNo">008</span>        <a name="line.8"></a>
+<span class="sourceLineNo">009</span>        public static enum SystemState {<a name="line.9"></a>
+<span class="sourceLineNo">010</span>                IDLE,<a name="line.10"></a>
+<span class="sourceLineNo">011</span>                IN,<a name="line.11"></a>
+<span class="sourceLineNo">012</span>                ACTIVE,<a name="line.12"></a>
+<span class="sourceLineNo">013</span>                OUT,<a name="line.13"></a>
+<span class="sourceLineNo">014</span>                COOLDOWN,<a name="line.14"></a>
+<span class="sourceLineNo">015</span>        }<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span>        String getId();<a name="line.17"></a>
+<span class="sourceLineNo">018</span>        <a name="line.18"></a>
+<span class="sourceLineNo">019</span>        float getCooldownRemaining();<a name="line.19"></a>
+<span class="sourceLineNo">020</span>        boolean isOutOfAmmo();<a name="line.20"></a>
+<span class="sourceLineNo">021</span>        /**<a name="line.21"></a>
+<span class="sourceLineNo">022</span>         * @return true if the system is charging up, down, or is on.<a name="line.22"></a>
+<span class="sourceLineNo">023</span>         */<a name="line.23"></a>
+<span class="sourceLineNo">024</span>        boolean isActive();<a name="line.24"></a>
 <span class="sourceLineNo">025</span>        <a name="line.25"></a>
-<span class="sourceLineNo">026</span>        int getAmmo();<a name="line.26"></a>
+<span class="sourceLineNo">026</span>        boolean isCoolingDown();<a name="line.26"></a>
 <span class="sourceLineNo">027</span>        <a name="line.27"></a>
-<span class="sourceLineNo">028</span>        float getFluxPerUse();<a name="line.28"></a>
-<span class="sourceLineNo">029</span>        float getFluxPerSecond();<a name="line.29"></a>
-<span class="sourceLineNo">030</span>        <a name="line.30"></a>
-<span class="sourceLineNo">031</span>        String getDisplayName();<a name="line.31"></a>
+<span class="sourceLineNo">028</span>        int getAmmo();<a name="line.28"></a>
+<span class="sourceLineNo">029</span>        <a name="line.29"></a>
+<span class="sourceLineNo">030</span>        float getFluxPerUse();<a name="line.30"></a>
+<span class="sourceLineNo">031</span>        float getFluxPerSecond();<a name="line.31"></a>
 <span class="sourceLineNo">032</span>        <a name="line.32"></a>
-<span class="sourceLineNo">033</span>        /**<a name="line.33"></a>
-<span class="sourceLineNo">034</span>         * @return true if the system is charging up or is on.<a name="line.34"></a>
-<span class="sourceLineNo">035</span>         */<a name="line.35"></a>
-<span class="sourceLineNo">036</span>        boolean isOn();<a name="line.36"></a>
-<span class="sourceLineNo">037</span><a name="line.37"></a>
-<span class="sourceLineNo">038</span>        boolean isChargeup();<a name="line.38"></a>
-<span class="sourceLineNo">039</span>        boolean isChargedown();<a name="line.39"></a>
-<span class="sourceLineNo">040</span>        boolean isStateActive();<a name="line.40"></a>
-<span class="sourceLineNo">041</span><a name="line.41"></a>
-<span class="sourceLineNo">042</span>        int getMaxAmmo();<a name="line.42"></a>
+<span class="sourceLineNo">033</span>        String getDisplayName();<a name="line.33"></a>
+<span class="sourceLineNo">034</span>        <a name="line.34"></a>
+<span class="sourceLineNo">035</span>        /**<a name="line.35"></a>
+<span class="sourceLineNo">036</span>         * @return true if the system is charging up or is on.<a name="line.36"></a>
+<span class="sourceLineNo">037</span>         */<a name="line.37"></a>
+<span class="sourceLineNo">038</span>        boolean isOn();<a name="line.38"></a>
+<span class="sourceLineNo">039</span><a name="line.39"></a>
+<span class="sourceLineNo">040</span>        boolean isChargeup();<a name="line.40"></a>
+<span class="sourceLineNo">041</span>        boolean isChargedown();<a name="line.41"></a>
+<span class="sourceLineNo">042</span>        boolean isStateActive();<a name="line.42"></a>
 <span class="sourceLineNo">043</span><a name="line.43"></a>
-<span class="sourceLineNo">044</span>        void setAmmo(int ammo);<a name="line.44"></a>
+<span class="sourceLineNo">044</span>        int getMaxAmmo();<a name="line.44"></a>
 <span class="sourceLineNo">045</span><a name="line.45"></a>
-<span class="sourceLineNo">046</span>        float getEffectLevel();<a name="line.46"></a>
-<span class="sourceLineNo">047</span>        float getCooldown();<a name="line.47"></a>
-<span class="sourceLineNo">048</span>        void setFluxPerUse(float fluxPerUse);<a name="line.48"></a>
-<span class="sourceLineNo">049</span>        void setFluxPerSecond(float fluxPerSecond);<a name="line.49"></a>
-<span class="sourceLineNo">050</span><a name="line.50"></a>
-<span class="sourceLineNo">051</span>        SystemState getState();<a name="line.51"></a>
-<span class="sourceLineNo">052</span>        <a name="line.52"></a>
-<span class="sourceLineNo">053</span>        float getChargeUpDur();<a name="line.53"></a>
-<span class="sourceLineNo">054</span>        float getChargeDownDur();<a name="line.54"></a>
-<span class="sourceLineNo">055</span>        float getChargeActiveDur();<a name="line.55"></a>
-<span class="sourceLineNo">056</span><a name="line.56"></a>
-<span class="sourceLineNo">057</span>        ShipSystemSpecAPI getSpecAPI();<a name="line.57"></a>
+<span class="sourceLineNo">046</span>        void setAmmo(int ammo);<a name="line.46"></a>
+<span class="sourceLineNo">047</span><a name="line.47"></a>
+<span class="sourceLineNo">048</span>        float getEffectLevel();<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        float getCooldown();<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        void setFluxPerUse(float fluxPerUse);<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        void setFluxPerSecond(float fluxPerSecond);<a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span>        SystemState getState();<a name="line.53"></a>
+<span class="sourceLineNo">054</span>        <a name="line.54"></a>
+<span class="sourceLineNo">055</span>        float getChargeUpDur();<a name="line.55"></a>
+<span class="sourceLineNo">056</span>        float getChargeDownDur();<a name="line.56"></a>
+<span class="sourceLineNo">057</span>        float getChargeActiveDur();<a name="line.57"></a>
 <span class="sourceLineNo">058</span><a name="line.58"></a>
-<span class="sourceLineNo">059</span>        void deactivate();<a name="line.59"></a>
+<span class="sourceLineNo">059</span>        ShipSystemSpecAPI getSpecAPI();<a name="line.59"></a>
 <span class="sourceLineNo">060</span><a name="line.60"></a>
-<span class="sourceLineNo">061</span>        void setCooldownRemaining(float remaining);<a name="line.61"></a>
-<span class="sourceLineNo">062</span>        void setCooldown(float cooldown);<a name="line.62"></a>
-<span class="sourceLineNo">063</span><a name="line.63"></a>
-<span class="sourceLineNo">064</span>        Vector2f getTargetLoc();<a name="line.64"></a>
+<span class="sourceLineNo">061</span>        void deactivate();<a name="line.61"></a>
+<span class="sourceLineNo">062</span><a name="line.62"></a>
+<span class="sourceLineNo">063</span>        void setCooldownRemaining(float remaining);<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        void setCooldown(float cooldown);<a name="line.64"></a>
 <span class="sourceLineNo">065</span><a name="line.65"></a>
-<span class="sourceLineNo">066</span>        void forceState(SystemState state, float progress);<a name="line.66"></a>
+<span class="sourceLineNo">066</span>        Vector2f getTargetLoc();<a name="line.66"></a>
 <span class="sourceLineNo">067</span><a name="line.67"></a>
-<span class="sourceLineNo">068</span>        float getAmmoPerSecond();<a name="line.68"></a>
+<span class="sourceLineNo">068</span>        void forceState(SystemState state, float progress);<a name="line.68"></a>
 <span class="sourceLineNo">069</span><a name="line.69"></a>
-<span class="sourceLineNo">070</span>        float getAmmoReloadProgress();<a name="line.70"></a>
-<span class="sourceLineNo">071</span>        void setAmmoReloadProgress(float progress);<a name="line.71"></a>
-<span class="sourceLineNo">072</span><a name="line.72"></a>
-<span class="sourceLineNo">073</span>        boolean canBeActivated();<a name="line.73"></a>
-<span class="sourceLineNo">074</span>}<a name="line.74"></a>
+<span class="sourceLineNo">070</span>        float getAmmoPerSecond();<a name="line.70"></a>
+<span class="sourceLineNo">071</span><a name="line.71"></a>
+<span class="sourceLineNo">072</span>        float getAmmoReloadProgress();<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        void setAmmoReloadProgress(float progress);<a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>        boolean canBeActivated();<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span>        ShipSystemStatsScript getScript();<a name="line.77"></a>
+<span class="sourceLineNo">078</span>}<a name="line.78"></a>
 
 
 

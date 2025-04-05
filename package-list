@@ -68,8 +68,11 @@ com.fs.starfarer.api.impl.campaign.terrain
 com.fs.starfarer.api.impl.campaign.tutorial
 com.fs.starfarer.api.impl.campaign.velfield
 com.fs.starfarer.api.impl.campaign.world
+com.fs.starfarer.api.impl.codex
 com.fs.starfarer.api.impl.combat
 com.fs.starfarer.api.impl.combat.dem
+com.fs.starfarer.api.impl.combat.dweller
+com.fs.starfarer.api.impl.combat.threat
 com.fs.starfarer.api.impl.hullmods
 com.fs.starfarer.api.input
 com.fs.starfarer.api.loading

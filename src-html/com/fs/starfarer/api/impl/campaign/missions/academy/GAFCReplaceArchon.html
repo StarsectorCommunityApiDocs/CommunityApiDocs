@@ -35,25 +35,27 @@
 <span class="sourceLineNo">027</span>                laicaille.getCommDirectory().addPerson(laicailleArchon, 1000); // back of the comm directory for you, buddy<a name="line.27"></a>
 <span class="sourceLineNo">028</span>        <a name="line.28"></a>
 <span class="sourceLineNo">029</span>        <a name="line.29"></a>
-<span class="sourceLineNo">030</span>                PersonAPI newArchon = Global.getSector().getFaction(Factions.PERSEAN).createRandomPerson();<a name="line.30"></a>
-<span class="sourceLineNo">031</span>                newArchon.setRankId(Ranks.GROUND_COLONEL);<a name="line.31"></a>
-<span class="sourceLineNo">032</span>                newArchon.setPostId(Ranks.POST_BASE_COMMANDER);<a name="line.32"></a>
-<span class="sourceLineNo">033</span>                <a name="line.33"></a>
-<span class="sourceLineNo">034</span>                // gens Hannan; Kazeronian imperialists, basically.<a name="line.34"></a>
-<span class="sourceLineNo">035</span>                newArchon.getName().setLast("Hannan"); <a name="line.35"></a>
-<span class="sourceLineNo">036</span>                newArchon.setImportance(PersonImportance.HIGH);<a name="line.36"></a>
-<span class="sourceLineNo">037</span>                newArchon.addTag(Tags.REPLACEMENT_ARCHON);<a name="line.37"></a>
-<span class="sourceLineNo">038</span>                <a name="line.38"></a>
-<span class="sourceLineNo">039</span>                // an aristocratic git<a name="line.39"></a>
-<span class="sourceLineNo">040</span>                newArchon.setVoice(Voices.ARISTO); <a name="line.40"></a>
-<span class="sourceLineNo">041</span>                <a name="line.41"></a>
-<span class="sourceLineNo">042</span>                laicaille.getCommDirectory().addPerson(newArchon, 0);<a name="line.42"></a>
-<span class="sourceLineNo">043</span>                laicaille.addPerson(newArchon);<a name="line.43"></a>
-<span class="sourceLineNo">044</span>                <a name="line.44"></a>
-<span class="sourceLineNo">045</span>        }<a name="line.45"></a>
-<span class="sourceLineNo">046</span>}<a name="line.46"></a>
-<span class="sourceLineNo">047</span><a name="line.47"></a>
-<span class="sourceLineNo">048</span><a name="line.48"></a>
+<span class="sourceLineNo">030</span>                PersonAPI newArchon = Global.getSector().getImportantPeople().getPerson(People.DAMOS_HANNAN);<a name="line.30"></a>
+<span class="sourceLineNo">031</span>                //PersonAPI newArchon = Global.getSector().getFaction(Factions.PERSEAN).createRandomPerson();<a name="line.31"></a>
+<span class="sourceLineNo">032</span>                //newArchon.setRankId(Ranks.GROUND_COLONEL);<a name="line.32"></a>
+<span class="sourceLineNo">033</span>                //newArchon.setPostId(Ranks.POST_BASE_COMMANDER);<a name="line.33"></a>
+<span class="sourceLineNo">034</span>                <a name="line.34"></a>
+<span class="sourceLineNo">035</span>                // gens Hannan; Kazeronian imperialists, basically.<a name="line.35"></a>
+<span class="sourceLineNo">036</span>                //newArchon.getName().setLast("Hannan"); <a name="line.36"></a>
+<span class="sourceLineNo">037</span>                //newArchon.setImportance(PersonImportance.HIGH);<a name="line.37"></a>
+<span class="sourceLineNo">038</span>                newArchon.addTag(Tags.REPLACEMENT_ARCHON);<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                laicaille.getCommDirectory().getEntryForPerson(newArchon).setHidden(false);<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                <a name="line.40"></a>
+<span class="sourceLineNo">041</span>                // an aristocratic git<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                //newArchon.setVoice(Voices.ARISTO); <a name="line.42"></a>
+<span class="sourceLineNo">043</span>                <a name="line.43"></a>
+<span class="sourceLineNo">044</span>                laicaille.getCommDirectory().addPerson(newArchon, 0);<a name="line.44"></a>
+<span class="sourceLineNo">045</span>                laicaille.addPerson(newArchon);<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                <a name="line.46"></a>
+<span class="sourceLineNo">047</span>        }<a name="line.47"></a>
+<span class="sourceLineNo">048</span>}<a name="line.48"></a>
+<span class="sourceLineNo">049</span><a name="line.49"></a>
+<span class="sourceLineNo">050</span><a name="line.50"></a>
 
 
 

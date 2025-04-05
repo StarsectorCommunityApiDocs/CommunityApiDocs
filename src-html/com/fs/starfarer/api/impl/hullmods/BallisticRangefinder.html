@@ -10,326 +10,333 @@
 <span class="sourceLineNo">002</span><a name="line.2"></a>
 <span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
 <span class="sourceLineNo">004</span><a name="line.4"></a>
-<span class="sourceLineNo">005</span>import com.fs.starfarer.api.combat.BaseHullMod;<a name="line.5"></a>
-<span class="sourceLineNo">006</span>import com.fs.starfarer.api.combat.MutableShipStatsAPI;<a name="line.6"></a>
-<span class="sourceLineNo">007</span>import com.fs.starfarer.api.combat.ShipAPI;<a name="line.7"></a>
-<span class="sourceLineNo">008</span>import com.fs.starfarer.api.combat.ShipAPI.HullSize;<a name="line.8"></a>
-<span class="sourceLineNo">009</span>import com.fs.starfarer.api.combat.WeaponAPI;<a name="line.9"></a>
-<span class="sourceLineNo">010</span>import com.fs.starfarer.api.combat.WeaponAPI.AIHints;<a name="line.10"></a>
-<span class="sourceLineNo">011</span>import com.fs.starfarer.api.combat.WeaponAPI.WeaponSize;<a name="line.11"></a>
-<span class="sourceLineNo">012</span>import com.fs.starfarer.api.combat.WeaponAPI.WeaponType;<a name="line.12"></a>
-<span class="sourceLineNo">013</span>import com.fs.starfarer.api.combat.listeners.WeaponBaseRangeModifier;<a name="line.13"></a>
-<span class="sourceLineNo">014</span>import com.fs.starfarer.api.loading.WeaponSlotAPI;<a name="line.14"></a>
-<span class="sourceLineNo">015</span>import com.fs.starfarer.api.ui.Alignment;<a name="line.15"></a>
-<span class="sourceLineNo">016</span>import com.fs.starfarer.api.ui.TooltipMakerAPI;<a name="line.16"></a>
-<span class="sourceLineNo">017</span>import com.fs.starfarer.api.util.Misc;<a name="line.17"></a>
-<span class="sourceLineNo">018</span><a name="line.18"></a>
-<span class="sourceLineNo">019</span>public class BallisticRangefinder extends BaseHullMod {<a name="line.19"></a>
-<span class="sourceLineNo">020</span><a name="line.20"></a>
-<span class="sourceLineNo">021</span>        public static float BONUS_MAX_1 = 800;<a name="line.21"></a>
-<span class="sourceLineNo">022</span>        public static float BONUS_MAX_2 = 800;<a name="line.22"></a>
-<span class="sourceLineNo">023</span>        public static float BONUS_MAX_3 = 900;<a name="line.23"></a>
-<span class="sourceLineNo">024</span>        public static float BONUS_SMALL_1 = 100;<a name="line.24"></a>
-<span class="sourceLineNo">025</span>        public static float BONUS_SMALL_2 = 100;<a name="line.25"></a>
-<span class="sourceLineNo">026</span>        public static float BONUS_SMALL_3 = 200;<a name="line.26"></a>
-<span class="sourceLineNo">027</span>        public static float BONUS_MEDIUM_3 = 100;<a name="line.27"></a>
-<span class="sourceLineNo">028</span>        <a name="line.28"></a>
-<span class="sourceLineNo">029</span>        public static float HYBRID_MULT = 2f;<a name="line.29"></a>
-<span class="sourceLineNo">030</span>        public static float HYBRID_BONUS_MIN = 100f;<a name="line.30"></a>
-<span class="sourceLineNo">031</span>        <a name="line.31"></a>
+<span class="sourceLineNo">005</span>import com.fs.starfarer.api.Global;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import com.fs.starfarer.api.combat.BaseHullMod;<a name="line.6"></a>
+<span class="sourceLineNo">007</span>import com.fs.starfarer.api.combat.MutableShipStatsAPI;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.combat.ShipAPI;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.combat.ShipAPI.HullSize;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.combat.WeaponAPI;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.combat.WeaponAPI.AIHints;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.combat.WeaponAPI.WeaponSize;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.combat.WeaponAPI.WeaponType;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.combat.listeners.WeaponBaseRangeModifier;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.loading.WeaponSlotAPI;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.ui.Alignment;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.ui.TooltipMakerAPI;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import com.fs.starfarer.api.util.Misc;<a name="line.18"></a>
+<span class="sourceLineNo">019</span><a name="line.19"></a>
+<span class="sourceLineNo">020</span>public class BallisticRangefinder extends BaseHullMod {<a name="line.20"></a>
+<span class="sourceLineNo">021</span><a name="line.21"></a>
+<span class="sourceLineNo">022</span>        public static float BONUS_MAX_1 = 800;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>        public static float BONUS_MAX_2 = 800;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>        public static float BONUS_MAX_3 = 900;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>        public static float BONUS_SMALL_1 = 100;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>        public static float BONUS_SMALL_2 = 100;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>        public static float BONUS_SMALL_3 = 200;<a name="line.27"></a>
+<span class="sourceLineNo">028</span>        public static float BONUS_MEDIUM_3 = 100;<a name="line.28"></a>
+<span class="sourceLineNo">029</span>        <a name="line.29"></a>
+<span class="sourceLineNo">030</span>        public static float HYBRID_MULT = 2f;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>        public static float HYBRID_BONUS_MIN = 100f;<a name="line.31"></a>
 <span class="sourceLineNo">032</span>        <a name="line.32"></a>
-<span class="sourceLineNo">033</span>        public void applyEffectsBeforeShipCreation(HullSize hullSize, MutableShipStatsAPI stats, String id) {<a name="line.33"></a>
-<span class="sourceLineNo">034</span>        }<a name="line.34"></a>
-<span class="sourceLineNo">035</span><a name="line.35"></a>
-<span class="sourceLineNo">036</span>        public static WeaponSize getLargestBallisticSlot(ShipAPI ship) {<a name="line.36"></a>
-<span class="sourceLineNo">037</span>                if (ship == null) return null;<a name="line.37"></a>
-<span class="sourceLineNo">038</span>                WeaponSize largest = null;<a name="line.38"></a>
-<span class="sourceLineNo">039</span>                for (WeaponSlotAPI slot : ship.getHullSpec().getAllWeaponSlotsCopy()) {<a name="line.39"></a>
-<span class="sourceLineNo">040</span>                        if (slot.isDecorative() ) continue;<a name="line.40"></a>
-<span class="sourceLineNo">041</span>                        if (slot.getWeaponType() == WeaponType.BALLISTIC) {<a name="line.41"></a>
-<span class="sourceLineNo">042</span>                                if (largest == null || largest.ordinal() &lt; slot.getSlotSize().ordinal()) {<a name="line.42"></a>
-<span class="sourceLineNo">043</span>                                        largest = slot.getSlotSize();<a name="line.43"></a>
-<span class="sourceLineNo">044</span>                                }<a name="line.44"></a>
-<span class="sourceLineNo">045</span>                        }<a name="line.45"></a>
-<span class="sourceLineNo">046</span>                }<a name="line.46"></a>
-<span class="sourceLineNo">047</span>                return largest;<a name="line.47"></a>
-<span class="sourceLineNo">048</span>        }<a name="line.48"></a>
-<span class="sourceLineNo">049</span>        <a name="line.49"></a>
-<span class="sourceLineNo">050</span>        @Override<a name="line.50"></a>
-<span class="sourceLineNo">051</span>        public void applyEffectsAfterShipCreation(ShipAPI ship, String id) {<a name="line.51"></a>
-<span class="sourceLineNo">052</span>                WeaponSize largest = getLargestBallisticSlot(ship);<a name="line.52"></a>
-<span class="sourceLineNo">053</span>                if (largest == null) return;<a name="line.53"></a>
-<span class="sourceLineNo">054</span>                float small = 0f;<a name="line.54"></a>
-<span class="sourceLineNo">055</span>                float medium = 0f;<a name="line.55"></a>
-<span class="sourceLineNo">056</span>                float max = 0f;<a name="line.56"></a>
-<span class="sourceLineNo">057</span>                switch (largest) {<a name="line.57"></a>
-<span class="sourceLineNo">058</span>                case LARGE:<a name="line.58"></a>
-<span class="sourceLineNo">059</span>                        small = BONUS_SMALL_3;<a name="line.59"></a>
-<span class="sourceLineNo">060</span>                        medium = BONUS_MEDIUM_3;<a name="line.60"></a>
-<span class="sourceLineNo">061</span>                        max = BONUS_MAX_3;<a name="line.61"></a>
-<span class="sourceLineNo">062</span>                        break;<a name="line.62"></a>
-<span class="sourceLineNo">063</span>                case MEDIUM:<a name="line.63"></a>
-<span class="sourceLineNo">064</span>                        small = BONUS_SMALL_2;<a name="line.64"></a>
-<span class="sourceLineNo">065</span>                        max = BONUS_MAX_2;<a name="line.65"></a>
-<span class="sourceLineNo">066</span>                        break;<a name="line.66"></a>
-<span class="sourceLineNo">067</span>                case SMALL:<a name="line.67"></a>
-<span class="sourceLineNo">068</span>                        small = BONUS_SMALL_1;<a name="line.68"></a>
-<span class="sourceLineNo">069</span>                        max = BONUS_MAX_1;<a name="line.69"></a>
-<span class="sourceLineNo">070</span>                        break;<a name="line.70"></a>
-<span class="sourceLineNo">071</span>                }<a name="line.71"></a>
-<span class="sourceLineNo">072</span>                <a name="line.72"></a>
-<span class="sourceLineNo">073</span>                ship.addListener(new RangefinderRangeModifier(small, medium, max));<a name="line.73"></a>
-<span class="sourceLineNo">074</span>        }<a name="line.74"></a>
-<span class="sourceLineNo">075</span>        <a name="line.75"></a>
-<span class="sourceLineNo">076</span>        public static class RangefinderRangeModifier implements WeaponBaseRangeModifier {<a name="line.76"></a>
-<span class="sourceLineNo">077</span>                public float small, medium, max;<a name="line.77"></a>
-<span class="sourceLineNo">078</span>                public RangefinderRangeModifier(float small, float medium, float max) {<a name="line.78"></a>
-<span class="sourceLineNo">079</span>                        this.small = small;<a name="line.79"></a>
-<span class="sourceLineNo">080</span>                        this.medium = medium;<a name="line.80"></a>
-<span class="sourceLineNo">081</span>                        this.max = max;<a name="line.81"></a>
-<span class="sourceLineNo">082</span>                }<a name="line.82"></a>
-<span class="sourceLineNo">083</span>                <a name="line.83"></a>
-<span class="sourceLineNo">084</span>                public float getWeaponBaseRangePercentMod(ShipAPI ship, WeaponAPI weapon) {<a name="line.84"></a>
-<span class="sourceLineNo">085</span>                        return 0;<a name="line.85"></a>
-<span class="sourceLineNo">086</span>                }<a name="line.86"></a>
-<span class="sourceLineNo">087</span>                public float getWeaponBaseRangeMultMod(ShipAPI ship, WeaponAPI weapon) {<a name="line.87"></a>
-<span class="sourceLineNo">088</span>                        return 1f;<a name="line.88"></a>
-<span class="sourceLineNo">089</span>                }<a name="line.89"></a>
-<span class="sourceLineNo">090</span>                public float getWeaponBaseRangeFlatMod(ShipAPI ship, WeaponAPI weapon) {<a name="line.90"></a>
-<span class="sourceLineNo">091</span>//                      if (weapon.getSlot() == null || weapon.getSlot().getWeaponType() != WeaponType.BALLISTIC) {<a name="line.91"></a>
-<span class="sourceLineNo">092</span>//                              return 0f;<a name="line.92"></a>
-<span class="sourceLineNo">093</span>//                      }<a name="line.93"></a>
-<span class="sourceLineNo">094</span>                        if (weapon.getSpec() == null) {<a name="line.94"></a>
-<span class="sourceLineNo">095</span>                                return 0f;<a name="line.95"></a>
-<span class="sourceLineNo">096</span>                        }<a name="line.96"></a>
-<span class="sourceLineNo">097</span>                        if (weapon.getSpec().getMountType() != WeaponType.BALLISTIC &amp;&amp; <a name="line.97"></a>
-<span class="sourceLineNo">098</span>                                        weapon.getSpec().getMountType() != WeaponType.HYBRID) {<a name="line.98"></a>
-<span class="sourceLineNo">099</span>                                return 0f;<a name="line.99"></a>
-<span class="sourceLineNo">100</span>                        }<a name="line.100"></a>
-<span class="sourceLineNo">101</span>                        if (weapon.hasAIHint(AIHints.PD)) {<a name="line.101"></a>
-<span class="sourceLineNo">102</span>                                return 0f;<a name="line.102"></a>
-<span class="sourceLineNo">103</span>                        }<a name="line.103"></a>
-<span class="sourceLineNo">104</span>                        <a name="line.104"></a>
-<span class="sourceLineNo">105</span>                        float bonus = 0;<a name="line.105"></a>
-<span class="sourceLineNo">106</span>                        if (weapon.getSize() == WeaponSize.SMALL) {<a name="line.106"></a>
-<span class="sourceLineNo">107</span>                                bonus = small;<a name="line.107"></a>
-<span class="sourceLineNo">108</span>                        } else if (weapon.getSize() == WeaponSize.MEDIUM) {<a name="line.108"></a>
-<span class="sourceLineNo">109</span>                                bonus = medium;<a name="line.109"></a>
-<span class="sourceLineNo">110</span>                        }<a name="line.110"></a>
-<span class="sourceLineNo">111</span>                        if (weapon.getSpec().getMountType() == WeaponType.HYBRID) {<a name="line.111"></a>
-<span class="sourceLineNo">112</span>                                bonus *= HYBRID_MULT;<a name="line.112"></a>
-<span class="sourceLineNo">113</span>                                if (bonus &lt; HYBRID_BONUS_MIN) {<a name="line.113"></a>
-<span class="sourceLineNo">114</span>                                        bonus = HYBRID_BONUS_MIN;<a name="line.114"></a>
-<span class="sourceLineNo">115</span>                                }<a name="line.115"></a>
-<span class="sourceLineNo">116</span>                        }<a name="line.116"></a>
-<span class="sourceLineNo">117</span>                        if (bonus == 0f) return 0f;<a name="line.117"></a>
-<span class="sourceLineNo">118</span>                        <a name="line.118"></a>
-<span class="sourceLineNo">119</span>                        float base = weapon.getSpec().getMaxRange();<a name="line.119"></a>
-<span class="sourceLineNo">120</span>                        if (base + bonus &gt; max) {<a name="line.120"></a>
-<span class="sourceLineNo">121</span>                                bonus = max - base;<a name="line.121"></a>
-<span class="sourceLineNo">122</span>                        }<a name="line.122"></a>
-<span class="sourceLineNo">123</span>                        if (bonus &lt; 0) bonus = 0;<a name="line.123"></a>
-<span class="sourceLineNo">124</span>                        return bonus;<a name="line.124"></a>
-<span class="sourceLineNo">125</span>                }<a name="line.125"></a>
-<span class="sourceLineNo">126</span>        }<a name="line.126"></a>
-<span class="sourceLineNo">127</span><a name="line.127"></a>
-<span class="sourceLineNo">128</span>        public String getDescriptionParam(int index, HullSize hullSize) {<a name="line.128"></a>
-<span class="sourceLineNo">129</span>                //if (index == 0) return "" + (int)RANGE_PENALTY_PERCENT + "%";<a name="line.129"></a>
-<span class="sourceLineNo">130</span>                return null;<a name="line.130"></a>
-<span class="sourceLineNo">131</span>        }<a name="line.131"></a>
-<span class="sourceLineNo">132</span>        <a name="line.132"></a>
-<span class="sourceLineNo">133</span>        @Override<a name="line.133"></a>
-<span class="sourceLineNo">134</span>        public boolean shouldAddDescriptionToTooltip(HullSize hullSize, ShipAPI ship, boolean isForModSpec) {<a name="line.134"></a>
-<span class="sourceLineNo">135</span>                return false;<a name="line.135"></a>
-<span class="sourceLineNo">136</span>        }<a name="line.136"></a>
-<span class="sourceLineNo">137</span><a name="line.137"></a>
-<span class="sourceLineNo">138</span>        @Override<a name="line.138"></a>
-<span class="sourceLineNo">139</span>        public void addPostDescriptionSection(TooltipMakerAPI tooltip, HullSize hullSize, ShipAPI ship, float width, boolean isForModSpec) {<a name="line.139"></a>
-<span class="sourceLineNo">140</span>                float pad = 3f;<a name="line.140"></a>
-<span class="sourceLineNo">141</span>                float opad = 10f;<a name="line.141"></a>
-<span class="sourceLineNo">142</span>                Color h = Misc.getHighlightColor();<a name="line.142"></a>
-<span class="sourceLineNo">143</span>                Color bad = Misc.getNegativeHighlightColor();<a name="line.143"></a>
-<span class="sourceLineNo">144</span>                Color t = Misc.getTextColor();<a name="line.144"></a>
-<span class="sourceLineNo">145</span>                Color g = Misc.getGrayColor();<a name="line.145"></a>
-<span class="sourceLineNo">146</span>                <a name="line.146"></a>
-<span class="sourceLineNo">147</span>                WeaponSize largest = getLargestBallisticSlot(ship);<a name="line.147"></a>
-<span class="sourceLineNo">148</span>                <a name="line.148"></a>
-<span class="sourceLineNo">149</span>//              LabelAPI label = tooltip.addPara("If the largest Ballistic slot on the ship is large:"<a name="line.149"></a>
-<span class="sourceLineNo">150</span>//                              + " increases the base range of small weapons in Ballistic slots by %s,"<a name="line.150"></a>
-<span class="sourceLineNo">151</span>//                              + " and of medium weapons by %s, up to %s maximum.", opad, h,<a name="line.151"></a>
-<span class="sourceLineNo">152</span>//                              "" + (int)BONUS_SMALL_3, "" + (int)BONUS_MEDIUM_3, "" + (int)BONUS_MAX_3);<a name="line.152"></a>
-<span class="sourceLineNo">153</span>////            label.setHighlight("Ballistic", "base", "Ballistic", "" + (int)BONUS_SMALL_3, "" + (int)BONUS_MEDIUM_3, "" + (int)BONUS_MAX_3);<a name="line.153"></a>
-<span class="sourceLineNo">154</span>////            label.setHighlightColors(Misc.MOUNT_BALLISTIC, h, Misc.MOUNT_BALLISTIC, h, h, h);<a name="line.154"></a>
-<span class="sourceLineNo">155</span>//              label.setHighlight("" + (int)BONUS_SMALL_3, "" + (int)BONUS_MEDIUM_3, "" + (int)BONUS_MAX_3);<a name="line.155"></a>
-<span class="sourceLineNo">156</span>//              label.setHighlightColors(h, h, h);<a name="line.156"></a>
-<span class="sourceLineNo">157</span>//              if (largest != null &amp;&amp; largest != WeaponSize.LARGE) {<a name="line.157"></a>
-<span class="sourceLineNo">158</span>//                      label.setColor(Misc.getGrayColor());<a name="line.158"></a>
-<span class="sourceLineNo">159</span>//              }<a name="line.159"></a>
-<span class="sourceLineNo">160</span>//              <a name="line.160"></a>
-<span class="sourceLineNo">161</span>//              label = tooltip.addPara("Otherwise:"<a name="line.161"></a>
-<span class="sourceLineNo">162</span>//                              + " increases the base range of small weapons in Ballistic slots by %s,"<a name="line.162"></a>
-<span class="sourceLineNo">163</span>//                              + " up to %s maximum.", opad, h,<a name="line.163"></a>
-<span class="sourceLineNo">164</span>//                              "" + (int)BONUS_SMALL_1, "" + (int)BONUS_MAX_1);<a name="line.164"></a>
-<span class="sourceLineNo">165</span>////            label.setHighlight("base", "Ballistic", "" + (int)BONUS_SMALL_1, "" + (int)BONUS_MAX_1);<a name="line.165"></a>
-<span class="sourceLineNo">166</span>////            label.setHighlightColors(h, Misc.MOUNT_BALLISTIC, h, h);<a name="line.166"></a>
-<span class="sourceLineNo">167</span>//              label.setHighlight("" + (int)BONUS_SMALL_1, "" + (int)BONUS_MAX_1);<a name="line.167"></a>
-<span class="sourceLineNo">168</span>//              label.setHighlightColors(h, h);<a name="line.168"></a>
-<span class="sourceLineNo">169</span>//              if (largest != null &amp;&amp; largest == WeaponSize.LARGE) {<a name="line.169"></a>
-<span class="sourceLineNo">170</span>//                      label.setColor(Misc.getGrayColor());<a name="line.170"></a>
-<span class="sourceLineNo">171</span>//              }       <a name="line.171"></a>
-<span class="sourceLineNo">172</span>//<a name="line.172"></a>
-<span class="sourceLineNo">173</span>////            if (ship != null) {<a name="line.173"></a>
-<span class="sourceLineNo">174</span>////                    tooltip.addSectionHeading("Effect on this ship", Alignment.MID, opad);<a name="line.174"></a>
-<span class="sourceLineNo">175</span>////            }<a name="line.175"></a>
-<span class="sourceLineNo">176</span>//              <a name="line.176"></a>
-<span class="sourceLineNo">177</span>//              tooltip.addSectionHeading("Exceptions", Alignment.MID, opad);<a name="line.177"></a>
-<span class="sourceLineNo">178</span>//              label = tooltip.addPara("Does not affect point-defense weapons, "<a name="line.178"></a>
-<span class="sourceLineNo">179</span>//                                              + "or Ballistic weapons in Composite, Hybrid, and Universal slots.", opad);<a name="line.179"></a>
-<span class="sourceLineNo">180</span>////            label.setHighlight("Ballistic", "Composite", "Hybrid", "Universal");<a name="line.180"></a>
-<span class="sourceLineNo">181</span>////            label.setHighlightColors(Misc.MOUNT_BALLISTIC, Misc.MOUNT_COMPOSITE, Misc.MOUNT_HYBRID, Misc.MOUNT_UNIVERSAL);<a name="line.181"></a>
-<span class="sourceLineNo">182</span>//              label.setHighlight("Composite", "Hybrid", "Universal");<a name="line.182"></a>
-<span class="sourceLineNo">183</span>//              label.setHighlightColors(Misc.MOUNT_COMPOSITE, Misc.MOUNT_HYBRID, Misc.MOUNT_UNIVERSAL);<a name="line.183"></a>
-<span class="sourceLineNo">184</span>//              <a name="line.184"></a>
-<span class="sourceLineNo">185</span>//              label = tooltip.addPara("Hybrid weapons in Ballistic slots receive %s the bonus. "<a name="line.185"></a>
-<span class="sourceLineNo">186</span>////                            + "In addition, the bonus will be at least %s for all Hybrid weapons in Ballistic slots, including large ones,"<a name="line.186"></a>
-<span class="sourceLineNo">187</span>////                            + " subject to the maximum.", opad, h,<a name="line.187"></a>
-<span class="sourceLineNo">188</span>//                              + "In addition, the range bonus for all non-PD Hybrid weapons in Ballistic slots will be at least %s, "<a name="line.188"></a>
-<span class="sourceLineNo">189</span>//                              + "regardless of size or other factors, but still subject to the maximum.", opad, h,<a name="line.189"></a>
-<span class="sourceLineNo">190</span>////                            + "In addition, non-PD Hybrid weapons in Ballistic slots, including large ones, will receive %s bonus range,"<a name="line.190"></a>
-<span class="sourceLineNo">191</span>////                                            + " subject to the maximum, in cases where other weapons of the same size would receive no bonus.", opad, h,<a name="line.191"></a>
-<span class="sourceLineNo">192</span>//                              "" + (int)Math.round(HYBRID_MULT) + Strings.X, "" + (int)Math.round(HYBRID_BONUS_MIN));<a name="line.192"></a>
-<span class="sourceLineNo">193</span>////            label.setHighlight("Hybrid", "Ballistic", "" + (int)Math.round(HYBRID_MULT) + Strings.X);<a name="line.193"></a>
-<span class="sourceLineNo">194</span>////            label.setHighlightColors(Misc.MOUNT_HYBRID, Misc.MOUNT_BALLISTIC, h);<a name="line.194"></a>
-<span class="sourceLineNo">195</span>//              label.setHighlight("Hybrid", "" + (int)Math.round(HYBRID_MULT) + Strings.X, "Hybrid", "" + (int)Math.round(HYBRID_BONUS_MIN));<a name="line.195"></a>
-<span class="sourceLineNo">196</span>//              label.setHighlightColors(Misc.MOUNT_HYBRID, h, Misc.MOUNT_HYBRID, h);<a name="line.196"></a>
-<span class="sourceLineNo">197</span>                <a name="line.197"></a>
+<span class="sourceLineNo">033</span>        <a name="line.33"></a>
+<span class="sourceLineNo">034</span>        public void applyEffectsBeforeShipCreation(HullSize hullSize, MutableShipStatsAPI stats, String id) {<a name="line.34"></a>
+<span class="sourceLineNo">035</span>        }<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>        public static WeaponSize getLargestBallisticSlot(ShipAPI ship) {<a name="line.37"></a>
+<span class="sourceLineNo">038</span>                if (ship == null) return null;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                WeaponSize largest = null;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                for (WeaponSlotAPI slot : ship.getHullSpec().getAllWeaponSlotsCopy()) {<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                        if (slot.isDecorative() ) continue;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                        if (slot.getWeaponType() == WeaponType.BALLISTIC) {<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                                if (largest == null || largest.ordinal() &lt; slot.getSlotSize().ordinal()) {<a name="line.43"></a>
+<span class="sourceLineNo">044</span>                                        largest = slot.getSlotSize();<a name="line.44"></a>
+<span class="sourceLineNo">045</span>                                }<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                        }<a name="line.46"></a>
+<span class="sourceLineNo">047</span>                }<a name="line.47"></a>
+<span class="sourceLineNo">048</span>                return largest;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        }<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        <a name="line.50"></a>
+<span class="sourceLineNo">051</span>        @Override<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        public void applyEffectsAfterShipCreation(ShipAPI ship, String id) {<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                WeaponSize largest = getLargestBallisticSlot(ship);<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                if (largest == null) return;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                float small = 0f;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                float medium = 0f;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                float max = 0f;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                switch (largest) {<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                case LARGE:<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                        small = BONUS_SMALL_3;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                        medium = BONUS_MEDIUM_3;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                        max = BONUS_MAX_3;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                        break;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                case MEDIUM:<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                        small = BONUS_SMALL_2;<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                        max = BONUS_MAX_2;<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                        break;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                case SMALL:<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                        small = BONUS_SMALL_1;<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                        max = BONUS_MAX_1;<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                        break;<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                }<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                <a name="line.73"></a>
+<span class="sourceLineNo">074</span>                ship.addListener(new RangefinderRangeModifier(small, medium, max));<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        }<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        <a name="line.76"></a>
+<span class="sourceLineNo">077</span>        public static class RangefinderRangeModifier implements WeaponBaseRangeModifier {<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                public float small, medium, max;<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                public RangefinderRangeModifier(float small, float medium, float max) {<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                        this.small = small;<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                        this.medium = medium;<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                        this.max = max;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                }<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                <a name="line.84"></a>
+<span class="sourceLineNo">085</span>                public float getWeaponBaseRangePercentMod(ShipAPI ship, WeaponAPI weapon) {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                        return 0;<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                }<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                public float getWeaponBaseRangeMultMod(ShipAPI ship, WeaponAPI weapon) {<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                        return 1f;<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                }<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                public float getWeaponBaseRangeFlatMod(ShipAPI ship, WeaponAPI weapon) {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>//                      if (weapon.getSlot() == null || weapon.getSlot().getWeaponType() != WeaponType.BALLISTIC) {<a name="line.92"></a>
+<span class="sourceLineNo">093</span>//                              return 0f;<a name="line.93"></a>
+<span class="sourceLineNo">094</span>//                      }<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                        if (weapon.getSpec() == null) {<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                                return 0f;<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                        }<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                        if (weapon.getSpec().getMountType() != WeaponType.BALLISTIC &amp;&amp; <a name="line.98"></a>
+<span class="sourceLineNo">099</span>                                        weapon.getSpec().getMountType() != WeaponType.HYBRID) {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                                return 0f;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                        }<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                        if (weapon.hasAIHint(AIHints.PD)) {<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                                return 0f;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                        }<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                        <a name="line.105"></a>
+<span class="sourceLineNo">106</span>                        float bonus = 0;<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                        if (weapon.getSize() == WeaponSize.SMALL) {<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                                bonus = small;<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                        } else if (weapon.getSize() == WeaponSize.MEDIUM) {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                                bonus = medium;<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                        }<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                        if (weapon.getSpec().getMountType() == WeaponType.HYBRID) {<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                                bonus *= HYBRID_MULT;<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                                if (bonus &lt; HYBRID_BONUS_MIN) {<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                                        bonus = HYBRID_BONUS_MIN;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                                }<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                        }<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                        if (bonus == 0f) return 0f;<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                        <a name="line.119"></a>
+<span class="sourceLineNo">120</span>                        float base = weapon.getSpec().getMaxRange();<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                        if (base + bonus &gt; max) {<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                                bonus = max - base;<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                        }<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                        if (bonus &lt; 0) bonus = 0;<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                        return bonus;<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                }<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        }<a name="line.127"></a>
+<span class="sourceLineNo">128</span><a name="line.128"></a>
+<span class="sourceLineNo">129</span>        public String getDescriptionParam(int index, HullSize hullSize) {<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                //if (index == 0) return "" + (int)RANGE_PENALTY_PERCENT + "%";<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                return null;<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        }<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        <a name="line.133"></a>
+<span class="sourceLineNo">134</span>        @Override<a name="line.134"></a>
+<span class="sourceLineNo">135</span>        public boolean shouldAddDescriptionToTooltip(HullSize hullSize, ShipAPI ship, boolean isForModSpec) {<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                return false;<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        }<a name="line.137"></a>
+<span class="sourceLineNo">138</span><a name="line.138"></a>
+<span class="sourceLineNo">139</span>        @Override<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        public void addPostDescriptionSection(TooltipMakerAPI tooltip, HullSize hullSize, ShipAPI ship, float width, boolean isForModSpec) {<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                float pad = 3f;<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                float opad = 10f;<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                Color h = Misc.getHighlightColor();<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                Color bad = Misc.getNegativeHighlightColor();<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                Color t = Misc.getTextColor();<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                Color g = Misc.getGrayColor();<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                <a name="line.147"></a>
+<span class="sourceLineNo">148</span>                WeaponSize largest = getLargestBallisticSlot(ship);<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                <a name="line.149"></a>
+<span class="sourceLineNo">150</span>//              LabelAPI label = tooltip.addPara("If the largest Ballistic slot on the ship is large:"<a name="line.150"></a>
+<span class="sourceLineNo">151</span>//                              + " increases the base range of small weapons in Ballistic slots by %s,"<a name="line.151"></a>
+<span class="sourceLineNo">152</span>//                              + " and of medium weapons by %s, up to %s maximum.", opad, h,<a name="line.152"></a>
+<span class="sourceLineNo">153</span>//                              "" + (int)BONUS_SMALL_3, "" + (int)BONUS_MEDIUM_3, "" + (int)BONUS_MAX_3);<a name="line.153"></a>
+<span class="sourceLineNo">154</span>////            label.setHighlight("Ballistic", "base", "Ballistic", "" + (int)BONUS_SMALL_3, "" + (int)BONUS_MEDIUM_3, "" + (int)BONUS_MAX_3);<a name="line.154"></a>
+<span class="sourceLineNo">155</span>////            label.setHighlightColors(Misc.MOUNT_BALLISTIC, h, Misc.MOUNT_BALLISTIC, h, h, h);<a name="line.155"></a>
+<span class="sourceLineNo">156</span>//              label.setHighlight("" + (int)BONUS_SMALL_3, "" + (int)BONUS_MEDIUM_3, "" + (int)BONUS_MAX_3);<a name="line.156"></a>
+<span class="sourceLineNo">157</span>//              label.setHighlightColors(h, h, h);<a name="line.157"></a>
+<span class="sourceLineNo">158</span>//              if (largest != null &amp;&amp; largest != WeaponSize.LARGE) {<a name="line.158"></a>
+<span class="sourceLineNo">159</span>//                      label.setColor(Misc.getGrayColor());<a name="line.159"></a>
+<span class="sourceLineNo">160</span>//              }<a name="line.160"></a>
+<span class="sourceLineNo">161</span>//              <a name="line.161"></a>
+<span class="sourceLineNo">162</span>//              label = tooltip.addPara("Otherwise:"<a name="line.162"></a>
+<span class="sourceLineNo">163</span>//                              + " increases the base range of small weapons in Ballistic slots by %s,"<a name="line.163"></a>
+<span class="sourceLineNo">164</span>//                              + " up to %s maximum.", opad, h,<a name="line.164"></a>
+<span class="sourceLineNo">165</span>//                              "" + (int)BONUS_SMALL_1, "" + (int)BONUS_MAX_1);<a name="line.165"></a>
+<span class="sourceLineNo">166</span>////            label.setHighlight("base", "Ballistic", "" + (int)BONUS_SMALL_1, "" + (int)BONUS_MAX_1);<a name="line.166"></a>
+<span class="sourceLineNo">167</span>////            label.setHighlightColors(h, Misc.MOUNT_BALLISTIC, h, h);<a name="line.167"></a>
+<span class="sourceLineNo">168</span>//              label.setHighlight("" + (int)BONUS_SMALL_1, "" + (int)BONUS_MAX_1);<a name="line.168"></a>
+<span class="sourceLineNo">169</span>//              label.setHighlightColors(h, h);<a name="line.169"></a>
+<span class="sourceLineNo">170</span>//              if (largest != null &amp;&amp; largest == WeaponSize.LARGE) {<a name="line.170"></a>
+<span class="sourceLineNo">171</span>//                      label.setColor(Misc.getGrayColor());<a name="line.171"></a>
+<span class="sourceLineNo">172</span>//              }       <a name="line.172"></a>
+<span class="sourceLineNo">173</span>//<a name="line.173"></a>
+<span class="sourceLineNo">174</span>////            if (ship != null) {<a name="line.174"></a>
+<span class="sourceLineNo">175</span>////                    tooltip.addSectionHeading("Effect on this ship", Alignment.MID, opad);<a name="line.175"></a>
+<span class="sourceLineNo">176</span>////            }<a name="line.176"></a>
+<span class="sourceLineNo">177</span>//              <a name="line.177"></a>
+<span class="sourceLineNo">178</span>//              tooltip.addSectionHeading("Exceptions", Alignment.MID, opad);<a name="line.178"></a>
+<span class="sourceLineNo">179</span>//              label = tooltip.addPara("Does not affect point-defense weapons, "<a name="line.179"></a>
+<span class="sourceLineNo">180</span>//                                              + "or Ballistic weapons in Composite, Hybrid, and Universal slots.", opad);<a name="line.180"></a>
+<span class="sourceLineNo">181</span>////            label.setHighlight("Ballistic", "Composite", "Hybrid", "Universal");<a name="line.181"></a>
+<span class="sourceLineNo">182</span>////            label.setHighlightColors(Misc.MOUNT_BALLISTIC, Misc.MOUNT_COMPOSITE, Misc.MOUNT_HYBRID, Misc.MOUNT_UNIVERSAL);<a name="line.182"></a>
+<span class="sourceLineNo">183</span>//              label.setHighlight("Composite", "Hybrid", "Universal");<a name="line.183"></a>
+<span class="sourceLineNo">184</span>//              label.setHighlightColors(Misc.MOUNT_COMPOSITE, Misc.MOUNT_HYBRID, Misc.MOUNT_UNIVERSAL);<a name="line.184"></a>
+<span class="sourceLineNo">185</span>//              <a name="line.185"></a>
+<span class="sourceLineNo">186</span>//              label = tooltip.addPara("Hybrid weapons in Ballistic slots receive %s the bonus. "<a name="line.186"></a>
+<span class="sourceLineNo">187</span>////                            + "In addition, the bonus will be at least %s for all Hybrid weapons in Ballistic slots, including large ones,"<a name="line.187"></a>
+<span class="sourceLineNo">188</span>////                            + " subject to the maximum.", opad, h,<a name="line.188"></a>
+<span class="sourceLineNo">189</span>//                              + "In addition, the range bonus for all non-PD Hybrid weapons in Ballistic slots will be at least %s, "<a name="line.189"></a>
+<span class="sourceLineNo">190</span>//                              + "regardless of size or other factors, but still subject to the maximum.", opad, h,<a name="line.190"></a>
+<span class="sourceLineNo">191</span>////                            + "In addition, non-PD Hybrid weapons in Ballistic slots, including large ones, will receive %s bonus range,"<a name="line.191"></a>
+<span class="sourceLineNo">192</span>////                                            + " subject to the maximum, in cases where other weapons of the same size would receive no bonus.", opad, h,<a name="line.192"></a>
+<span class="sourceLineNo">193</span>//                              "" + (int)Math.round(HYBRID_MULT) + Strings.X, "" + (int)Math.round(HYBRID_BONUS_MIN));<a name="line.193"></a>
+<span class="sourceLineNo">194</span>////            label.setHighlight("Hybrid", "Ballistic", "" + (int)Math.round(HYBRID_MULT) + Strings.X);<a name="line.194"></a>
+<span class="sourceLineNo">195</span>////            label.setHighlightColors(Misc.MOUNT_HYBRID, Misc.MOUNT_BALLISTIC, h);<a name="line.195"></a>
+<span class="sourceLineNo">196</span>//              label.setHighlight("Hybrid", "" + (int)Math.round(HYBRID_MULT) + Strings.X, "Hybrid", "" + (int)Math.round(HYBRID_BONUS_MIN));<a name="line.196"></a>
+<span class="sourceLineNo">197</span>//              label.setHighlightColors(Misc.MOUNT_HYBRID, h, Misc.MOUNT_HYBRID, h);<a name="line.197"></a>
 <span class="sourceLineNo">198</span>                <a name="line.198"></a>
 <span class="sourceLineNo">199</span>                <a name="line.199"></a>
-<span class="sourceLineNo">200</span>                tooltip.addPara("Utilizes targeting data from the ship's largest ballistic slot "<a name="line.200"></a>
-<span class="sourceLineNo">201</span>                                + "to benefit certain weapons, extending the base range of "<a name="line.201"></a>
-<span class="sourceLineNo">202</span>                                + "typical ballistic weapons to match similar but larger weapons. "<a name="line.202"></a>
-<span class="sourceLineNo">203</span>                                + "Also benefits hybrid weapons. Point-defense weapons are unaffected.",<a name="line.203"></a>
-<span class="sourceLineNo">204</span>                                opad, h, "ship's largest ballistic slot", "base range");<a name="line.204"></a>
-<span class="sourceLineNo">205</span>                <a name="line.205"></a>
-<span class="sourceLineNo">206</span>                //tooltip.addPara("The maximum range is capped, based on the largest slot.", opad);<a name="line.206"></a>
-<span class="sourceLineNo">207</span>                tooltip.addPara("The range bonus is based on the size of the largest ballistic slot, "<a name="line.207"></a>
-<span class="sourceLineNo">208</span>                                + "and the increased base range is capped, but still subject to other modifiers.", opad);<a name="line.208"></a>
-<span class="sourceLineNo">209</span>                <a name="line.209"></a>
-<span class="sourceLineNo">210</span>//              tooltip.addPara("Affects small and medium ballistic weapons, and all hybrid weapons. "<a name="line.210"></a>
-<span class="sourceLineNo">211</span>//                              + "Point-defense weapons are not affected.", opad, h,<a name="line.211"></a>
-<span class="sourceLineNo">212</span>//                              "");<a name="line.212"></a>
-<span class="sourceLineNo">213</span>                                //"small and medium", "hybrid", "Point-defense");<a name="line.213"></a>
-<span class="sourceLineNo">214</span>                <a name="line.214"></a>
-<span class="sourceLineNo">215</span>                tooltip.addSectionHeading("Ballistic weapon range", Alignment.MID, opad);<a name="line.215"></a>
-<span class="sourceLineNo">216</span>                <a name="line.216"></a>
+<span class="sourceLineNo">200</span>                <a name="line.200"></a>
+<span class="sourceLineNo">201</span>                tooltip.addPara("Utilizes targeting data from the ship's largest ballistic slot "<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                                + "to benefit certain weapons, extending the base range of "<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                                + "typical ballistic weapons to match similar but larger weapons. "<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                                + "Greatly benefits hybrid weapons. Point-defense weapons are unaffected.",<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                                opad, h, "ship's largest ballistic slot", "base range", "Greatly benefits hybrid weapons");<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                <a name="line.206"></a>
+<span class="sourceLineNo">207</span>                //tooltip.addPara("The maximum range is capped, based on the largest slot.", opad);<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                tooltip.addPara("The range bonus is based on the size of the largest ballistic slot, "<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                                + "and the increased base range is capped, but still subject to other modifiers.", opad);<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                <a name="line.210"></a>
+<span class="sourceLineNo">211</span>//              tooltip.addPara("Affects small and medium ballistic weapons, and all hybrid weapons. "<a name="line.211"></a>
+<span class="sourceLineNo">212</span>//                              + "Point-defense weapons are not affected.", opad, h,<a name="line.212"></a>
+<span class="sourceLineNo">213</span>//                              "");<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                                //"small and medium", "hybrid", "Point-defense");<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                <a name="line.215"></a>
+<span class="sourceLineNo">216</span>                tooltip.addSectionHeading("Ballistic weapon range", Alignment.MID, opad);<a name="line.216"></a>
 <span class="sourceLineNo">217</span>                <a name="line.217"></a>
-<span class="sourceLineNo">218</span>                tooltip.addPara("Affects small and medium ballistic weapons.", opad);<a name="line.218"></a>
-<span class="sourceLineNo">219</span>                <a name="line.219"></a>
-<span class="sourceLineNo">220</span>                float col1W = 120;<a name="line.220"></a>
-<span class="sourceLineNo">221</span>                float colW = (int) ((width - col1W - 12f) / 3f);<a name="line.221"></a>
-<span class="sourceLineNo">222</span>                float lastW = colW;<a name="line.222"></a>
-<span class="sourceLineNo">223</span>                <a name="line.223"></a>
-<span class="sourceLineNo">224</span>                tooltip.beginTable(Misc.getBasePlayerColor(), Misc.getDarkPlayerColor(), Misc.getBrightPlayerColor(),<a name="line.224"></a>
-<span class="sourceLineNo">225</span>                                20f, true, true, <a name="line.225"></a>
-<span class="sourceLineNo">226</span>                                new Object [] {"Largest b. slot", col1W, "Small wpn", colW, "Medium wpn", colW, "Range cap", lastW});<a name="line.226"></a>
-<span class="sourceLineNo">227</span>                <a name="line.227"></a>
+<span class="sourceLineNo">218</span>                <a name="line.218"></a>
+<span class="sourceLineNo">219</span>                tooltip.addPara("Affects small and medium ballistic weapons.", opad);<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                <a name="line.220"></a>
+<span class="sourceLineNo">221</span>                float col1W = 120;<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                float colW = (int) ((width - col1W - 12f) / 3f);<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                float lastW = colW;<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                <a name="line.224"></a>
+<span class="sourceLineNo">225</span>                tooltip.beginTable(Misc.getBasePlayerColor(), Misc.getDarkPlayerColor(), Misc.getBrightPlayerColor(),<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                                20f, true, true, <a name="line.226"></a>
+<span class="sourceLineNo">227</span>                                new Object [] {"Largest b. slot", col1W, "Small wpn", colW, "Medium wpn", colW, "Range cap", lastW});<a name="line.227"></a>
 <span class="sourceLineNo">228</span>                <a name="line.228"></a>
-<span class="sourceLineNo">229</span>                Color c = null;<a name="line.229"></a>
-<span class="sourceLineNo">230</span>                if (largest == WeaponSize.SMALL) c = h;<a name="line.230"></a>
-<span class="sourceLineNo">231</span>                else if (largest == WeaponSize.MEDIUM) c = h;<a name="line.231"></a>
-<span class="sourceLineNo">232</span>                else c = g;<a name="line.232"></a>
-<span class="sourceLineNo">233</span>                tooltip.addRow(Alignment.MID, c, "Small / Medium",<a name="line.233"></a>
-<span class="sourceLineNo">234</span>                                Alignment.MID, c, "+" + (int) BONUS_SMALL_1,<a name="line.234"></a>
-<span class="sourceLineNo">235</span>                                Alignment.MID, g, "---",<a name="line.235"></a>
-<span class="sourceLineNo">236</span>                                Alignment.MID, c, "" + (int)BONUS_MAX_1);<a name="line.236"></a>
-<span class="sourceLineNo">237</span>                <a name="line.237"></a>
-<span class="sourceLineNo">238</span>                if (largest == WeaponSize.LARGE) c = h;<a name="line.238"></a>
-<span class="sourceLineNo">239</span>                else c = g;<a name="line.239"></a>
-<span class="sourceLineNo">240</span>                tooltip.addRow(Alignment.MID, c, "Large",<a name="line.240"></a>
-<span class="sourceLineNo">241</span>                                Alignment.MID, c, "+" + (int) BONUS_SMALL_3,<a name="line.241"></a>
-<span class="sourceLineNo">242</span>                                Alignment.MID, c, "+" + (int) BONUS_MEDIUM_3,<a name="line.242"></a>
-<span class="sourceLineNo">243</span>                                Alignment.MID, c, "" + (int)BONUS_MAX_3);<a name="line.243"></a>
+<span class="sourceLineNo">229</span>                Color reallyG = g;<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                if (Global.CODEX_TOOLTIP_MODE) {<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                        g = h;<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                }<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                <a name="line.233"></a>
+<span class="sourceLineNo">234</span>                Color c = null;<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                if (largest == WeaponSize.SMALL) c = h;<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                else if (largest == WeaponSize.MEDIUM) c = h;<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                else c = g;<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                <a name="line.238"></a>
+<span class="sourceLineNo">239</span>                <a name="line.239"></a>
+<span class="sourceLineNo">240</span>                tooltip.addRow(Alignment.MID, c, "Small / Medium",<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                                Alignment.MID, c, "+" + (int) BONUS_SMALL_1,<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                                Alignment.MID, reallyG, "---",<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                                Alignment.MID, c, "" + (int)BONUS_MAX_1);<a name="line.243"></a>
 <span class="sourceLineNo">244</span>                <a name="line.244"></a>
-<span class="sourceLineNo">245</span>                tooltip.addTable("", 0, opad);<a name="line.245"></a>
-<span class="sourceLineNo">246</span><a name="line.246"></a>
-<span class="sourceLineNo">247</span>                <a name="line.247"></a>
-<span class="sourceLineNo">248</span>                tooltip.addSectionHeading("Hybrid weapon range", Alignment.MID, opad + 7f);<a name="line.248"></a>
-<span class="sourceLineNo">249</span>                <a name="line.249"></a>
-<span class="sourceLineNo">250</span>                tooltip.addPara("Affects hybrid weapons (those that can fit into both ballistic and energy slots)"<a name="line.250"></a>
-<span class="sourceLineNo">251</span>                                + " of all sizes.", opad);<a name="line.251"></a>
-<span class="sourceLineNo">252</span>                <a name="line.252"></a>
-<span class="sourceLineNo">253</span>                col1W = 120;<a name="line.253"></a>
-<span class="sourceLineNo">254</span>                colW = (int) ((width - col1W - lastW - 15f) / 3f);<a name="line.254"></a>
-<span class="sourceLineNo">255</span>                <a name="line.255"></a>
-<span class="sourceLineNo">256</span>                tooltip.beginTable(Misc.getBasePlayerColor(), Misc.getDarkPlayerColor(), Misc.getBrightPlayerColor(),<a name="line.256"></a>
-<span class="sourceLineNo">257</span>                                20f, true, true, <a name="line.257"></a>
-<span class="sourceLineNo">258</span>                                new Object [] {"Largest b. slot", col1W, "Small", colW, "Medium", colW, "Large", colW, "Range cap", lastW});<a name="line.258"></a>
+<span class="sourceLineNo">245</span>                if (largest == WeaponSize.LARGE) c = h;<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                else c = g;<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                tooltip.addRow(Alignment.MID, c, "Large",<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                                Alignment.MID, c, "+" + (int) BONUS_SMALL_3,<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                                Alignment.MID, c, "+" + (int) BONUS_MEDIUM_3,<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                                Alignment.MID, c, "" + (int)BONUS_MAX_3);<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                <a name="line.251"></a>
+<span class="sourceLineNo">252</span>                tooltip.addTable("", 0, opad);<a name="line.252"></a>
+<span class="sourceLineNo">253</span><a name="line.253"></a>
+<span class="sourceLineNo">254</span>                <a name="line.254"></a>
+<span class="sourceLineNo">255</span>                tooltip.addSectionHeading("Hybrid weapon range", Alignment.MID, opad + 7f);<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                <a name="line.256"></a>
+<span class="sourceLineNo">257</span>                tooltip.addPara("Affects hybrid weapons (those that can fit into both ballistic and energy slots)"<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                                + " of all sizes.", opad);<a name="line.258"></a>
 <span class="sourceLineNo">259</span>                <a name="line.259"></a>
-<span class="sourceLineNo">260</span>                <a name="line.260"></a>
-<span class="sourceLineNo">261</span>                c = null;<a name="line.261"></a>
-<span class="sourceLineNo">262</span>                if (largest == WeaponSize.SMALL) c = h;<a name="line.262"></a>
-<span class="sourceLineNo">263</span>                else if (largest == WeaponSize.MEDIUM) c = h;<a name="line.263"></a>
-<span class="sourceLineNo">264</span>                else c = g;<a name="line.264"></a>
-<span class="sourceLineNo">265</span>                tooltip.addRow(Alignment.MID, c, "Small / Medium",<a name="line.265"></a>
-<span class="sourceLineNo">266</span>                                Alignment.MID, c, "+" + (int) (BONUS_SMALL_1 * HYBRID_MULT),<a name="line.266"></a>
-<span class="sourceLineNo">267</span>                                Alignment.MID, c, "+" + (int) HYBRID_BONUS_MIN,<a name="line.267"></a>
-<span class="sourceLineNo">268</span>                                Alignment.MID, c, "+" + (int) HYBRID_BONUS_MIN,<a name="line.268"></a>
-<span class="sourceLineNo">269</span>                                Alignment.MID, c, "" + (int)BONUS_MAX_1);<a name="line.269"></a>
-<span class="sourceLineNo">270</span>                <a name="line.270"></a>
-<span class="sourceLineNo">271</span>                if (largest == WeaponSize.LARGE) c = h;<a name="line.271"></a>
-<span class="sourceLineNo">272</span>                else c = g;<a name="line.272"></a>
-<span class="sourceLineNo">273</span>                tooltip.addRow(Alignment.MID, c, "Large",<a name="line.273"></a>
-<span class="sourceLineNo">274</span>                                Alignment.MID, c, "+" + (int) (BONUS_SMALL_3 * HYBRID_MULT),<a name="line.274"></a>
-<span class="sourceLineNo">275</span>                                Alignment.MID, c, "+" + (int) (BONUS_MEDIUM_3 * HYBRID_MULT),<a name="line.275"></a>
-<span class="sourceLineNo">276</span>                                Alignment.MID, c, "+" + (int) HYBRID_BONUS_MIN,<a name="line.276"></a>
-<span class="sourceLineNo">277</span>                                Alignment.MID, c, "" + (int)BONUS_MAX_3);<a name="line.277"></a>
-<span class="sourceLineNo">278</span>                <a name="line.278"></a>
-<span class="sourceLineNo">279</span>                tooltip.addTable("", 0, opad);<a name="line.279"></a>
-<span class="sourceLineNo">280</span>                <a name="line.280"></a>
-<span class="sourceLineNo">281</span>                <a name="line.281"></a>
-<span class="sourceLineNo">282</span>                tooltip.addSectionHeading("Interactions with other modifiers", Alignment.MID, opad + 7f);<a name="line.282"></a>
-<span class="sourceLineNo">283</span>                tooltip.addPara("Since the base range is increased, this modifier"<a name="line.283"></a>
-<span class="sourceLineNo">284</span>                                + " - unlike most other flat modifiers - "<a name="line.284"></a>
-<span class="sourceLineNo">285</span>                                + "is increased by percentage modifiers from other hullmods and skills.", opad);<a name="line.285"></a>
-<span class="sourceLineNo">286</span>        }<a name="line.286"></a>
-<span class="sourceLineNo">287</span>        <a name="line.287"></a>
-<span class="sourceLineNo">288</span>        public float getTooltipWidth() {<a name="line.288"></a>
-<span class="sourceLineNo">289</span>                return 412f;<a name="line.289"></a>
-<span class="sourceLineNo">290</span>        }<a name="line.290"></a>
-<span class="sourceLineNo">291</span>        <a name="line.291"></a>
-<span class="sourceLineNo">292</span>        @Override<a name="line.292"></a>
-<span class="sourceLineNo">293</span>        public boolean isApplicableToShip(ShipAPI ship) {<a name="line.293"></a>
-<span class="sourceLineNo">294</span>                WeaponSize largest = getLargestBallisticSlot(ship);<a name="line.294"></a>
-<span class="sourceLineNo">295</span>                if (ship != null &amp;&amp; largest == null) {<a name="line.295"></a>
-<span class="sourceLineNo">296</span>                        return false;<a name="line.296"></a>
-<span class="sourceLineNo">297</span>                }<a name="line.297"></a>
-<span class="sourceLineNo">298</span>                return getUnapplicableReason(ship) == null;<a name="line.298"></a>
-<span class="sourceLineNo">299</span>        }<a name="line.299"></a>
-<span class="sourceLineNo">300</span>        <a name="line.300"></a>
-<span class="sourceLineNo">301</span>        public String getUnapplicableReason(ShipAPI ship) {<a name="line.301"></a>
-<span class="sourceLineNo">302</span>                WeaponSize largest = getLargestBallisticSlot(ship);<a name="line.302"></a>
-<span class="sourceLineNo">303</span>                if (ship != null &amp;&amp; largest == null) {<a name="line.303"></a>
-<span class="sourceLineNo">304</span>                        return "Ship has no ballistic weapon slots";<a name="line.304"></a>
-<span class="sourceLineNo">305</span>                }<a name="line.305"></a>
-<span class="sourceLineNo">306</span>                if (ship != null &amp;&amp; <a name="line.306"></a>
-<span class="sourceLineNo">307</span>                                ship.getHullSize() != HullSize.CAPITAL_SHIP &amp;&amp; <a name="line.307"></a>
-<span class="sourceLineNo">308</span>                                ship.getHullSize() != HullSize.DESTROYER &amp;&amp; <a name="line.308"></a>
-<span class="sourceLineNo">309</span>                                ship.getHullSize() != HullSize.CRUISER) {<a name="line.309"></a>
-<span class="sourceLineNo">310</span>                        return "Can only be installed on destroyer-class hulls and larger";<a name="line.310"></a>
-<span class="sourceLineNo">311</span>                }<a name="line.311"></a>
-<span class="sourceLineNo">312</span>                return null;<a name="line.312"></a>
-<span class="sourceLineNo">313</span>        }<a name="line.313"></a>
-<span class="sourceLineNo">314</span>        <a name="line.314"></a>
-<span class="sourceLineNo">315</span>}<a name="line.315"></a>
-<span class="sourceLineNo">316</span><a name="line.316"></a>
-<span class="sourceLineNo">317</span><a name="line.317"></a>
-<span class="sourceLineNo">318</span><a name="line.318"></a>
-<span class="sourceLineNo">319</span><a name="line.319"></a>
-<span class="sourceLineNo">320</span><a name="line.320"></a>
-<span class="sourceLineNo">321</span><a name="line.321"></a>
-<span class="sourceLineNo">322</span><a name="line.322"></a>
+<span class="sourceLineNo">260</span>                col1W = 120;<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                colW = (int) ((width - col1W - lastW - 15f) / 3f);<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                <a name="line.262"></a>
+<span class="sourceLineNo">263</span>                tooltip.beginTable(Misc.getBasePlayerColor(), Misc.getDarkPlayerColor(), Misc.getBrightPlayerColor(),<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                                20f, true, true, <a name="line.264"></a>
+<span class="sourceLineNo">265</span>                                new Object [] {"Largest b. slot", col1W, "Small", colW, "Medium", colW, "Large", colW, "Range cap", lastW});<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                <a name="line.266"></a>
+<span class="sourceLineNo">267</span>                <a name="line.267"></a>
+<span class="sourceLineNo">268</span>                c = null;<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                if (largest == WeaponSize.SMALL) c = h;<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                else if (largest == WeaponSize.MEDIUM) c = h;<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                else c = g;<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                tooltip.addRow(Alignment.MID, c, "Small / Medium",<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                                Alignment.MID, c, "+" + (int) (BONUS_SMALL_1 * HYBRID_MULT),<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                                Alignment.MID, c, "+" + (int) HYBRID_BONUS_MIN,<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                                Alignment.MID, c, "+" + (int) HYBRID_BONUS_MIN,<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                                Alignment.MID, c, "" + (int)BONUS_MAX_1);<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                <a name="line.277"></a>
+<span class="sourceLineNo">278</span>                if (largest == WeaponSize.LARGE) c = h;<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                else c = g;<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                tooltip.addRow(Alignment.MID, c, "Large",<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                                Alignment.MID, c, "+" + (int) (BONUS_SMALL_3 * HYBRID_MULT),<a name="line.281"></a>
+<span class="sourceLineNo">282</span>                                Alignment.MID, c, "+" + (int) (BONUS_MEDIUM_3 * HYBRID_MULT),<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                                Alignment.MID, c, "+" + (int) HYBRID_BONUS_MIN,<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                                Alignment.MID, c, "" + (int)BONUS_MAX_3);<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                <a name="line.285"></a>
+<span class="sourceLineNo">286</span>                tooltip.addTable("", 0, opad);<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                <a name="line.287"></a>
+<span class="sourceLineNo">288</span>                <a name="line.288"></a>
+<span class="sourceLineNo">289</span>                tooltip.addSectionHeading("Interactions with other modifiers", Alignment.MID, opad + 7f);<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                tooltip.addPara("Since the base range is increased, this modifier"<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                                + " - unlike most other flat modifiers - "<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                                + "is increased by percentage modifiers from other hullmods and skills.", opad);<a name="line.292"></a>
+<span class="sourceLineNo">293</span>        }<a name="line.293"></a>
+<span class="sourceLineNo">294</span>        <a name="line.294"></a>
+<span class="sourceLineNo">295</span>        public float getTooltipWidth() {<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                return 412f;<a name="line.296"></a>
+<span class="sourceLineNo">297</span>        }<a name="line.297"></a>
+<span class="sourceLineNo">298</span>        <a name="line.298"></a>
+<span class="sourceLineNo">299</span>        @Override<a name="line.299"></a>
+<span class="sourceLineNo">300</span>        public boolean isApplicableToShip(ShipAPI ship) {<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                WeaponSize largest = getLargestBallisticSlot(ship);<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                if (ship != null &amp;&amp; largest == null) {<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                        return false;<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                }<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                return getUnapplicableReason(ship) == null;<a name="line.305"></a>
+<span class="sourceLineNo">306</span>        }<a name="line.306"></a>
+<span class="sourceLineNo">307</span>        <a name="line.307"></a>
+<span class="sourceLineNo">308</span>        public String getUnapplicableReason(ShipAPI ship) {<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                WeaponSize largest = getLargestBallisticSlot(ship);<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                if (ship != null &amp;&amp; largest == null) {<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                        return "Ship has no ballistic weapon slots";<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                }<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                if (ship != null &amp;&amp; <a name="line.313"></a>
+<span class="sourceLineNo">314</span>                                ship.getHullSize() != HullSize.CAPITAL_SHIP &amp;&amp; <a name="line.314"></a>
+<span class="sourceLineNo">315</span>                                ship.getHullSize() != HullSize.DESTROYER &amp;&amp; <a name="line.315"></a>
+<span class="sourceLineNo">316</span>                                ship.getHullSize() != HullSize.CRUISER) {<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                        return "Can only be installed on destroyer-class hulls and larger";<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                }<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                return null;<a name="line.319"></a>
+<span class="sourceLineNo">320</span>        }<a name="line.320"></a>
+<span class="sourceLineNo">321</span>        <a name="line.321"></a>
+<span class="sourceLineNo">322</span>}<a name="line.322"></a>
 <span class="sourceLineNo">323</span><a name="line.323"></a>
 <span class="sourceLineNo">324</span><a name="line.324"></a>
+<span class="sourceLineNo">325</span><a name="line.325"></a>
+<span class="sourceLineNo">326</span><a name="line.326"></a>
+<span class="sourceLineNo">327</span><a name="line.327"></a>
+<span class="sourceLineNo">328</span><a name="line.328"></a>
+<span class="sourceLineNo">329</span><a name="line.329"></a>
+<span class="sourceLineNo">330</span><a name="line.330"></a>
+<span class="sourceLineNo">331</span><a name="line.331"></a>
 
 
 

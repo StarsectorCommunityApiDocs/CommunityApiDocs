@@ -1,0 +1,181 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.combat;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.util.HashMap;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import java.util.LinkedHashMap;<a name="line.4"></a>
+<span class="sourceLineNo">005</span><a name="line.5"></a>
+<span class="sourceLineNo">006</span>import java.awt.Color;<a name="line.6"></a>
+<span class="sourceLineNo">007</span><a name="line.7"></a>
+<span class="sourceLineNo">008</span>import org.lwjgl.util.vector.Vector2f;<a name="line.8"></a>
+<span class="sourceLineNo">009</span><a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.Global;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.combat.CombatEngineAPI;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.combat.DamagingProjectileAPI;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.combat.OnFireEffectPlugin;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.combat.ShipAPI;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.combat.WeaponAPI;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.loading.MuzzleFlashSpec;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.loading.ProjectileWeaponSpecAPI;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import com.fs.starfarer.api.util.Misc;<a name="line.18"></a>
+<span class="sourceLineNo">019</span><a name="line.19"></a>
+<span class="sourceLineNo">020</span>public class HeavyAdjudicatorEffect implements OnFireEffectPlugin {<a name="line.20"></a>
+<span class="sourceLineNo">021</span><a name="line.21"></a>
+<span class="sourceLineNo">022</span>        /**<a name="line.22"></a>
+<span class="sourceLineNo">023</span>         * Key is &lt;hullId&gt;_&lt;slot id&gt;.<a name="line.23"></a>
+<span class="sourceLineNo">024</span>         */<a name="line.24"></a>
+<span class="sourceLineNo">025</span>        public static HashMap&lt;String, Vector2f&gt; SECOND_MUZZLE_FLASH_OFFSET_MAP = new LinkedHashMap&lt;&gt;();<a name="line.25"></a>
+<span class="sourceLineNo">026</span>        <a name="line.26"></a>
+<span class="sourceLineNo">027</span>        static {<a name="line.27"></a>
+<span class="sourceLineNo">028</span>                SECOND_MUZZLE_FLASH_OFFSET_MAP.put("onslaught_mk1_WS 016", new Vector2f(-39, 17));<a name="line.28"></a>
+<span class="sourceLineNo">029</span>                SECOND_MUZZLE_FLASH_OFFSET_MAP.put("onslaught_mk1_WS 017", new Vector2f(-39, -18));<a name="line.29"></a>
+<span class="sourceLineNo">030</span>        }<a name="line.30"></a>
+<span class="sourceLineNo">031</span>        <a name="line.31"></a>
+<span class="sourceLineNo">032</span>        <a name="line.32"></a>
+<span class="sourceLineNo">033</span>        public HeavyAdjudicatorEffect() {<a name="line.33"></a>
+<span class="sourceLineNo">034</span>        }<a name="line.34"></a>
+<span class="sourceLineNo">035</span><a name="line.35"></a>
+<span class="sourceLineNo">036</span>        public void onFire(DamagingProjectileAPI projectile, WeaponAPI weapon, CombatEngineAPI engine) {<a name="line.36"></a>
+<span class="sourceLineNo">037</span>                ShipAPI ship = projectile.getSource();<a name="line.37"></a>
+<span class="sourceLineNo">038</span>                if (ship == null) return;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                <a name="line.39"></a>
+<span class="sourceLineNo">040</span>                MuzzleFlashSpec spec = ((ProjectileWeaponSpecAPI)weapon.getSpec()).getMuzzleFlashSpec().clone();<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                <a name="line.41"></a>
+<span class="sourceLineNo">042</span>                spec.setLength(30f);<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                spec.setParticleCount(30);<a name="line.43"></a>
+<span class="sourceLineNo">044</span>                spec.setSpread(90f);<a name="line.44"></a>
+<span class="sourceLineNo">045</span>//              spec.setParticleSizeMin(3);<a name="line.45"></a>
+<span class="sourceLineNo">046</span>//              spec.setParticleSizeRange(0f);<a name="line.46"></a>
+<span class="sourceLineNo">047</span>                <a name="line.47"></a>
+<span class="sourceLineNo">048</span>                Vector2f p = projectile.getLocation();<a name="line.48"></a>
+<span class="sourceLineNo">049</span>                float angle = weapon.getCurrAngle();<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                <a name="line.50"></a>
+<span class="sourceLineNo">051</span>                spawnMuzzleFlash(((ProjectileWeaponSpecAPI)weapon.getSpec()).getMuzzleFlashSpec(), p, angle, ship.getVelocity(), 1f, 0f);<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                <a name="line.52"></a>
+<span class="sourceLineNo">053</span>                String slotId = weapon.getSlot().getId();<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                String id = ship.getHullSpec().getBaseHullId() + "_" + slotId;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                <a name="line.55"></a>
+<span class="sourceLineNo">056</span>                Vector2f offset = SECOND_MUZZLE_FLASH_OFFSET_MAP.get(id);<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                if (offset != null) {<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                        float sign = Math.signum(offset.y);<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                        offset = new Vector2f(offset);<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                        offset = Misc.rotateAroundOrigin(offset, angle);<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                        Vector2f.add(offset, p, offset);<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                        spawnMuzzleFlash(spec, offset, angle + sign * 90f, ship.getVelocity(), 2f, 20f);<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                }<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                <a name="line.64"></a>
+<span class="sourceLineNo">065</span>        }<a name="line.65"></a>
+<span class="sourceLineNo">066</span><a name="line.66"></a>
+<span class="sourceLineNo">067</span>        public static void spawnMuzzleFlash(MuzzleFlashSpec spec, Vector2f point, float angle, Vector2f shipVel,<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                                                                float velMult, float velAdd) {<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                if (spec == null) return;<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                <a name="line.70"></a>
+<span class="sourceLineNo">071</span>                CombatEngineAPI engine = Global.getCombatEngine();<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                <a name="line.72"></a>
+<span class="sourceLineNo">073</span>                Color color = spec.getParticleColor();<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                float min = spec.getParticleSizeMin();<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                float range = spec.getParticleSizeRange();<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                float spread = spec.getSpread();<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                float length = spec.getLength();<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                for (int i = 0; i &lt; spec.getParticleCount(); i++) {<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                        float size = range * (float) Math.random() + min;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                        float theta = (float) (Math.random() * Math.toRadians(spread) + Math.toRadians(angle - spread/2f));<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                        float r = (float) (Math.random() * length);<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                        Vector2f dir = new Vector2f((float)Math.cos(theta), (float)Math.sin(theta));<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                        float x = dir.x * r;<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                        float y = dir.y * r;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                        Vector2f loc = new Vector2f(point.x + x, point.y + y);<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                        Vector2f vel = new Vector2f(x * velMult + shipVel.x + dir.x * velAdd,<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                                                                                y * velMult + shipVel.y + dir.y * velAdd);<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                        if (velAdd &gt; 0 || true) {<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                                Vector2f rand = Misc.getPointWithinRadius(new Vector2f(), spec.getLength() * 0.5f);<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                                Vector2f.add(vel, rand, vel);<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                        }<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                        //engine.addSmoothParticle(loc, vel, size, 1f, spec.getParticleDuration(), color);<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                        float dur = spec.getParticleDuration();<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                        dur *= 0.75f + (float) Math.random() * 0.5f;<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                        size *= 1.25f;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                        engine.addNebulaParticle(loc, vel, size, <a name="line.96"></a>
+<span class="sourceLineNo">097</span>                                        0.67f, // end size<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                                        //2f, // end size<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                                        0f, // ramp up<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                                        0f, // full brightness<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                                        dur, color);<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                }<a name="line.102"></a>
+<span class="sourceLineNo">103</span>        }<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        <a name="line.104"></a>
+<span class="sourceLineNo">105</span>}<a name="line.105"></a>
+<span class="sourceLineNo">106</span><a name="line.106"></a>
+<span class="sourceLineNo">107</span><a name="line.107"></a>
+<span class="sourceLineNo">108</span><a name="line.108"></a>
+<span class="sourceLineNo">109</span><a name="line.109"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

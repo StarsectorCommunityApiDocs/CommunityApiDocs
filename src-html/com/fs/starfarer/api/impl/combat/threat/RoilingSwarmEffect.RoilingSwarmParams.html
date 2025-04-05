@@ -1,0 +1,1119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.combat.threat;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.util.ArrayList;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import java.util.EnumSet;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import java.util.LinkedHashMap;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import java.util.LinkedHashSet;<a name="line.6"></a>
+<span class="sourceLineNo">007</span>import java.util.List;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import java.util.Set;<a name="line.8"></a>
+<span class="sourceLineNo">009</span><a name="line.9"></a>
+<span class="sourceLineNo">010</span>import java.awt.Color;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>import org.lwjgl.util.vector.Vector2f;<a name="line.12"></a>
+<span class="sourceLineNo">013</span><a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.Global;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.combat.BaseCombatLayeredRenderingPlugin;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.combat.CombatEngineLayers;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.combat.CombatEntityAPI;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import com.fs.starfarer.api.combat.MissileAPI;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import com.fs.starfarer.api.combat.ShipAPI;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import com.fs.starfarer.api.combat.ViewportAPI;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import com.fs.starfarer.api.graphics.SpriteAPI;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import com.fs.starfarer.api.util.FaderUtil;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>import com.fs.starfarer.api.util.IntervalUtil;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>import com.fs.starfarer.api.util.ListMap;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>import com.fs.starfarer.api.util.Misc;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>import com.fs.starfarer.api.util.WeightedRandomPicker;<a name="line.26"></a>
+<span class="sourceLineNo">027</span><a name="line.27"></a>
+<span class="sourceLineNo">028</span>public class RoilingSwarmEffect extends BaseCombatLayeredRenderingPlugin {<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>        public static interface SwarmMemberOffsetModifier {<a name="line.30"></a>
+<span class="sourceLineNo">031</span>                void modifyOffset(SwarmMember p);<a name="line.31"></a>
+<span class="sourceLineNo">032</span>        }<a name="line.32"></a>
+<span class="sourceLineNo">033</span>        <a name="line.33"></a>
+<span class="sourceLineNo">034</span>        public static class RoilingSwarmParams {<a name="line.34"></a>
+<span class="sourceLineNo">035</span>                public String spriteCat = "misc";<a name="line.35"></a>
+<span class="sourceLineNo">036</span>                public String spriteKey = "threat_swarm_pieces";<a name="line.36"></a>
+<span class="sourceLineNo">037</span>                public String despawnSound = "threat_swarm_destroyed";<a name="line.37"></a>
+<span class="sourceLineNo">038</span>                <a name="line.38"></a>
+<span class="sourceLineNo">039</span>                /**<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                 * Set to non-null to exchange members with nearby swarms of the same class.<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                 * Swarms should have the same sprite sheet, and the same glow color.<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                 */<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                public String memberExchangeClass = null;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>                public float memberExchangeRange = 500f;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>                public int minMembersToExchange = 1;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                public int maxMembersToExchange = 3;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>                public float memberExchangeRate = 0.1f;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>                <a name="line.48"></a>
+<span class="sourceLineNo">049</span>                public String flockingClass = null;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                <a name="line.50"></a>
+<span class="sourceLineNo">051</span>                public float baseSpriteSize = 20f;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                <a name="line.52"></a>
+<span class="sourceLineNo">053</span>                public float baseDur = 100000f;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                public float durRange = 0f;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                public float despawnDist = 0f;<a name="line.55"></a>
+<span class="sourceLineNo">056</span><a name="line.56"></a>
+<span class="sourceLineNo">057</span>                public float baseScale = 0.5f;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                public float scaleRange = 0.5f;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                public float baseFriction = 100f;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                public float frictionRange = 500f;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                public float baseSpringConstant = 50f;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                public float springConstantNegativeRange = 20f;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                public float baseSpringFreeLength = 20f;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                public float springFreeLengthRange = 20f;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                <a name="line.65"></a>
+<span class="sourceLineNo">066</span>                public float offsetRotationDegreesPerSecond = 0f;<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                <a name="line.67"></a>
+<span class="sourceLineNo">068</span>                public float lateralFrictionFactor = 20f;<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                public float lateralFrictionTurnRateFactor = 0;<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                //public float lateralFrictionFactor = 0.5f;<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                //public float lateralFrictionTurnRateFactor = 0.2f;<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                <a name="line.72"></a>
+<span class="sourceLineNo">073</span>                public float minSpeedForFriction = 25f;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                <a name="line.74"></a>
+<span class="sourceLineNo">075</span>                public float flashRateMult = 1f;<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                public float flashRadius = 100f;<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                public float flashCoreRadiusMult = 1f;<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                public float flashFrequency = 1f;<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                public int numToFlash = 1;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                public int numToRespawn = 1;<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                public float preFlashDelay = 0f;<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                public float flashProbability = 0f;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                public boolean renderFlashOnSameLayer = false;<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                public Color flashFringeColor = new Color(255,0,0,255);<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                public Color flashCoreColor = Color.white;<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                <a name="line.86"></a>
+<span class="sourceLineNo">087</span>                public float alphaMult = 1f;<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                public float alphaMultBase = 1f;<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                public float alphaMultFlash = 1f;<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                public Color color = Color.white;<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                <a name="line.91"></a>
+<span class="sourceLineNo">092</span>                public float minFadeoutTime = 1f;<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                public float maxFadeoutTime = 1f;<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                public float minDespawnTime = 2f;<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                public float maxDespawnTime = 1f;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                <a name="line.96"></a>
+<span class="sourceLineNo">097</span>                public boolean autoscale = false;<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                <a name="line.98"></a>
+<span class="sourceLineNo">099</span>                /**<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                 * The amount of stretch is multiplied by this and then sqrt'ed.<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                 */<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                public float springStretchMult = 10f;<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                <a name="line.103"></a>
+<span class="sourceLineNo">104</span>                public float swarmLeadsByFractionOfVelocity = 0.03f;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                <a name="line.105"></a>
+<span class="sourceLineNo">106</span>                public float outspeedAttachedEntityBy = 100f;<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                <a name="line.107"></a>
+<span class="sourceLineNo">108</span>                public float visibleRange = 500f;<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                public float maxTurnRate = 60f;<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                public float spawnOffsetMult = 0f;<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                public float spawnOffsetMultForInitialSpawn = -1f;<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                public float maxSpeed = 500f;<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                public float minOffset = 0f;<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                public float maxOffset = 20f;<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                public boolean generateOffsetAroundAttachedEntityOval = false;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                <a name="line.116"></a>
+<span class="sourceLineNo">117</span>                public SwarmMemberOffsetModifier offsetModifier = null;<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                <a name="line.118"></a>
+<span class="sourceLineNo">119</span>                public boolean withInitialMembers = true;<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                public boolean withRespawn = true;<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                public int initialMembers = 50;<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                public int baseMembersToMaintain = 50;<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                public boolean removeMembersAboveMaintainLevel = true;<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                public int maxNumMembersToAlwaysRemoveAbove = -1;<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                public float memberRespawnRate = 1f;<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                public float offsetRerollFractionOnMemberRespawn = 0f;<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                <a name="line.127"></a>
+<span class="sourceLineNo">128</span>                public Set&lt;String&gt; tags = new LinkedHashSet&lt;&gt;();<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                <a name="line.129"></a>
+<span class="sourceLineNo">130</span>                public boolean keepProxBasedScaleForAllMembers = false;<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                <a name="line.131"></a>
+<span class="sourceLineNo">132</span>        }<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        <a name="line.133"></a>
+<span class="sourceLineNo">134</span>        <a name="line.134"></a>
+<span class="sourceLineNo">135</span>        public static class SwarmMember {<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                public SpriteAPI sprite;<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                <a name="line.137"></a>
+<span class="sourceLineNo">138</span>                public Vector2f offset = new Vector2f();<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                public Vector2f loc = new Vector2f();<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                public Vector2f vel = new Vector2f();<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                <a name="line.141"></a>
+<span class="sourceLineNo">142</span>                public float scale = 1f;<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                public float turnRate = 1f;<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                public float angle = 1f;<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                public float recentlyPicked = 0f;<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                <a name="line.146"></a>
+<span class="sourceLineNo">147</span>                public float dur;<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                public FaderUtil fader;<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                public FaderUtil flash;<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                public FaderUtil flashNext;<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                <a name="line.151"></a>
+<span class="sourceLineNo">152</span>                public FaderUtil scaler;<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                public float minScale;<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                public boolean keepScale = false;<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                <a name="line.155"></a>
+<span class="sourceLineNo">156</span>                public SwarmMember(Vector2f startingLoc, RoilingSwarmParams params, CombatEntityAPI attachedTo) {<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                        //sprite = Global.getSettings().getSprite("misc", "nebula_particles");<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                        //fx_particles2 - swirly<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                        // nebula_particles2 - smooth, but 2x2<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                        // dust_particles - smooth<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                        <a name="line.161"></a>
+<span class="sourceLineNo">162</span>                        sprite = Global.getSettings().getSprite(params.spriteCat, params.spriteKey);<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                        float i = Misc.random.nextInt(4);<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                        float j = Misc.random.nextInt(4);<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                        sprite.setTexWidth(0.25f);<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                        sprite.setTexHeight(0.25f);<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                        sprite.setTexX(i * 0.25f);<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                        sprite.setTexY(j * 0.25f);<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                        <a name="line.169"></a>
+<span class="sourceLineNo">170</span>                        //sprite.setAdditiveBlend();<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                        sprite.setNormalBlend();<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                        <a name="line.172"></a>
+<span class="sourceLineNo">173</span>                        angle = (float) Math.random() * 360f;<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                        <a name="line.174"></a>
+<span class="sourceLineNo">175</span>                        <a name="line.175"></a>
+<span class="sourceLineNo">176</span>                        rollOffset(params, attachedTo);<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                        <a name="line.177"></a>
+<span class="sourceLineNo">178</span>                        Vector2f spawnOffset = new Vector2f(offset);<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                        spawnOffset.scale(params.spawnOffsetMult);<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                        if (params.spawnOffsetMult != 0) {<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                                spawnOffset = Misc.rotateAroundOrigin(spawnOffset, attachedTo.getFacing());<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                        }<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                        <a name="line.183"></a>
+<span class="sourceLineNo">184</span>                        Vector2f.add(startingLoc, spawnOffset, loc);<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                        <a name="line.185"></a>
+<span class="sourceLineNo">186</span>                        vel = Misc.getPointWithinRadius(new Vector2f(), params.maxSpeed * 0.25f);<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                        <a name="line.187"></a>
+<span class="sourceLineNo">188</span>//                      params.maxSpeed = 1200;<a name="line.188"></a>
+<span class="sourceLineNo">189</span>//                      vel = new Vector2f(0, -1400f);<a name="line.189"></a>
+<span class="sourceLineNo">190</span>//                      Vector2f.add(startingLoc, new Vector2f(0, 500f), loc);<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                        <a name="line.191"></a>
+<span class="sourceLineNo">192</span>                        dur = params.baseDur + (float) Math.random() * params.durRange;<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                        scale = 1f;<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                        <a name="line.194"></a>
+<span class="sourceLineNo">195</span>                        turnRate = Math.signum((float) Math.random() - 0.5f) * params.maxTurnRate * (float) Math.random();<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                        <a name="line.196"></a>
+<span class="sourceLineNo">197</span>                        fader = new FaderUtil(0f, 0.5f + (float) Math.random() * 0.5f,<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                                                        params.minFadeoutTime + (params.maxFadeoutTime - params.minFadeoutTime) * (float) Math.random());<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                        fader.fadeIn();<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                        <a name="line.200"></a>
+<span class="sourceLineNo">201</span>                        scaler = new FaderUtil(0f, 0.5f + (float) Math.random() * 0.5f, 0.5f + (float) Math.random() * 0.5f);<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                        scaler.setBounce(true, true);<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                        scaler.fadeIn();<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                        <a name="line.204"></a>
+<span class="sourceLineNo">205</span>                }<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                <a name="line.206"></a>
+<span class="sourceLineNo">207</span>                public void rollOffset(RoilingSwarmParams params, CombatEntityAPI attachedTo) {<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                        if (params.generateOffsetAroundAttachedEntityOval &amp;&amp; attachedTo instanceof ShipAPI) {<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                                ShipAPI ship = (ShipAPI) attachedTo;<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                                <a name="line.210"></a>
+<span class="sourceLineNo">211</span>                                float angle = (float) Math.random() * 360f;<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                                Vector2f dir = Misc.getUnitVectorAtDegreeAngle(angle);<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                                Vector2f from = new Vector2f(dir);<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                                from.scale(ship.getCollisionRadius() + 1000f);<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                                Vector2f.add(from, ship.getLocation(), from);<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                                <a name="line.216"></a>
+<span class="sourceLineNo">217</span>                                float min = Misc.getTargetingRadius(from, ship, false);<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                                float max = min + params.maxOffset;<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                                min += params.minOffset;<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                                <a name="line.220"></a>
+<span class="sourceLineNo">221</span>                                float f = min/(Math.max(1f, max));<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                                f = Math.max(0.1f, f * 0.75f);<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                                <a name="line.223"></a>
+<span class="sourceLineNo">224</span>                                // there's definitely a smarter way than this to get a uniform distribution -am<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                                float r = -1f;<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                                for (int i = 0; i &lt; 10; i++) {<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                                        float test = (float) Math.sqrt(Math.random());<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                                        if (test &gt;= f) {<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                                                r = test;<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                                                break;<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                                        }<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                                }<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                                if (r &lt; 0f) {<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                                        r = f + (1f - f) * (float) Math.random();<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                                }<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                                <a name="line.236"></a>
+<span class="sourceLineNo">237</span>                                //dir.scale(min + (max - min) * r);<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                                //r = f;<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                                dir.scale(max * r);<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                                offset = dir;<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                                offset = Misc.rotateAroundOrigin(offset, -attachedTo.getFacing());<a name="line.241"></a>
+<span class="sourceLineNo">242</span>//                              if (params.spawnOffsetMultForInitialSpawn != params.spawnOffsetMult) {<a name="line.242"></a>
+<span class="sourceLineNo">243</span>//                                      offset = Misc.rotateAroundOrigin(offset, (float) Math.random() * 360f);<a name="line.243"></a>
+<span class="sourceLineNo">244</span>//                                      <a name="line.244"></a>
+<span class="sourceLineNo">245</span>//                              }<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                                //offset = new Vector2f(200f, 0f);<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                        } else {<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                                offset = Misc.getPointWithinRadiusUniform(new Vector2f(), params.minOffset, params.maxOffset, Misc.random);<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                        }<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                        <a name="line.250"></a>
+<span class="sourceLineNo">251</span>                        if (params.offsetModifier != null) {<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                                params.offsetModifier.modifyOffset(this);<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                        }<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                }<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                <a name="line.255"></a>
+<span class="sourceLineNo">256</span>                public void advance(float amount, RoilingSwarmParams params) {<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                        loc.x += vel.x * amount;<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                        loc.y += vel.y * amount;<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                        <a name="line.259"></a>
+<span class="sourceLineNo">260</span>                        angle += turnRate * amount;<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                        <a name="line.261"></a>
+<span class="sourceLineNo">262</span>                        dur -= amount;<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                        if (dur &lt;= 0) fader.fadeOut();<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                        <a name="line.264"></a>
+<span class="sourceLineNo">265</span>                        recentlyPicked -= amount;<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                        if (recentlyPicked &lt; 0) recentlyPicked = 0f;<a name="line.266"></a>
+<span class="sourceLineNo">267</span><a name="line.267"></a>
+<span class="sourceLineNo">268</span>                        fader.advance(amount);<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                        if (flash != null) {<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                                flash.advance(amount * params.flashRateMult);<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                                if (flash.isFadedOut()) {<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                                        flash = null;<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                                }<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                        }<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                        if (flash == null &amp;&amp; flashNext != null) {<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                                flash = flashNext;<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                                flashNext = null;<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                        }<a name="line.278"></a>
+<span class="sourceLineNo">279</span><a name="line.279"></a>
+<span class="sourceLineNo">280</span>                        if (params.autoscale &amp;&amp; !keepScale) {<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                                scaler.advance(amount * 0.5f);<a name="line.281"></a>
+<span class="sourceLineNo">282</span>                                scale = minScale + (1f - minScale) * scaler.getBrightness() * scaler.getBrightness();<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                        }<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                }<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                <a name="line.285"></a>
+<span class="sourceLineNo">286</span>                public void flash() {<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                        if (flash == null) {<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                                flash = new FaderUtil(0f, 0.25f, 1f);<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                                flash.setBounceDown(true);<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                                flash.fadeIn();<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                        }<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                }<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                <a name="line.293"></a>
+<span class="sourceLineNo">294</span>                public void flashNext() {<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                        flashNext = new FaderUtil(0f, 0.25f, 1f);<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                        flashNext.setBounceDown(true);<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                        flashNext.fadeIn();<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                }<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                <a name="line.299"></a>
+<span class="sourceLineNo">300</span>                public void setRecentlyPicked(float pickDuration) {<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                        recentlyPicked = Math.max(recentlyPicked, pickDuration);<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                }<a name="line.302"></a>
+<span class="sourceLineNo">303</span>        }<a name="line.303"></a>
+<span class="sourceLineNo">304</span>        <a name="line.304"></a>
+<span class="sourceLineNo">305</span>        public static RoilingSwarmEffect getSwarmFor(CombatEntityAPI entity) {<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                if (entity == null) return null;<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                return getShipMap().get(entity);<a name="line.307"></a>
+<span class="sourceLineNo">308</span>        }<a name="line.308"></a>
+<span class="sourceLineNo">309</span>        <a name="line.309"></a>
+<span class="sourceLineNo">310</span>        public static String KEY_SHIP_MAP = "RoilingSwarmEffect_shipMap_key";<a name="line.310"></a>
+<span class="sourceLineNo">311</span>        public static String KEY_FLOCKING_MAP = "RoilingSwarmEffect_flockingMap_key";<a name="line.311"></a>
+<span class="sourceLineNo">312</span>        public static String KEY_EXCHANGE_MAP = "RoilingSwarmEffect_exchangeMap_key";<a name="line.312"></a>
+<span class="sourceLineNo">313</span>        <a name="line.313"></a>
+<span class="sourceLineNo">314</span>        @SuppressWarnings("unchecked")<a name="line.314"></a>
+<span class="sourceLineNo">315</span>        public static LinkedHashMap&lt;CombatEntityAPI, RoilingSwarmEffect&gt; getShipMap() {<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                LinkedHashMap&lt;CombatEntityAPI, RoilingSwarmEffect&gt; map = <a name="line.316"></a>
+<span class="sourceLineNo">317</span>                                (LinkedHashMap&lt;CombatEntityAPI, RoilingSwarmEffect&gt;) Global.getCombatEngine().getCustomData().get(KEY_SHIP_MAP);<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                if (map == null) {<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                        map = new LinkedHashMap&lt;&gt;();<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                        Global.getCombatEngine().getCustomData().put(KEY_SHIP_MAP, map);<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                }<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                return map;<a name="line.322"></a>
+<span class="sourceLineNo">323</span>        }<a name="line.323"></a>
+<span class="sourceLineNo">324</span>        public static ListMap&lt;RoilingSwarmEffect&gt; getFlockingMap() {<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                return getStringToSwarmMap(KEY_FLOCKING_MAP);<a name="line.325"></a>
+<span class="sourceLineNo">326</span>        }<a name="line.326"></a>
+<span class="sourceLineNo">327</span>        public static ListMap&lt;RoilingSwarmEffect&gt; getExchangeMap() {<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                return getStringToSwarmMap(KEY_EXCHANGE_MAP);<a name="line.328"></a>
+<span class="sourceLineNo">329</span>        }<a name="line.329"></a>
+<span class="sourceLineNo">330</span>        @SuppressWarnings("unchecked")<a name="line.330"></a>
+<span class="sourceLineNo">331</span>        public static ListMap&lt;RoilingSwarmEffect&gt; getStringToSwarmMap(String key) {<a name="line.331"></a>
+<span class="sourceLineNo">332</span>                ListMap&lt;RoilingSwarmEffect&gt; map = <a name="line.332"></a>
+<span class="sourceLineNo">333</span>                                (ListMap&lt;RoilingSwarmEffect&gt;) Global.getCombatEngine().getCustomData().get(key);<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                if (map == null) {<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                        map = new ListMap&lt;&gt;();<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                        Global.getCombatEngine().getCustomData().put(key, map);<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                }<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                return map;<a name="line.338"></a>
+<span class="sourceLineNo">339</span>        }<a name="line.339"></a>
+<span class="sourceLineNo">340</span>        <a name="line.340"></a>
+<span class="sourceLineNo">341</span>        protected RoilingSwarmParams params;<a name="line.341"></a>
+<span class="sourceLineNo">342</span>        protected List&lt;SwarmMember&gt; members = new ArrayList&lt;SwarmMember&gt;();<a name="line.342"></a>
+<span class="sourceLineNo">343</span>        <a name="line.343"></a>
+<span class="sourceLineNo">344</span>        protected CombatEntityAPI attachedTo;<a name="line.344"></a>
+<span class="sourceLineNo">345</span>        protected float elapsed = 0f;<a name="line.345"></a>
+<span class="sourceLineNo">346</span>        protected IntervalUtil flashChecker;<a name="line.346"></a>
+<span class="sourceLineNo">347</span>        protected IntervalUtil respawnChecker;<a name="line.347"></a>
+<span class="sourceLineNo">348</span>        protected IntervalUtil transferChecker;<a name="line.348"></a>
+<span class="sourceLineNo">349</span>        protected boolean spawnedInitial = false;<a name="line.349"></a>
+<span class="sourceLineNo">350</span>        protected boolean despawning = false;<a name="line.350"></a>
+<span class="sourceLineNo">351</span>        protected boolean forceDespawn = false;<a name="line.351"></a>
+<span class="sourceLineNo">352</span>        protected float sinceExchange = 0f;<a name="line.352"></a>
+<span class="sourceLineNo">353</span>        protected float maxDistFromCenterToFragment = 0f;<a name="line.353"></a>
+<span class="sourceLineNo">354</span>        <a name="line.354"></a>
+<span class="sourceLineNo">355</span>        public Object custom1;<a name="line.355"></a>
+<span class="sourceLineNo">356</span>        public Object custom2;<a name="line.356"></a>
+<span class="sourceLineNo">357</span>        public Object custom3;<a name="line.357"></a>
+<span class="sourceLineNo">358</span>        <a name="line.358"></a>
+<span class="sourceLineNo">359</span>        <a name="line.359"></a>
+<span class="sourceLineNo">360</span>        public RoilingSwarmEffect(CombatEntityAPI attachedTo) {<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                this(attachedTo, new RoilingSwarmParams());<a name="line.361"></a>
+<span class="sourceLineNo">362</span>        }<a name="line.362"></a>
+<span class="sourceLineNo">363</span>        <a name="line.363"></a>
+<span class="sourceLineNo">364</span>        public RoilingSwarmEffect(CombatEntityAPI attachedTo, RoilingSwarmParams params) {<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                //System.out.println("Creating swarm for " + attachedTo);<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                CombatEntityAPI e = Global.getCombatEngine().addLayeredRenderingPlugin(this);<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                e.getLocation().set(attachedTo.getLocation());<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                <a name="line.368"></a>
+<span class="sourceLineNo">369</span>                this.attachedTo = attachedTo;<a name="line.369"></a>
+<span class="sourceLineNo">370</span>                this.params = params;<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                <a name="line.371"></a>
+<span class="sourceLineNo">372</span>                // these values kinda work, too - a bit tigher<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                //params.maxOffset = 20;<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                //params.baseSpringFreeLength = 10;<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                <a name="line.375"></a>
+<span class="sourceLineNo">376</span>                //params.initialMembers = 1000;<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                //params.frictionRange = 0f;<a name="line.377"></a>
+<span class="sourceLineNo">378</span>//              params.lateralFrictionFactor = 1f;<a name="line.378"></a>
+<span class="sourceLineNo">379</span>//              params.baseSpringFreeLength = 0f;<a name="line.379"></a>
+<span class="sourceLineNo">380</span>//              params.springFreeLengthRange = 40f;<a name="line.380"></a>
+<span class="sourceLineNo">381</span>                <a name="line.381"></a>
+<span class="sourceLineNo">382</span>//              params.frictionRange = 100f;<a name="line.382"></a>
+<span class="sourceLineNo">383</span>//              params.baseFriction = 50f;<a name="line.383"></a>
+<span class="sourceLineNo">384</span>//              params.lateralFrictionFactor = 1f;<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                <a name="line.385"></a>
+<span class="sourceLineNo">386</span>//              params.memberExchangeClass = "attack_swarm";<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                <a name="line.387"></a>
+<span class="sourceLineNo">388</span>//              params.baseDur = 5f;<a name="line.388"></a>
+<span class="sourceLineNo">389</span>//              params.durRange = 10f;<a name="line.389"></a>
+<span class="sourceLineNo">390</span>//              params.memberRespawnRate = 10f;<a name="line.390"></a>
+<span class="sourceLineNo">391</span>                <a name="line.391"></a>
+<span class="sourceLineNo">392</span>                flashChecker = new IntervalUtil(0.5f, 1.5f);<a name="line.392"></a>
+<span class="sourceLineNo">393</span>                respawnChecker = new IntervalUtil(0.5f, 1.5f);<a name="line.393"></a>
+<span class="sourceLineNo">394</span>                transferChecker = new IntervalUtil(0.2f, 1.8f);<a name="line.394"></a>
+<span class="sourceLineNo">395</span>                <a name="line.395"></a>
+<span class="sourceLineNo">396</span>                getShipMap().put(attachedTo, this);<a name="line.396"></a>
+<span class="sourceLineNo">397</span>                if (params.flockingClass != null) {<a name="line.397"></a>
+<span class="sourceLineNo">398</span>                        getFlockingMap().add(params.flockingClass, this);<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                }<a name="line.399"></a>
+<span class="sourceLineNo">400</span>                if (params.memberExchangeClass != null) {<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                        getExchangeMap().add(params.memberExchangeClass, this);<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                }<a name="line.402"></a>
+<span class="sourceLineNo">403</span>        }<a name="line.403"></a>
+<span class="sourceLineNo">404</span>        <a name="line.404"></a>
+<span class="sourceLineNo">405</span>        public void init(CombatEntityAPI entity) {<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                super.init(entity);<a name="line.406"></a>
+<span class="sourceLineNo">407</span>        }<a name="line.407"></a>
+<span class="sourceLineNo">408</span>        <a name="line.408"></a>
+<span class="sourceLineNo">409</span>        public float getRenderRadius() {<a name="line.409"></a>
+<span class="sourceLineNo">410</span>                float extra = 0f;<a name="line.410"></a>
+<span class="sourceLineNo">411</span>                if (sinceExchange &lt; 3f) {<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                        extra = 500f - sinceExchange * 100f;<a name="line.412"></a>
+<span class="sourceLineNo">413</span>                }<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                extra = Math.max(extra, maxDistFromCenterToFragment);<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                return params.visibleRange + extra;<a name="line.415"></a>
+<span class="sourceLineNo">416</span>        }<a name="line.416"></a>
+<span class="sourceLineNo">417</span>        <a name="line.417"></a>
+<span class="sourceLineNo">418</span>        <a name="line.418"></a>
+<span class="sourceLineNo">419</span>        protected EnumSet&lt;CombatEngineLayers&gt; layers = EnumSet.of(CombatEngineLayers.FIGHTERS_LAYER,<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                                                                                                CombatEngineLayers.ABOVE_PARTICLES_LOWER);<a name="line.420"></a>
+<span class="sourceLineNo">421</span>        @Override<a name="line.421"></a>
+<span class="sourceLineNo">422</span>        public EnumSet&lt;CombatEngineLayers&gt; getActiveLayers() {<a name="line.422"></a>
+<span class="sourceLineNo">423</span>                return layers;<a name="line.423"></a>
+<span class="sourceLineNo">424</span>        }<a name="line.424"></a>
+<span class="sourceLineNo">425</span><a name="line.425"></a>
+<span class="sourceLineNo">426</span>        public SwarmMember addMember() {<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                SwarmMember sm = new SwarmMember(attachedTo.getLocation(), params, attachedTo);<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                addMember(sm);<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                return sm;<a name="line.429"></a>
+<span class="sourceLineNo">430</span>        }<a name="line.430"></a>
+<span class="sourceLineNo">431</span>        public void addMember(SwarmMember sm) {<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                members.add(sm);<a name="line.432"></a>
+<span class="sourceLineNo">433</span>        }<a name="line.433"></a>
+<span class="sourceLineNo">434</span>        public void removeMember(SwarmMember sm) {<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                members.remove(sm);<a name="line.435"></a>
+<span class="sourceLineNo">436</span>        }<a name="line.436"></a>
+<span class="sourceLineNo">437</span>        public void addMembers(int num) {<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                for (int i = 0; i &lt; num; i++) {<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                        addMember();<a name="line.439"></a>
+<span class="sourceLineNo">440</span>                }<a name="line.440"></a>
+<span class="sourceLineNo">441</span>        }<a name="line.441"></a>
+<span class="sourceLineNo">442</span>        public void transferMembersTo(RoilingSwarmEffect other, float fraction) {<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                int num = (int) (members.size() * fraction);<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                transferMembersTo(other, num);<a name="line.444"></a>
+<span class="sourceLineNo">445</span>        }<a name="line.445"></a>
+<span class="sourceLineNo">446</span>        public void transferMembersTo(RoilingSwarmEffect other, int num) {<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                transferMembersTo(other, num, null, 0f);<a name="line.447"></a>
+<span class="sourceLineNo">448</span>        }<a name="line.448"></a>
+<span class="sourceLineNo">449</span>        public void transferMembersTo(RoilingSwarmEffect other, int num, Vector2f point, float maxRangeFromPoint) {<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                if (num &lt;= 0) return;<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                WeightedRandomPicker&lt;SwarmMember&gt; picker = getPicker(true, true);<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                if (point != null) {<a name="line.452"></a>
+<span class="sourceLineNo">453</span>                        picker = getPicker(true, true, point, maxRangeFromPoint);<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                }<a name="line.454"></a>
+<span class="sourceLineNo">455</span>                for (int i = 0; i &lt; num; i++) {<a name="line.455"></a>
+<span class="sourceLineNo">456</span>                        SwarmMember pick = picker.pickAndRemove();<a name="line.456"></a>
+<span class="sourceLineNo">457</span>                        if (pick == null) break;<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                        <a name="line.458"></a>
+<span class="sourceLineNo">459</span>                        removeMember(pick);<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                        other.addMember(pick);<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                        pick.rollOffset(other.params, other.attachedTo);<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                }<a name="line.462"></a>
+<span class="sourceLineNo">463</span>        }<a name="line.463"></a>
+<span class="sourceLineNo">464</span>        <a name="line.464"></a>
+<span class="sourceLineNo">465</span>        public void despawnMembers(int num) {<a name="line.465"></a>
+<span class="sourceLineNo">466</span>                despawnMembers(num, true);      <a name="line.466"></a>
+<span class="sourceLineNo">467</span>        }<a name="line.467"></a>
+<span class="sourceLineNo">468</span>        public void despawnMembers(int num, boolean allowFirst) {<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                WeightedRandomPicker&lt;SwarmMember&gt; picker = getPicker(false, false);<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                if (!allowFirst &amp;&amp; !members.isEmpty()) {<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                        picker.remove(members.get(0));<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                }<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                for (int i = 0; i &lt; num; i++) {<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                        SwarmMember pick = picker.pickAndRemove();<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                        if (pick == null) break;<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                        pick.fader.fadeOut();<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                }<a name="line.477"></a>
+<span class="sourceLineNo">478</span>        }<a name="line.478"></a>
+<span class="sourceLineNo">479</span>        <a name="line.479"></a>
+<span class="sourceLineNo">480</span>        public SwarmMember pick(float pickDuration) {<a name="line.480"></a>
+<span class="sourceLineNo">481</span>                SwarmMember pick = getPicker(true, true).pick();<a name="line.481"></a>
+<span class="sourceLineNo">482</span>                if (pick != null) {<a name="line.482"></a>
+<span class="sourceLineNo">483</span>                        pick.setRecentlyPicked(pickDuration);<a name="line.483"></a>
+<span class="sourceLineNo">484</span>                }<a name="line.484"></a>
+<span class="sourceLineNo">485</span>                return pick;<a name="line.485"></a>
+<span class="sourceLineNo">486</span>        }<a name="line.486"></a>
+<span class="sourceLineNo">487</span>        <a name="line.487"></a>
+<span class="sourceLineNo">488</span>        public WeightedRandomPicker&lt;SwarmMember&gt; getPicker(boolean preferNonFlashing, boolean preferNonPicked, <a name="line.488"></a>
+<span class="sourceLineNo">489</span>                                                                                                                Vector2f towards) {<a name="line.489"></a>
+<span class="sourceLineNo">490</span>                WeightedRandomPicker&lt;SwarmMember&gt; picker = new WeightedRandomPicker&lt;&gt;();<a name="line.490"></a>
+<span class="sourceLineNo">491</span>                float angle = Misc.getAngleInDegrees(attachedTo.getLocation(), towards);<a name="line.491"></a>
+<span class="sourceLineNo">492</span>                for (SwarmMember p : members) {<a name="line.492"></a>
+<span class="sourceLineNo">493</span>                        if (p.fader.isFadingOut() || p.fader.isFadedOut()) continue;<a name="line.493"></a>
+<span class="sourceLineNo">494</span>                        float w = 1000f;<a name="line.494"></a>
+<span class="sourceLineNo">495</span>                        if (preferNonFlashing &amp;&amp; p.flash != null) w *= 0.001f;<a name="line.495"></a>
+<span class="sourceLineNo">496</span>                        if (preferNonPicked &amp;&amp; p.recentlyPicked &gt; 0) w *= 0.001f;<a name="line.496"></a>
+<span class="sourceLineNo">497</span>                        <a name="line.497"></a>
+<span class="sourceLineNo">498</span>                        float curr = Misc.getAngleInDegrees(attachedTo.getLocation(), p.loc);<a name="line.498"></a>
+<span class="sourceLineNo">499</span>                        float diff = Misc.getAngleDiff(angle, curr);<a name="line.499"></a>
+<span class="sourceLineNo">500</span>                        if (diff &gt; 90f) {<a name="line.500"></a>
+<span class="sourceLineNo">501</span>                                float f = Misc.normalizeAngle(diff - 90f) / 90f;<a name="line.501"></a>
+<span class="sourceLineNo">502</span>                                if (f &gt; 0.9999f) f = 0.9999f;<a name="line.502"></a>
+<span class="sourceLineNo">503</span>                                w *= 1f - f;<a name="line.503"></a>
+<span class="sourceLineNo">504</span>                                w *= 0.05f;<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                        }<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                        <a name="line.506"></a>
+<span class="sourceLineNo">507</span>                        picker.add(p, w);<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                }<a name="line.508"></a>
+<span class="sourceLineNo">509</span>                return picker;<a name="line.509"></a>
+<span class="sourceLineNo">510</span>        }<a name="line.510"></a>
+<span class="sourceLineNo">511</span>        public WeightedRandomPicker&lt;SwarmMember&gt; getPicker(boolean preferNonFlashing, boolean preferNonPicked, <a name="line.511"></a>
+<span class="sourceLineNo">512</span>                                                                                                Vector2f point, float preferMaxRangeFromPoint) {<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                WeightedRandomPicker&lt;SwarmMember&gt; picker = new WeightedRandomPicker&lt;&gt;();<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                for (SwarmMember p : members) {<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                        if (p.fader.isFadingOut() || p.fader.isFadedOut()) continue;<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                        float w = 1000f;<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                        if (preferNonFlashing &amp;&amp; p.flash != null) w *= 0.001f;<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                        if (preferNonPicked &amp;&amp; p.recentlyPicked &gt; 0) w *= 0.001f;<a name="line.518"></a>
+<span class="sourceLineNo">519</span>                        <a name="line.519"></a>
+<span class="sourceLineNo">520</span>                        float dist = Misc.getDistance(point, p.loc);<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                        if (dist &gt; preferMaxRangeFromPoint) {<a name="line.521"></a>
+<span class="sourceLineNo">522</span>                                float f = (dist - preferMaxRangeFromPoint) / Math.max(1f, preferMaxRangeFromPoint);<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                                if (f &gt; 0.9999f) f = 0.9999f;<a name="line.523"></a>
+<span class="sourceLineNo">524</span>                                w *= 1f - f;<a name="line.524"></a>
+<span class="sourceLineNo">525</span>                        } else {<a name="line.525"></a>
+<span class="sourceLineNo">526</span>                                w *= 0.25f + 0.75f * (1f - dist / Math.max(1f, preferMaxRangeFromPoint));<a name="line.526"></a>
+<span class="sourceLineNo">527</span>                        }<a name="line.527"></a>
+<span class="sourceLineNo">528</span>                        <a name="line.528"></a>
+<span class="sourceLineNo">529</span>                        picker.add(p, w);<a name="line.529"></a>
+<span class="sourceLineNo">530</span>                }<a name="line.530"></a>
+<span class="sourceLineNo">531</span>                return picker;<a name="line.531"></a>
+<span class="sourceLineNo">532</span>        }<a name="line.532"></a>
+<span class="sourceLineNo">533</span>        public WeightedRandomPicker&lt;SwarmMember&gt; getPicker(boolean preferNonFlashing, boolean preferNonPicked) {<a name="line.533"></a>
+<span class="sourceLineNo">534</span>                WeightedRandomPicker&lt;SwarmMember&gt; picker = new WeightedRandomPicker&lt;&gt;();<a name="line.534"></a>
+<span class="sourceLineNo">535</span>                for (SwarmMember p : members) {<a name="line.535"></a>
+<span class="sourceLineNo">536</span>                        if (p.fader.isFadingOut() || p.fader.isFadedOut()) continue;<a name="line.536"></a>
+<span class="sourceLineNo">537</span>                        float w = 1000f;<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                        if (preferNonFlashing &amp;&amp; p.flash != null) w *= 0.001f;<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                        if (preferNonPicked &amp;&amp; p.recentlyPicked &gt; 0) w *= 0.001f;<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                        picker.add(p, w);<a name="line.540"></a>
+<span class="sourceLineNo">541</span>                }<a name="line.541"></a>
+<span class="sourceLineNo">542</span>                return picker;<a name="line.542"></a>
+<span class="sourceLineNo">543</span>        }<a name="line.543"></a>
+<span class="sourceLineNo">544</span>        <a name="line.544"></a>
+<span class="sourceLineNo">545</span>        public int getNumActiveMembers() {<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                return getPicker(false, false).getItems().size();<a name="line.546"></a>
+<span class="sourceLineNo">547</span>        }<a name="line.547"></a>
+<span class="sourceLineNo">548</span>        <a name="line.548"></a>
+<span class="sourceLineNo">549</span>        public float getGlowForMember(SwarmMember p) {<a name="line.549"></a>
+<span class="sourceLineNo">550</span>                float glow = 0f;<a name="line.550"></a>
+<span class="sourceLineNo">551</span>                if (p.flash != null) {<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                        glow = p.flash.getBrightness();<a name="line.552"></a>
+<span class="sourceLineNo">553</span>                        glow *= glow;<a name="line.553"></a>
+<span class="sourceLineNo">554</span>                }<a name="line.554"></a>
+<span class="sourceLineNo">555</span>                return glow;<a name="line.555"></a>
+<span class="sourceLineNo">556</span>        }<a name="line.556"></a>
+<span class="sourceLineNo">557</span>        <a name="line.557"></a>
+<span class="sourceLineNo">558</span>        public int getNumMembersToMaintain() {<a name="line.558"></a>
+<span class="sourceLineNo">559</span>                return params.baseMembersToMaintain;<a name="line.559"></a>
+<span class="sourceLineNo">560</span>        }<a name="line.560"></a>
+<span class="sourceLineNo">561</span>        <a name="line.561"></a>
+<span class="sourceLineNo">562</span>        public void advance(float amount) {<a name="line.562"></a>
+<span class="sourceLineNo">563</span>                //if (true) return;<a name="line.563"></a>
+<span class="sourceLineNo">564</span>                <a name="line.564"></a>
+<span class="sourceLineNo">565</span>                if (Global.getCombatEngine().isPaused() || entity == null || isExpired()) return;<a name="line.565"></a>
+<span class="sourceLineNo">566</span>                <a name="line.566"></a>
+<span class="sourceLineNo">567</span>                if (!spawnedInitial &amp;&amp; params.withInitialMembers) {<a name="line.567"></a>
+<span class="sourceLineNo">568</span>                        float origSpawnOffsetMult = params.spawnOffsetMult;<a name="line.568"></a>
+<span class="sourceLineNo">569</span>                        if (params.spawnOffsetMultForInitialSpawn &gt;= 0) {<a name="line.569"></a>
+<span class="sourceLineNo">570</span>                                params.spawnOffsetMult = params.spawnOffsetMultForInitialSpawn;<a name="line.570"></a>
+<span class="sourceLineNo">571</span>                        }<a name="line.571"></a>
+<span class="sourceLineNo">572</span>                        addMembers(params.initialMembers - getNumActiveMembers());<a name="line.572"></a>
+<span class="sourceLineNo">573</span>                        params.spawnOffsetMult = origSpawnOffsetMult;<a name="line.573"></a>
+<span class="sourceLineNo">574</span>                        spawnedInitial = true;<a name="line.574"></a>
+<span class="sourceLineNo">575</span>                }<a name="line.575"></a>
+<span class="sourceLineNo">576</span>                <a name="line.576"></a>
+<span class="sourceLineNo">577</span>//              attachedTo.setCollisionClass(CollisionClass.SHIP);<a name="line.577"></a>
+<span class="sourceLineNo">578</span>//              ((ShipAPI)attachedTo).getMutableStats().getHullDamageTakenMult().modifyMult("efwefwefwe", 0f);<a name="line.578"></a>
+<span class="sourceLineNo">579</span>                <a name="line.579"></a>
+<span class="sourceLineNo">580</span>                //System.out.println("Swarm members: " + members.size());<a name="line.580"></a>
+<span class="sourceLineNo">581</span>                <a name="line.581"></a>
+<span class="sourceLineNo">582</span>                entity.getLocation().set(attachedTo.getLocation());<a name="line.582"></a>
+<span class="sourceLineNo">583</span><a name="line.583"></a>
+<span class="sourceLineNo">584</span>                elapsed += amount;<a name="line.584"></a>
+<span class="sourceLineNo">585</span>                <a name="line.585"></a>
+<span class="sourceLineNo">586</span>                Vector2f aVel = attachedTo.getVelocity();<a name="line.586"></a>
+<span class="sourceLineNo">587</span>                float aSpeed = aVel.length();<a name="line.587"></a>
+<span class="sourceLineNo">588</span>                float leadAmount = aSpeed * params.swarmLeadsByFractionOfVelocity;<a name="line.588"></a>
+<span class="sourceLineNo">589</span>                <a name="line.589"></a>
+<span class="sourceLineNo">590</span>                Vector2f facingDir = Misc.getUnitVectorAtDegreeAngle(attachedTo.getFacing());<a name="line.590"></a>
+<span class="sourceLineNo">591</span>                if (attachedTo.getVelocity().length() &gt; 1f) {<a name="line.591"></a>
+<span class="sourceLineNo">592</span>                        facingDir = Misc.normalise(new Vector2f(attachedTo.getVelocity()));<a name="line.592"></a>
+<span class="sourceLineNo">593</span>                }<a name="line.593"></a>
+<span class="sourceLineNo">594</span>                <a name="line.594"></a>
+<span class="sourceLineNo">595</span>                Vector2f aLoc = new Vector2f(attachedTo.getLocation());<a name="line.595"></a>
+<span class="sourceLineNo">596</span>//              if (params.generateOffsetAroundAttachedEntityOval &amp;&amp; attachedTo instanceof ShipAPI) {<a name="line.596"></a>
+<span class="sourceLineNo">597</span>//                      ShipAPI ship = (ShipAPI) attachedTo;<a name="line.597"></a>
+<span class="sourceLineNo">598</span>//                      aLoc = new Vector2f(ship.getShieldCenterEvenIfNoShield());<a name="line.598"></a>
+<span class="sourceLineNo">599</span>//              }<a name="line.599"></a>
+<span class="sourceLineNo">600</span>                <a name="line.600"></a>
+<span class="sourceLineNo">601</span>                List&lt;SwarmMember&gt; remove = new ArrayList&lt;&gt;();<a name="line.601"></a>
+<span class="sourceLineNo">602</span><a name="line.602"></a>
+<span class="sourceLineNo">603</span>                float maxSpeed = params.maxSpeed;<a name="line.603"></a>
+<span class="sourceLineNo">604</span>                if (params.outspeedAttachedEntityBy != 0) {<a name="line.604"></a>
+<span class="sourceLineNo">605</span>                        float minMaxSpeed = attachedTo.getVelocity().length() + params.outspeedAttachedEntityBy;<a name="line.605"></a>
+<span class="sourceLineNo">606</span>                        if (minMaxSpeed &gt; maxSpeed) maxSpeed = minMaxSpeed;<a name="line.606"></a>
+<span class="sourceLineNo">607</span>                }<a name="line.607"></a>
+<span class="sourceLineNo">608</span>                <a name="line.608"></a>
+<span class="sourceLineNo">609</span>                // springs! (sort of, sqrt instead of linear) and friction<a name="line.609"></a>
+<span class="sourceLineNo">610</span>                boolean despawnAll = shouldDespawnAll();<a name="line.610"></a>
+<span class="sourceLineNo">611</span>                <a name="line.611"></a>
+<span class="sourceLineNo">612</span>                float maxOffsetForProx = params.maxOffset;<a name="line.612"></a>
+<span class="sourceLineNo">613</span>                if (params.generateOffsetAroundAttachedEntityOval) {<a name="line.613"></a>
+<span class="sourceLineNo">614</span>                        maxOffsetForProx += attachedTo.getCollisionRadius() * 0.75f;<a name="line.614"></a>
+<span class="sourceLineNo">615</span>                }<a name="line.615"></a>
+<span class="sourceLineNo">616</span>                <a name="line.616"></a>
+<span class="sourceLineNo">617</span>                <a name="line.617"></a>
+<span class="sourceLineNo">618</span>//              int flashing = 0;<a name="line.618"></a>
+<span class="sourceLineNo">619</span>//              for (SwarmMember p : members) {<a name="line.619"></a>
+<span class="sourceLineNo">620</span>//                      if (p.flash != null) flashing++;<a name="line.620"></a>
+<span class="sourceLineNo">621</span>//              }<a name="line.621"></a>
+<span class="sourceLineNo">622</span>//              System.out.println("Flashing: " + flashing + " / " + members.size());<a name="line.622"></a>
+<span class="sourceLineNo">623</span>                <a name="line.623"></a>
+<span class="sourceLineNo">624</span>                float maxDistSq = 0f;<a name="line.624"></a>
+<span class="sourceLineNo">625</span>                maxDistFromCenterToFragment = 0f;<a name="line.625"></a>
+<span class="sourceLineNo">626</span>                for (SwarmMember p : members) {<a name="line.626"></a>
+<span class="sourceLineNo">627</span>                        float distSq = (aLoc.x - p.loc.x) * (aLoc.x - p.loc.x) + (aLoc.y - p.loc.y) * (aLoc.y - p.loc.y);<a name="line.627"></a>
+<span class="sourceLineNo">628</span>                        maxDistSq = Math.max(maxDistSq, distSq);<a name="line.628"></a>
+<span class="sourceLineNo">629</span>                        if (params.despawnDist &gt; 0 &amp;&amp; params.despawnDist * params.despawnDist &lt; distSq) {<a name="line.629"></a>
+<span class="sourceLineNo">630</span>                                p.fader.fadeOut();<a name="line.630"></a>
+<span class="sourceLineNo">631</span>                        }<a name="line.631"></a>
+<span class="sourceLineNo">632</span>                                        <a name="line.632"></a>
+<span class="sourceLineNo">633</span>                        if (!despawnAll) {<a name="line.633"></a>
+<span class="sourceLineNo">634</span>                                Vector2f offset = new Vector2f(p.offset);<a name="line.634"></a>
+<span class="sourceLineNo">635</span>                                //offset.y *= p.offsetDrift;<a name="line.635"></a>
+<span class="sourceLineNo">636</span>                                //offset.y = p.offsetDrift * params.maxOffset;<a name="line.636"></a>
+<span class="sourceLineNo">637</span>                                //offset = Misc.rotateAroundOrigin(offset, attachedTo.getFacing() + elapsed * 5f);<a name="line.637"></a>
+<span class="sourceLineNo">638</span>                                <a name="line.638"></a>
+<span class="sourceLineNo">639</span>                                float prox = offset.length() / maxOffsetForProx;<a name="line.639"></a>
+<span class="sourceLineNo">640</span>                                prox = 1f - prox;<a name="line.640"></a>
+<span class="sourceLineNo">641</span>                                <a name="line.641"></a>
+<span class="sourceLineNo">642</span>                                <a name="line.642"></a>
+<span class="sourceLineNo">643</span>                                offset = Misc.rotateAroundOrigin(offset, attachedTo.getFacing() + elapsed * params.offsetRotationDegreesPerSecond);<a name="line.643"></a>
+<span class="sourceLineNo">644</span>                                //offset = Misc.rotateAroundOrigin(offset, attachedTo.getFacing());<a name="line.644"></a>
+<span class="sourceLineNo">645</span>                                offset.x += facingDir.x * leadAmount;<a name="line.645"></a>
+<span class="sourceLineNo">646</span>                                offset.y += facingDir.y * leadAmount;<a name="line.646"></a>
+<span class="sourceLineNo">647</span>                                <a name="line.647"></a>
+<span class="sourceLineNo">648</span>                                if (!params.keepProxBasedScaleForAllMembers) {<a name="line.648"></a>
+<span class="sourceLineNo">649</span>                                        p.scale = params.baseScale + (1f - prox) * params.scaleRange;<a name="line.649"></a>
+<span class="sourceLineNo">650</span>                                        if (p.scale &gt; 1f) p.scale = 1f;<a name="line.650"></a>
+<span class="sourceLineNo">651</span>                                }<a name="line.651"></a>
+<span class="sourceLineNo">652</span>                                <a name="line.652"></a>
+<span class="sourceLineNo">653</span>                                Vector2f dest = new Vector2f(aLoc);<a name="line.653"></a>
+<span class="sourceLineNo">654</span>                                Vector2f.add(dest, offset, dest);<a name="line.654"></a>
+<span class="sourceLineNo">655</span>                                float dist = Misc.getDistance(p.loc, dest);<a name="line.655"></a>
+<span class="sourceLineNo">656</span>                                <a name="line.656"></a>
+<span class="sourceLineNo">657</span>                                Vector2f dirToDest = Misc.getUnitVector(p.loc, dest);<a name="line.657"></a>
+<span class="sourceLineNo">658</span>                                Vector2f perp = new Vector2f(-dirToDest.y, dirToDest.x);<a name="line.658"></a>
+<span class="sourceLineNo">659</span>                                <a name="line.659"></a>
+<span class="sourceLineNo">660</span>                                float friction = params.baseFriction + params.frictionRange * prox;<a name="line.660"></a>
+<span class="sourceLineNo">661</span>                                <a name="line.661"></a>
+<span class="sourceLineNo">662</span>                                float k = params.baseSpringConstant - params.springConstantNegativeRange * prox;<a name="line.662"></a>
+<span class="sourceLineNo">663</span>                                float freeLength = params.baseSpringFreeLength + params.springFreeLengthRange * prox;<a name="line.663"></a>
+<span class="sourceLineNo">664</span>                                <a name="line.664"></a>
+<span class="sourceLineNo">665</span>        //                      if (proj == Global.getCombatEngine().getPlayerShip()) {<a name="line.665"></a>
+<span class="sourceLineNo">666</span>        //                              System.out.println("32ferfwefw");<a name="line.666"></a>
+<span class="sourceLineNo">667</span>        //                      }<a name="line.667"></a>
+<span class="sourceLineNo">668</span>                                <a name="line.668"></a>
+<span class="sourceLineNo">669</span>                                float stretch = dist - freeLength;<a name="line.669"></a>
+<span class="sourceLineNo">670</span>        <a name="line.670"></a>
+<span class="sourceLineNo">671</span>                                stretch = (float) (Math.sqrt(Math.abs(stretch * params.springStretchMult)) * Math.signum(stretch));<a name="line.671"></a>
+<span class="sourceLineNo">672</span>                                <a name="line.672"></a>
+<span class="sourceLineNo">673</span>                                float forceMag = k * Math.abs(stretch);<a name="line.673"></a>
+<span class="sourceLineNo">674</span>                                if (stretch &lt; 0) forceMag = 0; // one-way spring, only pulls <a name="line.674"></a>
+<span class="sourceLineNo">675</span>                                <a name="line.675"></a>
+<span class="sourceLineNo">676</span>                                float forceMagReduction = Math.min(Math.abs(forceMag), friction);<a name="line.676"></a>
+<span class="sourceLineNo">677</span>                                forceMag -= forceMagReduction;<a name="line.677"></a>
+<span class="sourceLineNo">678</span>                                friction -= forceMagReduction;<a name="line.678"></a>
+<span class="sourceLineNo">679</span>                                <a name="line.679"></a>
+<span class="sourceLineNo">680</span>                                <a name="line.680"></a>
+<span class="sourceLineNo">681</span>                                Vector2f force = new Vector2f(dirToDest);<a name="line.681"></a>
+<span class="sourceLineNo">682</span>                                force.scale(forceMag * Math.signum(stretch));<a name="line.682"></a>
+<span class="sourceLineNo">683</span>                                <a name="line.683"></a>
+<span class="sourceLineNo">684</span>                                Vector2f acc = new Vector2f(force);<a name="line.684"></a>
+<span class="sourceLineNo">685</span>                                acc.scale(amount);<a name="line.685"></a>
+<span class="sourceLineNo">686</span>                                Vector2f.add(p.vel, acc, p.vel);<a name="line.686"></a>
+<span class="sourceLineNo">687</span>                                <a name="line.687"></a>
+<span class="sourceLineNo">688</span>                                // leftover friction - apply against current velocity<a name="line.688"></a>
+<span class="sourceLineNo">689</span>                                if (friction &gt; 0) {<a name="line.689"></a>
+<span class="sourceLineNo">690</span>                                        float relSpeed = Vector2f.sub(aVel, p.vel, new Vector2f()).length();<a name="line.690"></a>
+<span class="sourceLineNo">691</span>                                        if (relSpeed &gt; params.minSpeedForFriction) {<a name="line.691"></a>
+<span class="sourceLineNo">692</span>                                                Vector2f frictionDec = Misc.getUnitVectorAtDegreeAngle(Misc.getAngleInDegrees(p.vel));<a name="line.692"></a>
+<span class="sourceLineNo">693</span>                                                frictionDec.negate();<a name="line.693"></a>
+<span class="sourceLineNo">694</span>                                                frictionDec.scale(Math.min(friction, p.vel.length()) * amount); <a name="line.694"></a>
+<span class="sourceLineNo">695</span>                                                Vector2f.add(p.vel, frictionDec, p.vel);<a name="line.695"></a>
+<span class="sourceLineNo">696</span>                                        }<a name="line.696"></a>
+<span class="sourceLineNo">697</span>                                }<a name="line.697"></a>
+<span class="sourceLineNo">698</span>                                <a name="line.698"></a>
+<span class="sourceLineNo">699</span>                                // lateral friction to damp out any orbiting behavior fast<a name="line.699"></a>
+<span class="sourceLineNo">700</span>                                float lateralSpeed = Math.abs(Vector2f.dot(p.vel, perp));<a name="line.700"></a>
+<span class="sourceLineNo">701</span>                                if (lateralSpeed &gt; 0) {// &amp;&amp; lateralSpeed &gt; params.minSpeedForFriction) {<a name="line.701"></a>
+<span class="sourceLineNo">702</span>                                        Vector2f frictionDec = new Vector2f(perp);<a name="line.702"></a>
+<span class="sourceLineNo">703</span>                                        if (Vector2f.dot(frictionDec, p.vel) &gt; 0) {<a name="line.703"></a>
+<span class="sourceLineNo">704</span>                                                frictionDec.negate();<a name="line.704"></a>
+<span class="sourceLineNo">705</span>                                        }<a name="line.705"></a>
+<span class="sourceLineNo">706</span>                                        float lateralFactor = params.lateralFrictionFactor;<a name="line.706"></a>
+<span class="sourceLineNo">707</span>                                        lateralFactor += Math.min(Math.abs(attachedTo.getAngularVelocity()), 100f) * params.lateralFrictionTurnRateFactor;<a name="line.707"></a>
+<span class="sourceLineNo">708</span>                                        float lateralFriction = lateralSpeed * lateralFactor;<a name="line.708"></a>
+<span class="sourceLineNo">709</span>                                        frictionDec.scale(Math.min(lateralFriction, p.vel.length()) * amount); <a name="line.709"></a>
+<span class="sourceLineNo">710</span>                                        Vector2f.add(p.vel, frictionDec, p.vel);<a name="line.710"></a>
+<span class="sourceLineNo">711</span>                                }<a name="line.711"></a>
+<span class="sourceLineNo">712</span>                                <a name="line.712"></a>
+<span class="sourceLineNo">713</span>                        <a name="line.713"></a>
+<span class="sourceLineNo">714</span>                                <a name="line.714"></a>
+<span class="sourceLineNo">715</span>                                float speed = p.vel.length();<a name="line.715"></a>
+<span class="sourceLineNo">716</span>                                if (speed &gt; maxSpeed) {<a name="line.716"></a>
+<span class="sourceLineNo">717</span>                                        p.vel.scale(maxSpeed / speed);<a name="line.717"></a>
+<span class="sourceLineNo">718</span>                                }<a name="line.718"></a>
+<span class="sourceLineNo">719</span>                                <a name="line.719"></a>
+<span class="sourceLineNo">720</span>                        }<a name="line.720"></a>
+<span class="sourceLineNo">721</span>                        <a name="line.721"></a>
+<span class="sourceLineNo">722</span>                        p.advance(amount, params);<a name="line.722"></a>
+<span class="sourceLineNo">723</span>                        //p.loc.set(dest);<a name="line.723"></a>
+<span class="sourceLineNo">724</span>                        <a name="line.724"></a>
+<span class="sourceLineNo">725</span>                        if (despawnAll) {<a name="line.725"></a>
+<span class="sourceLineNo">726</span>                                if (!p.fader.isFadingOut() &amp;&amp; !p.fader.isFadedOut()) {<a name="line.726"></a>
+<span class="sourceLineNo">727</span>                                        //p.fader.setDurationOut(2f + (float) Math.random() * 1f);<a name="line.727"></a>
+<span class="sourceLineNo">728</span>                                        p.fader.setDurationOut(params.minDespawnTime + <a name="line.728"></a>
+<span class="sourceLineNo">729</span>                                                                        (params.maxDespawnTime - params.minDespawnTime) * (float) Math.random());<a name="line.729"></a>
+<span class="sourceLineNo">730</span>                                        p.fader.fadeOut();<a name="line.730"></a>
+<span class="sourceLineNo">731</span>                                }<a name="line.731"></a>
+<span class="sourceLineNo">732</span>                        }<a name="line.732"></a>
+<span class="sourceLineNo">733</span>                        <a name="line.733"></a>
+<span class="sourceLineNo">734</span>                        <a name="line.734"></a>
+<span class="sourceLineNo">735</span>                        if (p.fader.isFadedOut()) {<a name="line.735"></a>
+<span class="sourceLineNo">736</span>                                remove.add(p);<a name="line.736"></a>
+<span class="sourceLineNo">737</span>                        }<a name="line.737"></a>
+<span class="sourceLineNo">738</span>                }<a name="line.738"></a>
+<span class="sourceLineNo">739</span>                <a name="line.739"></a>
+<span class="sourceLineNo">740</span>                maxDistFromCenterToFragment = (float) Math.sqrt(maxDistSq);<a name="line.740"></a>
+<span class="sourceLineNo">741</span>                <a name="line.741"></a>
+<span class="sourceLineNo">742</span>                members.removeAll(remove);<a name="line.742"></a>
+<span class="sourceLineNo">743</span>                <a name="line.743"></a>
+<span class="sourceLineNo">744</span>                if (despawnAll) {<a name="line.744"></a>
+<span class="sourceLineNo">745</span>                        if (!despawning) {<a name="line.745"></a>
+<span class="sourceLineNo">746</span>                                if (params.despawnSound != null) {<a name="line.746"></a>
+<span class="sourceLineNo">747</span>                                        Global.getSoundPlayer().playSound(params.despawnSound, 1f, 1f, entity.getLocation(), aVel);<a name="line.747"></a>
+<span class="sourceLineNo">748</span>                                        despawning = true;<a name="line.748"></a>
+<span class="sourceLineNo">749</span>                                }<a name="line.749"></a>
+<span class="sourceLineNo">750</span>                        }<a name="line.750"></a>
+<span class="sourceLineNo">751</span>                }<a name="line.751"></a>
+<span class="sourceLineNo">752</span>                <a name="line.752"></a>
+<span class="sourceLineNo">753</span>                if (isExpired()) {<a name="line.753"></a>
+<span class="sourceLineNo">754</span>//                      getShipMap().remove(attachedTo);<a name="line.754"></a>
+<span class="sourceLineNo">755</span>//                      getFlockingMap().remove(params.flockingClass, this);<a name="line.755"></a>
+<span class="sourceLineNo">756</span>//                      getExchangeMap().remove(params.memberExchangeClass, this);<a name="line.756"></a>
+<span class="sourceLineNo">757</span>                } else if (!despawnAll &amp;&amp; !despawning){<a name="line.757"></a>
+<span class="sourceLineNo">758</span>                        exchangeWithNearbySwarms(amount);<a name="line.758"></a>
+<span class="sourceLineNo">759</span>                }<a name="line.759"></a>
+<span class="sourceLineNo">760</span>                <a name="line.760"></a>
+<span class="sourceLineNo">761</span>                <a name="line.761"></a>
+<span class="sourceLineNo">762</span>                if (!despawnAll) {<a name="line.762"></a>
+<span class="sourceLineNo">763</span>                        respawnChecker.advance(amount * params.memberRespawnRate);<a name="line.763"></a>
+<span class="sourceLineNo">764</span>                        if (respawnChecker.intervalElapsed() &amp;&amp; params.withRespawn) {<a name="line.764"></a>
+<span class="sourceLineNo">765</span>                                int num = getNumMembersToMaintain();<a name="line.765"></a>
+<span class="sourceLineNo">766</span>                                if (members.size() &lt; num) {<a name="line.766"></a>
+<span class="sourceLineNo">767</span>                                        int add = Math.min(params.numToRespawn, num - members.size());<a name="line.767"></a>
+<span class="sourceLineNo">768</span>                                        addMembers(add);<a name="line.768"></a>
+<span class="sourceLineNo">769</span>                                        <a name="line.769"></a>
+<span class="sourceLineNo">770</span>                                        if (params.offsetRerollFractionOnMemberRespawn &gt; 0f) {<a name="line.770"></a>
+<span class="sourceLineNo">771</span>                                                int reroll = Math.round(params.offsetRerollFractionOnMemberRespawn * members.size());<a name="line.771"></a>
+<span class="sourceLineNo">772</span>                                                if (reroll &lt; 1) reroll = 1;<a name="line.772"></a>
+<span class="sourceLineNo">773</span>                                                WeightedRandomPicker&lt;SwarmMember&gt; picker = getPicker(true, false);<a name="line.773"></a>
+<span class="sourceLineNo">774</span>                                                for (int i = 0; i &lt; reroll; i++) {<a name="line.774"></a>
+<span class="sourceLineNo">775</span>                                                        SwarmMember pick = picker.pickAndRemove();<a name="line.775"></a>
+<span class="sourceLineNo">776</span>                                                        if (pick == null) break;<a name="line.776"></a>
+<span class="sourceLineNo">777</span>                                                        pick.rollOffset(params, attachedTo);<a name="line.777"></a>
+<span class="sourceLineNo">778</span>                                                }<a name="line.778"></a>
+<span class="sourceLineNo">779</span>                                        }<a name="line.779"></a>
+<span class="sourceLineNo">780</span>                                        <a name="line.780"></a>
+<span class="sourceLineNo">781</span>                                } else if (members.size() &gt; num &amp;&amp; params.removeMembersAboveMaintainLevel) {<a name="line.781"></a>
+<span class="sourceLineNo">782</span>                                        despawnMembers(1);<a name="line.782"></a>
+<span class="sourceLineNo">783</span>                                } else if (params.maxNumMembersToAlwaysRemoveAbove &gt;= 0 &amp;&amp;<a name="line.783"></a>
+<span class="sourceLineNo">784</span>                                                members.size() &gt; params.maxNumMembersToAlwaysRemoveAbove) {<a name="line.784"></a>
+<span class="sourceLineNo">785</span>                                        int extra = members.size() - params.maxNumMembersToAlwaysRemoveAbove;<a name="line.785"></a>
+<span class="sourceLineNo">786</span>                                        int numRemove = (int) Math.min(extra * 0.1f, 5f);<a name="line.786"></a>
+<span class="sourceLineNo">787</span>                                        if (numRemove &lt; 1) numRemove = 1;<a name="line.787"></a>
+<span class="sourceLineNo">788</span>                                        despawnMembers(numRemove);<a name="line.788"></a>
+<span class="sourceLineNo">789</span>                                }<a name="line.789"></a>
+<span class="sourceLineNo">790</span>                        }<a name="line.790"></a>
+<span class="sourceLineNo">791</span>                        <a name="line.791"></a>
+<span class="sourceLineNo">792</span>                        <a name="line.792"></a>
+<span class="sourceLineNo">793</span>                        flashChecker.advance(amount * params.flashFrequency);<a name="line.793"></a>
+<span class="sourceLineNo">794</span>                        params.preFlashDelay -= amount;<a name="line.794"></a>
+<span class="sourceLineNo">795</span>                        if (params.preFlashDelay &lt; 0) params.preFlashDelay = 0;<a name="line.795"></a>
+<span class="sourceLineNo">796</span>                        if (flashChecker.intervalElapsed() &amp;&amp; params.preFlashDelay &lt;= 0) {<a name="line.796"></a>
+<span class="sourceLineNo">797</span>                                if (params.flashProbability &gt; 0) {<a name="line.797"></a>
+<span class="sourceLineNo">798</span>                                        WeightedRandomPicker&lt;SwarmMember&gt; notFlashing = new WeightedRandomPicker&lt;&gt;();<a name="line.798"></a>
+<span class="sourceLineNo">799</span>                                        for (SwarmMember p : members) {<a name="line.799"></a>
+<span class="sourceLineNo">800</span>                                                if (p.flash == null) {<a name="line.800"></a>
+<span class="sourceLineNo">801</span>                                                        notFlashing.add(p);<a name="line.801"></a>
+<span class="sourceLineNo">802</span>                                                }<a name="line.802"></a>
+<span class="sourceLineNo">803</span>                                        }<a name="line.803"></a>
+<span class="sourceLineNo">804</span>                                        for (int i = 0; i &lt; params.numToFlash; i++) {<a name="line.804"></a>
+<span class="sourceLineNo">805</span>                                                if ((float) Math.random() &lt; params.flashProbability) {<a name="line.805"></a>
+<span class="sourceLineNo">806</span>                                                        SwarmMember pick = notFlashing.pickAndRemove();<a name="line.806"></a>
+<span class="sourceLineNo">807</span>                                                        if (pick != null) pick.flash();<a name="line.807"></a>
+<span class="sourceLineNo">808</span>                                                }<a name="line.808"></a>
+<span class="sourceLineNo">809</span>                                        }<a name="line.809"></a>
+<span class="sourceLineNo">810</span>                                }<a name="line.810"></a>
+<span class="sourceLineNo">811</span>                        }<a name="line.811"></a>
+<span class="sourceLineNo">812</span>                }<a name="line.812"></a>
+<span class="sourceLineNo">813</span>                <a name="line.813"></a>
+<span class="sourceLineNo">814</span>                sinceExchange += amount;<a name="line.814"></a>
+<span class="sourceLineNo">815</span>//              if (proj.didDamage()) {<a name="line.815"></a>
+<span class="sourceLineNo">816</span>//                      if (!resetTrailSpeed) {<a name="line.816"></a>
+<span class="sourceLineNo">817</span>//                              for (ParticleData p : particles) {<a name="line.817"></a>
+<span class="sourceLineNo">818</span>//                                      Vector2f.add(p.vel, projVel, p.vel);<a name="line.818"></a>
+<span class="sourceLineNo">819</span>//                              }<a name="line.819"></a>
+<span class="sourceLineNo">820</span>//                              projVel.scale(0f);<a name="line.820"></a>
+<span class="sourceLineNo">821</span>//                              resetTrailSpeed = true;<a name="line.821"></a>
+<span class="sourceLineNo">822</span>//                      }<a name="line.822"></a>
+<span class="sourceLineNo">823</span>//                      for (ParticleData p : particles) {<a name="line.823"></a>
+<span class="sourceLineNo">824</span>//                              float dist = p.offset.length();<a name="line.824"></a>
+<span class="sourceLineNo">825</span>//                              p.vel.scale(Math.min(1f, dist / 100f));<a name="line.825"></a>
+<span class="sourceLineNo">826</span>//                      }<a name="line.826"></a>
+<span class="sourceLineNo">827</span>//              }<a name="line.827"></a>
+<span class="sourceLineNo">828</span>        }<a name="line.828"></a>
+<span class="sourceLineNo">829</span>        <a name="line.829"></a>
+<span class="sourceLineNo">830</span>        public void exchangeWithNearbySwarms(float amount) {<a name="line.830"></a>
+<span class="sourceLineNo">831</span>                if (params.memberExchangeClass == null || params.memberExchangeRange &lt;= 0) return;<a name="line.831"></a>
+<span class="sourceLineNo">832</span>                <a name="line.832"></a>
+<span class="sourceLineNo">833</span>                transferChecker.advance(amount * params.memberExchangeRate);<a name="line.833"></a>
+<span class="sourceLineNo">834</span>                if (!transferChecker.intervalElapsed()) return;<a name="line.834"></a>
+<span class="sourceLineNo">835</span>                <a name="line.835"></a>
+<span class="sourceLineNo">836</span>                <a name="line.836"></a>
+<span class="sourceLineNo">837</span>                WeightedRandomPicker&lt;RoilingSwarmEffect&gt; swarmPicker = new WeightedRandomPicker&lt;&gt;();<a name="line.837"></a>
+<span class="sourceLineNo">838</span>                <a name="line.838"></a>
+<span class="sourceLineNo">839</span>                for (RoilingSwarmEffect other : getExchangeMap().getList(params.memberExchangeClass)) {<a name="line.839"></a>
+<span class="sourceLineNo">840</span>                        if (other == this || other.getEntity() == null || other.despawning) continue;<a name="line.840"></a>
+<span class="sourceLineNo">841</span>                        if (other.attachedTo == null || attachedTo == null) continue;<a name="line.841"></a>
+<span class="sourceLineNo">842</span>                        if (other.attachedTo.getOwner() != attachedTo.getOwner()) continue;<a name="line.842"></a>
+<span class="sourceLineNo">843</span>                        <a name="line.843"></a>
+<span class="sourceLineNo">844</span>                        if (other.params.memberExchangeClass == null ||<a name="line.844"></a>
+<span class="sourceLineNo">845</span>                                        !other.params.memberExchangeClass.equals(params.memberExchangeClass)) {<a name="line.845"></a>
+<span class="sourceLineNo">846</span>                                continue;<a name="line.846"></a>
+<span class="sourceLineNo">847</span>                        }<a name="line.847"></a>
+<span class="sourceLineNo">848</span>                        float dist = Misc.getDistance(entity.getLocation(), other.getEntity().getLocation());<a name="line.848"></a>
+<span class="sourceLineNo">849</span>                        if (dist &gt; params.memberExchangeRange) continue;<a name="line.849"></a>
+<span class="sourceLineNo">850</span>                        <a name="line.850"></a>
+<span class="sourceLineNo">851</span>                        swarmPicker.add(other);<a name="line.851"></a>
+<span class="sourceLineNo">852</span>                }<a name="line.852"></a>
+<span class="sourceLineNo">853</span>                        <a name="line.853"></a>
+<span class="sourceLineNo">854</span>                RoilingSwarmEffect other = swarmPicker.pick();<a name="line.854"></a>
+<span class="sourceLineNo">855</span>                if (other == null) return;<a name="line.855"></a>
+<span class="sourceLineNo">856</span>                        <a name="line.856"></a>
+<span class="sourceLineNo">857</span>                int num = params.minMembersToExchange + <a name="line.857"></a>
+<span class="sourceLineNo">858</span>                                Misc.random.nextInt(params.maxMembersToExchange - params.minMembersToExchange + 1);<a name="line.858"></a>
+<span class="sourceLineNo">859</span>                <a name="line.859"></a>
+<span class="sourceLineNo">860</span>                WeightedRandomPicker&lt;SwarmMember&gt; picker = getPicker(true, true);<a name="line.860"></a>
+<span class="sourceLineNo">861</span>                WeightedRandomPicker&lt;SwarmMember&gt; pickerOther = other.getPicker(true, true);<a name="line.861"></a>
+<span class="sourceLineNo">862</span>                <a name="line.862"></a>
+<span class="sourceLineNo">863</span>                num = Math.min(num, picker.getItems().size());<a name="line.863"></a>
+<span class="sourceLineNo">864</span>                num = Math.min(num, pickerOther.getItems().size());<a name="line.864"></a>
+<span class="sourceLineNo">865</span>                <a name="line.865"></a>
+<span class="sourceLineNo">866</span>                for (int i = 0; i &lt; num; i++) {<a name="line.866"></a>
+<span class="sourceLineNo">867</span>                        SwarmMember pick = picker.pickAndRemove();<a name="line.867"></a>
+<span class="sourceLineNo">868</span>                        SwarmMember otherPick = pickerOther.pickAndRemove();<a name="line.868"></a>
+<span class="sourceLineNo">869</span>                        if (pick == null || otherPick == null) break;<a name="line.869"></a>
+<span class="sourceLineNo">870</span>                        <a name="line.870"></a>
+<span class="sourceLineNo">871</span>                        removeMember(pick);<a name="line.871"></a>
+<span class="sourceLineNo">872</span>                        other.addMember(pick);<a name="line.872"></a>
+<span class="sourceLineNo">873</span>                        pick.rollOffset(other.params, other.attachedTo);<a name="line.873"></a>
+<span class="sourceLineNo">874</span>                        <a name="line.874"></a>
+<span class="sourceLineNo">875</span>                        other.removeMember(otherPick);<a name="line.875"></a>
+<span class="sourceLineNo">876</span>                        addMember(otherPick);<a name="line.876"></a>
+<span class="sourceLineNo">877</span>                        otherPick.rollOffset(params, attachedTo);<a name="line.877"></a>
+<span class="sourceLineNo">878</span>                        <a name="line.878"></a>
+<span class="sourceLineNo">879</span>                        sinceExchange = 0f;<a name="line.879"></a>
+<span class="sourceLineNo">880</span>                }<a name="line.880"></a>
+<span class="sourceLineNo">881</span>                <a name="line.881"></a>
+<span class="sourceLineNo">882</span>        }<a name="line.882"></a>
+<span class="sourceLineNo">883</span>        <a name="line.883"></a>
+<span class="sourceLineNo">884</span><a name="line.884"></a>
+<span class="sourceLineNo">885</span>        public boolean shouldDespawnAll() {<a name="line.885"></a>
+<span class="sourceLineNo">886</span>                if (forceDespawn) return true;<a name="line.886"></a>
+<span class="sourceLineNo">887</span>                <a name="line.887"></a>
+<span class="sourceLineNo">888</span>//              if ((float) Math.random() &gt; 0.9995f &amp;&amp; !params.generateOffsetAroundAttachedEntityOval) {<a name="line.888"></a>
+<span class="sourceLineNo">889</span>//                      forceDespawn = true;<a name="line.889"></a>
+<span class="sourceLineNo">890</span>//                      return true;<a name="line.890"></a>
+<span class="sourceLineNo">891</span>//              }<a name="line.891"></a>
+<span class="sourceLineNo">892</span>                <a name="line.892"></a>
+<span class="sourceLineNo">893</span>                if (attachedTo instanceof ShipAPI) {<a name="line.893"></a>
+<span class="sourceLineNo">894</span>                        ShipAPI ship = (ShipAPI) attachedTo;<a name="line.894"></a>
+<span class="sourceLineNo">895</span>                        return !Global.getCombatEngine().isShipAlive(ship);<a name="line.895"></a>
+<span class="sourceLineNo">896</span>                }<a name="line.896"></a>
+<span class="sourceLineNo">897</span>                if (attachedTo instanceof MissileAPI) {<a name="line.897"></a>
+<span class="sourceLineNo">898</span>                        MissileAPI missile = (MissileAPI) attachedTo;<a name="line.898"></a>
+<span class="sourceLineNo">899</span>                        return !Global.getCombatEngine().isMissileAlive(missile);<a name="line.899"></a>
+<span class="sourceLineNo">900</span>                }<a name="line.900"></a>
+<span class="sourceLineNo">901</span>                <a name="line.901"></a>
+<span class="sourceLineNo">902</span>                return attachedTo.isExpired() || !Global.getCombatEngine().isEntityInPlay(attachedTo);<a name="line.902"></a>
+<span class="sourceLineNo">903</span>        }<a name="line.903"></a>
+<span class="sourceLineNo">904</span><a name="line.904"></a>
+<span class="sourceLineNo">905</span>        public boolean isExpired() {<a name="line.905"></a>
+<span class="sourceLineNo">906</span>                boolean expired = shouldDespawnAll() &amp;&amp; members.isEmpty();<a name="line.906"></a>
+<span class="sourceLineNo">907</span>                if (expired) {<a name="line.907"></a>
+<span class="sourceLineNo">908</span>                        //getFlockingMap().getList(FragmentSwarmHullmod.STANDARD_SWARM_FLOCKING_CLASS).get(0)<a name="line.908"></a>
+<span class="sourceLineNo">909</span>                        getShipMap().remove(attachedTo);<a name="line.909"></a>
+<span class="sourceLineNo">910</span>                        getFlockingMap().remove(params.flockingClass, this);<a name="line.910"></a>
+<span class="sourceLineNo">911</span>                        getExchangeMap().remove(params.memberExchangeClass, this);<a name="line.911"></a>
+<span class="sourceLineNo">912</span>                }<a name="line.912"></a>
+<span class="sourceLineNo">913</span>                return expired;<a name="line.913"></a>
+<span class="sourceLineNo">914</span>        }<a name="line.914"></a>
+<span class="sourceLineNo">915</span>        <a name="line.915"></a>
+<span class="sourceLineNo">916</span>        public void render(CombatEngineLayers layer, ViewportAPI viewport) {<a name="line.916"></a>
+<span class="sourceLineNo">917</span>                //if (true) return;<a name="line.917"></a>
+<span class="sourceLineNo">918</span>                <a name="line.918"></a>
+<span class="sourceLineNo">919</span>                //Color color = Color.white;<a name="line.919"></a>
+<span class="sourceLineNo">920</span>                Color color = params.color;<a name="line.920"></a>
+<span class="sourceLineNo">921</span>                float alphaMult = viewport.getAlphaMult();<a name="line.921"></a>
+<span class="sourceLineNo">922</span>                if (alphaMult &lt;= 0f) return;<a name="line.922"></a>
+<span class="sourceLineNo">923</span>                <a name="line.923"></a>
+<span class="sourceLineNo">924</span>                //alphaMult = 0.1f;<a name="line.924"></a>
+<span class="sourceLineNo">925</span>                alphaMult *= params.alphaMult;<a name="line.925"></a>
+<span class="sourceLineNo">926</span>                <a name="line.926"></a>
+<span class="sourceLineNo">927</span>                if (layer == CombatEngineLayers.FIGHTERS_LAYER) {<a name="line.927"></a>
+<span class="sourceLineNo">928</span>//                      float zoom = viewport.getViewMult();<a name="line.928"></a>
+<span class="sourceLineNo">929</span>//                      //System.out.println("Zoom: " + zoom);<a name="line.929"></a>
+<span class="sourceLineNo">930</span>//                      if (zoom &gt;= 3f) {<a name="line.930"></a>
+<span class="sourceLineNo">931</span>//                              GL11.glDisable(GL11.GL_TEXTURE_2D);<a name="line.931"></a>
+<span class="sourceLineNo">932</span>//                              if (!members.isEmpty()) {<a name="line.932"></a>
+<span class="sourceLineNo">933</span>//                                      Color c = members.get(0).sprite.getAverageBrightColor();<a name="line.933"></a>
+<span class="sourceLineNo">934</span>//                                      c = Misc.interpolateColor(c, members.get(0).sprite.getAverageColor(), 0.9f);<a name="line.934"></a>
+<span class="sourceLineNo">935</span>//                                      //Misc.setColor(c, alphaMult);<a name="line.935"></a>
+<span class="sourceLineNo">936</span>//                                      GL11.glEnable(GL11.GL_POINT_SMOOTH);<a name="line.936"></a>
+<span class="sourceLineNo">937</span>//                                      GL11.glPointSize(params.baseSpriteSize / zoom * 0.5f);<a name="line.937"></a>
+<span class="sourceLineNo">938</span>//                                      GL11.glBegin(GL11.GL_POINTS);<a name="line.938"></a>
+<span class="sourceLineNo">939</span>//                                      for (SwarmMember p : members) {<a name="line.939"></a>
+<span class="sourceLineNo">940</span>////                                            float size = params.baseSpriteSize;<a name="line.940"></a>
+<span class="sourceLineNo">941</span>////                                            size *= p.scale * p.fader.getBrightness();<a name="line.941"></a>
+<span class="sourceLineNo">942</span>//                                              <a name="line.942"></a>
+<span class="sourceLineNo">943</span>//                                              float b = p.fader.getBrightness();<a name="line.943"></a>
+<span class="sourceLineNo">944</span>//                                              Misc.setColor(c, alphaMult * b);<a name="line.944"></a>
+<span class="sourceLineNo">945</span>//                                              GL11.glVertex2f(p.loc.x, p.loc.y);<a name="line.945"></a>
+<span class="sourceLineNo">946</span>//                                      }<a name="line.946"></a>
+<span class="sourceLineNo">947</span>//                                      GL11.glEnd();<a name="line.947"></a>
+<span class="sourceLineNo">948</span>//                              }<a name="line.948"></a>
+<span class="sourceLineNo">949</span>//                      } else {<a name="line.949"></a>
+<span class="sourceLineNo">950</span>                                if (!members.isEmpty()) {<a name="line.950"></a>
+<span class="sourceLineNo">951</span>                                        members.get(0).sprite.bindTexture();<a name="line.951"></a>
+<span class="sourceLineNo">952</span>                                }<a name="line.952"></a>
+<span class="sourceLineNo">953</span>                                for (SwarmMember p : members) {<a name="line.953"></a>
+<span class="sourceLineNo">954</span>                                        float size = params.baseSpriteSize;<a name="line.954"></a>
+<span class="sourceLineNo">955</span>                                        size *= p.scale * p.fader.getBrightness();<a name="line.955"></a>
+<span class="sourceLineNo">956</span>                                        <a name="line.956"></a>
+<span class="sourceLineNo">957</span>                                        float b = p.fader.getBrightness();<a name="line.957"></a>
+<span class="sourceLineNo">958</span>                                        //b *= 0.67f;<a name="line.958"></a>
+<span class="sourceLineNo">959</span>                                        //b *= 0.5f;<a name="line.959"></a>
+<span class="sourceLineNo">960</span>                                        //b *= 0.1f;<a name="line.960"></a>
+<span class="sourceLineNo">961</span>                                        <a name="line.961"></a>
+<span class="sourceLineNo">962</span>                                        p.sprite.setAngle(p.angle);<a name="line.962"></a>
+<span class="sourceLineNo">963</span>                                        p.sprite.setSize(size, size);<a name="line.963"></a>
+<span class="sourceLineNo">964</span>                                        p.sprite.setAlphaMult(alphaMult * b * params.alphaMultBase);<a name="line.964"></a>
+<span class="sourceLineNo">965</span>                                        p.sprite.setColor(color);<a name="line.965"></a>
+<span class="sourceLineNo">966</span>                                        p.sprite.renderAtCenterNoBind(p.loc.x, p.loc.y);<a name="line.966"></a>
+<span class="sourceLineNo">967</span>                                        <a name="line.967"></a>
+<span class="sourceLineNo">968</span>                                        float glow = getGlowForMember(p);<a name="line.968"></a>
+<span class="sourceLineNo">969</span>                                        if (glow &gt; 0 &amp;&amp; params.flashCoreRadiusMult &lt;= 0f) {<a name="line.969"></a>
+<span class="sourceLineNo">970</span>                                                p.sprite.setAlphaMult(alphaMult * b * glow * params.alphaMultFlash);<a name="line.970"></a>
+<span class="sourceLineNo">971</span>                                                p.sprite.setColor(params.flashCoreColor);<a name="line.971"></a>
+<span class="sourceLineNo">972</span>                                                p.sprite.setAdditiveBlend();<a name="line.972"></a>
+<span class="sourceLineNo">973</span>                                                //p.sprite.setNormalBlend();<a name="line.973"></a>
+<span class="sourceLineNo">974</span>                                                p.sprite.renderAtCenter(p.loc.x, p.loc.y);<a name="line.974"></a>
+<span class="sourceLineNo">975</span>                                                p.sprite.setNormalBlend();<a name="line.975"></a>
+<span class="sourceLineNo">976</span>                                        }<a name="line.976"></a>
+<span class="sourceLineNo">977</span>                                }<a name="line.977"></a>
+<span class="sourceLineNo">978</span>//                      }<a name="line.978"></a>
+<span class="sourceLineNo">979</span>                }<a name="line.979"></a>
+<span class="sourceLineNo">980</span>                <a name="line.980"></a>
+<span class="sourceLineNo">981</span>                if ((layer == CombatEngineLayers.ABOVE_PARTICLES_LOWER &amp;&amp; !params.renderFlashOnSameLayer) || <a name="line.981"></a>
+<span class="sourceLineNo">982</span>                                (layer == CombatEngineLayers.FIGHTERS_LAYER &amp;&amp; params.renderFlashOnSameLayer)) {<a name="line.982"></a>
+<span class="sourceLineNo">983</span>                        SpriteAPI glowSprite = Global.getSettings().getSprite("misc", "threat_swarm_glow");<a name="line.983"></a>
+<span class="sourceLineNo">984</span>                        glowSprite.setAdditiveBlend();<a name="line.984"></a>
+<span class="sourceLineNo">985</span>                        for (SwarmMember p : members) {<a name="line.985"></a>
+<span class="sourceLineNo">986</span>                                float glow = getGlowForMember(p);<a name="line.986"></a>
+<span class="sourceLineNo">987</span>                                if (glow &gt; 0f) {<a name="line.987"></a>
+<span class="sourceLineNo">988</span>                                        float size = params.flashRadius * (0.5f + 0.5f * glow) * 2f;<a name="line.988"></a>
+<span class="sourceLineNo">989</span>                                        size *= p.scale * p.fader.getBrightness();<a name="line.989"></a>
+<span class="sourceLineNo">990</span>                                        <a name="line.990"></a>
+<span class="sourceLineNo">991</span>//                                      float f = p.offset.length() / 150f;<a name="line.991"></a>
+<span class="sourceLineNo">992</span>//                                      if (f &gt; 1f) f = 1f;<a name="line.992"></a>
+<span class="sourceLineNo">993</span>//                                      //f = 1 - Math.min(f * 2f, 1f);<a name="line.993"></a>
+<span class="sourceLineNo">994</span>//                                      f = 1 - f * 0.5f;<a name="line.994"></a>
+<span class="sourceLineNo">995</span>//                                      //f = 0f;<a name="line.995"></a>
+<span class="sourceLineNo">996</span>//                                      Color color2 = Misc.interpolateColor(params.flashFringeColor, Misc.setBrightness(<a name="line.996"></a>
+<span class="sourceLineNo">997</span>//                                                                      new Color(7, 163, 169), 255), f);<a name="line.997"></a>
+<span class="sourceLineNo">998</span>                                        <a name="line.998"></a>
+<span class="sourceLineNo">999</span>                                        float b = p.fader.getBrightness();<a name="line.999"></a>
+<span class="sourceLineNo">1000</span>                                        if (b &gt; 0 &amp;&amp; size &gt; 0) {<a name="line.1000"></a>
+<span class="sourceLineNo">1001</span>                                                glowSprite.setSize(size, size);<a name="line.1001"></a>
+<span class="sourceLineNo">1002</span>                                                glowSprite.setAlphaMult(alphaMult * b * glow * 0.5f * params.alphaMultFlash);<a name="line.1002"></a>
+<span class="sourceLineNo">1003</span>                                                glowSprite.setColor(params.flashFringeColor);<a name="line.1003"></a>
+<span class="sourceLineNo">1004</span>                                                glowSprite.renderAtCenter(p.loc.x, p.loc.y);<a name="line.1004"></a>
+<span class="sourceLineNo">1005</span>                                        }<a name="line.1005"></a>
+<span class="sourceLineNo">1006</span>                                        <a name="line.1006"></a>
+<span class="sourceLineNo">1007</span>                                        float memberSize = params.baseSpriteSize;<a name="line.1007"></a>
+<span class="sourceLineNo">1008</span>                                        memberSize *= p.scale;<a name="line.1008"></a>
+<span class="sourceLineNo">1009</span>                                        memberSize *= 2f;<a name="line.1009"></a>
+<span class="sourceLineNo">1010</span>                                        memberSize *= params.flashCoreRadiusMult;<a name="line.1010"></a>
+<span class="sourceLineNo">1011</span>                                        if (b &gt; 0 &amp;&amp; memberSize &gt; 0) {<a name="line.1011"></a>
+<span class="sourceLineNo">1012</span>                                                glowSprite.setSize(memberSize, memberSize);<a name="line.1012"></a>
+<span class="sourceLineNo">1013</span>                                                glowSprite.setAlphaMult(alphaMult * b * p.fader.getBrightness() * glow * 0.5f * params.alphaMultFlash);<a name="line.1013"></a>
+<span class="sourceLineNo">1014</span>                                                glowSprite.setColor(params.flashCoreColor);<a name="line.1014"></a>
+<span class="sourceLineNo">1015</span>                                                glowSprite.renderAtCenter(p.loc.x, p.loc.y);<a name="line.1015"></a>
+<span class="sourceLineNo">1016</span>                                        }<a name="line.1016"></a>
+<span class="sourceLineNo">1017</span>                                }<a name="line.1017"></a>
+<span class="sourceLineNo">1018</span>                        }<a name="line.1018"></a>
+<span class="sourceLineNo">1019</span>                }<a name="line.1019"></a>
+<span class="sourceLineNo">1020</span>        }<a name="line.1020"></a>
+<span class="sourceLineNo">1021</span><a name="line.1021"></a>
+<span class="sourceLineNo">1022</span>        public RoilingSwarmParams getParams() {<a name="line.1022"></a>
+<span class="sourceLineNo">1023</span>                return params;<a name="line.1023"></a>
+<span class="sourceLineNo">1024</span>        }<a name="line.1024"></a>
+<span class="sourceLineNo">1025</span>        public List&lt;SwarmMember&gt; getMembers() {<a name="line.1025"></a>
+<span class="sourceLineNo">1026</span>                return members;<a name="line.1026"></a>
+<span class="sourceLineNo">1027</span>        }<a name="line.1027"></a>
+<span class="sourceLineNo">1028</span>        public CombatEntityAPI getAttachedTo() {<a name="line.1028"></a>
+<span class="sourceLineNo">1029</span>                return attachedTo;<a name="line.1029"></a>
+<span class="sourceLineNo">1030</span>        }<a name="line.1030"></a>
+<span class="sourceLineNo">1031</span>        public boolean isDespawning() {<a name="line.1031"></a>
+<span class="sourceLineNo">1032</span>                return despawning;<a name="line.1032"></a>
+<span class="sourceLineNo">1033</span>        }<a name="line.1033"></a>
+<span class="sourceLineNo">1034</span>        public boolean isForceDespawn() {<a name="line.1034"></a>
+<span class="sourceLineNo">1035</span>                return forceDespawn;<a name="line.1035"></a>
+<span class="sourceLineNo">1036</span>        }<a name="line.1036"></a>
+<span class="sourceLineNo">1037</span>        public void setForceDespawn(boolean forceDespawn) {<a name="line.1037"></a>
+<span class="sourceLineNo">1038</span>                this.forceDespawn = forceDespawn;<a name="line.1038"></a>
+<span class="sourceLineNo">1039</span>        }<a name="line.1039"></a>
+<span class="sourceLineNo">1040</span>        <a name="line.1040"></a>
+<span class="sourceLineNo">1041</span>        <a name="line.1041"></a>
+<span class="sourceLineNo">1042</span>        <a name="line.1042"></a>
+<span class="sourceLineNo">1043</span>}<a name="line.1043"></a>
+<span class="sourceLineNo">1044</span><a name="line.1044"></a>
+<span class="sourceLineNo">1045</span><a name="line.1045"></a>
+<span class="sourceLineNo">1046</span><a name="line.1046"></a>
+<span class="sourceLineNo">1047</span><a name="line.1047"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

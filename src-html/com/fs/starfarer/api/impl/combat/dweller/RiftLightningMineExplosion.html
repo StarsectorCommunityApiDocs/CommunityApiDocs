@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.combat.dweller;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
+<span class="sourceLineNo">004</span><a name="line.4"></a>
+<span class="sourceLineNo">005</span>import com.fs.starfarer.api.combat.DamagingProjectileAPI;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import com.fs.starfarer.api.combat.ProximityExplosionEffect;<a name="line.6"></a>
+<span class="sourceLineNo">007</span>import com.fs.starfarer.api.impl.combat.NegativeExplosionVisual.NEParams;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.impl.combat.RiftCascadeMineExplosion;<a name="line.8"></a>
+<span class="sourceLineNo">009</span><a name="line.9"></a>
+<span class="sourceLineNo">010</span>public class RiftLightningMineExplosion implements ProximityExplosionEffect {<a name="line.10"></a>
+<span class="sourceLineNo">011</span>        <a name="line.11"></a>
+<span class="sourceLineNo">012</span>        public void onExplosion(DamagingProjectileAPI explosion, DamagingProjectileAPI originalProjectile) {<a name="line.12"></a>
+<span class="sourceLineNo">013</span>                //System.out.println("EXPLOSION");<a name="line.13"></a>
+<span class="sourceLineNo">014</span>                Color color = RiftLightningEffect.RIFT_LIGHTNING_COLOR;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>                color = new Color(255,75,75,255);<a name="line.15"></a>
+<span class="sourceLineNo">016</span>                NEParams p = RiftCascadeMineExplosion.createStandardRiftParams(<a name="line.16"></a>
+<span class="sourceLineNo">017</span>                                                                        color, 20f);<a name="line.17"></a>
+<span class="sourceLineNo">018</span>                p.fadeOut = 1f;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>                p.hitGlowSizeMult = 0.6f;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>                //p.invertForDarkening = NSProjEffect.STANDARD_RIFT_COLOR;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>                p.thickness = 50f;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>                <a name="line.22"></a>
+<span class="sourceLineNo">023</span>                <a name="line.23"></a>
+<span class="sourceLineNo">024</span>//              p.hitGlowSizeMult = 0.5f;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>//              p.thickness = 25f;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>//              p.fadeOut = 0.25f;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>                <a name="line.27"></a>
+<span class="sourceLineNo">028</span>                RiftCascadeMineExplosion.spawnStandardRift(explosion, p);<a name="line.28"></a>
+<span class="sourceLineNo">029</span>                <a name="line.29"></a>
+<span class="sourceLineNo">030</span>        }<a name="line.30"></a>
+<span class="sourceLineNo">031</span>}<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span><a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

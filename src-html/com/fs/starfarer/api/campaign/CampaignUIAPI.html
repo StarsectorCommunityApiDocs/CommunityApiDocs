@@ -8,155 +8,169 @@
 <div class="sourceContainer">
 <pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.campaign;<a name="line.1"></a>
 <span class="sourceLineNo">002</span><a name="line.2"></a>
-<span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
-<span class="sourceLineNo">004</span>import java.util.List;<a name="line.4"></a>
-<span class="sourceLineNo">005</span><a name="line.5"></a>
-<span class="sourceLineNo">006</span>import com.fs.starfarer.api.Script;<a name="line.6"></a>
-<span class="sourceLineNo">007</span>import com.fs.starfarer.api.campaign.comm.CommMessageAPI.MessageClickAction;<a name="line.7"></a>
-<span class="sourceLineNo">008</span>import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin;<a name="line.8"></a>
-<span class="sourceLineNo">009</span>import com.fs.starfarer.api.combat.BattleCreationContext;<a name="line.9"></a>
-<span class="sourceLineNo">010</span>import com.fs.starfarer.api.loading.HullModSpecAPI;<a name="line.10"></a>
-<span class="sourceLineNo">011</span>import com.fs.starfarer.api.ui.HintPanelAPI;<a name="line.11"></a>
-<span class="sourceLineNo">012</span>import com.fs.starfarer.api.util.FaderUtil;<a name="line.12"></a>
-<span class="sourceLineNo">013</span><a name="line.13"></a>
-<span class="sourceLineNo">014</span>public interface CampaignUIAPI {<a name="line.14"></a>
-<span class="sourceLineNo">015</span>        public static enum CoreUITradeMode {<a name="line.15"></a>
-<span class="sourceLineNo">016</span>                OPEN,<a name="line.16"></a>
-<span class="sourceLineNo">017</span>                SNEAK,<a name="line.17"></a>
-<span class="sourceLineNo">018</span>                NONE,<a name="line.18"></a>
-<span class="sourceLineNo">019</span>        }<a name="line.19"></a>
-<span class="sourceLineNo">020</span>        <a name="line.20"></a>
-<span class="sourceLineNo">021</span>        MessageDisplayAPI getMessageDisplay();<a name="line.21"></a>
-<span class="sourceLineNo">022</span>        <a name="line.22"></a>
-<span class="sourceLineNo">023</span>        void addMessage(String text);<a name="line.23"></a>
-<span class="sourceLineNo">024</span>        void addMessage(String text, Color color);<a name="line.24"></a>
-<span class="sourceLineNo">025</span>        void addMessage(String text, Color color, String h1, String h2, Color hc1, Color hc2);<a name="line.25"></a>
-<span class="sourceLineNo">026</span>        <a name="line.26"></a>
-<span class="sourceLineNo">027</span>        void clearMessages();<a name="line.27"></a>
-<span class="sourceLineNo">028</span>        <a name="line.28"></a>
-<span class="sourceLineNo">029</span>        boolean isShowingDialog();<a name="line.29"></a>
-<span class="sourceLineNo">030</span>        void startBattle(BattleCreationContext context);<a name="line.30"></a>
+<span class="sourceLineNo">003</span>import java.util.List;<a name="line.3"></a>
+<span class="sourceLineNo">004</span><a name="line.4"></a>
+<span class="sourceLineNo">005</span>import java.awt.Color;<a name="line.5"></a>
+<span class="sourceLineNo">006</span><a name="line.6"></a>
+<span class="sourceLineNo">007</span>import com.fs.starfarer.api.Script;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.campaign.comm.CommMessageAPI.MessageClickAction;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.combat.BattleCreationContext;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.loading.HullModSpecAPI;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.ui.HintPanelAPI;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.util.FaderUtil;<a name="line.13"></a>
+<span class="sourceLineNo">014</span><a name="line.14"></a>
+<span class="sourceLineNo">015</span>public interface CampaignUIAPI {<a name="line.15"></a>
+<span class="sourceLineNo">016</span>        public static enum CoreUITradeMode {<a name="line.16"></a>
+<span class="sourceLineNo">017</span>                OPEN,<a name="line.17"></a>
+<span class="sourceLineNo">018</span>                SNEAK,<a name="line.18"></a>
+<span class="sourceLineNo">019</span>                NONE,<a name="line.19"></a>
+<span class="sourceLineNo">020</span>        }<a name="line.20"></a>
+<span class="sourceLineNo">021</span>        <a name="line.21"></a>
+<span class="sourceLineNo">022</span>        public static interface DismissDialogDelegate {<a name="line.22"></a>
+<span class="sourceLineNo">023</span>                void dialogDismissed();<a name="line.23"></a>
+<span class="sourceLineNo">024</span>        }<a name="line.24"></a>
+<span class="sourceLineNo">025</span>        <a name="line.25"></a>
+<span class="sourceLineNo">026</span>        MessageDisplayAPI getMessageDisplay();<a name="line.26"></a>
+<span class="sourceLineNo">027</span>        <a name="line.27"></a>
+<span class="sourceLineNo">028</span>        void addMessage(String text);<a name="line.28"></a>
+<span class="sourceLineNo">029</span>        void addMessage(String text, Color color);<a name="line.29"></a>
+<span class="sourceLineNo">030</span>        void addMessage(String text, Color color, String h1, String h2, Color hc1, Color hc2);<a name="line.30"></a>
 <span class="sourceLineNo">031</span>        <a name="line.31"></a>
-<span class="sourceLineNo">032</span>        /**<a name="line.32"></a>
-<span class="sourceLineNo">033</span>         * Returns true if dialog was actually shown, false otherwise (if, for example, UI is already showing another dialog).<a name="line.33"></a>
-<span class="sourceLineNo">034</span>         * @param plugin<a name="line.34"></a>
-<span class="sourceLineNo">035</span>         * @param interactionTarget can be null.<a name="line.35"></a>
-<span class="sourceLineNo">036</span>         */<a name="line.36"></a>
-<span class="sourceLineNo">037</span>        boolean showInteractionDialog(InteractionDialogPlugin plugin, SectorEntityToken interactionTarget);<a name="line.37"></a>
-<span class="sourceLineNo">038</span>        <a name="line.38"></a>
-<span class="sourceLineNo">039</span>        <a name="line.39"></a>
-<span class="sourceLineNo">040</span>        /**<a name="line.40"></a>
-<span class="sourceLineNo">041</span>         * Returns true if dialog was actually shown, false otherwise (if, for example, UI is already showing another dialog).<a name="line.41"></a>
-<span class="sourceLineNo">042</span>         * Picks whatever dialog is appropriate based on the various plugins that provide dialog<a name="line.42"></a>
-<span class="sourceLineNo">043</span>         * implementations.<a name="line.43"></a>
-<span class="sourceLineNo">044</span>         * @param interactionTarget<a name="line.44"></a>
-<span class="sourceLineNo">045</span>         */<a name="line.45"></a>
-<span class="sourceLineNo">046</span>        boolean showInteractionDialog(SectorEntityToken interactionTarget);<a name="line.46"></a>
-<span class="sourceLineNo">047</span>        <a name="line.47"></a>
-<span class="sourceLineNo">048</span>        <a name="line.48"></a>
-<span class="sourceLineNo">049</span>        void showCoreUITab(CoreUITabId tab);<a name="line.49"></a>
-<span class="sourceLineNo">050</span>        <a name="line.50"></a>
-<span class="sourceLineNo">051</span>        /**<a name="line.51"></a>
-<span class="sourceLineNo">052</span>         * @param tab<a name="line.52"></a>
-<span class="sourceLineNo">053</span>         * @param custom IntelInfoPlugin to select in intel tab, or FleetMemberAPI to select in refit tab<a name="line.53"></a>
-<span class="sourceLineNo">054</span>         */<a name="line.54"></a>
-<span class="sourceLineNo">055</span>        void showCoreUITab(CoreUITabId tab, Object custom);<a name="line.55"></a>
-<span class="sourceLineNo">056</span>        <a name="line.56"></a>
-<span class="sourceLineNo">057</span>        InteractionDialogAPI getCurrentInteractionDialog();<a name="line.57"></a>
-<span class="sourceLineNo">058</span><a name="line.58"></a>
-<span class="sourceLineNo">059</span>        void setDisallowPlayerInteractionsForOneFrame();<a name="line.59"></a>
-<span class="sourceLineNo">060</span><a name="line.60"></a>
-<span class="sourceLineNo">061</span>        FaderUtil getSharedFader();<a name="line.61"></a>
-<span class="sourceLineNo">062</span><a name="line.62"></a>
-<span class="sourceLineNo">063</span>        //void suppressMusic();<a name="line.63"></a>
-<span class="sourceLineNo">064</span><a name="line.64"></a>
-<span class="sourceLineNo">065</span>        float getZoomFactor();<a name="line.65"></a>
-<span class="sourceLineNo">066</span><a name="line.66"></a>
-<span class="sourceLineNo">067</span>        void suppressMusic(float maxLevel);<a name="line.67"></a>
-<span class="sourceLineNo">068</span><a name="line.68"></a>
-<span class="sourceLineNo">069</span>        boolean isShowingMenu();<a name="line.69"></a>
-<span class="sourceLineNo">070</span><a name="line.70"></a>
-<span class="sourceLineNo">071</span>        void resetViewOffset();<a name="line.71"></a>
-<span class="sourceLineNo">072</span><a name="line.72"></a>
-<span class="sourceLineNo">073</span>        List&lt;HullModSpecAPI&gt; getAvailableHullModsCopy();<a name="line.73"></a>
-<span class="sourceLineNo">074</span><a name="line.74"></a>
-<span class="sourceLineNo">075</span>        boolean isHullModAvailable(String id);<a name="line.75"></a>
-<span class="sourceLineNo">076</span><a name="line.76"></a>
-<span class="sourceLineNo">077</span>        List&lt;String&gt; getAvailableHullModIds();<a name="line.77"></a>
-<span class="sourceLineNo">078</span><a name="line.78"></a>
-<span class="sourceLineNo">079</span>        HintPanelAPI getHintPanel();<a name="line.79"></a>
-<span class="sourceLineNo">080</span><a name="line.80"></a>
-<span class="sourceLineNo">081</span>        void quickLoad();<a name="line.81"></a>
-<span class="sourceLineNo">082</span><a name="line.82"></a>
-<span class="sourceLineNo">083</span>        CoreUITabId getCurrentCoreTab();<a name="line.83"></a>
-<span class="sourceLineNo">084</span><a name="line.84"></a>
-<span class="sourceLineNo">085</span>        void cmdExitWithoutSaving();<a name="line.85"></a>
-<span class="sourceLineNo">086</span>        void cmdSaveAndExit();<a name="line.86"></a>
-<span class="sourceLineNo">087</span>        void cmdSettings();<a name="line.87"></a>
-<span class="sourceLineNo">088</span>        void cmdSaveCopy();<a name="line.88"></a>
-<span class="sourceLineNo">089</span>        void cmdSave();<a name="line.89"></a>
-<span class="sourceLineNo">090</span>        void cmdLoad();<a name="line.90"></a>
-<span class="sourceLineNo">091</span>        void cmdCodex();<a name="line.91"></a>
-<span class="sourceLineNo">092</span><a name="line.92"></a>
-<span class="sourceLineNo">093</span>        boolean showConfirmDialog(String message, String ok, String cancel, Script onOk, Script onCancel);<a name="line.93"></a>
-<span class="sourceLineNo">094</span>        boolean showConfirmDialog(String message, String ok, String cancel, float width, float height, Script onOk, Script onCancel);<a name="line.94"></a>
-<span class="sourceLineNo">095</span><a name="line.95"></a>
-<span class="sourceLineNo">096</span>        void addMessage(IntelInfoPlugin intel);<a name="line.96"></a>
-<span class="sourceLineNo">097</span>        void addMessage(IntelInfoPlugin intel, MessageClickAction action);<a name="line.97"></a>
-<span class="sourceLineNo">098</span>        void addMessage(IntelInfoPlugin intel, MessageClickAction action, Object custom);<a name="line.98"></a>
-<span class="sourceLineNo">099</span><a name="line.99"></a>
-<span class="sourceLineNo">100</span>        void setFollowingDirectCommand(boolean followingDirectCommand);<a name="line.100"></a>
-<span class="sourceLineNo">101</span>        boolean isFollowingDirectCommand();<a name="line.101"></a>
-<span class="sourceLineNo">102</span><a name="line.102"></a>
-<span class="sourceLineNo">103</span>        void clearLaidInCourse();<a name="line.103"></a>
+<span class="sourceLineNo">032</span>        void clearMessages();<a name="line.32"></a>
+<span class="sourceLineNo">033</span>        <a name="line.33"></a>
+<span class="sourceLineNo">034</span>        boolean isShowingDialog();<a name="line.34"></a>
+<span class="sourceLineNo">035</span>        void startBattle(BattleCreationContext context);<a name="line.35"></a>
+<span class="sourceLineNo">036</span>        <a name="line.36"></a>
+<span class="sourceLineNo">037</span>        /**<a name="line.37"></a>
+<span class="sourceLineNo">038</span>         * Returns true if dialog was actually shown, false otherwise (if, for example, UI is already showing another dialog).<a name="line.38"></a>
+<span class="sourceLineNo">039</span>         * @param plugin<a name="line.39"></a>
+<span class="sourceLineNo">040</span>         * @param interactionTarget can be null.<a name="line.40"></a>
+<span class="sourceLineNo">041</span>         */<a name="line.41"></a>
+<span class="sourceLineNo">042</span>        boolean showInteractionDialog(InteractionDialogPlugin plugin, SectorEntityToken interactionTarget);<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        <a name="line.43"></a>
+<span class="sourceLineNo">044</span>        <a name="line.44"></a>
+<span class="sourceLineNo">045</span>        /**<a name="line.45"></a>
+<span class="sourceLineNo">046</span>         * Returns true if dialog was actually shown, false otherwise (if, for example, UI is already showing another dialog).<a name="line.46"></a>
+<span class="sourceLineNo">047</span>         * Picks whatever dialog is appropriate based on the various plugins that provide dialog<a name="line.47"></a>
+<span class="sourceLineNo">048</span>         * implementations.<a name="line.48"></a>
+<span class="sourceLineNo">049</span>         * @param interactionTarget<a name="line.49"></a>
+<span class="sourceLineNo">050</span>         */<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        boolean showInteractionDialog(SectorEntityToken interactionTarget);<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        <a name="line.52"></a>
+<span class="sourceLineNo">053</span>        <a name="line.53"></a>
+<span class="sourceLineNo">054</span>        void showCoreUITab(CoreUITabId tab);<a name="line.54"></a>
+<span class="sourceLineNo">055</span>        <a name="line.55"></a>
+<span class="sourceLineNo">056</span>        /**<a name="line.56"></a>
+<span class="sourceLineNo">057</span>         * @param tab<a name="line.57"></a>
+<span class="sourceLineNo">058</span>         * @param custom IntelInfoPlugin to select in intel tab, or FleetMemberAPI to select in refit tab<a name="line.58"></a>
+<span class="sourceLineNo">059</span>         */<a name="line.59"></a>
+<span class="sourceLineNo">060</span>        void showCoreUITab(CoreUITabId tab, Object custom);<a name="line.60"></a>
+<span class="sourceLineNo">061</span>        <a name="line.61"></a>
+<span class="sourceLineNo">062</span>        InteractionDialogAPI getCurrentInteractionDialog();<a name="line.62"></a>
+<span class="sourceLineNo">063</span><a name="line.63"></a>
+<span class="sourceLineNo">064</span>        void setDisallowPlayerInteractionsForOneFrame();<a name="line.64"></a>
+<span class="sourceLineNo">065</span><a name="line.65"></a>
+<span class="sourceLineNo">066</span>        FaderUtil getSharedFader();<a name="line.66"></a>
+<span class="sourceLineNo">067</span><a name="line.67"></a>
+<span class="sourceLineNo">068</span>        //void suppressMusic();<a name="line.68"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
+<span class="sourceLineNo">070</span>        float getZoomFactor();<a name="line.70"></a>
+<span class="sourceLineNo">071</span><a name="line.71"></a>
+<span class="sourceLineNo">072</span>        void suppressMusic(float maxLevel);<a name="line.72"></a>
+<span class="sourceLineNo">073</span><a name="line.73"></a>
+<span class="sourceLineNo">074</span>        boolean isShowingMenu();<a name="line.74"></a>
+<span class="sourceLineNo">075</span><a name="line.75"></a>
+<span class="sourceLineNo">076</span>        void resetViewOffset();<a name="line.76"></a>
+<span class="sourceLineNo">077</span><a name="line.77"></a>
+<span class="sourceLineNo">078</span>        List&lt;HullModSpecAPI&gt; getAvailableHullModsCopy();<a name="line.78"></a>
+<span class="sourceLineNo">079</span><a name="line.79"></a>
+<span class="sourceLineNo">080</span>        boolean isHullModAvailable(String id);<a name="line.80"></a>
+<span class="sourceLineNo">081</span><a name="line.81"></a>
+<span class="sourceLineNo">082</span>        List&lt;String&gt; getAvailableHullModIds();<a name="line.82"></a>
+<span class="sourceLineNo">083</span><a name="line.83"></a>
+<span class="sourceLineNo">084</span>        HintPanelAPI getHintPanel();<a name="line.84"></a>
+<span class="sourceLineNo">085</span><a name="line.85"></a>
+<span class="sourceLineNo">086</span>        void quickLoad();<a name="line.86"></a>
+<span class="sourceLineNo">087</span><a name="line.87"></a>
+<span class="sourceLineNo">088</span>        CoreUITabId getCurrentCoreTab();<a name="line.88"></a>
+<span class="sourceLineNo">089</span><a name="line.89"></a>
+<span class="sourceLineNo">090</span>        void cmdExitWithoutSaving();<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        boolean cmdSaveAndExit();<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        void cmdSettings();<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        void cmdSaveCopy();<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        boolean cmdSave();<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        void cmdLoad();<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        void cmdCodex();<a name="line.96"></a>
+<span class="sourceLineNo">097</span><a name="line.97"></a>
+<span class="sourceLineNo">098</span>        boolean showConfirmDialog(String message, String ok, String cancel, Script onOk, Script onCancel);<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        boolean showConfirmDialog(String message, String ok, String cancel, float width, float height, Script onOk, Script onCancel);<a name="line.99"></a>
+<span class="sourceLineNo">100</span><a name="line.100"></a>
+<span class="sourceLineNo">101</span>        void addMessage(IntelInfoPlugin intel);<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        void addMessage(IntelInfoPlugin intel, MessageClickAction action);<a name="line.102"></a>
+<span class="sourceLineNo">103</span>        void addMessage(IntelInfoPlugin intel, MessageClickAction action, Object custom);<a name="line.103"></a>
 <span class="sourceLineNo">104</span><a name="line.104"></a>
-<span class="sourceLineNo">105</span>        /**<a name="line.105"></a>
-<span class="sourceLineNo">106</span>         * @return true if was shown (may not be if showing another dialog etc)<a name="line.106"></a>
-<span class="sourceLineNo">107</span>         */<a name="line.107"></a>
-<span class="sourceLineNo">108</span>        boolean showPlayerFactionConfigDialog();<a name="line.108"></a>
+<span class="sourceLineNo">105</span>        void setFollowingDirectCommand(boolean followingDirectCommand);<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        boolean isFollowingDirectCommand();<a name="line.106"></a>
+<span class="sourceLineNo">107</span><a name="line.107"></a>
+<span class="sourceLineNo">108</span>        void clearLaidInCourse();<a name="line.108"></a>
 <span class="sourceLineNo">109</span><a name="line.109"></a>
-<span class="sourceLineNo">110</span>        void showHelpPopupIfPossible(String id);<a name="line.110"></a>
-<span class="sourceLineNo">111</span><a name="line.111"></a>
-<span class="sourceLineNo">112</span>        /**<a name="line.112"></a>
-<span class="sourceLineNo">113</span>         * Calls Global.getSector().getUIData().getCourseTarget(). The actual ultimate autopilot destination,<a name="line.113"></a>
-<span class="sourceLineNo">114</span>         * not its next step.<a name="line.114"></a>
-<span class="sourceLineNo">115</span>         * @return<a name="line.115"></a>
-<span class="sourceLineNo">116</span>         */<a name="line.116"></a>
-<span class="sourceLineNo">117</span>        SectorEntityToken getUltimateCourseTarget();<a name="line.117"></a>
-<span class="sourceLineNo">118</span>        SectorEntityToken getCurrentCourseTarget();<a name="line.118"></a>
-<span class="sourceLineNo">119</span>        SectorEntityToken getNextStepForCourse(SectorEntityToken courseTarget);<a name="line.119"></a>
-<span class="sourceLineNo">120</span>        void layInCourseForNextStep(SectorEntityToken courseTarget);<a name="line.120"></a>
-<span class="sourceLineNo">121</span>        String getNameForCourseTarget(SectorEntityToken entity, boolean isEndpoint);<a name="line.121"></a>
-<span class="sourceLineNo">122</span>        float getLastLegDistance(SectorEntityToken courseTarget);<a name="line.122"></a>
-<span class="sourceLineNo">123</span><a name="line.123"></a>
-<span class="sourceLineNo">124</span>        boolean isFastForward();<a name="line.124"></a>
-<span class="sourceLineNo">125</span><a name="line.125"></a>
-<span class="sourceLineNo">126</span>        boolean isPlayerFleetFollowingMouse();<a name="line.126"></a>
-<span class="sourceLineNo">127</span><a name="line.127"></a>
-<span class="sourceLineNo">128</span>        void showMessageDialog(String message);<a name="line.128"></a>
-<span class="sourceLineNo">129</span><a name="line.129"></a>
-<span class="sourceLineNo">130</span>        float getMinZoomFactor();<a name="line.130"></a>
-<span class="sourceLineNo">131</span>        float getMaxZoomFactor();<a name="line.131"></a>
-<span class="sourceLineNo">132</span>        void setMinZoomFactor(float min);<a name="line.132"></a>
-<span class="sourceLineNo">133</span>        void setMaxZoomFactor(float max);<a name="line.133"></a>
+<span class="sourceLineNo">110</span>        /**<a name="line.110"></a>
+<span class="sourceLineNo">111</span>         * @return true if was shown (may not be if showing another dialog etc)<a name="line.111"></a>
+<span class="sourceLineNo">112</span>         */<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        boolean showPlayerFactionConfigDialog();<a name="line.113"></a>
+<span class="sourceLineNo">114</span><a name="line.114"></a>
+<span class="sourceLineNo">115</span>        void showHelpPopupIfPossible(String id);<a name="line.115"></a>
+<span class="sourceLineNo">116</span><a name="line.116"></a>
+<span class="sourceLineNo">117</span>        /**<a name="line.117"></a>
+<span class="sourceLineNo">118</span>         * Calls Global.getSector().getUIData().getCourseTarget(). The actual ultimate autopilot destination,<a name="line.118"></a>
+<span class="sourceLineNo">119</span>         * not its next step.<a name="line.119"></a>
+<span class="sourceLineNo">120</span>         * @return<a name="line.120"></a>
+<span class="sourceLineNo">121</span>         */<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        SectorEntityToken getUltimateCourseTarget();<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        SectorEntityToken getCurrentCourseTarget();<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        SectorEntityToken getNextStepForCourse(SectorEntityToken courseTarget);<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        void layInCourseForNextStep(SectorEntityToken courseTarget);<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        String getNameForCourseTarget(SectorEntityToken entity, boolean isEndpoint);<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        float getLastLegDistance(SectorEntityToken courseTarget);<a name="line.127"></a>
+<span class="sourceLineNo">128</span><a name="line.128"></a>
+<span class="sourceLineNo">129</span>        boolean isFastForward();<a name="line.129"></a>
+<span class="sourceLineNo">130</span><a name="line.130"></a>
+<span class="sourceLineNo">131</span>        boolean isPlayerFleetFollowingMouse();<a name="line.131"></a>
+<span class="sourceLineNo">132</span><a name="line.132"></a>
+<span class="sourceLineNo">133</span>        void showMessageDialog(String message);<a name="line.133"></a>
 <span class="sourceLineNo">134</span><a name="line.134"></a>
-<span class="sourceLineNo">135</span>        boolean isSuppressFuelRangeRenderingOneFrame();<a name="line.135"></a>
-<span class="sourceLineNo">136</span>        void setSuppressFuelRangeRenderingOneFrame(boolean suppressFuelRangeRenderingOneFrame);<a name="line.136"></a>
-<span class="sourceLineNo">137</span><a name="line.137"></a>
-<span class="sourceLineNo">138</span>        int getMaxIntelMapIcons();<a name="line.138"></a>
-<span class="sourceLineNo">139</span>        void setMaxIntelMapIcons(int maxIntelMapIcons);<a name="line.139"></a>
-<span class="sourceLineNo">140</span><a name="line.140"></a>
-<span class="sourceLineNo">141</span>        boolean isHideUI();<a name="line.141"></a>
-<span class="sourceLineNo">142</span>        void setHideUI(boolean hideUI);<a name="line.142"></a>
-<span class="sourceLineNo">143</span><a name="line.143"></a>
-<span class="sourceLineNo">144</span>        void setZoomFactor(float zoomFactor);<a name="line.144"></a>
+<span class="sourceLineNo">135</span>        float getMinZoomFactor();<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        float getMaxZoomFactor();<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        void setMinZoomFactor(float min);<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        void setMaxZoomFactor(float max);<a name="line.138"></a>
+<span class="sourceLineNo">139</span><a name="line.139"></a>
+<span class="sourceLineNo">140</span>        boolean isSuppressFuelRangeRenderingOneFrame();<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        void setSuppressFuelRangeRenderingOneFrame(boolean suppressFuelRangeRenderingOneFrame);<a name="line.141"></a>
+<span class="sourceLineNo">142</span><a name="line.142"></a>
+<span class="sourceLineNo">143</span>        int getMaxIntelMapIcons();<a name="line.143"></a>
+<span class="sourceLineNo">144</span>        void setMaxIntelMapIcons(int maxIntelMapIcons);<a name="line.144"></a>
 <span class="sourceLineNo">145</span><a name="line.145"></a>
-<span class="sourceLineNo">146</span><a name="line.146"></a>
-<span class="sourceLineNo">147</span>}<a name="line.147"></a>
+<span class="sourceLineNo">146</span>        boolean isHideUI();<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        void setHideUI(boolean hideUI);<a name="line.147"></a>
 <span class="sourceLineNo">148</span><a name="line.148"></a>
-<span class="sourceLineNo">149</span><a name="line.149"></a>
+<span class="sourceLineNo">149</span>        void setZoomFactor(float zoomFactor);<a name="line.149"></a>
 <span class="sourceLineNo">150</span><a name="line.150"></a>
-<span class="sourceLineNo">151</span><a name="line.151"></a>
+<span class="sourceLineNo">151</span>        /**<a name="line.151"></a>
+<span class="sourceLineNo">152</span>         * If the game is currently showing a dialog of any ort: does not do anything.<a name="line.152"></a>
+<span class="sourceLineNo">153</span>         */<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        void autosave();<a name="line.154"></a>
+<span class="sourceLineNo">155</span><a name="line.155"></a>
+<span class="sourceLineNo">156</span>        boolean showInteractionDialogFromCargo(InteractionDialogPlugin plugin, SectorEntityToken interactionTarget, DismissDialogDelegate delegate);<a name="line.156"></a>
+<span class="sourceLineNo">157</span><a name="line.157"></a>
+<span class="sourceLineNo">158</span>        void restartEncounterMusic(SectorEntityToken interactionTarget);<a name="line.158"></a>
+<span class="sourceLineNo">159</span><a name="line.159"></a>
+<span class="sourceLineNo">160</span><a name="line.160"></a>
+<span class="sourceLineNo">161</span>}<a name="line.161"></a>
+<span class="sourceLineNo">162</span><a name="line.162"></a>
+<span class="sourceLineNo">163</span><a name="line.163"></a>
+<span class="sourceLineNo">164</span><a name="line.164"></a>
+<span class="sourceLineNo">165</span><a name="line.165"></a>
 
 
 

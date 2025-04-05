@@ -1,0 +1,345 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.entities;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.util.ArrayList;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import java.util.List;<a name="line.4"></a>
+<span class="sourceLineNo">005</span><a name="line.5"></a>
+<span class="sourceLineNo">006</span>import java.awt.Color;<a name="line.6"></a>
+<span class="sourceLineNo">007</span><a name="line.7"></a>
+<span class="sourceLineNo">008</span>import org.lwjgl.util.vector.Vector2f;<a name="line.8"></a>
+<span class="sourceLineNo">009</span><a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.Global;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.Script;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.campaign.CampaignEngineLayers;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.campaign.SectorEntityToken;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.campaign.SectorEntityToken.VisibilityLevel;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.combat.ViewportAPI;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.impl.campaign.BaseCustomEntityPlugin;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.impl.campaign.ids.Pings;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import com.fs.starfarer.api.impl.campaign.ids.Tags;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import com.fs.starfarer.api.util.CampaignEngineGlowIndividualEngine;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import com.fs.starfarer.api.util.CampaignEngineGlowUtil;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import com.fs.starfarer.api.util.CampaignEntityMovementUtil;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import com.fs.starfarer.api.util.Misc;<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span>/**<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * Not fully implemented. Approximate TODO:<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * <a name="line.26"></a>
+<span class="sourceLineNo">027</span> * Sprite size/facing<a name="line.27"></a>
+<span class="sourceLineNo">028</span> * Smoother movement rather than move/turn/move<a name="line.28"></a>
+<span class="sourceLineNo">029</span> * Smoother transition into orbit<a name="line.29"></a>
+<span class="sourceLineNo">030</span> * Add trigger range for detecting when travel to a destination is finished<a name="line.30"></a>
+<span class="sourceLineNo">031</span> * Add failsafe to detect when travel is taking too long<a name="line.31"></a>
+<span class="sourceLineNo">032</span> * Make not clickable/figure out if it should have a tooltip<a name="line.32"></a>
+<span class="sourceLineNo">033</span> * Possibly: add contrail?<a name="line.33"></a>
+<span class="sourceLineNo">034</span> * <a name="line.34"></a>
+<span class="sourceLineNo">035</span> * @author Alex<a name="line.35"></a>
+<span class="sourceLineNo">036</span> *<a name="line.36"></a>
+<span class="sourceLineNo">037</span> */<a name="line.37"></a>
+<span class="sourceLineNo">038</span>public class GenericProbeEntityPlugin extends BaseCustomEntityPlugin { // implements EngineGlowControls {<a name="line.38"></a>
+<span class="sourceLineNo">039</span><a name="line.39"></a>
+<span class="sourceLineNo">040</span>        public static enum ProbeActionType {<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                TRAVEL,<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                ASSUME_ORBIT,<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                EMIT_PING,<a name="line.43"></a>
+<span class="sourceLineNo">044</span>                PERFORM_ACTION,<a name="line.44"></a>
+<span class="sourceLineNo">045</span>                STOP,<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                WAIT,<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        }<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        <a name="line.48"></a>
+<span class="sourceLineNo">049</span>        public static class GenericProbeParams {<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                public float maxBurn = 20f;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>                public float burnAccel = 5f;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                public float maxTurnRate = 120f;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                public float turnAccel = 120f;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                <a name="line.54"></a>
+<span class="sourceLineNo">055</span>                public Color fringe = new Color(255, 100, 0, 255);<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                public Color flame = new Color(255, 165, 100, 255);<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                public Color core = new Color(255, 255, 255, 255);<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                public float engineGlowShiftRate = 2f;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                public float engineGlowLength = 100f;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                public float engineGlowWidth = 15f;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                public float engineGlowGlowSize = 100f;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                public float engineGlowTexSpanMult = 0.1f;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                <a name="line.63"></a>
+<span class="sourceLineNo">064</span>                protected List&lt;ProbeAction&gt; actions = new ArrayList&lt;&gt;();<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                <a name="line.65"></a>
+<span class="sourceLineNo">066</span>                public void travelTo(Vector2f location) {<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                        ProbeAction a = new ProbeAction(ProbeActionType.TRAVEL);<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                        a.location = location;<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                        actions.add(a);<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                }<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                public void travelTo(SectorEntityToken target) {<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                        ProbeAction a = new ProbeAction(ProbeActionType.TRAVEL);<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                        a.target = target;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                        actions.add(a);<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                }<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                public void travelInDir(float dir, float duration) {<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                        ProbeAction a = new ProbeAction(ProbeActionType.TRAVEL);<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                        a.dir = dir;<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                        a.duration = duration;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                        actions.add(a);<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                }<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                <a name="line.82"></a>
+<span class="sourceLineNo">083</span>                public void assumeOrbit(SectorEntityToken target, float radius, float duration) {<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                        ProbeAction a = new ProbeAction(ProbeActionType.ASSUME_ORBIT);<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                        a.target = target;<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                        a.radius = radius;<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                        a.duration = duration;<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                        actions.add(a);<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                }<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                <a name="line.90"></a>
+<span class="sourceLineNo">091</span>                public void emitPing(String pingId) {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                        ProbeAction a = new ProbeAction(ProbeActionType.EMIT_PING);<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                        a.pingId = pingId;<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                        actions.add(a);<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                }<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                public void performAction(Script action) {<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                        ProbeAction a = new ProbeAction(ProbeActionType.PERFORM_ACTION);<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                        a.action = action;<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                        actions.add(a);<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                }<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                public void wait(float duration) {<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                        ProbeAction a = new ProbeAction(ProbeActionType.WAIT);<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                        a.duration = duration;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                        actions.add(a);<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                }<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                public void stop(float duration) {<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                        ProbeAction a = new ProbeAction(ProbeActionType.STOP);<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                        a.duration = duration;<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                        actions.add(a);<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                }<a name="line.110"></a>
+<span class="sourceLineNo">111</span>        }<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        <a name="line.112"></a>
+<span class="sourceLineNo">113</span>        <a name="line.113"></a>
+<span class="sourceLineNo">114</span>        public static class ProbeAction {<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                public ProbeActionType type;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                public SectorEntityToken target;<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                public Vector2f location;<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                public float dir;<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                public float radius;<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                public float duration;<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                public String pingId;<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                public Script action;<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                public ProbeAction(ProbeActionType type) {<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                        this.type = type;<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                }<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                <a name="line.126"></a>
+<span class="sourceLineNo">127</span>        }<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        <a name="line.128"></a>
+<span class="sourceLineNo">129</span>        protected GenericProbeParams params;<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        protected CampaignEntityMovementUtil movement;<a name="line.130"></a>
+<span class="sourceLineNo">131</span>        protected CampaignEngineGlowUtil engineGlow;<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        <a name="line.132"></a>
+<span class="sourceLineNo">133</span>        public void init(SectorEntityToken entity, Object pluginParams) {<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                super.init(entity, pluginParams);<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                this.params = (GenericProbeParams) pluginParams;<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                readResolve();<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        }<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        <a name="line.138"></a>
+<span class="sourceLineNo">139</span>        Object readResolve() {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                if (engineGlow == null) {<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                        engineGlow = new CampaignEngineGlowUtil(entity, params.fringe, params.core, params.flame,<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                                                                                                        params.engineGlowShiftRate);<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                        CampaignEngineGlowIndividualEngine engine = new CampaignEngineGlowIndividualEngine(<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                                        90f, params.engineGlowLength, params.engineGlowWidth, params.engineGlowGlowSize,<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                                        new Vector2f(-10f, 0f), engineGlow);<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                        engine.setFlameTexSpanMult(params.engineGlowTexSpanMult);<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                        engineGlow.addEngine(engine);<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                }<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                <a name="line.149"></a>
+<span class="sourceLineNo">150</span>                if (movement == null) {<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                        float maxSpeed = Misc.getSpeedForBurnLevel(params.maxBurn);<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                        float accel = Misc.getSpeedForBurnLevel(params.burnAccel);<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                        movement = new CampaignEntityMovementUtil(entity, params.turnAccel, params.maxBurn, accel, maxSpeed);<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                        movement.setEngineGlow(engineGlow);<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                }<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                <a name="line.156"></a>
+<span class="sourceLineNo">157</span>                return this;<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        }<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        <a name="line.159"></a>
+<span class="sourceLineNo">160</span>        public CampaignEntityMovementUtil getMovement() {<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                return movement;<a name="line.161"></a>
+<span class="sourceLineNo">162</span>        }<a name="line.162"></a>
+<span class="sourceLineNo">163</span><a name="line.163"></a>
+<span class="sourceLineNo">164</span>        public CampaignEngineGlowUtil getEngineGlow() {<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                return engineGlow;<a name="line.165"></a>
+<span class="sourceLineNo">166</span>        }<a name="line.166"></a>
+<span class="sourceLineNo">167</span>        <a name="line.167"></a>
+<span class="sourceLineNo">168</span>        public void advance(float amount) {<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                if (entity.isInCurrentLocation()) {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                        engineGlow.advance(amount);<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                }<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                <a name="line.172"></a>
+<span class="sourceLineNo">173</span>                if (entity.hasTag(Tags.FADING_OUT_AND_EXPIRING) || params.actions.isEmpty()) {<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                        Misc.fadeAndExpire(entity);<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                        engineGlow.showSuppressed();<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                        return;<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                }<a name="line.177"></a>
+<span class="sourceLineNo">178</span><a name="line.178"></a>
+<span class="sourceLineNo">179</span>                ProbeAction curr = params.actions.get(0);<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                ProbeAction next = null;<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                if (params.actions.size() &gt; 1) next = params.actions.get(1);<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                <a name="line.182"></a>
+<span class="sourceLineNo">183</span>                if (curr.type == ProbeActionType.TRAVEL) {<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                        if (curr.location == null &amp;&amp; curr.target == null) {<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                                movement.moveInDirection(curr.dir);<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                                curr.duration -= amount;<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                                if (curr.duration &lt;= 0) {<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                                        params.actions.remove(0);<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                                }<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                        } else {<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                                Vector2f loc = curr.location;<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                                if (loc == null) loc = curr.target.getLocation();<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                                float dist = Misc.getDistance(entity.getLocation(), loc);<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                                <a name="line.194"></a>
+<span class="sourceLineNo">195</span>                                if (next != null &amp;&amp; next.type == ProbeActionType.ASSUME_ORBIT) {<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                                        float orbitAngle = Misc.getAngleInDegrees(next.target.getLocation(), entity.getLocation());<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                                        Vector2f away = Misc.getUnitVectorAtDegreeAngle(orbitAngle);<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                                        away.scale(next.target.getRadius() + next.radius * 0.8f);<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                                        loc = Vector2f.add(loc, away, new Vector2f());<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                                }<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                                movement.moveToLocation(loc);<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                                <a name="line.202"></a>
+<span class="sourceLineNo">203</span>                                float checkDist = 100f + entity.getRadius();<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                                if (curr.target != null) checkDist += curr.target.getRadius();<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                                if (next != null &amp;&amp; next.type == ProbeActionType.ASSUME_ORBIT) {<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                                        checkDist -= 100f;<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                                        checkDist += next.radius;<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                                }<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                                if (dist &lt; checkDist) {<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                                        params.actions.remove(0);<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                                }<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                        }<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                        <a name="line.213"></a>
+<span class="sourceLineNo">214</span>                } else if (curr.type == ProbeActionType.ASSUME_ORBIT) {<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                        if (entity.getOrbit() == null || entity.getOrbitFocus() != curr.target) {<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                                movement.leaveOrbit();<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                                float orbitAngle = Misc.getAngleInDegrees(curr.target.getLocation(), entity.getLocation());<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                                float orbitRadius = Misc.getDistance(entity.getLocation(), curr.target.getLocation());<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                                float orbitDays = orbitRadius / (10f + (float) Math.random() * 5f);<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                                orbitDays *= 0.2f;<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                                entity.setCircularOrbit(curr.target, orbitAngle, orbitRadius, orbitDays);<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                        }<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                        curr.duration -= amount;<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                        if (curr.duration &lt;= 0) {<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                                params.actions.remove(0);<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                        }<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                } else if (curr.type == ProbeActionType.EMIT_PING) {<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                        VisibilityLevel level = entity.getVisibilityLevelToPlayerFleet();<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                        if (level != VisibilityLevel.NONE) {<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                                Global.getSector().addPing(entity, Pings.REMOTE_SURVEY);<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                        }<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                        params.actions.remove(0);<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                } else if (curr.type == ProbeActionType.STOP || curr.type == ProbeActionType.WAIT) {<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                        if (curr.type == ProbeActionType.STOP) {<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                                movement.stop();<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                        }<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                        curr.duration -= amount;<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                        if (curr.duration &lt;= 0) {<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                                params.actions.remove(0);<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                        }<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                } else if (curr.type == ProbeActionType.PERFORM_ACTION) {<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                        curr.action.run();<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                        params.actions.remove(0);<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                }<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                <a name="line.245"></a>
+<span class="sourceLineNo">246</span>                movement.advance(amount);<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                <a name="line.247"></a>
+<span class="sourceLineNo">248</span>        }<a name="line.248"></a>
+<span class="sourceLineNo">249</span><a name="line.249"></a>
+<span class="sourceLineNo">250</span>        public void render(CampaignEngineLayers layer, ViewportAPI viewport) {<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                float alphaMult = viewport.getAlphaMult();<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                alphaMult *= entity.getSensorFaderBrightness(); <a name="line.252"></a>
+<span class="sourceLineNo">253</span>                alphaMult *= entity.getSensorContactFaderBrightness();<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                if (alphaMult &lt;= 0f) return;<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                <a name="line.255"></a>
+<span class="sourceLineNo">256</span>                engineGlow.render(alphaMult);<a name="line.256"></a>
+<span class="sourceLineNo">257</span>        }<a name="line.257"></a>
+<span class="sourceLineNo">258</span>        <a name="line.258"></a>
+<span class="sourceLineNo">259</span>        public float getRenderRange() {<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                return entity.getRadius() + 1000f; // for engine glow/trails<a name="line.260"></a>
+<span class="sourceLineNo">261</span>        }<a name="line.261"></a>
+<span class="sourceLineNo">262</span><a name="line.262"></a>
+<span class="sourceLineNo">263</span>        <a name="line.263"></a>
+<span class="sourceLineNo">264</span><a name="line.264"></a>
+<span class="sourceLineNo">265</span>}<a name="line.265"></a>
+<span class="sourceLineNo">266</span><a name="line.266"></a>
+<span class="sourceLineNo">267</span><a name="line.267"></a>
+<span class="sourceLineNo">268</span><a name="line.268"></a>
+<span class="sourceLineNo">269</span><a name="line.269"></a>
+<span class="sourceLineNo">270</span><a name="line.270"></a>
+<span class="sourceLineNo">271</span><a name="line.271"></a>
+<span class="sourceLineNo">272</span><a name="line.272"></a>
+<span class="sourceLineNo">273</span><a name="line.273"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

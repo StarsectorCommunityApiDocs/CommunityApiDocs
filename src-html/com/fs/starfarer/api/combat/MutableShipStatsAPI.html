@@ -336,58 +336,61 @@
 <span class="sourceLineNo">328</span><a name="line.328"></a>
 <span class="sourceLineNo">329</span>        StatBonus getPhaseCloakCooldownBonus();<a name="line.329"></a>
 <span class="sourceLineNo">330</span>        StatBonus getSystemCooldownBonus();<a name="line.330"></a>
-<span class="sourceLineNo">331</span>        StatBonus getSystemRegenBonus();<a name="line.331"></a>
-<span class="sourceLineNo">332</span>        StatBonus getSystemUsesBonus();<a name="line.332"></a>
-<span class="sourceLineNo">333</span>        StatBonus getSystemRangeBonus();<a name="line.333"></a>
-<span class="sourceLineNo">334</span>        <a name="line.334"></a>
-<span class="sourceLineNo">335</span>        MutableStat getKineticArmorDamageTakenMult();<a name="line.335"></a>
-<span class="sourceLineNo">336</span>        MutableStat getDamageToFighters();<a name="line.336"></a>
-<span class="sourceLineNo">337</span>        MutableStat getDamageToMissiles();<a name="line.337"></a>
-<span class="sourceLineNo">338</span><a name="line.338"></a>
-<span class="sourceLineNo">339</span>        MutableStat getDamageToFrigates();<a name="line.339"></a>
-<span class="sourceLineNo">340</span>        MutableStat getDamageToDestroyers();<a name="line.340"></a>
-<span class="sourceLineNo">341</span>        MutableStat getDamageToCruisers();<a name="line.341"></a>
-<span class="sourceLineNo">342</span>        MutableStat getDamageToCapital();<a name="line.342"></a>
-<span class="sourceLineNo">343</span><a name="line.343"></a>
-<span class="sourceLineNo">344</span>        StatBonus getCriticalMalfunctionDamageMod();<a name="line.344"></a>
-<span class="sourceLineNo">345</span><a name="line.345"></a>
-<span class="sourceLineNo">346</span>        MutableStat getBreakProb();<a name="line.346"></a>
-<span class="sourceLineNo">347</span><a name="line.347"></a>
-<span class="sourceLineNo">348</span>        StatBonus getFighterWingRange();<a name="line.348"></a>
-<span class="sourceLineNo">349</span><a name="line.349"></a>
-<span class="sourceLineNo">350</span>        ShipVariantAPI getVariant();<a name="line.350"></a>
-<span class="sourceLineNo">351</span><a name="line.351"></a>
-<span class="sourceLineNo">352</span>        MutableStat getRecoilPerShotMultSmallWeaponsOnly();<a name="line.352"></a>
-<span class="sourceLineNo">353</span><a name="line.353"></a>
-<span class="sourceLineNo">354</span>        MutableStat getEnergyWeaponFluxBasedBonusDamageMagnitude();<a name="line.354"></a>
-<span class="sourceLineNo">355</span>        MutableStat getEnergyWeaponFluxBasedBonusDamageMinLevel();<a name="line.355"></a>
-<span class="sourceLineNo">356</span><a name="line.356"></a>
-<span class="sourceLineNo">357</span>        MutableStat getAllowZeroFluxAtAnyLevel();<a name="line.357"></a>
-<span class="sourceLineNo">358</span><a name="line.358"></a>
-<span class="sourceLineNo">359</span>        CombatListenerManagerAPI getListenerManager();<a name="line.359"></a>
-<span class="sourceLineNo">360</span>        void addListener(Object listener);<a name="line.360"></a>
-<span class="sourceLineNo">361</span>        void removeListener(Object listener);<a name="line.361"></a>
-<span class="sourceLineNo">362</span>        void removeListenerOfClass(Class&lt;?&gt; c);<a name="line.362"></a>
-<span class="sourceLineNo">363</span>        boolean hasListener(Object listener);<a name="line.363"></a>
-<span class="sourceLineNo">364</span>        boolean hasListenerOfClass(Class&lt;?&gt; c);<a name="line.364"></a>
-<span class="sourceLineNo">365</span>        &lt;T&gt; List&lt;T&gt; getListeners(Class&lt;T&gt; c);<a name="line.365"></a>
-<span class="sourceLineNo">366</span><a name="line.366"></a>
-<span class="sourceLineNo">367</span>        MutableStat getBallisticProjectileSpeedMult();<a name="line.367"></a>
-<span class="sourceLineNo">368</span><a name="line.368"></a>
-<span class="sourceLineNo">369</span>        MutableStat getEnergyProjectileSpeedMult();<a name="line.369"></a>
-<span class="sourceLineNo">370</span><a name="line.370"></a>
-<span class="sourceLineNo">371</span>        MutableStat getMissileAmmoRegenMult();<a name="line.371"></a>
-<span class="sourceLineNo">372</span>        MutableStat getEnergyAmmoRegenMult();<a name="line.372"></a>
-<span class="sourceLineNo">373</span>        MutableStat getBallisticAmmoRegenMult();<a name="line.373"></a>
-<span class="sourceLineNo">374</span><a name="line.374"></a>
-<span class="sourceLineNo">375</span>        MutableStat getShieldSoftFluxConversion();<a name="line.375"></a>
-<span class="sourceLineNo">376</span><a name="line.376"></a>
-<span class="sourceLineNo">377</span>}<a name="line.377"></a>
-<span class="sourceLineNo">378</span><a name="line.378"></a>
+<span class="sourceLineNo">331</span>        StatBonus getSystemFluxCostBonus();<a name="line.331"></a>
+<span class="sourceLineNo">332</span>        StatBonus getSystemRegenBonus();<a name="line.332"></a>
+<span class="sourceLineNo">333</span>        StatBonus getSystemUsesBonus();<a name="line.333"></a>
+<span class="sourceLineNo">334</span>        StatBonus getSystemRangeBonus();<a name="line.334"></a>
+<span class="sourceLineNo">335</span>        <a name="line.335"></a>
+<span class="sourceLineNo">336</span>        MutableStat getKineticArmorDamageTakenMult();<a name="line.336"></a>
+<span class="sourceLineNo">337</span>        MutableStat getDamageToFighters();<a name="line.337"></a>
+<span class="sourceLineNo">338</span>        MutableStat getDamageToMissiles();<a name="line.338"></a>
+<span class="sourceLineNo">339</span><a name="line.339"></a>
+<span class="sourceLineNo">340</span>        MutableStat getDamageToFrigates();<a name="line.340"></a>
+<span class="sourceLineNo">341</span>        MutableStat getDamageToDestroyers();<a name="line.341"></a>
+<span class="sourceLineNo">342</span>        MutableStat getDamageToCruisers();<a name="line.342"></a>
+<span class="sourceLineNo">343</span>        MutableStat getDamageToCapital();<a name="line.343"></a>
+<span class="sourceLineNo">344</span><a name="line.344"></a>
+<span class="sourceLineNo">345</span>        StatBonus getCriticalMalfunctionDamageMod();<a name="line.345"></a>
+<span class="sourceLineNo">346</span><a name="line.346"></a>
+<span class="sourceLineNo">347</span>        MutableStat getBreakProb();<a name="line.347"></a>
+<span class="sourceLineNo">348</span><a name="line.348"></a>
+<span class="sourceLineNo">349</span>        StatBonus getFighterWingRange();<a name="line.349"></a>
+<span class="sourceLineNo">350</span><a name="line.350"></a>
+<span class="sourceLineNo">351</span>        ShipVariantAPI getVariant();<a name="line.351"></a>
+<span class="sourceLineNo">352</span><a name="line.352"></a>
+<span class="sourceLineNo">353</span>        MutableStat getRecoilPerShotMultSmallWeaponsOnly();<a name="line.353"></a>
+<span class="sourceLineNo">354</span><a name="line.354"></a>
+<span class="sourceLineNo">355</span>        MutableStat getEnergyWeaponFluxBasedBonusDamageMagnitude();<a name="line.355"></a>
+<span class="sourceLineNo">356</span>        MutableStat getEnergyWeaponFluxBasedBonusDamageMinLevel();<a name="line.356"></a>
+<span class="sourceLineNo">357</span><a name="line.357"></a>
+<span class="sourceLineNo">358</span>        MutableStat getAllowZeroFluxAtAnyLevel();<a name="line.358"></a>
+<span class="sourceLineNo">359</span><a name="line.359"></a>
+<span class="sourceLineNo">360</span>        CombatListenerManagerAPI getListenerManager();<a name="line.360"></a>
+<span class="sourceLineNo">361</span>        void addListener(Object listener);<a name="line.361"></a>
+<span class="sourceLineNo">362</span>        void removeListener(Object listener);<a name="line.362"></a>
+<span class="sourceLineNo">363</span>        void removeListenerOfClass(Class&lt;?&gt; c);<a name="line.363"></a>
+<span class="sourceLineNo">364</span>        boolean hasListener(Object listener);<a name="line.364"></a>
+<span class="sourceLineNo">365</span>        boolean hasListenerOfClass(Class&lt;?&gt; c);<a name="line.365"></a>
+<span class="sourceLineNo">366</span>        &lt;T&gt; List&lt;T&gt; getListeners(Class&lt;T&gt; c);<a name="line.366"></a>
+<span class="sourceLineNo">367</span><a name="line.367"></a>
+<span class="sourceLineNo">368</span>        MutableStat getBallisticProjectileSpeedMult();<a name="line.368"></a>
+<span class="sourceLineNo">369</span><a name="line.369"></a>
+<span class="sourceLineNo">370</span>        MutableStat getEnergyProjectileSpeedMult();<a name="line.370"></a>
+<span class="sourceLineNo">371</span><a name="line.371"></a>
+<span class="sourceLineNo">372</span>        MutableStat getMissileAmmoRegenMult();<a name="line.372"></a>
+<span class="sourceLineNo">373</span>        MutableStat getEnergyAmmoRegenMult();<a name="line.373"></a>
+<span class="sourceLineNo">374</span>        MutableStat getBallisticAmmoRegenMult();<a name="line.374"></a>
+<span class="sourceLineNo">375</span><a name="line.375"></a>
+<span class="sourceLineNo">376</span>        MutableStat getShieldSoftFluxConversion();<a name="line.376"></a>
+<span class="sourceLineNo">377</span><a name="line.377"></a>
+<span class="sourceLineNo">378</span>        StatBonus getBeamSpeedMod();<a name="line.378"></a>
 <span class="sourceLineNo">379</span><a name="line.379"></a>
-<span class="sourceLineNo">380</span><a name="line.380"></a>
+<span class="sourceLineNo">380</span>}<a name="line.380"></a>
 <span class="sourceLineNo">381</span><a name="line.381"></a>
 <span class="sourceLineNo">382</span><a name="line.382"></a>
+<span class="sourceLineNo">383</span><a name="line.383"></a>
+<span class="sourceLineNo">384</span><a name="line.384"></a>
+<span class="sourceLineNo">385</span><a name="line.385"></a>
 
 
 

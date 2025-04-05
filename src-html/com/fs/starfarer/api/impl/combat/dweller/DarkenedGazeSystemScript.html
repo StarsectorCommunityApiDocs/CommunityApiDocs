@@ -1,0 +1,316 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.combat.dweller;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.util.ArrayList;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import java.util.Collections;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import java.util.List;<a name="line.5"></a>
+<span class="sourceLineNo">006</span><a name="line.6"></a>
+<span class="sourceLineNo">007</span>import org.lwjgl.util.vector.Vector2f;<a name="line.7"></a>
+<span class="sourceLineNo">008</span><a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.Global;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.combat.CollisionClass;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.combat.MutableShipStatsAPI;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.combat.ShieldAPI;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.combat.ShipAPI;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.combat.ShipCommand;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.combat.ShipSystemAPI;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.combat.ShipwideAIFlags.AIFlags;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.combat.WeaponAPI;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import com.fs.starfarer.api.impl.combat.BaseShipSystemScript;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import com.fs.starfarer.api.impl.combat.dweller.DwellerShroud.ShroudNegativeParticleFilter;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import com.fs.starfarer.api.impl.combat.threat.RoilingSwarmEffect.SwarmMember;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import com.fs.starfarer.api.loading.BeamWeaponSpecAPI;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import com.fs.starfarer.api.util.Misc;<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span>public class DarkenedGazeSystemScript extends BaseShipSystemScript implements ShroudNegativeParticleFilter {<a name="line.24"></a>
+<span class="sourceLineNo">025</span>        <a name="line.25"></a>
+<span class="sourceLineNo">026</span>        public static float SHIELD_OPENING = 90f;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>        public static float TURN_RATE_REDUCTION = 0.85f;<a name="line.27"></a>
+<span class="sourceLineNo">028</span>        <a name="line.28"></a>
+<span class="sourceLineNo">029</span>        public static float DAMAGE_TAKEN_MULT = 2f;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>        <a name="line.30"></a>
+<span class="sourceLineNo">031</span>        public static String DARKENED_GAZE_SYSTEM_TAG = "darkened_gaze_system_tag";<a name="line.31"></a>
+<span class="sourceLineNo">032</span>        public static String DARKENED_GAZE_PRIMARY_WEAPON_TAG = "darkened_gaze_system_tag";<a name="line.32"></a>
+<span class="sourceLineNo">033</span>        <a name="line.33"></a>
+<span class="sourceLineNo">034</span>        <a name="line.34"></a>
+<span class="sourceLineNo">035</span>        protected List&lt;WeaponAPI&gt; weapons = null; <a name="line.35"></a>
+<span class="sourceLineNo">036</span>        protected float elapsedActive = 0f; <a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>        <a name="line.38"></a>
+<span class="sourceLineNo">039</span>        protected void findWeapons(ShipAPI ship) {<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                if (weapons != null) return;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                <a name="line.41"></a>
+<span class="sourceLineNo">042</span>                ship.addTag(DARKENED_GAZE_SYSTEM_TAG);<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                <a name="line.43"></a>
+<span class="sourceLineNo">044</span>                weapons = new ArrayList&lt;&gt;();<a name="line.44"></a>
+<span class="sourceLineNo">045</span>                int index = 0;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                for (WeaponAPI w : ship.getAllWeapons()) {<a name="line.46"></a>
+<span class="sourceLineNo">047</span>                        if (w.getSlot().isDecorative()) {<a name="line.47"></a>
+<span class="sourceLineNo">048</span>//                              if (index == 0 || index == 1 || index == 2 || index == 3) {<a name="line.48"></a>
+<span class="sourceLineNo">049</span>//                                      index++;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>//                                      continue;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>//                              }<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                                //if (index == 8) weapons.clear();<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                                weapons.add(w);<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                                //if (index == 8) break;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                                //break;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                        }<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                        index++;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                }<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                <a name="line.59"></a>
+<span class="sourceLineNo">060</span>                float min = 10000000f;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                WeaponAPI primary = null;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                //middle-most weapon is "primary"<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                for (WeaponAPI w : weapons) {<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                        float test = w.getSlot().getLocation().y;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                        if (test &lt; min) {<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                                min = test;<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                                primary = w;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                        }<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                }<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                if (primary != null) {<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                        primary.setCustom(DARKENED_GAZE_PRIMARY_WEAPON_TAG);<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                }<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                <a name="line.73"></a>
+<span class="sourceLineNo">074</span>                Collections.sort(weapons, (w1, w2) -&gt; {<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                        return (int) Math.signum(Math.abs(w1.getSlot().getLocation().y) - Math.abs(w2.getSlot().getLocation().y));<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                });<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                <a name="line.77"></a>
+<span class="sourceLineNo">078</span>                // hardcoded to assume 9 beams<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                float incr = 0.15f;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                float [] offsets = new float [] <a name="line.80"></a>
+<span class="sourceLineNo">081</span>                                {0f, incr, -incr, 2f * incr, -2f * incr, 3f * incr, -3f * incr, 4f * incr, -4f * incr}; <a name="line.81"></a>
+<span class="sourceLineNo">082</span>                for (int i = 0; i &lt; weapons.size(); i++) {<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                        WeaponAPI w = weapons.get(i);<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                        w.ensureClonedSpec();<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                        w.getSpec().getHardpointAngleOffsets().clear();<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                        w.getSpec().getHardpointAngleOffsets().add(offsets[i]);<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                        w.getSpec().getTurretAngleOffsets().clear();<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                        w.getSpec().getTurretAngleOffsets().add(offsets[i]);<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                        // so that there's no FF<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                        ((BeamWeaponSpecAPI)w.getSpec()).setCollisionClass(CollisionClass.RAY_FIGHTER);<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                }<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        }<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        <a name="line.93"></a>
+<span class="sourceLineNo">094</span>        public boolean isFFAConcern() {<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                if (weapons.size() == 0) return false;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                return ((BeamWeaponSpecAPI)weapons.get(0).getSpec()).getCollisionClass() == CollisionClass.RAY;<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        }<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        <a name="line.98"></a>
+<span class="sourceLineNo">099</span>        public float getRange() {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                if (weapons == null || weapons.isEmpty()) return 0f;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                return weapons.get(0).getRange();<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        }<a name="line.102"></a>
+<span class="sourceLineNo">103</span>        <a name="line.103"></a>
+<span class="sourceLineNo">104</span>        public void apply(MutableShipStatsAPI stats, String id, State state, float effectLevel) {<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                ShipAPI ship = null;<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                if (stats.getEntity() instanceof ShipAPI) {<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                        ship = (ShipAPI) stats.getEntity();<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                } else {<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                        return;<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                }<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                <a name="line.111"></a>
+<span class="sourceLineNo">112</span>                findWeapons(ship);<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                <a name="line.113"></a>
+<span class="sourceLineNo">114</span>                ShieldAPI shield = ship.getShield();<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                if (shield != null) {<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                        shield.forceFacing(ship.getFacing() + 180f);<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                        if (!ship.getFluxTracker().isOverloadedOrVenting()) {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                                shield.toggleOn();<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                        }<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                        ship.blockCommandForOneFrame(ShipCommand.TOGGLE_SHIELD_OR_PHASE_CLOAK);<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                }<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                <a name="line.122"></a>
+<span class="sourceLineNo">123</span>                DwellerShroud shroud = DwellerShroud.getShroudFor(ship);<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                <a name="line.124"></a>
+<span class="sourceLineNo">125</span>                if (state == State.IN) {<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                        if (shield != null) {<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                                float currOpening = effectLevel * SHIELD_OPENING;<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                                shield.setArc(360f - currOpening);<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                        }<a name="line.129"></a>
+<span class="sourceLineNo">130</span>//                      if (shroud != null &amp;&amp; effectLevel &lt; 0.5f) {<a name="line.130"></a>
+<span class="sourceLineNo">131</span>//                              SwarmMember added = shroud.addMember();<a name="line.131"></a>
+<span class="sourceLineNo">132</span>//                              //added.flash();<a name="line.132"></a>
+<span class="sourceLineNo">133</span>//                              float arc = 360f - SHIELD_OPENING;<a name="line.133"></a>
+<span class="sourceLineNo">134</span>//                              float angle = ship.getFacing() + 180f + arc/2f - arc * (float) Math.random();<a name="line.134"></a>
+<span class="sourceLineNo">135</span>//                              added.offset = Misc.getUnitVectorAtDegreeAngle(angle);<a name="line.135"></a>
+<span class="sourceLineNo">136</span>//                              added.offset.scale(shroud.getParams().maxOffset * 0.7f);<a name="line.136"></a>
+<span class="sourceLineNo">137</span>//                              Vector2f offset = Misc.getUnitVectorAtDegreeAngle(angle);<a name="line.137"></a>
+<span class="sourceLineNo">138</span>//                              offset.scale(shroud.getParams().maxOffset + 200f + (float) Math.random() * 100f);<a name="line.138"></a>
+<span class="sourceLineNo">139</span>//                              Vector2f.add(ship.getLocation(), offset, added.loc);<a name="line.139"></a>
+<span class="sourceLineNo">140</span>//                      }<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                        <a name="line.141"></a>
+<span class="sourceLineNo">142</span>                } else if (state == State.ACTIVE) {<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                        for (WeaponAPI w : weapons) {<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                                //if ((float) Math.random() &gt; 0.97f) {<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                                        w.setForceFireOneFrame(true);<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                                //}<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                        }<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                } else if (state == State.OUT) {<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                        if (shield != null) {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                                float currOpening = effectLevel * SHIELD_OPENING;<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                                shield.setArc(360f - currOpening);<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                        }       <a name="line.152"></a>
+<span class="sourceLineNo">153</span>                }<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                <a name="line.154"></a>
+<span class="sourceLineNo">155</span>                if (state == State.IN || state == State.ACTIVE) {<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                        if (shroud != null) {<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                                shroud.getShroudParams().negativeParticleClearCenterAreaRadius = 150f; <a name="line.157"></a>
+<span class="sourceLineNo">158</span>                                shroud.getShroudParams().negativeParticleGenRate = 0.5f;<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                                //shroud.getShroudParams().negativeParticleColorOverride = new Color(0,0,0,255);<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                                shroud.getShroudParams().negativeParticleFilter = this;<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                        }<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                        <a name="line.162"></a>
+<span class="sourceLineNo">163</span>                        <a name="line.163"></a>
+<span class="sourceLineNo">164</span>                        Vector2f dir = Misc.getUnitVectorAtDegreeAngle(ship.getFacing() + 180f);<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                        float amount = Global.getCombatEngine().getElapsedInLastFrame();<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                        <a name="line.166"></a>
+<span class="sourceLineNo">167</span>                        <a name="line.167"></a>
+<span class="sourceLineNo">168</span>                        float accel = ConvulsiveLungeSystemScript.PARTICLE_WINDUP_ACCEL * amount * effectLevel;<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                        if (shroud != null) {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                                for (SwarmMember p : shroud.getMembers()) {<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                                        float currAngle = Misc.getAngleInDegrees(ship.getLocation(), p.loc);<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                                        float angleDiff = Misc.getAngleDiff(currAngle, ship.getFacing());<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                                        float accelMult = 1f;<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                                        if (angleDiff &gt; SHIELD_OPENING * 0.5f) {<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                                                //accelMult = SHIELD_OPENING * 0.5f / angleDiff;<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                                                accelMult = 0f;<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                                        }<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                                        <a name="line.178"></a>
+<span class="sourceLineNo">179</span>                                        p.vel.x += dir.x * accel * accelMult;<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                                        p.vel.y += dir.y * accel * accelMult;<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                                }<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                        }<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                        if (state == State.ACTIVE) {<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                                elapsedActive += amount;<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                                float f = Math.min(elapsedActive, 1f) * 1f;<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                                f = 1f - f;<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                                //float beamSpeedMult = 1f + (float) Math.sqrt(f) * 2f;<a name="line.187"></a>
+<span class="sourceLineNo">188</span>//                              float beamSpeedMult = 1f + f * f * 2f;<a name="line.188"></a>
+<span class="sourceLineNo">189</span>//                              ship.getMutableStats().getBeamSpeedMod().modifyMult(id, beamSpeedMult);<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                        }<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                        <a name="line.191"></a>
+<span class="sourceLineNo">192</span>                        ship.getMutableStats().getMaxTurnRate().modifyMult(id, 1f - TURN_RATE_REDUCTION * effectLevel);<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                        ship.getMutableStats().getHullDamageTakenMult().modifyMult(id, 1f + (DAMAGE_TAKEN_MULT - 1f) * effectLevel);<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                } else {<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                        if (shroud != null) {<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                                shroud.getShroudParams().negativeParticleClearCenterAreaRadius = 50f;<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                                shroud.getShroudParams().negativeParticleGenRate = 1f;<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                                //shroud.getShroudParams().negativeParticleColorOverride = null;<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                                shroud.getShroudParams().negativeParticleFilter = null;<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                        }<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                        elapsedActive = 0f;<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                        ship.getMutableStats().getMaxTurnRate().unmodifyMult(id);<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                        ship.getMutableStats().getHullDamageTakenMult().unmodifyMult(id);<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                        //ship.getMutableStats().getBeamSpeedMod().unmodifyMult(id);<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                }<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                <a name="line.206"></a>
+<span class="sourceLineNo">207</span>                ship.getAIFlags().setFlag(AIFlags.BACK_OFF_MIN_RANGE, 1f, getRange() - 300f);<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                <a name="line.208"></a>
+<span class="sourceLineNo">209</span>                if (state == State.IDLE) {<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                        shield.setArc(360f);<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                }<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                        <a name="line.212"></a>
+<span class="sourceLineNo">213</span>        }<a name="line.213"></a>
+<span class="sourceLineNo">214</span>        <a name="line.214"></a>
+<span class="sourceLineNo">215</span>        public void unapply(MutableShipStatsAPI stats, String id) {<a name="line.215"></a>
+<span class="sourceLineNo">216</span>        }<a name="line.216"></a>
+<span class="sourceLineNo">217</span>        <a name="line.217"></a>
+<span class="sourceLineNo">218</span>        public StatusData getStatusData(int index, State state, float effectLevel) {<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                return null;<a name="line.219"></a>
+<span class="sourceLineNo">220</span>        }<a name="line.220"></a>
+<span class="sourceLineNo">221</span>        <a name="line.221"></a>
+<span class="sourceLineNo">222</span>        @Override<a name="line.222"></a>
+<span class="sourceLineNo">223</span>        public String getInfoText(ShipSystemAPI system, ShipAPI ship) {<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                return super.getInfoText(system, ship);<a name="line.224"></a>
+<span class="sourceLineNo">225</span>        }<a name="line.225"></a>
+<span class="sourceLineNo">226</span><a name="line.226"></a>
+<span class="sourceLineNo">227</span>        @Override<a name="line.227"></a>
+<span class="sourceLineNo">228</span>        public boolean isParticleOk(DwellerShroud shroud, Vector2f loc) {<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                // only filtering when in/active, not idle/out/cooldown, so don't worry about those cases<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                if (shroud == null || shroud.getAttachedTo() == null) return true;<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                float angle = Misc.getAngleInDegrees(shroud.getAttachedTo().getLocation(), loc);<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                return !Misc.isInArc(shroud.getAttachedTo().getFacing(), SHIELD_OPENING, angle);<a name="line.232"></a>
+<span class="sourceLineNo">233</span>        }<a name="line.233"></a>
+<span class="sourceLineNo">234</span><a name="line.234"></a>
+<span class="sourceLineNo">235</span>        <a name="line.235"></a>
+<span class="sourceLineNo">236</span>}<a name="line.236"></a>
+<span class="sourceLineNo">237</span><a name="line.237"></a>
+<span class="sourceLineNo">238</span><a name="line.238"></a>
+<span class="sourceLineNo">239</span><a name="line.239"></a>
+<span class="sourceLineNo">240</span><a name="line.240"></a>
+<span class="sourceLineNo">241</span><a name="line.241"></a>
+<span class="sourceLineNo">242</span><a name="line.242"></a>
+<span class="sourceLineNo">243</span><a name="line.243"></a>
+<span class="sourceLineNo">244</span><a name="line.244"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

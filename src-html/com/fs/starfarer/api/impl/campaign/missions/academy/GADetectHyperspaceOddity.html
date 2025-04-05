@@ -1,0 +1,330 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.missions.academy;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
+<span class="sourceLineNo">004</span><a name="line.4"></a>
+<span class="sourceLineNo">005</span>import com.fs.starfarer.api.Global;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import com.fs.starfarer.api.campaign.SectorEntityToken;<a name="line.6"></a>
+<span class="sourceLineNo">007</span>import com.fs.starfarer.api.campaign.StarSystemAPI;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.campaign.econ.MarketAPI;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.characters.PersonAPI;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.impl.campaign.ids.Factions;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.impl.campaign.ids.FleetTypes;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.impl.campaign.ids.People;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.impl.campaign.world.NamelessRock;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.ui.TooltipMakerAPI;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.util.Misc;<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span>public class GADetectHyperspaceOddity extends GABaseMission {<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span>        public static enum Stage {<a name="line.19"></a>
+<span class="sourceLineNo">020</span>                VISIT_ELEK,<a name="line.20"></a>
+<span class="sourceLineNo">021</span>                GO_TO_ARRAY,<a name="line.21"></a>
+<span class="sourceLineNo">022</span>                GO_TO_LOCATION,<a name="line.22"></a>
+<span class="sourceLineNo">023</span>                INVESTIGATE_SHIP,<a name="line.23"></a>
+<span class="sourceLineNo">024</span>                RETURN_TO_ELEK,<a name="line.24"></a>
+<span class="sourceLineNo">025</span>                COMPLETED,<a name="line.25"></a>
+<span class="sourceLineNo">026</span>                FAILED,<a name="line.26"></a>
+<span class="sourceLineNo">027</span>                ARRAY_THEN_ELEK,<a name="line.27"></a>
+<span class="sourceLineNo">028</span>                ARRAY_THEN_ABYSS,<a name="line.28"></a>
+<span class="sourceLineNo">029</span>                ABYSS_NO_ELEK,<a name="line.29"></a>
+<span class="sourceLineNo">030</span>        }<a name="line.30"></a>
+<span class="sourceLineNo">031</span>        <a name="line.31"></a>
+<span class="sourceLineNo">032</span>        protected StarSystemAPI arraySystem;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>        protected StarSystemAPI oneslaughtSystem;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>        protected SectorEntityToken array;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>        protected SectorEntityToken oneslaught;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>        protected PersonAPI elek;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>        protected int rewardAmount;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>        <a name="line.38"></a>
+<span class="sourceLineNo">039</span>        @Override<a name="line.39"></a>
+<span class="sourceLineNo">040</span>        protected boolean create(MarketAPI createdAt, boolean barEvent) {<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                <a name="line.41"></a>
+<span class="sourceLineNo">042</span>                // if this mission was already accepted by the player, abort<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                if (!setGlobalReference("$gaDHO_ref", "$gaDHO_inProgress")) return false;<a name="line.43"></a>
+<span class="sourceLineNo">044</span><a name="line.44"></a>
+<span class="sourceLineNo">045</span>                elek = getImportantPerson(People.ELEK);<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                if (elek == null) return false;<a name="line.46"></a>
+<span class="sourceLineNo">047</span><a name="line.47"></a>
+<span class="sourceLineNo">048</span>                array = (SectorEntityToken) Global.getSector().getPersistentData().get(NamelessRock.ONESLAUGHT_SENSOR_ARRAY);<a name="line.48"></a>
+<span class="sourceLineNo">049</span>                if (array == null) return false;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                <a name="line.50"></a>
+<span class="sourceLineNo">051</span>                oneslaughtSystem = Global.getSector().getStarSystem(NamelessRock.NAMELESS_ROCK_LOCATION_ID);<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                if (oneslaughtSystem == null) return false;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                <a name="line.53"></a>
+<span class="sourceLineNo">054</span>                <a name="line.54"></a>
+<span class="sourceLineNo">055</span>                for (SectorEntityToken entity : oneslaughtSystem.getAllEntities()) {<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                        if(entity.getMemoryWithoutUpdate().contains("$onslaughtMkI")) {<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                                oneslaught = entity;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                                break;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                        } <a name="line.59"></a>
+<span class="sourceLineNo">060</span>                }<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                if(oneslaught == null) return false;<a name="line.61"></a>
+<span class="sourceLineNo">062</span><a name="line.62"></a>
+<span class="sourceLineNo">063</span>                arraySystem = array.getStarSystem();<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                if(arraySystem == null) return false;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                <a name="line.65"></a>
+<span class="sourceLineNo">066</span>                setStartingStage(Stage.VISIT_ELEK);<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                addSuccessStages(Stage.COMPLETED);<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                addFailureStages(Stage.FAILED);<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                <a name="line.69"></a>
+<span class="sourceLineNo">070</span>                setStageOnGlobalFlag(Stage.FAILED, "$gaDHO_declinedTwice");<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                <a name="line.71"></a>
+<span class="sourceLineNo">072</span>                setStageOnGlobalFlag(Stage.GO_TO_ARRAY, "$gaDHO_gotScanPackage");<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                setStageOnGlobalFlag(Stage.GO_TO_LOCATION, "$gaDHO_gotCoordinates");<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                setStageOnGlobalFlag(Stage.INVESTIGATE_SHIP, "$gaDHO_foundRock");<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                setStageOnGlobalFlag(Stage.RETURN_TO_ELEK, "$gaDHO_foundOneslaught");<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                setStageOnGlobalFlag(Stage.COMPLETED, "$gaDHO_completed");<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                <a name="line.77"></a>
+<span class="sourceLineNo">078</span>                setStageOnGlobalFlag(Stage.ARRAY_THEN_ELEK, "$gaDHO_arrayFirstThenElek");<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                setStageOnGlobalFlag(Stage.ARRAY_THEN_ABYSS, "$gaDHO_arrayFirstThenAbyss");<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                setStageOnGlobalFlag(Stage.ABYSS_NO_ELEK, "$gaDHO_playerMadeElekMad"); <a name="line.80"></a>
+<span class="sourceLineNo">081</span>                <a name="line.81"></a>
+<span class="sourceLineNo">082</span>                makeImportant(elek, "$gaDHO_answerInvite", Stage.VISIT_ELEK);<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                makeImportant(array, "$gaDHO_object", Stage.GO_TO_ARRAY);<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                <a name="line.84"></a>
+<span class="sourceLineNo">085</span>                makeImportant(oneslaughtSystem.getEntityById("nameless_rock"), null, Stage.GO_TO_LOCATION);<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                makeImportant(oneslaughtSystem.getEntityById("nameless_rock"), null, Stage.ARRAY_THEN_ABYSS);<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                makeImportant(oneslaughtSystem.getEntityById("nameless_rock"), null, Stage.ABYSS_NO_ELEK);<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                <a name="line.88"></a>
+<span class="sourceLineNo">089</span>                //SectorEntityToken node2 = spawnMissionNode(new LocData(oneslaughtSystem.getEntityById("nameless_rock")));<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                //makeImportant(node2, null, Stage.GO_TO_ARRAY);<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                <a name="line.91"></a>
+<span class="sourceLineNo">092</span>                makeImportant(elek, "$gaDHO_elekReturn", Stage.RETURN_TO_ELEK);<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                makeImportant(elek, "$gaDHO_elekReturn", Stage.ARRAY_THEN_ELEK);<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                <a name="line.94"></a>
+<span class="sourceLineNo">095</span>                makeImportant(oneslaught, null, Stage.INVESTIGATE_SHIP);<a name="line.95"></a>
+<span class="sourceLineNo">096</span><a name="line.96"></a>
+<span class="sourceLineNo">097</span>                setMapMarkerNameColorBasedOnStar(arraySystem);<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                setStoryMission();<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                <a name="line.99"></a>
+<span class="sourceLineNo">100</span>                setStartingStage(Stage.VISIT_ELEK);<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                addSuccessStages(Stage.COMPLETED);<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                <a name="line.102"></a>
+<span class="sourceLineNo">103</span>                // spawn a spicy pirate fleet if player found the array first.<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                beginStageTrigger(Stage.VISIT_ELEK);<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                triggerCreateFleet(FleetSize.MEDIUM, FleetQuality.HIGHER, Factions.PIRATES, FleetTypes.PATROL_MEDIUM, array.getStarSystem());<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                triggerPickLocationAtClosestToPlayerJumpPoint(array.getStarSystem());<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                triggerSpawnFleetAtPickedLocation("$gaDHO_arrayFleet", null);<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                triggerOrderFleetPatrol(false, array);<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                //triggerOrderFleetInterceptPlayer();<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                endTrigger();<a name="line.110"></a>
+<span class="sourceLineNo">111</span><a name="line.111"></a>
+<span class="sourceLineNo">112</span>                <a name="line.112"></a>
+<span class="sourceLineNo">113</span>                beginStageTrigger(Stage.COMPLETED);<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                triggerSetGlobalMemoryValue("$gaDHO_missionCompleted", true);<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                //triggerMakeNonStoryCritical(kazeron, chicomoztoc, epiphany, siyavong.getMarket(), kanta.getMarket());<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                endTrigger();<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                <a name="line.117"></a>
+<span class="sourceLineNo">118</span>                return true;<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        }<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        <a name="line.120"></a>
+<span class="sourceLineNo">121</span>        protected void updateInteractionDataImpl() {<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                set("$gaDHO_stage", getCurrentStage());<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                set("$gaDHO_starName", arraySystem.getNameWithNoType());<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                set("$gaDHO_systemName", arraySystem.getNameWithLowercaseTypeShort());<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                set("$gaDHO_dist", getDistanceLY(array));<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                set("$gaDHO_reward", Misc.getWithDGS(rewardAmount));<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        }<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        <a name="line.128"></a>
+<span class="sourceLineNo">129</span>        @Override<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        public void addDescriptionForNonEndStage(TooltipMakerAPI info, float width, float height) {<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                float opad = 10f;<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                Color h = Misc.getHighlightColor();<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                //if(Global.getSector().getMemoryWithoutUpdate().contains("$gaDHO_foundArrayFirst")) { <a name="line.133"></a>
+<span class="sourceLineNo">134</span>                <a name="line.134"></a>
+<span class="sourceLineNo">135</span>                if (currentStage == Stage.VISIT_ELEK) {<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                        if(Global.getSector().getMemoryWithoutUpdate().contains("$gaDHO_foundArrayFirst")) { <a name="line.136"></a>
+<span class="sourceLineNo">137</span>                                info.addPara("Talk to Academician " + elek.getNameString() + " about the sensor array data.", opad);<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                                info.addPara("Or go directly to the coordinates held in the array's data.", opad);<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                                info.addImage(elek.getPortraitSprite(), width, 128, opad);<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                        }<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                        else {<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                                info.addPara("Talk to Academician " + elek.getNameString() + " about the services he requires. "<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                                        + "He is at the Galatia Academy, which orbits Pontus in the Galatia system.", opad);<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                                info.addImage(elek.getPortraitSprite(), width, 128, opad);<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                        }<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                }<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                else if (currentStage == Stage.GO_TO_ARRAY) { <a name="line.147"></a>
+<span class="sourceLineNo">148</span>                        info.addPara("Install the modification package on the Sensor Array located in the " + <a name="line.148"></a>
+<span class="sourceLineNo">149</span>                                        arraySystem.getNameWithLowercaseTypeShort() + ".", opad);<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                        info.addImage(Global.getSettings().getSpriteName("illustrations", "sensor_array"), width, opad);<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                }<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                else if (currentStage == Stage.GO_TO_LOCATION) { <a name="line.152"></a>
+<span class="sourceLineNo">153</span>                        info.addPara("Go to the location deep in the Abyss to find what Academician Elek's patron was looking for.", opad);<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                }<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                else if (currentStage == Stage.ARRAY_THEN_ABYSS) { <a name="line.155"></a>
+<span class="sourceLineNo">156</span>                        info.addPara("Go to the location deep in the Abyss to find out what the sensor array detected.", opad);<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                }<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                else if (currentStage == Stage.ABYSS_NO_ELEK) { <a name="line.158"></a>
+<span class="sourceLineNo">159</span>                        info.addPara("Go to the location deep in the Abyss to find out what the sensor array detected.", opad);<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                }<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                else if (currentStage == Stage.ARRAY_THEN_ELEK) { <a name="line.161"></a>
+<span class="sourceLineNo">162</span>                        info.addPara("Talk to Academician " + elek.getNameString() + " about what his sensor array modifications were looking for. "<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                                        + "He is at the Galatia Academy, which orbits Pontus in the Galatia system.", opad);<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                                info.addImage(elek.getPortraitSprite(), width, 128, opad);<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                }<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                else if (currentStage == Stage.INVESTIGATE_SHIP) { <a name="line.166"></a>
+<span class="sourceLineNo">167</span>                        info.addPara("Investigate the strange ship orbiting Nameless Rock.", opad);<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                }<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                else if (currentStage == Stage.RETURN_TO_ELEK) { <a name="line.169"></a>
+<span class="sourceLineNo">170</span>                        if(Global.getSector().getMemoryWithoutUpdate().contains("$gaDHO_arrayFirstThenAbyss")) { <a name="line.170"></a>
+<span class="sourceLineNo">171</span>                                info.addPara("Talk to Academician " + elek.getNameString() + " about what he thought he was looking for.", opad);<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                                info.addPara("And maybe some kind of reward.", opad);<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                        }<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                        else {<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                                info.addPara("Talk to Academician " + elek.getNameString() + " about a reward. And about his 'patron'.", opad);<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                        }<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                        <a name="line.177"></a>
+<span class="sourceLineNo">178</span>                        info.addImage(elek.getPortraitSprite(), width, 128, opad);<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                }<a name="line.179"></a>
+<span class="sourceLineNo">180</span>        }<a name="line.180"></a>
+<span class="sourceLineNo">181</span><a name="line.181"></a>
+<span class="sourceLineNo">182</span>        @Override<a name="line.182"></a>
+<span class="sourceLineNo">183</span>        public boolean addNextStepText(TooltipMakerAPI info, Color tc, float pad) {<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                Color h = Misc.getHighlightColor();<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                        //<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                if (currentStage == Stage.VISIT_ELEK) {<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                        if(Global.getSector().getMemoryWithoutUpdate().contains("$gaDHO_foundArrayFirst")) {  <a name="line.187"></a>
+<span class="sourceLineNo">188</span>                                info.addPara("Talk to Academician " + elek.getNameString() + " at the Galatia Academy about the sensor array data.", tc, pad);<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                                info.addPara("Or go directly to the coordinates extracted from the array's data", tc, pad);<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                        }<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                        else {<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                                info.addPara("Talk to Academician " + elek.getNameString() + " at the Galatia Academy, which orbits Pontus in the Galatia system.", tc, pad);<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                        }<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                        return true;<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                }<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                else if (currentStage == Stage.GO_TO_ARRAY) { <a name="line.196"></a>
+<span class="sourceLineNo">197</span>                        info.addPara("Go to the Sensor Array located in the " + <a name="line.197"></a>
+<span class="sourceLineNo">198</span>                                        arraySystem.getNameWithLowercaseTypeShort() + ".", tc, pad);<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                        return true;<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                }<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                else if (currentStage == Stage.GO_TO_LOCATION) { <a name="line.201"></a>
+<span class="sourceLineNo">202</span>                        info.addPara("Go to the location deep in the Abyss and discover what the Sensor Array found.", tc, pad);<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                        return true;<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                }<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                else if (currentStage == Stage.ARRAY_THEN_ABYSS) { <a name="line.205"></a>
+<span class="sourceLineNo">206</span>                        info.addPara("Go to the location deep in the Abyss and discover what the Sensor Array found.", tc, pad);<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                        return true;<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                }<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                else if (currentStage == Stage.ABYSS_NO_ELEK) { <a name="line.209"></a>
+<span class="sourceLineNo">210</span>                        info.addPara("Go to the location deep in the Abyss and discover what the Sensor Array found.", tc, pad);<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                        return true;<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                }<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                else if (currentStage == Stage.ARRAY_THEN_ELEK) { <a name="line.213"></a>
+<span class="sourceLineNo">214</span>                        info.addPara("Talk to Academician " + elek.getNameString() + " at the Galatia Academy.", tc, pad);<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                        return true;<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                }<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                else if (currentStage == Stage.RETURN_TO_ELEK) { <a name="line.217"></a>
+<span class="sourceLineNo">218</span>                        info.addPara("Talk to Academician " + elek.getNameString() + <a name="line.218"></a>
+<span class="sourceLineNo">219</span>                                        " at the Galatia Academy.", tc, pad);<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                        return true;<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                }<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                else if (currentStage == Stage.GO_TO_LOCATION) { <a name="line.222"></a>
+<span class="sourceLineNo">223</span>                        info.addPara("Go to the location deep in the Abyss and discover what the Sensor Array found.", tc, pad);<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                        return true;<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                }<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                else if (currentStage == Stage.INVESTIGATE_SHIP) { <a name="line.226"></a>
+<span class="sourceLineNo">227</span>                                info.addPara("Investigate the strange ship orbiting Nameless Rock.", tc, pad);<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                                return true;<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                }<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                else if (currentStage == Stage.RETURN_TO_ELEK) { <a name="line.230"></a>
+<span class="sourceLineNo">231</span>                         // return to elek *after finding the Oneslaught* to finish the mission.<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                         info.addPara("Talk to Academician " + elek.getNameString() + " at the Galatia Academy.", tc, pad);<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                         return true;<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                }<a name="line.234"></a>
+<span class="sourceLineNo">235</span><a name="line.235"></a>
+<span class="sourceLineNo">236</span>                return false;<a name="line.236"></a>
+<span class="sourceLineNo">237</span>        }<a name="line.237"></a>
+<span class="sourceLineNo">238</span>        <a name="line.238"></a>
+<span class="sourceLineNo">239</span>        /*<a name="line.239"></a>
+<span class="sourceLineNo">240</span>        @Override<a name="line.240"></a>
+<span class="sourceLineNo">241</span>        protected boolean callAction(String action, String ruleId, InteractionDialogAPI dialog, List&lt;Token&gt; params, Map&lt;String, MemoryAPI&gt; memoryMap) {<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                if ("discoveredArrayOutOfSequence".equals(action)) {<a name="line.242"></a>
+<span class="sourceLineNo">243</span><a name="line.243"></a>
+<span class="sourceLineNo">244</span>                        <a name="line.244"></a>
+<span class="sourceLineNo">245</span>                        return true;<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                }<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                return false;<a name="line.247"></a>
+<span class="sourceLineNo">248</span>        }*/<a name="line.248"></a>
+<span class="sourceLineNo">249</span>        <a name="line.249"></a>
+<span class="sourceLineNo">250</span>        @Override<a name="line.250"></a>
+<span class="sourceLineNo">251</span>        public String getBaseName() {<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                //return "Detect Hyperspace Oddity";<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                return "Abyssal Space Oddity";<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        }<a name="line.254"></a>
+<span class="sourceLineNo">255</span>        <a name="line.255"></a>
+<span class="sourceLineNo">256</span>}<a name="line.256"></a>
+<span class="sourceLineNo">257</span><a name="line.257"></a>
+<span class="sourceLineNo">258</span><a name="line.258"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

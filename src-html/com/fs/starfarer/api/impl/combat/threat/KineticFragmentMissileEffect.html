@@ -1,0 +1,188 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.combat.threat;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
+<span class="sourceLineNo">004</span><a name="line.4"></a>
+<span class="sourceLineNo">005</span>import org.lwjgl.util.vector.Vector2f;<a name="line.5"></a>
+<span class="sourceLineNo">006</span><a name="line.6"></a>
+<span class="sourceLineNo">007</span>import com.fs.starfarer.api.Global;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import com.fs.starfarer.api.combat.CombatEngineAPI;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.combat.CombatEntityAPI;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.combat.DamageType;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.combat.MissileAPI;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.impl.combat.threat.RoilingSwarmEffect.RoilingSwarmParams;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.impl.combat.threat.RoilingSwarmEffect.SwarmMember;<a name="line.13"></a>
+<span class="sourceLineNo">014</span><a name="line.14"></a>
+<span class="sourceLineNo">015</span>public class KineticFragmentMissileEffect extends BaseFragmentMissileEffect {<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span>        public static Color FRINGE_COLOR = new Color(235,255,215,235);<a name="line.17"></a>
+<span class="sourceLineNo">018</span>        public static Color CORE_COLOR = new Color(225,255,205,200);<a name="line.18"></a>
+<span class="sourceLineNo">019</span>        <a name="line.19"></a>
+<span class="sourceLineNo">020</span>        public static float OTHER_FRAGMENT_DAMAGE = 100;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>        <a name="line.21"></a>
+<span class="sourceLineNo">022</span>        protected void configureMissileSwarmParams(RoilingSwarmParams params) {<a name="line.22"></a>
+<span class="sourceLineNo">023</span>//              params.flashFringeColor = new Color(235,255,215,235);<a name="line.23"></a>
+<span class="sourceLineNo">024</span>//              params.flashCoreColor = new Color(225,255,205,200);<a name="line.24"></a>
+<span class="sourceLineNo">025</span>                <a name="line.25"></a>
+<span class="sourceLineNo">026</span>//              params.baseSpringConstant *= 2f;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>//              params.springConstantNegativeRange *= 2f;<a name="line.27"></a>
+<span class="sourceLineNo">028</span>                params.maxOffset = 40f;<a name="line.28"></a>
+<span class="sourceLineNo">029</span>                <a name="line.29"></a>
+<span class="sourceLineNo">030</span>                params.maxSpeed = missile.getMaxSpeed() + 10f;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>                params.outspeedAttachedEntityBy = 0f;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>                <a name="line.32"></a>
+<span class="sourceLineNo">033</span>                //params.flashFringeColor = Misc.setAlpha(FRINGE_COLOR, 50);<a name="line.33"></a>
+<span class="sourceLineNo">034</span>                params.flashFringeColor = FRINGE_COLOR;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>                params.flashCoreColor = CORE_COLOR;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>                <a name="line.36"></a>
+<span class="sourceLineNo">037</span>                params.flashCoreRadiusMult = 0f;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>                //params.renderFlashOnSameLayer = true;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                params.flashRadius = 30f;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                params.autoscale = true;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                //params.preFlashDelay = 0.5f * (float) Math.random();<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                <a name="line.42"></a>
+<span class="sourceLineNo">043</span>//              params.flashFrequency = 40f;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>//              params.flashProbability = 1f;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        }<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        <a name="line.46"></a>
+<span class="sourceLineNo">047</span>        protected void swarmCreated(MissileAPI missile, RoilingSwarmEffect missileSwarm, RoilingSwarmEffect sourceSwarm) {<a name="line.47"></a>
+<span class="sourceLineNo">048</span>                boolean first = true;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>                for (SwarmMember p : missileSwarm.members) {<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                        p.scaler.setBrightness(p.scale);<a name="line.50"></a>
+<span class="sourceLineNo">051</span>                        if (first) {<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                                p.scaler.setBounceDown(false);<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                                p.scaler.fadeIn();<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                        } else {<a name="line.54"></a>
+<span class="sourceLineNo">055</span>//                              p.scaler.setBounceUp(false);<a name="line.55"></a>
+<span class="sourceLineNo">056</span>//                              p.scaler.fadeOut();<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                                p.keepScale = true;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                        }<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                        p.flash = null;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                        p.flash();<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                        p.flash.setBounceDown(false);<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                        first = false;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                }<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        }<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        <a name="line.65"></a>
+<span class="sourceLineNo">066</span>        protected int getNumOtherMembersToTransfer() {<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                return 4;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        }<a name="line.68"></a>
+<span class="sourceLineNo">069</span>        <a name="line.69"></a>
+<span class="sourceLineNo">070</span>        protected int getEMPResistance() {<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                return 3;<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        }<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        <a name="line.73"></a>
+<span class="sourceLineNo">074</span>        protected boolean explodeOnFizzling() {<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                return false;<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        }<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        <a name="line.77"></a>
+<span class="sourceLineNo">078</span>        protected boolean shouldMakeMissileFaceTargetOnSpawnIfAny() {<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                return true;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        }<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        <a name="line.81"></a>
+<span class="sourceLineNo">082</span>        @Override<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        protected FragmentBehaviorOnImpact getOtherFragmentBehaviorOnImpact() {<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                return FragmentBehaviorOnImpact.STOP_AND_FADE;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        }<a name="line.85"></a>
+<span class="sourceLineNo">086</span><a name="line.86"></a>
+<span class="sourceLineNo">087</span>        protected void reportFragmentHit(MissileAPI missile, SwarmMember p, RoilingSwarmEffect swarm, CombatEntityAPI target) {<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                CombatEngineAPI engine = Global.getCombatEngine();<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                Color color = FRINGE_COLOR;<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                //color = Misc.setAlpha(color, 255);<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                float size = 80f; // not radius<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                engine.addHitParticle(p.loc, new Vector2f(), size, 0.5f, color);<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                engine.addHitParticle(p.loc, new Vector2f(), size * 0.25f, 1f, CORE_COLOR);<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                <a name="line.94"></a>
+<span class="sourceLineNo">095</span>                float mult = p.fader.getBrightness();<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                if (mult &gt; 0.8f) mult = 1f;<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                engine.applyDamage(target, p.loc, OTHER_FRAGMENT_DAMAGE * mult, DamageType.KINETIC, 0f,<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                                false, false, missile.getSource(), true);<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                <a name="line.99"></a>
+<span class="sourceLineNo">100</span>//              engine.addNegativeParticle(p.loc, new Vector2f(), 300f, 0f, 0.5f, Color.white);<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        }<a name="line.101"></a>
+<span class="sourceLineNo">102</span><a name="line.102"></a>
+<span class="sourceLineNo">103</span><a name="line.103"></a>
+<span class="sourceLineNo">104</span>//      protected String getExplosionSoundId() {<a name="line.104"></a>
+<span class="sourceLineNo">105</span>//              return "devastator_explosion";<a name="line.105"></a>
+<span class="sourceLineNo">106</span>//      }<a name="line.106"></a>
+<span class="sourceLineNo">107</span><a name="line.107"></a>
+<span class="sourceLineNo">108</span>}<a name="line.108"></a>
+<span class="sourceLineNo">109</span><a name="line.109"></a>
+<span class="sourceLineNo">110</span><a name="line.110"></a>
+<span class="sourceLineNo">111</span><a name="line.111"></a>
+<span class="sourceLineNo">112</span><a name="line.112"></a>
+<span class="sourceLineNo">113</span><a name="line.113"></a>
+<span class="sourceLineNo">114</span><a name="line.114"></a>
+<span class="sourceLineNo">115</span><a name="line.115"></a>
+<span class="sourceLineNo">116</span><a name="line.116"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

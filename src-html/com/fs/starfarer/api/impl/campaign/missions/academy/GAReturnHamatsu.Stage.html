@@ -71,92 +71,97 @@
 <span class="sourceLineNo">063</span>                <a name="line.63"></a>
 <span class="sourceLineNo">064</span>                setPersonIsPotentialContactOnSuccess(callisto, 1f);<a name="line.64"></a>
 <span class="sourceLineNo">065</span>                <a name="line.65"></a>
-<span class="sourceLineNo">066</span>                return true;<a name="line.66"></a>
-<span class="sourceLineNo">067</span>        }<a name="line.67"></a>
-<span class="sourceLineNo">068</span>        <a name="line.68"></a>
-<span class="sourceLineNo">069</span>        protected boolean callAction(String action, String ruleId, InteractionDialogAPI dialog, List&lt;Token&gt; params,<a name="line.69"></a>
-<span class="sourceLineNo">070</span>                                                                 Map&lt;String, MemoryAPI&gt; memoryMap) {<a name="line.70"></a>
-<span class="sourceLineNo">071</span><a name="line.71"></a>
-<span class="sourceLineNo">072</span>                if ("refusedToReturn".equals(action)) {<a name="line.72"></a>
-<span class="sourceLineNo">073</span>                        if (rollProbability(0.5f)) {<a name="line.73"></a>
-<span class="sourceLineNo">074</span>                                DelayedFleetEncounter e = new DelayedFleetEncounter(genRandom, getMissionId());<a name="line.74"></a>
-<span class="sourceLineNo">075</span>                                e.setDelayMedium();<a name="line.75"></a>
-<span class="sourceLineNo">076</span>                                e.setLocationInnerSector(false, Factions.INDEPENDENT);<a name="line.76"></a>
-<span class="sourceLineNo">077</span>                                e.beginCreate();<a name="line.77"></a>
-<span class="sourceLineNo">078</span>                                e.triggerCreateFleet(FleetSize.MEDIUM, FleetQuality.VERY_HIGH, Factions.MERCENARY, FleetTypes.PATROL_LARGE, new Vector2f());<a name="line.78"></a>
-<span class="sourceLineNo">079</span>                                e.triggerSetFleetOfficers(OfficerNum.MORE, OfficerQuality.HIGHER);<a name="line.79"></a>
-<span class="sourceLineNo">080</span>                                e.triggerFleetSetFaction(Factions.INDEPENDENT);<a name="line.80"></a>
-<span class="sourceLineNo">081</span>                                e.triggerSetFleetFlag("$gaRH_consequences");<a name="line.81"></a>
-<span class="sourceLineNo">082</span>                                e.triggerMakeNoRepImpact();<a name="line.82"></a>
-<span class="sourceLineNo">083</span>                                e.triggerSetStandardAggroInterceptFlags();<a name="line.83"></a>
-<span class="sourceLineNo">084</span>                                e.endCreate();<a name="line.84"></a>
-<span class="sourceLineNo">085</span>                        }<a name="line.85"></a>
-<span class="sourceLineNo">086</span>                        return true;<a name="line.86"></a>
-<span class="sourceLineNo">087</span>                } else if ("transferHamatsu".equals(action)) {<a name="line.87"></a>
-<span class="sourceLineNo">088</span>                        FleetMemberAPI hamatsu = null;<a name="line.88"></a>
-<span class="sourceLineNo">089</span>                        for (FleetMemberAPI member : Global.getSector().getPlayerFleet().getFleetData().getMembersListCopy()) {<a name="line.89"></a>
-<span class="sourceLineNo">090</span>                                if (member.getId().equals(TTBlackSite.HAMATSU_ID)) {<a name="line.90"></a>
-<span class="sourceLineNo">091</span>                                        hamatsu = member;<a name="line.91"></a>
-<span class="sourceLineNo">092</span>                                        break;<a name="line.92"></a>
-<span class="sourceLineNo">093</span>                                }<a name="line.93"></a>
-<span class="sourceLineNo">094</span>                        }<a name="line.94"></a>
-<span class="sourceLineNo">095</span>                        if (hamatsu != null) {<a name="line.95"></a>
-<span class="sourceLineNo">096</span>                                AddRemoveCommodity.addFleetMemberLossText(hamatsu, dialog.getTextPanel());<a name="line.96"></a>
-<span class="sourceLineNo">097</span>                                Global.getSector().getPlayerFleet().getFleetData().removeFleetMember(hamatsu);<a name="line.97"></a>
-<span class="sourceLineNo">098</span>                        }<a name="line.98"></a>
-<span class="sourceLineNo">099</span>                        <a name="line.99"></a>
-<span class="sourceLineNo">100</span>                        return true;<a name="line.100"></a>
-<span class="sourceLineNo">101</span>                }<a name="line.101"></a>
-<span class="sourceLineNo">102</span>                return false;<a name="line.102"></a>
-<span class="sourceLineNo">103</span>        }<a name="line.103"></a>
-<span class="sourceLineNo">104</span>        <a name="line.104"></a>
-<span class="sourceLineNo">105</span>        protected void updateInteractionDataImpl() {<a name="line.105"></a>
-<span class="sourceLineNo">106</span>                set("$gaRH_stage", getCurrentStage());<a name="line.106"></a>
-<span class="sourceLineNo">107</span>                set("$gaRH_reward", Misc.getWithDGS(getCreditsReward()));<a name="line.107"></a>
+<span class="sourceLineNo">066</span>                beginStageTrigger(Stage.COMPLETED);<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                triggerSetGlobalMemoryValue("$gaRH_missionCompleted", true);<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                triggerMakeNonStoryCritical(callisto.getMarket());<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                endTrigger();<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                <a name="line.70"></a>
+<span class="sourceLineNo">071</span>                return true;<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        }<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        <a name="line.73"></a>
+<span class="sourceLineNo">074</span>        protected boolean callAction(String action, String ruleId, InteractionDialogAPI dialog, List&lt;Token&gt; params,<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                                                                 Map&lt;String, MemoryAPI&gt; memoryMap) {<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span>                if ("refusedToReturn".equals(action)) {<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                        if (rollProbability(0.5f)) {<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                                DelayedFleetEncounter e = new DelayedFleetEncounter(genRandom, getMissionId());<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                                e.setDelayMedium();<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                                e.setLocationInnerSector(false, Factions.INDEPENDENT);<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                                e.beginCreate();<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                                e.triggerCreateFleet(FleetSize.MEDIUM, FleetQuality.VERY_HIGH, Factions.MERCENARY, FleetTypes.PATROL_LARGE, new Vector2f());<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                                e.triggerSetFleetOfficers(OfficerNum.MORE, OfficerQuality.HIGHER);<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                                e.triggerFleetSetFaction(Factions.INDEPENDENT);<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                                e.triggerSetFleetFlag("$gaRH_consequences");<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                                e.triggerMakeNoRepImpact();<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                                e.triggerSetStandardAggroInterceptFlags();<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                                e.endCreate();<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                        }<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                        return true;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                } else if ("transferHamatsu".equals(action)) {<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                        FleetMemberAPI hamatsu = null;<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                        for (FleetMemberAPI member : Global.getSector().getPlayerFleet().getFleetData().getMembersListCopy()) {<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                                if (member.getId().equals(TTBlackSite.HAMATSU_ID)) {<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                                        hamatsu = member;<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                                        break;<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                                }<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                        }<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                        if (hamatsu != null) {<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                                AddRemoveCommodity.addFleetMemberLossText(hamatsu, dialog.getTextPanel());<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                                Global.getSector().getPlayerFleet().getFleetData().removeFleetMember(hamatsu);<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                        }<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                        <a name="line.104"></a>
+<span class="sourceLineNo">105</span>                        return true;<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                }<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                return false;<a name="line.107"></a>
 <span class="sourceLineNo">108</span>        }<a name="line.108"></a>
 <span class="sourceLineNo">109</span>        <a name="line.109"></a>
-<span class="sourceLineNo">110</span>        @Override<a name="line.110"></a>
-<span class="sourceLineNo">111</span>        public void addDescriptionForNonEndStage(TooltipMakerAPI info, float width, float height) {<a name="line.111"></a>
-<span class="sourceLineNo">112</span>                float opad = 10f;<a name="line.112"></a>
-<span class="sourceLineNo">113</span>                Color h = Misc.getHighlightColor();<a name="line.113"></a>
-<span class="sourceLineNo">114</span>                if (currentStage == Stage.RETURN_HAMATSU) {<a name="line.114"></a>
-<span class="sourceLineNo">115</span>                        addStandardMarketDesc("Deliver the ISS Hamatsu to " + callisto.getNameString()<a name="line.115"></a>
-<span class="sourceLineNo">116</span>                                        + " " + callisto.getMarket().getOnOrAt() + "", callisto.getMarket(), info, opad);<a name="line.116"></a>
-<span class="sourceLineNo">117</span>                        info.addPara("She is sentimental about the ship - her first independent command - and is willing to pay a "<a name="line.117"></a>
-<span class="sourceLineNo">118</span>                                        + "large sum for its return.", opad);<a name="line.118"></a>
-<span class="sourceLineNo">119</span>                }<a name="line.119"></a>
-<span class="sourceLineNo">120</span>        }<a name="line.120"></a>
-<span class="sourceLineNo">121</span><a name="line.121"></a>
-<span class="sourceLineNo">122</span>        @Override<a name="line.122"></a>
-<span class="sourceLineNo">123</span>        public boolean addNextStepText(TooltipMakerAPI info, Color tc, float pad) {<a name="line.123"></a>
-<span class="sourceLineNo">124</span>                Color h = Misc.getHighlightColor();<a name="line.124"></a>
-<span class="sourceLineNo">125</span>                if (currentStage == Stage.RETURN_HAMATSU) {<a name="line.125"></a>
-<span class="sourceLineNo">126</span>                        info.addPara("Deliver the ISS Hamatsu to " + callisto.getNameString(), tc, pad);<a name="line.126"></a>
-<span class="sourceLineNo">127</span>                        return true;<a name="line.127"></a>
-<span class="sourceLineNo">128</span>                }<a name="line.128"></a>
-<span class="sourceLineNo">129</span>                return false;<a name="line.129"></a>
-<span class="sourceLineNo">130</span>        }<a name="line.130"></a>
-<span class="sourceLineNo">131</span><a name="line.131"></a>
-<span class="sourceLineNo">132</span>        @Override<a name="line.132"></a>
-<span class="sourceLineNo">133</span>        public String getBaseName() {<a name="line.133"></a>
-<span class="sourceLineNo">134</span>                return "Return the ISS Hamatsu";<a name="line.134"></a>
+<span class="sourceLineNo">110</span>        protected void updateInteractionDataImpl() {<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                set("$gaRH_stage", getCurrentStage());<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                set("$gaRH_reward", Misc.getWithDGS(getCreditsReward()));<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        }<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        <a name="line.114"></a>
+<span class="sourceLineNo">115</span>        @Override<a name="line.115"></a>
+<span class="sourceLineNo">116</span>        public void addDescriptionForNonEndStage(TooltipMakerAPI info, float width, float height) {<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                float opad = 10f;<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                Color h = Misc.getHighlightColor();<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                if (currentStage == Stage.RETURN_HAMATSU) {<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                        addStandardMarketDesc("Deliver the ISS Hamatsu to " + callisto.getNameString()<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                                        + " " + callisto.getMarket().getOnOrAt() + "", callisto.getMarket(), info, opad);<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                        info.addPara("She is sentimental about the ship - her first independent command - and is willing to pay a "<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                                        + "large sum for its return.", opad);<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                }<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        }<a name="line.125"></a>
+<span class="sourceLineNo">126</span><a name="line.126"></a>
+<span class="sourceLineNo">127</span>        @Override<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        public boolean addNextStepText(TooltipMakerAPI info, Color tc, float pad) {<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                Color h = Misc.getHighlightColor();<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                if (currentStage == Stage.RETURN_HAMATSU) {<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                        info.addPara("Deliver the ISS Hamatsu to " + callisto.getNameString(), tc, pad);<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                        return true;<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                }<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                return false;<a name="line.134"></a>
 <span class="sourceLineNo">135</span>        }<a name="line.135"></a>
 <span class="sourceLineNo">136</span><a name="line.136"></a>
 <span class="sourceLineNo">137</span>        @Override<a name="line.137"></a>
-<span class="sourceLineNo">138</span>        public String getPostfixForState() {<a name="line.138"></a>
-<span class="sourceLineNo">139</span>                if (startingStage != null) {<a name="line.139"></a>
-<span class="sourceLineNo">140</span>                        return "";<a name="line.140"></a>
-<span class="sourceLineNo">141</span>                }<a name="line.141"></a>
-<span class="sourceLineNo">142</span>                return super.getPostfixForState();<a name="line.142"></a>
-<span class="sourceLineNo">143</span>        }<a name="line.143"></a>
-<span class="sourceLineNo">144</span>        <a name="line.144"></a>
-<span class="sourceLineNo">145</span>        <a name="line.145"></a>
-<span class="sourceLineNo">146</span>}<a name="line.146"></a>
-<span class="sourceLineNo">147</span><a name="line.147"></a>
-<span class="sourceLineNo">148</span><a name="line.148"></a>
-<span class="sourceLineNo">149</span><a name="line.149"></a>
-<span class="sourceLineNo">150</span><a name="line.150"></a>
-<span class="sourceLineNo">151</span><a name="line.151"></a>
+<span class="sourceLineNo">138</span>        public String getBaseName() {<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                return "Return the ISS Hamatsu";<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        }<a name="line.140"></a>
+<span class="sourceLineNo">141</span><a name="line.141"></a>
+<span class="sourceLineNo">142</span>        @Override<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        public String getPostfixForState() {<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                if (startingStage != null) {<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                        return "";<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                }<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                return super.getPostfixForState();<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        }<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        <a name="line.149"></a>
+<span class="sourceLineNo">150</span>        <a name="line.150"></a>
+<span class="sourceLineNo">151</span>}<a name="line.151"></a>
+<span class="sourceLineNo">152</span><a name="line.152"></a>
+<span class="sourceLineNo">153</span><a name="line.153"></a>
+<span class="sourceLineNo">154</span><a name="line.154"></a>
+<span class="sourceLineNo">155</span><a name="line.155"></a>
+<span class="sourceLineNo">156</span><a name="line.156"></a>
 
 
 

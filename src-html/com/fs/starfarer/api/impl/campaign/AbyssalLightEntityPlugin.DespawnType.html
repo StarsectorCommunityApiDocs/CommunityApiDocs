@@ -16,522 +16,641 @@
 <span class="sourceLineNo">008</span>import com.fs.starfarer.api.Global;<a name="line.8"></a>
 <span class="sourceLineNo">009</span>import com.fs.starfarer.api.SoundAPI;<a name="line.9"></a>
 <span class="sourceLineNo">010</span>import com.fs.starfarer.api.campaign.CampaignEngineLayers;<a name="line.10"></a>
-<span class="sourceLineNo">011</span>import com.fs.starfarer.api.campaign.CampaignFleetAPI;<a name="line.11"></a>
-<span class="sourceLineNo">012</span>import com.fs.starfarer.api.campaign.CustomCampaignEntityAPI;<a name="line.12"></a>
-<span class="sourceLineNo">013</span>import com.fs.starfarer.api.campaign.CustomEntitySpecAPI;<a name="line.13"></a>
-<span class="sourceLineNo">014</span>import com.fs.starfarer.api.campaign.SectorEntityToken;<a name="line.14"></a>
-<span class="sourceLineNo">015</span>import com.fs.starfarer.api.campaign.SectorEntityToken.VisibilityLevel;<a name="line.15"></a>
-<span class="sourceLineNo">016</span>import com.fs.starfarer.api.combat.ViewportAPI;<a name="line.16"></a>
-<span class="sourceLineNo">017</span>import com.fs.starfarer.api.graphics.SpriteAPI;<a name="line.17"></a>
-<span class="sourceLineNo">018</span>import com.fs.starfarer.api.impl.campaign.abilities.InterdictionPulseAbility;<a name="line.18"></a>
-<span class="sourceLineNo">019</span>import com.fs.starfarer.api.impl.campaign.ids.MemFlags;<a name="line.19"></a>
-<span class="sourceLineNo">020</span>import com.fs.starfarer.api.impl.campaign.ids.Tags;<a name="line.20"></a>
-<span class="sourceLineNo">021</span>import com.fs.starfarer.api.impl.campaign.intel.events.ht.HTPoints;<a name="line.21"></a>
-<span class="sourceLineNo">022</span>import com.fs.starfarer.api.impl.campaign.terrain.HyperspaceTerrainPlugin;<a name="line.22"></a>
-<span class="sourceLineNo">023</span>import com.fs.starfarer.api.util.FaderUtil;<a name="line.23"></a>
-<span class="sourceLineNo">024</span>import com.fs.starfarer.api.util.FlickerUtilV2;<a name="line.24"></a>
-<span class="sourceLineNo">025</span>import com.fs.starfarer.api.util.Misc;<a name="line.25"></a>
-<span class="sourceLineNo">026</span><a name="line.26"></a>
-<span class="sourceLineNo">027</span>public class AbyssalLightEntityPlugin extends BaseCustomEntityPlugin {<a name="line.27"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.campaign.CampaignEventListener.FleetDespawnReason;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.campaign.CampaignFleetAPI;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.campaign.CustomCampaignEntityAPI;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.campaign.CustomEntitySpecAPI;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.campaign.SectorEntityToken;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.campaign.SectorEntityToken.VisibilityLevel;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.combat.ViewportAPI;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import com.fs.starfarer.api.graphics.SpriteAPI;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import com.fs.starfarer.api.impl.campaign.abilities.InterdictionPulseAbility;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import com.fs.starfarer.api.impl.campaign.enc.EncounterManager;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import com.fs.starfarer.api.impl.campaign.ids.MemFlags;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import com.fs.starfarer.api.impl.campaign.ids.Tags;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>import com.fs.starfarer.api.impl.campaign.intel.events.ht.HTPoints;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>import com.fs.starfarer.api.impl.campaign.terrain.HyperspaceTerrainPlugin;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>import com.fs.starfarer.api.util.FaderUtil;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>import com.fs.starfarer.api.util.FlickerUtilV2;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>import com.fs.starfarer.api.util.Misc;<a name="line.27"></a>
 <span class="sourceLineNo">028</span><a name="line.28"></a>
-<span class="sourceLineNo">029</span>        public static enum DespawnType {<a name="line.29"></a>
-<span class="sourceLineNo">030</span>                FADE_OUT,<a name="line.30"></a>
-<span class="sourceLineNo">031</span>                EXPAND,<a name="line.31"></a>
-<span class="sourceLineNo">032</span>        }<a name="line.32"></a>
-<span class="sourceLineNo">033</span>        <a name="line.33"></a>
-<span class="sourceLineNo">034</span>        public static float MIN_DURATION = 20f;<a name="line.34"></a>
-<span class="sourceLineNo">035</span>        public static float MAX_DURATION = 30f;<a name="line.35"></a>
-<span class="sourceLineNo">036</span>        <a name="line.36"></a>
-<span class="sourceLineNo">037</span>        public static float MIN_SIZE = 600f;<a name="line.37"></a>
-<span class="sourceLineNo">038</span>        public static float MAX_SIZE = 1200f;<a name="line.38"></a>
-<span class="sourceLineNo">039</span>        <a name="line.39"></a>
-<span class="sourceLineNo">040</span>        public static float DESPAWN_POOF_THRESHOLD = 0.7f;<a name="line.40"></a>
+<span class="sourceLineNo">029</span>public class AbyssalLightEntityPlugin extends BaseCustomEntityPlugin {<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>        public static enum DespawnType {<a name="line.31"></a>
+<span class="sourceLineNo">032</span>                FADE_OUT,<a name="line.32"></a>
+<span class="sourceLineNo">033</span>                EXPAND,<a name="line.33"></a>
+<span class="sourceLineNo">034</span>        }<a name="line.34"></a>
+<span class="sourceLineNo">035</span>        <a name="line.35"></a>
+<span class="sourceLineNo">036</span>        public static float SENSOR_BURST_TRIGGER_RANGE = 500f;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>        public static float DWELLER_TRIGGER_RANGE = 200f;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>        <a name="line.38"></a>
+<span class="sourceLineNo">039</span>        public static float MIN_DURATION = 20f;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>        public static float MAX_DURATION = 30f;<a name="line.40"></a>
 <span class="sourceLineNo">041</span>        <a name="line.41"></a>
-<span class="sourceLineNo">042</span>        public static float GLOW_FREQUENCY = 0.2f; // on/off cycles per second<a name="line.42"></a>
-<span class="sourceLineNo">043</span>        <a name="line.43"></a>
-<span class="sourceLineNo">044</span>        public static float PLAYER_PROXIMITY_MIN_BRIGHTNESS_AT = 2000f;<a name="line.44"></a>
-<span class="sourceLineNo">045</span>        public static float PLAYER_PROXIMITY_MAX_BRIGHTNESS_AT = 300f;<a name="line.45"></a>
-<span class="sourceLineNo">046</span>        public static float PLAYER_PROXIMITY_MIN_BRIGHTNESS = 0.25f;<a name="line.46"></a>
-<span class="sourceLineNo">047</span>        <a name="line.47"></a>
+<span class="sourceLineNo">042</span>        public static float MIN_SIZE = 600f;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        public static float MAX_SIZE = 1200f;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        <a name="line.44"></a>
+<span class="sourceLineNo">045</span>        public static float DESPAWN_POOF_THRESHOLD = 0.7f;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        <a name="line.46"></a>
+<span class="sourceLineNo">047</span>        public static float GLOW_FREQUENCY = 0.2f; // on/off cycles per second<a name="line.47"></a>
 <span class="sourceLineNo">048</span>        <a name="line.48"></a>
-<span class="sourceLineNo">049</span>        public static class AbyssalLightSoundStopper implements EveryFrameScript {<a name="line.49"></a>
-<span class="sourceLineNo">050</span>                protected transient SoundAPI sound = null;<a name="line.50"></a>
-<span class="sourceLineNo">051</span>                protected float elapsed = 0f;<a name="line.51"></a>
-<span class="sourceLineNo">052</span>                public AbyssalLightSoundStopper(SoundAPI sound) {<a name="line.52"></a>
-<span class="sourceLineNo">053</span>                        this.sound = sound;<a name="line.53"></a>
-<span class="sourceLineNo">054</span>                }<a name="line.54"></a>
-<span class="sourceLineNo">055</span>                public boolean isDone() {<a name="line.55"></a>
-<span class="sourceLineNo">056</span>                        return sound == null;<a name="line.56"></a>
-<span class="sourceLineNo">057</span>                }<a name="line.57"></a>
-<span class="sourceLineNo">058</span>                public boolean runWhilePaused() {<a name="line.58"></a>
-<span class="sourceLineNo">059</span>                        return true;<a name="line.59"></a>
-<span class="sourceLineNo">060</span>                }<a name="line.60"></a>
-<span class="sourceLineNo">061</span>                public void advance(float amount) {<a name="line.61"></a>
-<span class="sourceLineNo">062</span>                        elapsed += amount;<a name="line.62"></a>
-<span class="sourceLineNo">063</span>                        if (sound == null) return;<a name="line.63"></a>
-<span class="sourceLineNo">064</span>                        if (!sound.isPlaying() &amp;&amp; elapsed &gt; 1f) {<a name="line.64"></a>
-<span class="sourceLineNo">065</span>                                sound = null;<a name="line.65"></a>
-<span class="sourceLineNo">066</span>                                return;<a name="line.66"></a>
-<span class="sourceLineNo">067</span>                        }<a name="line.67"></a>
-<span class="sourceLineNo">068</span>                        <a name="line.68"></a>
-<span class="sourceLineNo">069</span>                        if (Global.getSector().isPaused() &amp;&amp; sound != null) {<a name="line.69"></a>
-<span class="sourceLineNo">070</span>                                sound.stop();<a name="line.70"></a>
-<span class="sourceLineNo">071</span>                                sound = null;<a name="line.71"></a>
-<span class="sourceLineNo">072</span>                        }<a name="line.72"></a>
+<span class="sourceLineNo">049</span>        public static float PLAYER_PROXIMITY_MIN_BRIGHTNESS_AT = 2000f;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        public static float PLAYER_PROXIMITY_MAX_BRIGHTNESS_AT = 300f;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        public static float PLAYER_PROXIMITY_MIN_BRIGHTNESS = 0.25f;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        <a name="line.52"></a>
+<span class="sourceLineNo">053</span>        <a name="line.53"></a>
+<span class="sourceLineNo">054</span>        public static class DwellerEncounterScript implements EveryFrameScript {<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                protected float elapsed = 0f;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                protected String trigger;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                protected boolean done = false;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                protected float triggerDelay;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                protected SectorEntityToken light;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                protected CampaignFleetAPI fleet;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                public DwellerEncounterScript(String trigger, CampaignFleetAPI fleet, SectorEntityToken light) {<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                        this.trigger = trigger;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                        this.fleet = fleet;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                        this.light = light;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                        triggerDelay = 1f + (float) Math.random() * 1f;<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                        <a name="line.66"></a>
+<span class="sourceLineNo">067</span>                }<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                public boolean isDone() {<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                        return done;<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                }<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                public boolean runWhilePaused() {<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                        return false;<a name="line.72"></a>
 <span class="sourceLineNo">073</span>                }<a name="line.73"></a>
-<span class="sourceLineNo">074</span>        }<a name="line.74"></a>
-<span class="sourceLineNo">075</span>        public static class AbyssalLightParams {<a name="line.75"></a>
-<span class="sourceLineNo">076</span>                public Color color = new Color(200,200,255,255);<a name="line.76"></a>
-<span class="sourceLineNo">077</span>                public float frequencyMultMin = 0.5f;<a name="line.77"></a>
-<span class="sourceLineNo">078</span>                public float frequencyMultMax = 1.5f;<a name="line.78"></a>
-<span class="sourceLineNo">079</span>                public float frequencyChangeMult = 1f;<a name="line.79"></a>
-<span class="sourceLineNo">080</span>                public float size;<a name="line.80"></a>
-<span class="sourceLineNo">081</span>                public float detectedRange;<a name="line.81"></a>
-<span class="sourceLineNo">082</span>                public float bonusMult;<a name="line.82"></a>
-<span class="sourceLineNo">083</span>                public float durationDays;<a name="line.83"></a>
-<span class="sourceLineNo">084</span>                public int pointsOverride = 0;<a name="line.84"></a>
-<span class="sourceLineNo">085</span>                <a name="line.85"></a>
-<span class="sourceLineNo">086</span>                public AbyssalLightParams() {<a name="line.86"></a>
-<span class="sourceLineNo">087</span>                        this(MIN_SIZE, MAX_SIZE);<a name="line.87"></a>
-<span class="sourceLineNo">088</span>                }<a name="line.88"></a>
-<span class="sourceLineNo">089</span>                public AbyssalLightParams(float minSize, float maxSize) {<a name="line.89"></a>
-<span class="sourceLineNo">090</span>                        frequencyMultMin = 0.5f;<a name="line.90"></a>
-<span class="sourceLineNo">091</span>                        frequencyMultMax = 1.5f;<a name="line.91"></a>
-<span class="sourceLineNo">092</span>                        <a name="line.92"></a>
-<span class="sourceLineNo">093</span>                        float sizeRange = maxSize - minSize;<a name="line.93"></a>
-<span class="sourceLineNo">094</span>                        float avgSize = MIN_SIZE + (MAX_SIZE - MIN_SIZE) * 0.5f;<a name="line.94"></a>
+<span class="sourceLineNo">074</span>                public void advance(float amount) {<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                        if (done) return;<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                        <a name="line.76"></a>
+<span class="sourceLineNo">077</span>                        if (Global.getSector().isPaused() || Global.getSector().getCampaignUI().isShowingDialog()) {<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                                return;<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                        }<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                        <a name="line.80"></a>
+<span class="sourceLineNo">081</span>                        elapsed += amount;<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                        <a name="line.82"></a>
+<span class="sourceLineNo">083</span>                        if (fleet == null || elapsed &gt; 3f || !light.isAlive() || light.hasTag(Tags.FADING_OUT_AND_EXPIRING) ||<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                                        fleet.getContainingLocation() != light.getContainingLocation()) {<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                                done = true;<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                                return;<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                        }<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                        <a name="line.88"></a>
+<span class="sourceLineNo">089</span>                        float dist = Misc.getDistance(fleet, light) - fleet.getRadius() - light.getRadius();<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                        if (dist &gt; DWELLER_TRIGGER_RANGE) {<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                                done = true;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                                return;<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                        }<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                        <a name="line.94"></a>
 <span class="sourceLineNo">095</span>                        <a name="line.95"></a>
-<span class="sourceLineNo">096</span>                        <a name="line.96"></a>
-<span class="sourceLineNo">097</span>                        size = minSize + (float) Math.random() * sizeRange;<a name="line.97"></a>
-<span class="sourceLineNo">098</span>                        detectedRange = (size * 3f) / HyperspaceTerrainPlugin.ABYSS_SENSOR_RANGE_MULT;<a name="line.98"></a>
-<span class="sourceLineNo">099</span>                        <a name="line.99"></a>
-<span class="sourceLineNo">100</span>                        bonusMult = size / avgSize;<a name="line.100"></a>
-<span class="sourceLineNo">101</span>                        <a name="line.101"></a>
-<span class="sourceLineNo">102</span>                        durationDays = MIN_DURATION + (MAX_DURATION - MIN_DURATION) * (float) Math.random();<a name="line.102"></a>
-<span class="sourceLineNo">103</span>                }<a name="line.103"></a>
-<span class="sourceLineNo">104</span>                <a name="line.104"></a>
-<span class="sourceLineNo">105</span>                public int getTopographyPoints() {<a name="line.105"></a>
-<span class="sourceLineNo">106</span>                        if (pointsOverride &gt; 0) return pointsOverride;<a name="line.106"></a>
-<span class="sourceLineNo">107</span>                        <a name="line.107"></a>
-<span class="sourceLineNo">108</span>                        return Math.round(HTPoints.ABYSSAL_LIGHT_MIN +<a name="line.108"></a>
-<span class="sourceLineNo">109</span>                                        (HTPoints.ABYSSAL_LIGHT_AVG - HTPoints.ABYSSAL_LIGHT_MIN) * bonusMult);<a name="line.109"></a>
-<span class="sourceLineNo">110</span>                }<a name="line.110"></a>
-<span class="sourceLineNo">111</span>        }<a name="line.111"></a>
-<span class="sourceLineNo">112</span>        <a name="line.112"></a>
-<span class="sourceLineNo">113</span>        <a name="line.113"></a>
-<span class="sourceLineNo">114</span>        transient private SpriteAPI glow;<a name="line.114"></a>
-<span class="sourceLineNo">115</span>        <a name="line.115"></a>
-<span class="sourceLineNo">116</span>        <a name="line.116"></a>
-<span class="sourceLineNo">117</span>        protected float phase = 0f;<a name="line.117"></a>
-<span class="sourceLineNo">118</span>        protected float frequencyMult = 1f;<a name="line.118"></a>
-<span class="sourceLineNo">119</span>        protected FlickerUtilV2 flicker = new FlickerUtilV2();<a name="line.119"></a>
-<span class="sourceLineNo">120</span>        protected FaderUtil fader = new FaderUtil(0f, 0.5f, 0.5f);<a name="line.120"></a>
-<span class="sourceLineNo">121</span>        protected AbyssalLightParams params;<a name="line.121"></a>
-<span class="sourceLineNo">122</span>        protected float untilFrequencyChange = 0f;<a name="line.122"></a>
-<span class="sourceLineNo">123</span>        protected float untilSoundPlayed = 0f;<a name="line.123"></a>
-<span class="sourceLineNo">124</span>        protected float flickerDur = 0f;<a name="line.124"></a>
-<span class="sourceLineNo">125</span>        protected DespawnType despawnType = null;<a name="line.125"></a>
-<span class="sourceLineNo">126</span>        protected boolean playedDespawnSound = false;<a name="line.126"></a>
-<span class="sourceLineNo">127</span>        <a name="line.127"></a>
-<span class="sourceLineNo">128</span>        public void init(SectorEntityToken entity, Object pluginParams) {<a name="line.128"></a>
-<span class="sourceLineNo">129</span>                super.init(entity, pluginParams);<a name="line.129"></a>
-<span class="sourceLineNo">130</span>                params = (AbyssalLightParams) pluginParams;<a name="line.130"></a>
-<span class="sourceLineNo">131</span>                <a name="line.131"></a>
-<span class="sourceLineNo">132</span>                float radiusMult = params.bonusMult;<a name="line.132"></a>
-<span class="sourceLineNo">133</span>                if (radiusMult &gt; 1f) {<a name="line.133"></a>
-<span class="sourceLineNo">134</span>                        radiusMult = 1f + (radiusMult - 1f) * 0.33f;<a name="line.134"></a>
-<span class="sourceLineNo">135</span>                } else if (radiusMult &lt; 1f) {<a name="line.135"></a>
-<span class="sourceLineNo">136</span>                        radiusMult = 1f - (1f - radiusMult) * 0.33f; <a name="line.136"></a>
-<span class="sourceLineNo">137</span>                }<a name="line.137"></a>
-<span class="sourceLineNo">138</span>                ((CustomCampaignEntityAPI) entity).setRadius(entity.getRadius() * radiusMult);<a name="line.138"></a>
-<span class="sourceLineNo">139</span>                entity.setSensorProfile(1f);<a name="line.139"></a>
-<span class="sourceLineNo">140</span>                entity.setDiscoverable(false);<a name="line.140"></a>
-<span class="sourceLineNo">141</span>                //entity.setDiscoveryXP(spec.getDiscoveryXP());<a name="line.141"></a>
-<span class="sourceLineNo">142</span>                <a name="line.142"></a>
-<span class="sourceLineNo">143</span>                entity.getDetectedRangeMod().modifyFlat("gen", params.detectedRange);<a name="line.143"></a>
-<span class="sourceLineNo">144</span>                entity.setExtendedDetectedAtRange(2000f);<a name="line.144"></a>
-<span class="sourceLineNo">145</span>                entity.setDetectionRangeDetailsOverrideMult(0.5f);<a name="line.145"></a>
-<span class="sourceLineNo">146</span>                entity.getMemoryWithoutUpdate().set(MemFlags.EXTRA_SENSOR_INDICATORS, 3);<a name="line.146"></a>
+<span class="sourceLineNo">096</span>                        if (elapsed &gt; triggerDelay) {<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                                if (fleet.isPlayerFleet()) {<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                                        Misc.showRuleDialog(light, trigger);<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                                } else {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                                        fleet.despawn(FleetDespawnReason.DESTROYED_BY_BATTLE, light);<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                                        if (light.getCustomPlugin() instanceof AbyssalLightEntityPlugin) {<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                                                AbyssalLightEntityPlugin plugin = (AbyssalLightEntityPlugin) light.getCustomPlugin();<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                                                plugin.despawn(DespawnType.FADE_OUT);<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                                        }<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                                }<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                                done = true;<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                                return;<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                        }<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                }<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        }<a name="line.110"></a>
+<span class="sourceLineNo">111</span>        public static class AbyssalLightSoundStopper implements EveryFrameScript {<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                protected transient SoundAPI sound = null;<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                protected float elapsed = 0f;<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                public AbyssalLightSoundStopper(SoundAPI sound) {<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                        this.sound = sound;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                }<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                public boolean isDone() {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                        return sound == null;<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                }<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                public boolean runWhilePaused() {<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                        return true;<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                }<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                public void advance(float amount) {<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                        elapsed += amount;<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                        if (sound == null) return;<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                        if (!sound.isPlaying() &amp;&amp; elapsed &gt; 1f) {<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                                sound = null;<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                                return;<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                        }<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                        <a name="line.130"></a>
+<span class="sourceLineNo">131</span>                        if (Global.getSector().isPaused() &amp;&amp; sound != null) {<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                                sound.stop();<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                                sound = null;<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                        }<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                }<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        }<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        public static class AbyssalLightParams {<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                public Color color = new Color(200,200,255,255);<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                public float frequencyMultMin = 0.5f;<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                public float frequencyMultMax = 1.5f;<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                public float frequencyChangeMult = 1f;<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                public float size;<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                public float detectedRange;<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                public float bonusMult;<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                public float durationDays;<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                public int pointsOverride = 0;<a name="line.146"></a>
 <span class="sourceLineNo">147</span>                <a name="line.147"></a>
-<span class="sourceLineNo">148</span>                updateFrequency(0f);<a name="line.148"></a>
-<span class="sourceLineNo">149</span>                updateSoundDelayAndPlaySound(0f);<a name="line.149"></a>
-<span class="sourceLineNo">150</span>                readResolve();<a name="line.150"></a>
-<span class="sourceLineNo">151</span>        }<a name="line.151"></a>
-<span class="sourceLineNo">152</span>        <a name="line.152"></a>
-<span class="sourceLineNo">153</span>        public boolean isDespawning() {<a name="line.153"></a>
-<span class="sourceLineNo">154</span>                return despawnType != null || entity.hasTag(Tags.FADING_OUT_AND_EXPIRING);<a name="line.154"></a>
-<span class="sourceLineNo">155</span>        }<a name="line.155"></a>
-<span class="sourceLineNo">156</span>        <a name="line.156"></a>
-<span class="sourceLineNo">157</span>        public void despawn(DespawnType type) {<a name="line.157"></a>
-<span class="sourceLineNo">158</span>                if (isDespawning()) return;<a name="line.158"></a>
-<span class="sourceLineNo">159</span>                <a name="line.159"></a>
-<span class="sourceLineNo">160</span>                float dur = 1f;<a name="line.160"></a>
-<span class="sourceLineNo">161</span>                if (type == DespawnType.EXPAND) dur = 2f;<a name="line.161"></a>
-<span class="sourceLineNo">162</span>                Misc.fadeAndExpire(entity, dur);<a name="line.162"></a>
-<span class="sourceLineNo">163</span>                despawnType = type;<a name="line.163"></a>
-<span class="sourceLineNo">164</span>                <a name="line.164"></a>
-<span class="sourceLineNo">165</span>                if (type == DespawnType.EXPAND &amp;&amp; entity.isInCurrentLocation()) {<a name="line.165"></a>
-<span class="sourceLineNo">166</span>                        VisibilityLevel level = entity.getVisibilityLevelToPlayerFleet();<a name="line.166"></a>
-<span class="sourceLineNo">167</span>                        if (level == VisibilityLevel.COMPOSITION_DETAILS || level == VisibilityLevel.COMPOSITION_AND_FACTION_DETAILS) {<a name="line.167"></a>
-<span class="sourceLineNo">168</span>                                Global.getSoundPlayer().playSound("abyssal_light_expand_despawn_windup", 1f, 1f, entity.getLocation(), Misc.ZERO);<a name="line.168"></a>
-<span class="sourceLineNo">169</span>                        }<a name="line.169"></a>
-<span class="sourceLineNo">170</span>                }<a name="line.170"></a>
-<span class="sourceLineNo">171</span>        }<a name="line.171"></a>
-<span class="sourceLineNo">172</span>        <a name="line.172"></a>
-<span class="sourceLineNo">173</span>        public void updateSoundDelayAndPlaySound(float amount) {<a name="line.173"></a>
-<span class="sourceLineNo">174</span>                untilSoundPlayed -= amount;<a name="line.174"></a>
-<span class="sourceLineNo">175</span>                if (untilSoundPlayed &lt;= 0f) {<a name="line.175"></a>
-<span class="sourceLineNo">176</span>                        //untilSoundPlayed = 0.5f + (float) Math.random() * 20f;<a name="line.176"></a>
-<span class="sourceLineNo">177</span>                        untilSoundPlayed = 5f + (float) Math.random() * 30f;<a name="line.177"></a>
-<span class="sourceLineNo">178</span>                <a name="line.178"></a>
-<span class="sourceLineNo">179</span>                        // don't play sound when called from the constructor with amount == 0f<a name="line.179"></a>
-<span class="sourceLineNo">180</span>                        if (amount &gt; 0 &amp;&amp; entity.isInCurrentLocation()) {<a name="line.180"></a>
-<span class="sourceLineNo">181</span>                                VisibilityLevel level = entity.getVisibilityLevelToPlayerFleet();<a name="line.181"></a>
-<span class="sourceLineNo">182</span>                                if (level == VisibilityLevel.COMPOSITION_DETAILS || level == VisibilityLevel.COMPOSITION_AND_FACTION_DETAILS) {<a name="line.182"></a>
-<span class="sourceLineNo">183</span>                                        float volume = 1f;<a name="line.183"></a>
-<span class="sourceLineNo">184</span>                                        if (params.bonusMult &lt; 1f) {<a name="line.184"></a>
-<span class="sourceLineNo">185</span>                                                volume = 1f - (1f - params.bonusMult) * 0.6f; <a name="line.185"></a>
-<span class="sourceLineNo">186</span>                                        }<a name="line.186"></a>
-<span class="sourceLineNo">187</span>                                        if (volume &gt; 1f) volume = 1f;<a name="line.187"></a>
-<span class="sourceLineNo">188</span>                                        if (volume &lt; 0f) volume = 0f;<a name="line.188"></a>
-<span class="sourceLineNo">189</span>                                        SoundAPI sound = Global.getSoundPlayer().playSound("abyssal_light_random_sound", 1f, volume, entity.getLocation(), Misc.ZERO);<a name="line.189"></a>
-<span class="sourceLineNo">190</span>                                        Global.getSector().addScript(new AbyssalLightSoundStopper(sound));<a name="line.190"></a>
-<span class="sourceLineNo">191</span>                                        //flickerDur = 3f + 2f * (float) Math.random();<a name="line.191"></a>
-<span class="sourceLineNo">192</span>                                        flickerDur = 0.5f + 0.5f * (float) Math.random();<a name="line.192"></a>
-<span class="sourceLineNo">193</span>                                }<a name="line.193"></a>
-<span class="sourceLineNo">194</span>                        }<a name="line.194"></a>
-<span class="sourceLineNo">195</span>                }<a name="line.195"></a>
-<span class="sourceLineNo">196</span>        }<a name="line.196"></a>
-<span class="sourceLineNo">197</span>        public void updateFrequency(float amount) {<a name="line.197"></a>
-<span class="sourceLineNo">198</span>                untilFrequencyChange -= amount * params.frequencyChangeMult;<a name="line.198"></a>
-<span class="sourceLineNo">199</span>                if (untilFrequencyChange &lt;= 0f) {<a name="line.199"></a>
-<span class="sourceLineNo">200</span>                        untilFrequencyChange = 1f + (float) Math.random() * 3f;<a name="line.200"></a>
-<span class="sourceLineNo">201</span>                        <a name="line.201"></a>
-<span class="sourceLineNo">202</span>                        frequencyMult = params.frequencyMultMin * <a name="line.202"></a>
-<span class="sourceLineNo">203</span>                                        (float) Math.random() * (params.frequencyMultMax - params.frequencyMultMin);<a name="line.203"></a>
-<span class="sourceLineNo">204</span>                }<a name="line.204"></a>
-<span class="sourceLineNo">205</span>        }<a name="line.205"></a>
-<span class="sourceLineNo">206</span>        <a name="line.206"></a>
-<span class="sourceLineNo">207</span>        Object readResolve() {<a name="line.207"></a>
-<span class="sourceLineNo">208</span>                glow = Global.getSettings().getSprite("campaignEntities", "abyssal_light_glow");<a name="line.208"></a>
-<span class="sourceLineNo">209</span>                return this;<a name="line.209"></a>
-<span class="sourceLineNo">210</span>        }<a name="line.210"></a>
-<span class="sourceLineNo">211</span>        <a name="line.211"></a>
-<span class="sourceLineNo">212</span>        public AbyssalLightParams getParams() {<a name="line.212"></a>
-<span class="sourceLineNo">213</span>                return params;<a name="line.213"></a>
+<span class="sourceLineNo">148</span>                public AbyssalLightParams() {<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                        this(MIN_SIZE, MAX_SIZE);<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                }<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                public AbyssalLightParams(float minSize, float maxSize) {<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                        frequencyMultMin = 0.5f;<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                        frequencyMultMax = 1.5f;<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                        <a name="line.154"></a>
+<span class="sourceLineNo">155</span>                        float sizeRange = maxSize - minSize;<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                        float avgSize = MIN_SIZE + (MAX_SIZE - MIN_SIZE) * 0.5f;<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                        <a name="line.157"></a>
+<span class="sourceLineNo">158</span>                        <a name="line.158"></a>
+<span class="sourceLineNo">159</span>                        size = minSize + (float) Math.random() * sizeRange;<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                        detectedRange = (size * 3f) / HyperspaceTerrainPlugin.ABYSS_SENSOR_RANGE_MULT;<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                        <a name="line.161"></a>
+<span class="sourceLineNo">162</span>                        bonusMult = size / avgSize;<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                        <a name="line.163"></a>
+<span class="sourceLineNo">164</span>                        durationDays = MIN_DURATION + (MAX_DURATION - MIN_DURATION) * (float) Math.random();<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                }<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                <a name="line.166"></a>
+<span class="sourceLineNo">167</span>                public int getTopographyPoints() {<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                        if (pointsOverride &gt; 0) return pointsOverride;<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                        <a name="line.169"></a>
+<span class="sourceLineNo">170</span>                        return Math.round(HTPoints.ABYSSAL_LIGHT_MIN +<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                                        (HTPoints.ABYSSAL_LIGHT_AVG - HTPoints.ABYSSAL_LIGHT_MIN) * bonusMult);<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                }<a name="line.172"></a>
+<span class="sourceLineNo">173</span>        }<a name="line.173"></a>
+<span class="sourceLineNo">174</span>        <a name="line.174"></a>
+<span class="sourceLineNo">175</span>        <a name="line.175"></a>
+<span class="sourceLineNo">176</span>        transient private SpriteAPI glow;<a name="line.176"></a>
+<span class="sourceLineNo">177</span>        <a name="line.177"></a>
+<span class="sourceLineNo">178</span>        <a name="line.178"></a>
+<span class="sourceLineNo">179</span>        protected float phase = 0f;<a name="line.179"></a>
+<span class="sourceLineNo">180</span>        protected float frequencyMult = 1f;<a name="line.180"></a>
+<span class="sourceLineNo">181</span>        protected FlickerUtilV2 flicker = new FlickerUtilV2();<a name="line.181"></a>
+<span class="sourceLineNo">182</span>        protected FaderUtil fader = new FaderUtil(0f, 0.5f, 0.5f);<a name="line.182"></a>
+<span class="sourceLineNo">183</span>        protected AbyssalLightParams params;<a name="line.183"></a>
+<span class="sourceLineNo">184</span>        protected float untilFrequencyChange = 0f;<a name="line.184"></a>
+<span class="sourceLineNo">185</span>        protected float untilSoundPlayed = 0f;<a name="line.185"></a>
+<span class="sourceLineNo">186</span>        protected float flickerDur = 0f;<a name="line.186"></a>
+<span class="sourceLineNo">187</span>        protected float abilityResponseFlickerTimeout = 0f;<a name="line.187"></a>
+<span class="sourceLineNo">188</span>        protected DespawnType despawnType = null;<a name="line.188"></a>
+<span class="sourceLineNo">189</span>        protected boolean playedDespawnSound = false;<a name="line.189"></a>
+<span class="sourceLineNo">190</span>        <a name="line.190"></a>
+<span class="sourceLineNo">191</span>        public void init(SectorEntityToken entity, Object pluginParams) {<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                super.init(entity, pluginParams);<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                params = (AbyssalLightParams) pluginParams;<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                <a name="line.194"></a>
+<span class="sourceLineNo">195</span>                float radiusMult = params.bonusMult;<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                if (radiusMult &gt; 1f) {<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                        radiusMult = 1f + (radiusMult - 1f) * 0.33f;<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                } else if (radiusMult &lt; 1f) {<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                        radiusMult = 1f - (1f - radiusMult) * 0.33f; <a name="line.199"></a>
+<span class="sourceLineNo">200</span>                }<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                ((CustomCampaignEntityAPI) entity).setRadius(entity.getRadius() * radiusMult);<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                entity.setSensorProfile(1f);<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                entity.setDiscoverable(false);<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                //entity.setDiscoveryXP(spec.getDiscoveryXP());<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                <a name="line.205"></a>
+<span class="sourceLineNo">206</span>                entity.getDetectedRangeMod().modifyFlat("gen", params.detectedRange);<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                entity.setExtendedDetectedAtRange(2000f);<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                entity.setDetectionRangeDetailsOverrideMult(0.5f);<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                entity.getMemoryWithoutUpdate().set(MemFlags.EXTRA_SENSOR_INDICATORS, 3);<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                <a name="line.210"></a>
+<span class="sourceLineNo">211</span>                updateFrequency(0f);<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                updateSoundDelayAndPlaySound(0f);<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                readResolve();<a name="line.213"></a>
 <span class="sourceLineNo">214</span>        }<a name="line.214"></a>
-<span class="sourceLineNo">215</span><a name="line.215"></a>
-<span class="sourceLineNo">216</span>        <a name="line.216"></a>
-<span class="sourceLineNo">217</span>        public void advance(float amount) {<a name="line.217"></a>
-<span class="sourceLineNo">218</span>                if (isDespawning()) {<a name="line.218"></a>
-<span class="sourceLineNo">219</span>                        if (!playedDespawnSound &amp;&amp; <a name="line.219"></a>
-<span class="sourceLineNo">220</span>                                        (getDespawnProgress() &gt; DESPAWN_POOF_THRESHOLD || despawnType == DespawnType.FADE_OUT)) {<a name="line.220"></a>
-<span class="sourceLineNo">221</span>                                playedDespawnSound = true;<a name="line.221"></a>
-<span class="sourceLineNo">222</span>                                if (entity.isInCurrentLocation()) {<a name="line.222"></a>
-<span class="sourceLineNo">223</span>                                        VisibilityLevel level = entity.getVisibilityLevelToPlayerFleet();<a name="line.223"></a>
-<span class="sourceLineNo">224</span>                                        if (level == VisibilityLevel.COMPOSITION_DETAILS || level == VisibilityLevel.COMPOSITION_AND_FACTION_DETAILS) {<a name="line.224"></a>
-<span class="sourceLineNo">225</span>                                                String soundId = "abyssal_light_despawn_disrupted";<a name="line.225"></a>
-<span class="sourceLineNo">226</span>                                                if (despawnType == DespawnType.FADE_OUT) {<a name="line.226"></a>
-<span class="sourceLineNo">227</span>                                                        soundId = "abyssal_light_despawn_expired";<a name="line.227"></a>
-<span class="sourceLineNo">228</span>                                                }<a name="line.228"></a>
-<span class="sourceLineNo">229</span>                                                Global.getSoundPlayer().playSound(soundId, 1f, 1f, entity.getLocation(), Misc.ZERO);<a name="line.229"></a>
-<span class="sourceLineNo">230</span>                                        }<a name="line.230"></a>
-<span class="sourceLineNo">231</span>                                }<a name="line.231"></a>
+<span class="sourceLineNo">215</span>        <a name="line.215"></a>
+<span class="sourceLineNo">216</span>        public boolean isDespawning() {<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                return despawnType != null || entity.hasTag(Tags.FADING_OUT_AND_EXPIRING);<a name="line.217"></a>
+<span class="sourceLineNo">218</span>        }<a name="line.218"></a>
+<span class="sourceLineNo">219</span>        <a name="line.219"></a>
+<span class="sourceLineNo">220</span>        public void despawn(DespawnType type) {<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                if (isDespawning()) return;<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                <a name="line.222"></a>
+<span class="sourceLineNo">223</span>                float dur = 1f;<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                if (type == DespawnType.EXPAND) dur = 2f;<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                Misc.fadeAndExpire(entity, dur);<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                despawnType = type;<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                <a name="line.227"></a>
+<span class="sourceLineNo">228</span>                if (type == DespawnType.EXPAND &amp;&amp; entity.isInCurrentLocation()) {<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                        VisibilityLevel level = entity.getVisibilityLevelToPlayerFleet();<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                        if (level == VisibilityLevel.COMPOSITION_DETAILS || level == VisibilityLevel.COMPOSITION_AND_FACTION_DETAILS) {<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                                Global.getSoundPlayer().playSound("abyssal_light_expand_despawn_windup", 1f, 1f, entity.getLocation(), Misc.ZERO);<a name="line.231"></a>
 <span class="sourceLineNo">232</span>                        }<a name="line.232"></a>
-<span class="sourceLineNo">233</span>                        <a name="line.233"></a>
-<span class="sourceLineNo">234</span>                        return;<a name="line.234"></a>
-<span class="sourceLineNo">235</span>                }<a name="line.235"></a>
-<span class="sourceLineNo">236</span><a name="line.236"></a>
-<span class="sourceLineNo">237</span>                float days = Misc.getDays(amount);<a name="line.237"></a>
-<span class="sourceLineNo">238</span>                params.durationDays -= days;<a name="line.238"></a>
-<span class="sourceLineNo">239</span>                if (params.durationDays &lt;= 0f || Misc.getAbyssalDepth(entity) &lt; 1f) {<a name="line.239"></a>
-<span class="sourceLineNo">240</span>                        despawn(DespawnType.FADE_OUT);<a name="line.240"></a>
-<span class="sourceLineNo">241</span>                        return;<a name="line.241"></a>
-<span class="sourceLineNo">242</span>                }<a name="line.242"></a>
-<span class="sourceLineNo">243</span>                <a name="line.243"></a>
-<span class="sourceLineNo">244</span>                updateFrequency(amount);<a name="line.244"></a>
-<span class="sourceLineNo">245</span>                updateSoundDelayAndPlaySound(amount);<a name="line.245"></a>
-<span class="sourceLineNo">246</span>                <a name="line.246"></a>
-<span class="sourceLineNo">247</span>                phase += amount * GLOW_FREQUENCY * frequencyMult;<a name="line.247"></a>
-<span class="sourceLineNo">248</span>                while (phase &gt; 1) phase --;<a name="line.248"></a>
-<span class="sourceLineNo">249</span>                <a name="line.249"></a>
-<span class="sourceLineNo">250</span>                if (flickerDur &gt; 0) {<a name="line.250"></a>
-<span class="sourceLineNo">251</span>                        flickerDur -= amount;<a name="line.251"></a>
-<span class="sourceLineNo">252</span>                        if (flickerDur &lt; 0) flickerDur = 0;<a name="line.252"></a>
-<span class="sourceLineNo">253</span>                }<a name="line.253"></a>
-<span class="sourceLineNo">254</span>                <a name="line.254"></a>
-<span class="sourceLineNo">255</span>                flicker.advance(amount * 10f);<a name="line.255"></a>
-<span class="sourceLineNo">256</span>                fader.advance(amount);<a name="line.256"></a>
-<span class="sourceLineNo">257</span>                <a name="line.257"></a>
-<span class="sourceLineNo">258</span>                if (Global.getSector().getMemoryWithoutUpdate().getBoolean(MemFlags.GLOBAL_INTERDICTION_PULSE_JUST_USED_IN_CURRENT_LOCATION)) {<a name="line.258"></a>
-<span class="sourceLineNo">259</span>                        if (entity.getContainingLocation() != null) {<a name="line.259"></a>
-<span class="sourceLineNo">260</span>                                for (CampaignFleetAPI fleet : entity.getContainingLocation().getFleets()) {<a name="line.260"></a>
-<span class="sourceLineNo">261</span>                                        float range = InterdictionPulseAbility.getRange(fleet);<a name="line.261"></a>
-<span class="sourceLineNo">262</span>                                        float dist = Misc.getDistance(fleet.getLocation(), entity.getLocation());<a name="line.262"></a>
-<span class="sourceLineNo">263</span>                                        if (dist &gt; range) continue;<a name="line.263"></a>
-<span class="sourceLineNo">264</span>                                        <a name="line.264"></a>
-<span class="sourceLineNo">265</span>                                        <a name="line.265"></a>
-<span class="sourceLineNo">266</span>                                        if (fleet.getMemoryWithoutUpdate().getBoolean(MemFlags.JUST_DID_INTERDICTION_PULSE)) {<a name="line.266"></a>
-<span class="sourceLineNo">267</span>                                                AbyssalLightBonus bonus = AbyssalLightBonus.get(fleet);<a name="line.267"></a>
-<span class="sourceLineNo">268</span>                                                <a name="line.268"></a>
-<span class="sourceLineNo">269</span>                                                float brightness = getProximityBasedBrightnessFactor(fleet, entity.getLocation());<a name="line.269"></a>
-<span class="sourceLineNo">270</span>                                                bonus.addBurnBonus(params.bonusMult * brightness);<a name="line.270"></a>
-<span class="sourceLineNo">271</span>                                                <a name="line.271"></a>
-<span class="sourceLineNo">272</span>                                                if (fleet.isPlayerFleet()) {<a name="line.272"></a>
-<span class="sourceLineNo">273</span>                                                        bonus.addTopographyPoints(params.getTopographyPoints());<a name="line.273"></a>
-<span class="sourceLineNo">274</span>                                                }<a name="line.274"></a>
-<span class="sourceLineNo">275</span>                                                <a name="line.275"></a>
-<span class="sourceLineNo">276</span>                                                despawn(DespawnType.EXPAND);<a name="line.276"></a>
-<span class="sourceLineNo">277</span>                                        }<a name="line.277"></a>
-<span class="sourceLineNo">278</span>                                }<a name="line.278"></a>
-<span class="sourceLineNo">279</span>                        }<a name="line.279"></a>
-<span class="sourceLineNo">280</span>                        if (isDespawning()) return;<a name="line.280"></a>
-<span class="sourceLineNo">281</span>                }<a name="line.281"></a>
-<span class="sourceLineNo">282</span>                <a name="line.282"></a>
-<span class="sourceLineNo">283</span>                if (Global.getSector().getMemoryWithoutUpdate().getBoolean(MemFlags.GLOBAL_SENSOR_BURST_JUST_USED_IN_CURRENT_LOCATION)) {<a name="line.283"></a>
-<span class="sourceLineNo">284</span>                        if (entity.getContainingLocation() != null) {<a name="line.284"></a>
-<span class="sourceLineNo">285</span>                                for (CampaignFleetAPI fleet : entity.getContainingLocation().getFleets()) {<a name="line.285"></a>
-<span class="sourceLineNo">286</span>                                        float range = 500f + fleet.getRadius() + entity.getRadius();<a name="line.286"></a>
-<span class="sourceLineNo">287</span>                                        float dist = Misc.getDistance(fleet.getLocation(), entity.getLocation());<a name="line.287"></a>
-<span class="sourceLineNo">288</span>                                        if (dist &gt; range) continue;<a name="line.288"></a>
-<span class="sourceLineNo">289</span>                                        <a name="line.289"></a>
-<span class="sourceLineNo">290</span>                                        <a name="line.290"></a>
-<span class="sourceLineNo">291</span>                                        if (fleet.getMemoryWithoutUpdate().getBoolean(MemFlags.JUST_DID_SENSOR_BURST)) {<a name="line.291"></a>
-<span class="sourceLineNo">292</span>                                                AbyssalLightBonus bonus = AbyssalLightBonus.get(fleet);<a name="line.292"></a>
-<span class="sourceLineNo">293</span>                                                <a name="line.293"></a>
-<span class="sourceLineNo">294</span>                                                float brightness = getProximityBasedBrightnessFactor(fleet, entity.getLocation());<a name="line.294"></a>
-<span class="sourceLineNo">295</span>                                                bonus.addSensorBonus(params.bonusMult * brightness);<a name="line.295"></a>
-<span class="sourceLineNo">296</span>                                                <a name="line.296"></a>
-<span class="sourceLineNo">297</span>                                                if (fleet.isPlayerFleet()) {<a name="line.297"></a>
-<span class="sourceLineNo">298</span>                                                        bonus.addTopographyPoints(params.getTopographyPoints());<a name="line.298"></a>
-<span class="sourceLineNo">299</span>                                                }<a name="line.299"></a>
-<span class="sourceLineNo">300</span>                                                <a name="line.300"></a>
-<span class="sourceLineNo">301</span>                                                despawn(DespawnType.EXPAND);<a name="line.301"></a>
-<span class="sourceLineNo">302</span>                                        }<a name="line.302"></a>
-<span class="sourceLineNo">303</span>                                }<a name="line.303"></a>
-<span class="sourceLineNo">304</span>                        }<a name="line.304"></a>
-<span class="sourceLineNo">305</span>                        if (isDespawning()) return;<a name="line.305"></a>
-<span class="sourceLineNo">306</span>                }<a name="line.306"></a>
-<span class="sourceLineNo">307</span>        }<a name="line.307"></a>
-<span class="sourceLineNo">308</span>        <a name="line.308"></a>
-<span class="sourceLineNo">309</span>        public float getFlickerBasedMult() {<a name="line.309"></a>
-<span class="sourceLineNo">310</span>                if (flickerDur &lt;= 0f) return 1f;<a name="line.310"></a>
-<span class="sourceLineNo">311</span>                <a name="line.311"></a>
-<span class="sourceLineNo">312</span>                float mult = 1f;<a name="line.312"></a>
-<span class="sourceLineNo">313</span>                if (flickerDur &lt; 1f) mult = flickerDur;<a name="line.313"></a>
-<span class="sourceLineNo">314</span>                <a name="line.314"></a>
-<span class="sourceLineNo">315</span>                mult *= 0.25f;<a name="line.315"></a>
-<span class="sourceLineNo">316</span>                <a name="line.316"></a>
-<span class="sourceLineNo">317</span>                float f = 1f - flicker.getBrightness() * mult;<a name="line.317"></a>
-<span class="sourceLineNo">318</span>                return f;<a name="line.318"></a>
-<span class="sourceLineNo">319</span>        }<a name="line.319"></a>
-<span class="sourceLineNo">320</span>        <a name="line.320"></a>
-<span class="sourceLineNo">321</span>        public float getGlowAlpha() {<a name="line.321"></a>
-<span class="sourceLineNo">322</span>                float glowAlpha = 0f;<a name="line.322"></a>
-<span class="sourceLineNo">323</span>                if (phase &lt; 0.5f) glowAlpha = phase * 2f;<a name="line.323"></a>
-<span class="sourceLineNo">324</span>                if (phase &gt;= 0.5f) glowAlpha = (1f - (phase - 0.5f) * 2f);<a name="line.324"></a>
-<span class="sourceLineNo">325</span>                glowAlpha = 0.75f + glowAlpha * 0.25f;<a name="line.325"></a>
-<span class="sourceLineNo">326</span>                //glowAlpha *= getFlickerBasedMult();<a name="line.326"></a>
-<span class="sourceLineNo">327</span>                <a name="line.327"></a>
-<span class="sourceLineNo">328</span>                if (glowAlpha &lt; 0) glowAlpha = 0;<a name="line.328"></a>
-<span class="sourceLineNo">329</span>                if (glowAlpha &gt; 1) glowAlpha = 1;<a name="line.329"></a>
-<span class="sourceLineNo">330</span>                return glowAlpha;<a name="line.330"></a>
-<span class="sourceLineNo">331</span>        }<a name="line.331"></a>
-<span class="sourceLineNo">332</span>        <a name="line.332"></a>
-<span class="sourceLineNo">333</span>        <a name="line.333"></a>
-<span class="sourceLineNo">334</span><a name="line.334"></a>
-<span class="sourceLineNo">335</span>        public float getRenderRange() {<a name="line.335"></a>
-<span class="sourceLineNo">336</span>                return entity.getRadius() + params.size * 0.75f;<a name="line.336"></a>
-<span class="sourceLineNo">337</span>        }<a name="line.337"></a>
-<span class="sourceLineNo">338</span><a name="line.338"></a>
-<span class="sourceLineNo">339</span>        public float getDespawnProgress() {<a name="line.339"></a>
-<span class="sourceLineNo">340</span>                if (!isDespawning()) return 0f;<a name="line.340"></a>
-<span class="sourceLineNo">341</span>                float f = entity.getSensorFaderBrightness();<a name="line.341"></a>
-<span class="sourceLineNo">342</span>                return 1 - f;<a name="line.342"></a>
-<span class="sourceLineNo">343</span>        }<a name="line.343"></a>
-<span class="sourceLineNo">344</span>        <a name="line.344"></a>
-<span class="sourceLineNo">345</span>        public void render(CampaignEngineLayers layer, ViewportAPI viewport) {<a name="line.345"></a>
-<span class="sourceLineNo">346</span>                float alphaMult = viewport.getAlphaMult();<a name="line.346"></a>
-<span class="sourceLineNo">347</span>                <a name="line.347"></a>
-<span class="sourceLineNo">348</span>                if (!isDespawning() || despawnType == DespawnType.FADE_OUT) {<a name="line.348"></a>
-<span class="sourceLineNo">349</span>                        alphaMult *= entity.getSensorFaderBrightness();<a name="line.349"></a>
-<span class="sourceLineNo">350</span>                }<a name="line.350"></a>
-<span class="sourceLineNo">351</span>                <a name="line.351"></a>
-<span class="sourceLineNo">352</span>                if (alphaMult &lt;= 0) return;<a name="line.352"></a>
-<span class="sourceLineNo">353</span>                <a name="line.353"></a>
-<span class="sourceLineNo">354</span>                float f = getDespawnProgress();<a name="line.354"></a>
-<span class="sourceLineNo">355</span>                if (despawnType == DespawnType.FADE_OUT) {<a name="line.355"></a>
-<span class="sourceLineNo">356</span>                        f = 0f;<a name="line.356"></a>
-<span class="sourceLineNo">357</span>                }<a name="line.357"></a>
-<span class="sourceLineNo">358</span>                <a name="line.358"></a>
-<span class="sourceLineNo">359</span>                if (f &gt; DESPAWN_POOF_THRESHOLD) {<a name="line.359"></a>
-<span class="sourceLineNo">360</span>                        float fadeOut = (1f - f) / (1f - DESPAWN_POOF_THRESHOLD);<a name="line.360"></a>
-<span class="sourceLineNo">361</span>                        alphaMult *= fadeOut;<a name="line.361"></a>
-<span class="sourceLineNo">362</span>                }<a name="line.362"></a>
-<span class="sourceLineNo">363</span>                <a name="line.363"></a>
-<span class="sourceLineNo">364</span>                VisibilityLevel level = entity.getVisibilityLevelToPlayerFleet();<a name="line.364"></a>
-<span class="sourceLineNo">365</span>                if (level == VisibilityLevel.COMPOSITION_DETAILS || level == VisibilityLevel.COMPOSITION_AND_FACTION_DETAILS) {<a name="line.365"></a>
-<span class="sourceLineNo">366</span>                        fader.fadeIn();<a name="line.366"></a>
-<span class="sourceLineNo">367</span>                } else {<a name="line.367"></a>
-<span class="sourceLineNo">368</span>                        fader.fadeOut();<a name="line.368"></a>
-<span class="sourceLineNo">369</span>                }<a name="line.369"></a>
-<span class="sourceLineNo">370</span>                <a name="line.370"></a>
-<span class="sourceLineNo">371</span>                alphaMult *= fader.getBrightness();<a name="line.371"></a>
-<span class="sourceLineNo">372</span>                <a name="line.372"></a>
-<span class="sourceLineNo">373</span>                float b = getPlayerProximityBasedBrightnessFactor(entity);<a name="line.373"></a>
-<span class="sourceLineNo">374</span>                alphaMult *= b;<a name="line.374"></a>
-<span class="sourceLineNo">375</span>                <a name="line.375"></a>
-<span class="sourceLineNo">376</span>                <a name="line.376"></a>
-<span class="sourceLineNo">377</span>//              if (Misc.getDistanceToPlayerLY(entity) &gt; 0.1f) {<a name="line.377"></a>
-<span class="sourceLineNo">378</span>//                      Misc.fadeAndExpire(entity);<a name="line.378"></a>
-<span class="sourceLineNo">379</span>//                      return;<a name="line.379"></a>
-<span class="sourceLineNo">380</span>//              }<a name="line.380"></a>
-<span class="sourceLineNo">381</span>//              if (!Global.getSector().isPaused()) {<a name="line.381"></a>
-<span class="sourceLineNo">382</span>//                      System.out.println("Alpha: " + alphaMult);<a name="line.382"></a>
-<span class="sourceLineNo">383</span>//              }<a name="line.383"></a>
-<span class="sourceLineNo">384</span><a name="line.384"></a>
-<span class="sourceLineNo">385</span>                CustomEntitySpecAPI spec = entity.getCustomEntitySpec();<a name="line.385"></a>
-<span class="sourceLineNo">386</span>                if (spec == null) return;<a name="line.386"></a>
-<span class="sourceLineNo">387</span>                <a name="line.387"></a>
-<span class="sourceLineNo">388</span>                float w = spec.getSpriteWidth();<a name="line.388"></a>
-<span class="sourceLineNo">389</span>                float h = spec.getSpriteHeight();<a name="line.389"></a>
-<span class="sourceLineNo">390</span>                <a name="line.390"></a>
-<span class="sourceLineNo">391</span>                Vector2f loc = entity.getLocation();<a name="line.391"></a>
-<span class="sourceLineNo">392</span>                <a name="line.392"></a>
-<span class="sourceLineNo">393</span>                float glowAlpha = getGlowAlpha();<a name="line.393"></a>
-<span class="sourceLineNo">394</span>                <a name="line.394"></a>
-<span class="sourceLineNo">395</span>                glow.setColor(params.color);<a name="line.395"></a>
-<span class="sourceLineNo">396</span>                <a name="line.396"></a>
-<span class="sourceLineNo">397</span>                w = params.size;<a name="line.397"></a>
-<span class="sourceLineNo">398</span>                h = params.size;<a name="line.398"></a>
-<span class="sourceLineNo">399</span>                <a name="line.399"></a>
-<span class="sourceLineNo">400</span>                float scale = 0.25f + alphaMult * 0.75f;<a name="line.400"></a>
-<span class="sourceLineNo">401</span>                if (f &gt; DESPAWN_POOF_THRESHOLD) {<a name="line.401"></a>
-<span class="sourceLineNo">402</span>                        scale *= 1.5f;<a name="line.402"></a>
-<span class="sourceLineNo">403</span>                }<a name="line.403"></a>
-<span class="sourceLineNo">404</span>                <a name="line.404"></a>
-<span class="sourceLineNo">405</span>                float fringeScale = 1f;<a name="line.405"></a>
-<span class="sourceLineNo">406</span>                //fringeScale = 1.5f;<a name="line.406"></a>
-<span class="sourceLineNo">407</span>                <a name="line.407"></a>
-<span class="sourceLineNo">408</span>                glow.setAdditiveBlend();<a name="line.408"></a>
-<span class="sourceLineNo">409</span>                <a name="line.409"></a>
-<span class="sourceLineNo">410</span>                if (layer == CampaignEngineLayers.TERRAIN_8) {<a name="line.410"></a>
-<span class="sourceLineNo">411</span>                        //float flicker = getFlickerBasedMult();<a name="line.411"></a>
-<span class="sourceLineNo">412</span>                        glow.setAlphaMult(alphaMult * glowAlpha * 0.5f);<a name="line.412"></a>
-<span class="sourceLineNo">413</span>                        glow.setSize(w * scale * fringeScale, h * scale * fringeScale);<a name="line.413"></a>
-<span class="sourceLineNo">414</span>                        <a name="line.414"></a>
-<span class="sourceLineNo">415</span>                        glow.renderAtCenter(loc.x, loc.y);<a name="line.415"></a>
-<span class="sourceLineNo">416</span>                }<a name="line.416"></a>
-<span class="sourceLineNo">417</span>                <a name="line.417"></a>
-<span class="sourceLineNo">418</span>                if (layer == CampaignEngineLayers.STATIONS) {<a name="line.418"></a>
-<span class="sourceLineNo">419</span>                        if (f &gt; 0f) {<a name="line.419"></a>
-<span class="sourceLineNo">420</span>                                float extra = 1f + f * 1.33f;<a name="line.420"></a>
-<span class="sourceLineNo">421</span>                                if (f &gt; DESPAWN_POOF_THRESHOLD) extra = 0f;<a name="line.421"></a>
-<span class="sourceLineNo">422</span>                                scale *= extra;<a name="line.422"></a>
-<span class="sourceLineNo">423</span>                        }<a name="line.423"></a>
-<span class="sourceLineNo">424</span>                        float flicker = getFlickerBasedMult();<a name="line.424"></a>
-<span class="sourceLineNo">425</span>                        for (int i = 0; i &lt; 5; i++) {<a name="line.425"></a>
-<span class="sourceLineNo">426</span>                                if (i != 0) flicker = 1f;<a name="line.426"></a>
-<span class="sourceLineNo">427</span>                                <a name="line.427"></a>
-<span class="sourceLineNo">428</span>                                w *= 0.3f;<a name="line.428"></a>
-<span class="sourceLineNo">429</span>                                h *= 0.3f;<a name="line.429"></a>
-<span class="sourceLineNo">430</span>                                glow.setSize(w * scale, h * scale);<a name="line.430"></a>
-<span class="sourceLineNo">431</span>                                glow.setAlphaMult(alphaMult * glowAlpha * 0.67f * flicker);<a name="line.431"></a>
-<span class="sourceLineNo">432</span>                                glow.renderAtCenter(loc.x, loc.y);<a name="line.432"></a>
-<span class="sourceLineNo">433</span>                        }<a name="line.433"></a>
-<span class="sourceLineNo">434</span>                }<a name="line.434"></a>
-<span class="sourceLineNo">435</span>        }<a name="line.435"></a>
-<span class="sourceLineNo">436</span>        <a name="line.436"></a>
-<span class="sourceLineNo">437</span>        <a name="line.437"></a>
-<span class="sourceLineNo">438</span>        public static float getPlayerProximityBasedBrightnessFactor(SectorEntityToken entity) {<a name="line.438"></a>
-<span class="sourceLineNo">439</span>                return getPlayerProximityBasedBrightnessFactor(entity.getLocation());<a name="line.439"></a>
-<span class="sourceLineNo">440</span>        }<a name="line.440"></a>
-<span class="sourceLineNo">441</span>        public static float getPlayerProximityBasedBrightnessFactor(Vector2f loc) {<a name="line.441"></a>
-<span class="sourceLineNo">442</span>                CampaignFleetAPI player = Global.getSector().getPlayerFleet();<a name="line.442"></a>
-<span class="sourceLineNo">443</span>                if (player == null) {<a name="line.443"></a>
-<span class="sourceLineNo">444</span>                        return PLAYER_PROXIMITY_MIN_BRIGHTNESS;<a name="line.444"></a>
-<span class="sourceLineNo">445</span>                }<a name="line.445"></a>
-<span class="sourceLineNo">446</span>                return getProximityBasedBrightnessFactor(player, loc);<a name="line.446"></a>
-<span class="sourceLineNo">447</span>        }<a name="line.447"></a>
-<span class="sourceLineNo">448</span>        <a name="line.448"></a>
-<span class="sourceLineNo">449</span>        public static float getProximityBasedBrightnessFactor(CampaignFleetAPI from, Vector2f loc) {<a name="line.449"></a>
-<span class="sourceLineNo">450</span>                <a name="line.450"></a>
-<span class="sourceLineNo">451</span>                float dist = Misc.getDistance(from.getLocation(), loc) - from.getRadius();<a name="line.451"></a>
-<span class="sourceLineNo">452</span>                <a name="line.452"></a>
-<span class="sourceLineNo">453</span>                if (dist &lt;= PLAYER_PROXIMITY_MAX_BRIGHTNESS_AT) {<a name="line.453"></a>
-<span class="sourceLineNo">454</span>                        return 1f;<a name="line.454"></a>
-<span class="sourceLineNo">455</span>                        //return Math.max(PLAYER_PROXIMITY_MIN_BRIGHTNESS, dist / PLAYER_PROXIMITY_MAX_BRIGHTNESS_AT);<a name="line.455"></a>
-<span class="sourceLineNo">456</span>                }<a name="line.456"></a>
-<span class="sourceLineNo">457</span>                dist -= PLAYER_PROXIMITY_MAX_BRIGHTNESS_AT;<a name="line.457"></a>
-<span class="sourceLineNo">458</span>                <a name="line.458"></a>
-<span class="sourceLineNo">459</span>                float f = 1f - dist / (PLAYER_PROXIMITY_MIN_BRIGHTNESS_AT - PLAYER_PROXIMITY_MAX_BRIGHTNESS_AT);<a name="line.459"></a>
-<span class="sourceLineNo">460</span>                if (f &lt; 0f) f = 0f;<a name="line.460"></a>
-<span class="sourceLineNo">461</span>                <a name="line.461"></a>
-<span class="sourceLineNo">462</span>                float b = PLAYER_PROXIMITY_MIN_BRIGHTNESS + f * (1f - PLAYER_PROXIMITY_MIN_BRIGHTNESS);<a name="line.462"></a>
-<span class="sourceLineNo">463</span>                <a name="line.463"></a>
-<span class="sourceLineNo">464</span>                return b;<a name="line.464"></a>
-<span class="sourceLineNo">465</span>        }<a name="line.465"></a>
-<span class="sourceLineNo">466</span>        <a name="line.466"></a>
-<span class="sourceLineNo">467</span><a name="line.467"></a>
-<span class="sourceLineNo">468</span>//      @Override<a name="line.468"></a>
-<span class="sourceLineNo">469</span>//      public void createMapTooltip(TooltipMakerAPI tooltip, boolean expanded) {<a name="line.469"></a>
-<span class="sourceLineNo">470</span>//              String post = "";<a name="line.470"></a>
-<span class="sourceLineNo">471</span>//              Color color = entity.getFaction().getBaseUIColor();<a name="line.471"></a>
-<span class="sourceLineNo">472</span>//              Color postColor = color;<a name="line.472"></a>
-<span class="sourceLineNo">473</span>//              if (entity.getMemoryWithoutUpdate().getBoolean(RemnantSystemType.DESTROYED.getBeaconFlag())) {<a name="line.473"></a>
-<span class="sourceLineNo">474</span>//                      post = " - Low";<a name="line.474"></a>
-<span class="sourceLineNo">475</span>//                      postColor = Misc.getPositiveHighlightColor();<a name="line.475"></a>
-<span class="sourceLineNo">476</span>//              } else if (entity.getMemoryWithoutUpdate().getBoolean(RemnantSystemType.SUPPRESSED.getBeaconFlag())) {<a name="line.476"></a>
-<span class="sourceLineNo">477</span>//                      post = " - Medium";<a name="line.477"></a>
-<span class="sourceLineNo">478</span>//                      postColor = Misc.getHighlightColor();<a name="line.478"></a>
-<span class="sourceLineNo">479</span>//              } else if (entity.getMemoryWithoutUpdate().getBoolean(RemnantSystemType.RESURGENT.getBeaconFlag())) {<a name="line.479"></a>
-<span class="sourceLineNo">480</span>//                      post = " - High";<a name="line.480"></a>
-<span class="sourceLineNo">481</span>//                      postColor = Misc.getNegativeHighlightColor();<a name="line.481"></a>
-<span class="sourceLineNo">482</span>//              }<a name="line.482"></a>
-<span class="sourceLineNo">483</span>//              <a name="line.483"></a>
-<span class="sourceLineNo">484</span>//              tooltip.addPara(entity.getName() + post, 0f, color, postColor, post.replaceFirst(" - ", ""));<a name="line.484"></a>
-<span class="sourceLineNo">485</span>//      }<a name="line.485"></a>
-<span class="sourceLineNo">486</span>//<a name="line.486"></a>
-<span class="sourceLineNo">487</span>//      @Override<a name="line.487"></a>
-<span class="sourceLineNo">488</span>//      public boolean hasCustomMapTooltip() {<a name="line.488"></a>
-<span class="sourceLineNo">489</span>//              return true;<a name="line.489"></a>
-<span class="sourceLineNo">490</span>//      }<a name="line.490"></a>
-<span class="sourceLineNo">491</span>//      <a name="line.491"></a>
-<span class="sourceLineNo">492</span>//      @Override<a name="line.492"></a>
-<span class="sourceLineNo">493</span>//      public void appendToCampaignTooltip(TooltipMakerAPI tooltip, VisibilityLevel level) {<a name="line.493"></a>
-<span class="sourceLineNo">494</span>//              if (level == VisibilityLevel.COMPOSITION_AND_FACTION_DETAILS || <a name="line.494"></a>
-<span class="sourceLineNo">495</span>//                              level == VisibilityLevel.COMPOSITION_DETAILS) {<a name="line.495"></a>
-<span class="sourceLineNo">496</span>//                      <a name="line.496"></a>
-<span class="sourceLineNo">497</span>//                      String post = "";<a name="line.497"></a>
-<span class="sourceLineNo">498</span>//                      Color color = Misc.getTextColor();<a name="line.498"></a>
-<span class="sourceLineNo">499</span>//                      Color postColor = color;<a name="line.499"></a>
-<span class="sourceLineNo">500</span>//                      if (entity.getMemoryWithoutUpdate().getBoolean(RemnantSystemType.DESTROYED.getBeaconFlag())) {<a name="line.500"></a>
-<span class="sourceLineNo">501</span>//                              post = "low";<a name="line.501"></a>
-<span class="sourceLineNo">502</span>//                              postColor = Misc.getPositiveHighlightColor();<a name="line.502"></a>
-<span class="sourceLineNo">503</span>//                      } else if (entity.getMemoryWithoutUpdate().getBoolean(RemnantSystemType.SUPPRESSED.getBeaconFlag())) {<a name="line.503"></a>
-<span class="sourceLineNo">504</span>//                              post = "medium";<a name="line.504"></a>
-<span class="sourceLineNo">505</span>//                              postColor = Misc.getHighlightColor();<a name="line.505"></a>
-<span class="sourceLineNo">506</span>//                      } else if (entity.getMemoryWithoutUpdate().getBoolean(RemnantSystemType.RESURGENT.getBeaconFlag())) {<a name="line.506"></a>
-<span class="sourceLineNo">507</span>//                              post = "high";<a name="line.507"></a>
-<span class="sourceLineNo">508</span>//                              postColor = Misc.getNegativeHighlightColor();<a name="line.508"></a>
-<span class="sourceLineNo">509</span>//                      }<a name="line.509"></a>
-<span class="sourceLineNo">510</span>//                      if (!post.isEmpty()) {<a name="line.510"></a>
-<span class="sourceLineNo">511</span>//                              tooltip.setParaFontDefault();<a name="line.511"></a>
-<span class="sourceLineNo">512</span>//                              tooltip.addPara(BaseIntelPlugin.BULLET + "Danger level: " + post, 10f, color, postColor, post);<a name="line.512"></a>
-<span class="sourceLineNo">513</span>//                      }<a name="line.513"></a>
-<span class="sourceLineNo">514</span>//              }<a name="line.514"></a>
-<span class="sourceLineNo">515</span>//              <a name="line.515"></a>
-<span class="sourceLineNo">516</span>//      }<a name="line.516"></a>
-<span class="sourceLineNo">517</span>}<a name="line.517"></a>
-<span class="sourceLineNo">518</span><a name="line.518"></a>
-<span class="sourceLineNo">519</span><a name="line.519"></a>
-<span class="sourceLineNo">520</span><a name="line.520"></a>
-<span class="sourceLineNo">521</span><a name="line.521"></a>
-<span class="sourceLineNo">522</span><a name="line.522"></a>
-<span class="sourceLineNo">523</span><a name="line.523"></a>
-<span class="sourceLineNo">524</span><a name="line.524"></a>
-<span class="sourceLineNo">525</span><a name="line.525"></a>
-<span class="sourceLineNo">526</span><a name="line.526"></a>
+<span class="sourceLineNo">233</span>                }<a name="line.233"></a>
+<span class="sourceLineNo">234</span>        }<a name="line.234"></a>
+<span class="sourceLineNo">235</span>        <a name="line.235"></a>
+<span class="sourceLineNo">236</span>        public void updateSoundDelayAndPlaySound(float amount) {<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                untilSoundPlayed -= amount;<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                if (untilSoundPlayed &lt;= 0f) {<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                        //untilSoundPlayed = 0.5f + (float) Math.random() * 20f;<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                        untilSoundPlayed = 5f + (float) Math.random() * 30f;<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                <a name="line.241"></a>
+<span class="sourceLineNo">242</span>                        // don't play sound when called from the constructor with amount == 0f<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                        if (amount &gt; 0 &amp;&amp; entity.isInCurrentLocation()) {<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                                VisibilityLevel level = entity.getVisibilityLevelToPlayerFleet();<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                                if (level == VisibilityLevel.COMPOSITION_DETAILS || level == VisibilityLevel.COMPOSITION_AND_FACTION_DETAILS) {<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                                        float volume = 1f;<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                                        if (params.bonusMult &lt; 1f) {<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                                                volume = 1f - (1f - params.bonusMult) * 0.6f; <a name="line.248"></a>
+<span class="sourceLineNo">249</span>                                        }<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                                        if (volume &gt; 1f) volume = 1f;<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                                        if (volume &lt; 0f) volume = 0f;<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                                        <a name="line.252"></a>
+<span class="sourceLineNo">253</span>                                        float pitchMult = 1f;<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                                        if (isDweller()) {<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                                                pitchMult = 0.5f;<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                                        }<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                                        <a name="line.257"></a>
+<span class="sourceLineNo">258</span>                                        SoundAPI sound = Global.getSoundPlayer().playSound("abyssal_light_random_sound", 1f * pitchMult, volume, entity.getLocation(), Misc.ZERO);<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                                        Global.getSector().addScript(new AbyssalLightSoundStopper(sound));<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                                        //flickerDur = 3f + 2f * (float) Math.random();<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                                        flickerDur = 0.5f + 0.5f * (float) Math.random();<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                                        <a name="line.262"></a>
+<span class="sourceLineNo">263</span>// too random                   <a name="line.263"></a>
+<span class="sourceLineNo">264</span>//                                      if (isDweller()) {<a name="line.264"></a>
+<span class="sourceLineNo">265</span>//                                              CampaignFleetAPI fleet = Global.getSector().getPlayerFleet();<a name="line.265"></a>
+<span class="sourceLineNo">266</span>//                                              if (fleet != null &amp;&amp; abilityResponseFlickerTimeout &lt;= 0f) {<a name="line.266"></a>
+<span class="sourceLineNo">267</span>//                                                      flickerDur = 0.5f + 0.5f * (float) Math.random();<a name="line.267"></a>
+<span class="sourceLineNo">268</span>//                                                      abilityResponseFlickerTimeout = 3f;<a name="line.268"></a>
+<span class="sourceLineNo">269</span>//                                                      float dist = Misc.getDistance(fleet, entity);<a name="line.269"></a>
+<span class="sourceLineNo">270</span>//                                                      if (dist &lt; DWELLER_TRIGGER_RANGE + fleet.getRadius() + entity.getRadius()) {<a name="line.270"></a>
+<span class="sourceLineNo">271</span>//                                                              Global.getSector().addScript(new DwellerEncounterScript("DwellerAttackAfterAbilityUse", entity));<a name="line.271"></a>
+<span class="sourceLineNo">272</span>//                                                      }                                               <a name="line.272"></a>
+<span class="sourceLineNo">273</span>//                                              }<a name="line.273"></a>
+<span class="sourceLineNo">274</span>//                                      }<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                                }<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                        }<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                }<a name="line.277"></a>
+<span class="sourceLineNo">278</span>        }<a name="line.278"></a>
+<span class="sourceLineNo">279</span>        public void updateFrequency(float amount) {<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                untilFrequencyChange -= amount * params.frequencyChangeMult;<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                if (untilFrequencyChange &lt;= 0f) {<a name="line.281"></a>
+<span class="sourceLineNo">282</span>                        untilFrequencyChange = 1f + (float) Math.random() * 3f;<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                        <a name="line.283"></a>
+<span class="sourceLineNo">284</span>                        frequencyMult = params.frequencyMultMin * <a name="line.284"></a>
+<span class="sourceLineNo">285</span>                                        (float) Math.random() * (params.frequencyMultMax - params.frequencyMultMin);<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                }<a name="line.286"></a>
+<span class="sourceLineNo">287</span>        }<a name="line.287"></a>
+<span class="sourceLineNo">288</span>        <a name="line.288"></a>
+<span class="sourceLineNo">289</span>        Object readResolve() {<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                glow = Global.getSettings().getSprite("campaignEntities", "abyssal_light_glow");<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                return this;<a name="line.291"></a>
+<span class="sourceLineNo">292</span>        }<a name="line.292"></a>
+<span class="sourceLineNo">293</span>        <a name="line.293"></a>
+<span class="sourceLineNo">294</span>        public AbyssalLightParams getParams() {<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                return params;<a name="line.295"></a>
+<span class="sourceLineNo">296</span>        }<a name="line.296"></a>
+<span class="sourceLineNo">297</span>        <a name="line.297"></a>
+<span class="sourceLineNo">298</span>        public boolean isDweller() {<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                return entity != null &amp;&amp; entity.hasTag(Tags.DWELLER_LIGHT);<a name="line.299"></a>
+<span class="sourceLineNo">300</span>        }<a name="line.300"></a>
+<span class="sourceLineNo">301</span>        <a name="line.301"></a>
+<span class="sourceLineNo">302</span>        public void advance(float amount) {<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                if (isDespawning()) {<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                        if (!playedDespawnSound &amp;&amp; <a name="line.304"></a>
+<span class="sourceLineNo">305</span>                                        (getDespawnProgress() &gt; DESPAWN_POOF_THRESHOLD || despawnType == DespawnType.FADE_OUT)) {<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                                playedDespawnSound = true;<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                                if (entity.isInCurrentLocation()) {<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                                        VisibilityLevel level = entity.getVisibilityLevelToPlayerFleet();<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                                        if (level == VisibilityLevel.COMPOSITION_DETAILS || level == VisibilityLevel.COMPOSITION_AND_FACTION_DETAILS) {<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                                                String soundId = "abyssal_light_despawn_disrupted";<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                                                if (despawnType == DespawnType.FADE_OUT) {<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                                                        soundId = "abyssal_light_despawn_expired";<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                                                }<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                                                Global.getSoundPlayer().playSound(soundId, 1f, 1f, entity.getLocation(), Misc.ZERO);<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                                        }<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                                }<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                        }<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                        <a name="line.318"></a>
+<span class="sourceLineNo">319</span>                        return;<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                }<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                <a name="line.321"></a>
+<span class="sourceLineNo">322</span>                //boolean dweller = isDespawning(); <a name="line.322"></a>
+<span class="sourceLineNo">323</span>                <a name="line.323"></a>
+<span class="sourceLineNo">324</span>                float days = Misc.getDays(amount);<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                params.durationDays -= days;<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                if (params.durationDays &lt;= 0f || Misc.getAbyssalDepth(entity) &lt; 1f) {<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                        despawn(DespawnType.FADE_OUT);<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                        return;<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                }<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                <a name="line.330"></a>
+<span class="sourceLineNo">331</span>                updateFrequency(amount);<a name="line.331"></a>
+<span class="sourceLineNo">332</span>                updateSoundDelayAndPlaySound(amount);<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                <a name="line.333"></a>
+<span class="sourceLineNo">334</span>                phase += amount * GLOW_FREQUENCY * frequencyMult;<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                while (phase &gt; 1) phase --;<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                <a name="line.336"></a>
+<span class="sourceLineNo">337</span>                if (flickerDur &gt; 0) {<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                        flickerDur -= amount;<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                        if (flickerDur &lt; 0) flickerDur = 0;<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                }<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                if (abilityResponseFlickerTimeout &gt; 0) {<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                        abilityResponseFlickerTimeout -= amount;<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                        if (abilityResponseFlickerTimeout &lt; 0) abilityResponseFlickerTimeout = 0;<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                        //System.out.println("Timeout: " + abilityResponseFlickerTimeout);<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                }<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                <a name="line.346"></a>
+<span class="sourceLineNo">347</span>                flicker.advance(amount * 10f);<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                fader.advance(amount);<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                <a name="line.349"></a>
+<span class="sourceLineNo">350</span>                if (Global.getSector().getMemoryWithoutUpdate().getBoolean(MemFlags.GLOBAL_INTERDICTION_PULSE_JUST_USED_IN_CURRENT_LOCATION)) {<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                        if (entity.getContainingLocation() != null) {<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                                for (CampaignFleetAPI fleet : entity.getContainingLocation().getFleets()) {<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                                        float range = InterdictionPulseAbility.getRange(fleet);<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                                        float dist = Misc.getDistance(fleet.getLocation(), entity.getLocation());<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                                        if (dist &gt; range) continue;<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                                        <a name="line.356"></a>
+<span class="sourceLineNo">357</span>                                        <a name="line.357"></a>
+<span class="sourceLineNo">358</span>                                        if (fleet.getMemoryWithoutUpdate().getBoolean(MemFlags.JUST_DID_INTERDICTION_PULSE)) {<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                                                if (isDweller()) {<a name="line.359"></a>
+<span class="sourceLineNo">360</span>                                                        if (abilityResponseFlickerTimeout &lt;= 0f) {<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                                                                flickerDur = 0.5f + 0.5f * (float) Math.random();<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                                                                abilityResponseFlickerTimeout = 6f;<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                                                                if (dist &lt; DWELLER_TRIGGER_RANGE + fleet.getRadius() + entity.getRadius()) {<a name="line.363"></a>
+<span class="sourceLineNo">364</span>                                                                        Global.getSector().addScript(new DwellerEncounterScript("DwellerAttackAfterAbilityUse", fleet, entity));<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                                                                }                                               <a name="line.365"></a>
+<span class="sourceLineNo">366</span>                                                        }<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                                                } else {<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                                                        AbyssalLightBonus bonus = AbyssalLightBonus.get(fleet);<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                                                        <a name="line.369"></a>
+<span class="sourceLineNo">370</span>                                                        float brightness = getProximityBasedBrightnessFactor(fleet, entity.getLocation());<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                                                        bonus.addBurnBonus(params.bonusMult * brightness);<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                                                        <a name="line.372"></a>
+<span class="sourceLineNo">373</span>                                                        if (fleet.isPlayerFleet()) {<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                                                                bonus.addTopographyPoints(params.getTopographyPoints());<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                                                        }<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                                                        <a name="line.376"></a>
+<span class="sourceLineNo">377</span>                                                        despawn(DespawnType.EXPAND);<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                                                }<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                                        }<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                                }<a name="line.380"></a>
+<span class="sourceLineNo">381</span>                        }<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                        if (isDespawning()) return;<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                }<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                <a name="line.384"></a>
+<span class="sourceLineNo">385</span>                if (Global.getSector().getMemoryWithoutUpdate().getBoolean(MemFlags.GLOBAL_SENSOR_BURST_JUST_USED_IN_CURRENT_LOCATION)) {<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                        if (entity.getContainingLocation() != null) {<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                                for (CampaignFleetAPI fleet : entity.getContainingLocation().getFleets()) {<a name="line.387"></a>
+<span class="sourceLineNo">388</span>                                        float range = SENSOR_BURST_TRIGGER_RANGE + fleet.getRadius() + entity.getRadius();<a name="line.388"></a>
+<span class="sourceLineNo">389</span>                                        float dist = Misc.getDistance(fleet.getLocation(), entity.getLocation());<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                                        if (dist &gt; range) continue;<a name="line.390"></a>
+<span class="sourceLineNo">391</span>                                        <a name="line.391"></a>
+<span class="sourceLineNo">392</span>                                        <a name="line.392"></a>
+<span class="sourceLineNo">393</span>                                        if (fleet.getMemoryWithoutUpdate().getBoolean(MemFlags.JUST_DID_SENSOR_BURST)) {<a name="line.393"></a>
+<span class="sourceLineNo">394</span>                                                if (isDweller()) {<a name="line.394"></a>
+<span class="sourceLineNo">395</span>                                                        if (abilityResponseFlickerTimeout &lt;= 0f) {<a name="line.395"></a>
+<span class="sourceLineNo">396</span>                                                                flickerDur = 0.5f + 0.5f * (float) Math.random();<a name="line.396"></a>
+<span class="sourceLineNo">397</span>                                                                abilityResponseFlickerTimeout = 6f;<a name="line.397"></a>
+<span class="sourceLineNo">398</span>                                                                if (dist &lt; DWELLER_TRIGGER_RANGE + fleet.getRadius() + entity.getRadius()) {<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                                                                        Global.getSector().addScript(new DwellerEncounterScript("DwellerAttackAfterAbilityUse", fleet, entity));<a name="line.399"></a>
+<span class="sourceLineNo">400</span>                                                                }                                               <a name="line.400"></a>
+<span class="sourceLineNo">401</span>                                                        }<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                                                } else {<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                                                        AbyssalLightBonus bonus = AbyssalLightBonus.get(fleet);<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                                                        <a name="line.404"></a>
+<span class="sourceLineNo">405</span>                                                        float brightness = getProximityBasedBrightnessFactor(fleet, entity.getLocation());<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                                                        bonus.addSensorBonus(params.bonusMult * brightness);<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                                                        <a name="line.407"></a>
+<span class="sourceLineNo">408</span>                                                        if (fleet.isPlayerFleet()) {<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                                                                bonus.addTopographyPoints(params.getTopographyPoints());<a name="line.409"></a>
+<span class="sourceLineNo">410</span>                                                                <a name="line.410"></a>
+<span class="sourceLineNo">411</span>                                                                // can cause overlapping gravity wells etc<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                                                                //EncounterManager.getInstance().getPointTimeout().clear();<a name="line.412"></a>
+<span class="sourceLineNo">413</span>                                                                EncounterManager.getInstance().getCreatorTimeout().clear();<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                                                        }<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                                                        <a name="line.415"></a>
+<span class="sourceLineNo">416</span>                                                        despawn(DespawnType.EXPAND);<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                                                }<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                                        }<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                                }<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                        }<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                        if (isDespawning()) return;<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                }<a name="line.422"></a>
+<span class="sourceLineNo">423</span>        }<a name="line.423"></a>
+<span class="sourceLineNo">424</span>        <a name="line.424"></a>
+<span class="sourceLineNo">425</span>        public float getFlickerBasedMult() {<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                if (flickerDur &lt;= 0f) return 1f;<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                <a name="line.427"></a>
+<span class="sourceLineNo">428</span>                float mult = 1f;<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                if (flickerDur &lt; 1f) mult = flickerDur;<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                <a name="line.430"></a>
+<span class="sourceLineNo">431</span>                if (isDweller()) {<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                        mult *= 0.75f;<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                } else {<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                        mult *= 0.25f;<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                }<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                <a name="line.436"></a>
+<span class="sourceLineNo">437</span>                float f = 1f - flicker.getBrightness() * mult;<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                return f;<a name="line.438"></a>
+<span class="sourceLineNo">439</span>        }<a name="line.439"></a>
+<span class="sourceLineNo">440</span>        <a name="line.440"></a>
+<span class="sourceLineNo">441</span>        public float getGlowAlpha() {<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                float glowAlpha = 0f;<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                if (phase &lt; 0.5f) glowAlpha = phase * 2f;<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                if (phase &gt;= 0.5f) glowAlpha = (1f - (phase - 0.5f) * 2f);<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                glowAlpha = 0.75f + glowAlpha * 0.25f;<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                <a name="line.446"></a>
+<span class="sourceLineNo">447</span>                if (glowAlpha &lt; 0) glowAlpha = 0;<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                if (glowAlpha &gt; 1) glowAlpha = 1;<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                return glowAlpha;<a name="line.449"></a>
+<span class="sourceLineNo">450</span>        }<a name="line.450"></a>
+<span class="sourceLineNo">451</span>        <a name="line.451"></a>
+<span class="sourceLineNo">452</span>        <a name="line.452"></a>
+<span class="sourceLineNo">453</span><a name="line.453"></a>
+<span class="sourceLineNo">454</span>        public float getRenderRange() {<a name="line.454"></a>
+<span class="sourceLineNo">455</span>                return entity.getRadius() + params.size * 0.75f;<a name="line.455"></a>
+<span class="sourceLineNo">456</span>        }<a name="line.456"></a>
+<span class="sourceLineNo">457</span><a name="line.457"></a>
+<span class="sourceLineNo">458</span>        public float getDespawnProgress() {<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                if (!isDespawning()) return 0f;<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                float f = entity.getSensorFaderBrightness();<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                return 1 - f;<a name="line.461"></a>
+<span class="sourceLineNo">462</span>        }<a name="line.462"></a>
+<span class="sourceLineNo">463</span>        <a name="line.463"></a>
+<span class="sourceLineNo">464</span>        public void render(CampaignEngineLayers layer, ViewportAPI viewport) {<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                float alphaMult = viewport.getAlphaMult();<a name="line.465"></a>
+<span class="sourceLineNo">466</span>                <a name="line.466"></a>
+<span class="sourceLineNo">467</span>                if (!isDespawning() || despawnType == DespawnType.FADE_OUT) {<a name="line.467"></a>
+<span class="sourceLineNo">468</span>                        alphaMult *= entity.getSensorFaderBrightness();<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                }<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                <a name="line.470"></a>
+<span class="sourceLineNo">471</span>                if (alphaMult &lt;= 0) return;<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                <a name="line.472"></a>
+<span class="sourceLineNo">473</span>                float f = getDespawnProgress();<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                if (despawnType == DespawnType.FADE_OUT) {<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                        f = 0f;<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                }<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                <a name="line.477"></a>
+<span class="sourceLineNo">478</span>                if (f &gt; DESPAWN_POOF_THRESHOLD) {<a name="line.478"></a>
+<span class="sourceLineNo">479</span>                        float fadeOut = (1f - f) / (1f - DESPAWN_POOF_THRESHOLD);<a name="line.479"></a>
+<span class="sourceLineNo">480</span>                        alphaMult *= fadeOut;<a name="line.480"></a>
+<span class="sourceLineNo">481</span>                }<a name="line.481"></a>
+<span class="sourceLineNo">482</span>                <a name="line.482"></a>
+<span class="sourceLineNo">483</span>                VisibilityLevel level = entity.getVisibilityLevelToPlayerFleet();<a name="line.483"></a>
+<span class="sourceLineNo">484</span>                if (level == VisibilityLevel.COMPOSITION_DETAILS || level == VisibilityLevel.COMPOSITION_AND_FACTION_DETAILS) {<a name="line.484"></a>
+<span class="sourceLineNo">485</span>                        fader.fadeIn();<a name="line.485"></a>
+<span class="sourceLineNo">486</span>                } else {<a name="line.486"></a>
+<span class="sourceLineNo">487</span>                        fader.fadeOut();<a name="line.487"></a>
+<span class="sourceLineNo">488</span>                }<a name="line.488"></a>
+<span class="sourceLineNo">489</span>                <a name="line.489"></a>
+<span class="sourceLineNo">490</span>                alphaMult *= fader.getBrightness();<a name="line.490"></a>
+<span class="sourceLineNo">491</span>                <a name="line.491"></a>
+<span class="sourceLineNo">492</span>                float b = getPlayerProximityBasedBrightnessFactor(entity);<a name="line.492"></a>
+<span class="sourceLineNo">493</span>                alphaMult *= b;<a name="line.493"></a>
+<span class="sourceLineNo">494</span>                <a name="line.494"></a>
+<span class="sourceLineNo">495</span>                <a name="line.495"></a>
+<span class="sourceLineNo">496</span>//              if (Misc.getDistanceToPlayerLY(entity) &gt; 0.1f) {<a name="line.496"></a>
+<span class="sourceLineNo">497</span>//                      Misc.fadeAndExpire(entity);<a name="line.497"></a>
+<span class="sourceLineNo">498</span>//                      return;<a name="line.498"></a>
+<span class="sourceLineNo">499</span>//              }<a name="line.499"></a>
+<span class="sourceLineNo">500</span>//              if (!Global.getSector().isPaused()) {<a name="line.500"></a>
+<span class="sourceLineNo">501</span>//                      System.out.println("Alpha: " + alphaMult);<a name="line.501"></a>
+<span class="sourceLineNo">502</span>//              }<a name="line.502"></a>
+<span class="sourceLineNo">503</span><a name="line.503"></a>
+<span class="sourceLineNo">504</span>                CustomEntitySpecAPI spec = entity.getCustomEntitySpec();<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                if (spec == null) return;<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                <a name="line.506"></a>
+<span class="sourceLineNo">507</span>                float w = spec.getSpriteWidth();<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                float h = spec.getSpriteHeight();<a name="line.508"></a>
+<span class="sourceLineNo">509</span>                <a name="line.509"></a>
+<span class="sourceLineNo">510</span>                Vector2f loc = entity.getLocation();<a name="line.510"></a>
+<span class="sourceLineNo">511</span>                <a name="line.511"></a>
+<span class="sourceLineNo">512</span>                float glowAlpha = getGlowAlpha();<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                <a name="line.513"></a>
+<span class="sourceLineNo">514</span>                glow.setColor(params.color);<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                <a name="line.515"></a>
+<span class="sourceLineNo">516</span>                w = params.size;<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                h = params.size;<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                <a name="line.518"></a>
+<span class="sourceLineNo">519</span>                float scale = 0.25f + alphaMult * 0.75f;<a name="line.519"></a>
+<span class="sourceLineNo">520</span>                if (f &gt; DESPAWN_POOF_THRESHOLD) {<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                        scale *= 1.5f;<a name="line.521"></a>
+<span class="sourceLineNo">522</span>                }<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                <a name="line.523"></a>
+<span class="sourceLineNo">524</span>                float fringeScale = 1f;<a name="line.524"></a>
+<span class="sourceLineNo">525</span>                //fringeScale = 1.5f;<a name="line.525"></a>
+<span class="sourceLineNo">526</span>                <a name="line.526"></a>
+<span class="sourceLineNo">527</span>                glow.setAdditiveBlend();<a name="line.527"></a>
+<span class="sourceLineNo">528</span>                <a name="line.528"></a>
+<span class="sourceLineNo">529</span>                if (layer == CampaignEngineLayers.TERRAIN_8) {<a name="line.529"></a>
+<span class="sourceLineNo">530</span>                        //float flicker = getFlickerBasedMult();<a name="line.530"></a>
+<span class="sourceLineNo">531</span>                        glow.setAlphaMult(alphaMult * glowAlpha * 0.5f);<a name="line.531"></a>
+<span class="sourceLineNo">532</span>                        glow.setSize(w * scale * fringeScale, h * scale * fringeScale);<a name="line.532"></a>
+<span class="sourceLineNo">533</span>                        <a name="line.533"></a>
+<span class="sourceLineNo">534</span>                        glow.renderAtCenter(loc.x, loc.y);<a name="line.534"></a>
+<span class="sourceLineNo">535</span>                }<a name="line.535"></a>
+<span class="sourceLineNo">536</span>                <a name="line.536"></a>
+<span class="sourceLineNo">537</span>                if (layer == CampaignEngineLayers.STATIONS) {<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                        if (f &gt; 0f) {<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                                float extra = 1f + f * 1.33f;<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                                if (f &gt; DESPAWN_POOF_THRESHOLD) extra = 0f;<a name="line.540"></a>
+<span class="sourceLineNo">541</span>                                scale *= extra;<a name="line.541"></a>
+<span class="sourceLineNo">542</span>                        }<a name="line.542"></a>
+<span class="sourceLineNo">543</span>                        float flicker = getFlickerBasedMult();<a name="line.543"></a>
+<span class="sourceLineNo">544</span>                        for (int i = 0; i &lt; 5; i++) {<a name="line.544"></a>
+<span class="sourceLineNo">545</span>                                if (i != 0) flicker = 1f;<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                                <a name="line.546"></a>
+<span class="sourceLineNo">547</span>                                w *= 0.3f;<a name="line.547"></a>
+<span class="sourceLineNo">548</span>                                h *= 0.3f;<a name="line.548"></a>
+<span class="sourceLineNo">549</span>                                glow.setSize(w * scale, h * scale);<a name="line.549"></a>
+<span class="sourceLineNo">550</span>                                glow.setAlphaMult(alphaMult * glowAlpha * 0.67f * flicker);<a name="line.550"></a>
+<span class="sourceLineNo">551</span>                                glow.renderAtCenter(loc.x, loc.y);<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                        }<a name="line.552"></a>
+<span class="sourceLineNo">553</span>                }<a name="line.553"></a>
+<span class="sourceLineNo">554</span>        }<a name="line.554"></a>
+<span class="sourceLineNo">555</span>        <a name="line.555"></a>
+<span class="sourceLineNo">556</span>        <a name="line.556"></a>
+<span class="sourceLineNo">557</span>        public static float getPlayerProximityBasedBrightnessFactor(SectorEntityToken entity) {<a name="line.557"></a>
+<span class="sourceLineNo">558</span>                return getPlayerProximityBasedBrightnessFactor(entity.getLocation());<a name="line.558"></a>
+<span class="sourceLineNo">559</span>        }<a name="line.559"></a>
+<span class="sourceLineNo">560</span>        public static float getPlayerProximityBasedBrightnessFactor(Vector2f loc) {<a name="line.560"></a>
+<span class="sourceLineNo">561</span>                CampaignFleetAPI player = Global.getSector().getPlayerFleet();<a name="line.561"></a>
+<span class="sourceLineNo">562</span>                if (player == null) {<a name="line.562"></a>
+<span class="sourceLineNo">563</span>                        return PLAYER_PROXIMITY_MIN_BRIGHTNESS;<a name="line.563"></a>
+<span class="sourceLineNo">564</span>                }<a name="line.564"></a>
+<span class="sourceLineNo">565</span>                return getProximityBasedBrightnessFactor(player, loc);<a name="line.565"></a>
+<span class="sourceLineNo">566</span>        }<a name="line.566"></a>
+<span class="sourceLineNo">567</span>        <a name="line.567"></a>
+<span class="sourceLineNo">568</span>        public static float getProximityBasedBrightnessFactor(CampaignFleetAPI from, Vector2f loc) {<a name="line.568"></a>
+<span class="sourceLineNo">569</span>                <a name="line.569"></a>
+<span class="sourceLineNo">570</span>                float dist = Misc.getDistance(from.getLocation(), loc) - from.getRadius();<a name="line.570"></a>
+<span class="sourceLineNo">571</span>                <a name="line.571"></a>
+<span class="sourceLineNo">572</span>                if (dist &lt;= PLAYER_PROXIMITY_MAX_BRIGHTNESS_AT) {<a name="line.572"></a>
+<span class="sourceLineNo">573</span>                        return 1f;<a name="line.573"></a>
+<span class="sourceLineNo">574</span>                        //return Math.max(PLAYER_PROXIMITY_MIN_BRIGHTNESS, dist / PLAYER_PROXIMITY_MAX_BRIGHTNESS_AT);<a name="line.574"></a>
+<span class="sourceLineNo">575</span>                }<a name="line.575"></a>
+<span class="sourceLineNo">576</span>                dist -= PLAYER_PROXIMITY_MAX_BRIGHTNESS_AT;<a name="line.576"></a>
+<span class="sourceLineNo">577</span>                <a name="line.577"></a>
+<span class="sourceLineNo">578</span>                float f = 1f - dist / (PLAYER_PROXIMITY_MIN_BRIGHTNESS_AT - PLAYER_PROXIMITY_MAX_BRIGHTNESS_AT);<a name="line.578"></a>
+<span class="sourceLineNo">579</span>                if (f &lt; 0f) f = 0f;<a name="line.579"></a>
+<span class="sourceLineNo">580</span>                <a name="line.580"></a>
+<span class="sourceLineNo">581</span>                float b = PLAYER_PROXIMITY_MIN_BRIGHTNESS + f * (1f - PLAYER_PROXIMITY_MIN_BRIGHTNESS);<a name="line.581"></a>
+<span class="sourceLineNo">582</span>                <a name="line.582"></a>
+<span class="sourceLineNo">583</span>                return b;<a name="line.583"></a>
+<span class="sourceLineNo">584</span>        }<a name="line.584"></a>
+<span class="sourceLineNo">585</span>        <a name="line.585"></a>
+<span class="sourceLineNo">586</span><a name="line.586"></a>
+<span class="sourceLineNo">587</span>//      @Override<a name="line.587"></a>
+<span class="sourceLineNo">588</span>//      public void createMapTooltip(TooltipMakerAPI tooltip, boolean expanded) {<a name="line.588"></a>
+<span class="sourceLineNo">589</span>//              String post = "";<a name="line.589"></a>
+<span class="sourceLineNo">590</span>//              Color color = entity.getFaction().getBaseUIColor();<a name="line.590"></a>
+<span class="sourceLineNo">591</span>//              Color postColor = color;<a name="line.591"></a>
+<span class="sourceLineNo">592</span>//              if (entity.getMemoryWithoutUpdate().getBoolean(RemnantSystemType.DESTROYED.getBeaconFlag())) {<a name="line.592"></a>
+<span class="sourceLineNo">593</span>//                      post = " - Low";<a name="line.593"></a>
+<span class="sourceLineNo">594</span>//                      postColor = Misc.getPositiveHighlightColor();<a name="line.594"></a>
+<span class="sourceLineNo">595</span>//              } else if (entity.getMemoryWithoutUpdate().getBoolean(RemnantSystemType.SUPPRESSED.getBeaconFlag())) {<a name="line.595"></a>
+<span class="sourceLineNo">596</span>//                      post = " - Medium";<a name="line.596"></a>
+<span class="sourceLineNo">597</span>//                      postColor = Misc.getHighlightColor();<a name="line.597"></a>
+<span class="sourceLineNo">598</span>//              } else if (entity.getMemoryWithoutUpdate().getBoolean(RemnantSystemType.RESURGENT.getBeaconFlag())) {<a name="line.598"></a>
+<span class="sourceLineNo">599</span>//                      post = " - High";<a name="line.599"></a>
+<span class="sourceLineNo">600</span>//                      postColor = Misc.getNegativeHighlightColor();<a name="line.600"></a>
+<span class="sourceLineNo">601</span>//              }<a name="line.601"></a>
+<span class="sourceLineNo">602</span>//              <a name="line.602"></a>
+<span class="sourceLineNo">603</span>//              tooltip.addPara(entity.getName() + post, 0f, color, postColor, post.replaceFirst(" - ", ""));<a name="line.603"></a>
+<span class="sourceLineNo">604</span>//      }<a name="line.604"></a>
+<span class="sourceLineNo">605</span>//<a name="line.605"></a>
+<span class="sourceLineNo">606</span>//      @Override<a name="line.606"></a>
+<span class="sourceLineNo">607</span>//      public boolean hasCustomMapTooltip() {<a name="line.607"></a>
+<span class="sourceLineNo">608</span>//              return true;<a name="line.608"></a>
+<span class="sourceLineNo">609</span>//      }<a name="line.609"></a>
+<span class="sourceLineNo">610</span>//      <a name="line.610"></a>
+<span class="sourceLineNo">611</span>//      @Override<a name="line.611"></a>
+<span class="sourceLineNo">612</span>//      public void appendToCampaignTooltip(TooltipMakerAPI tooltip, VisibilityLevel level) {<a name="line.612"></a>
+<span class="sourceLineNo">613</span>//              if (level == VisibilityLevel.COMPOSITION_AND_FACTION_DETAILS || <a name="line.613"></a>
+<span class="sourceLineNo">614</span>//                              level == VisibilityLevel.COMPOSITION_DETAILS) {<a name="line.614"></a>
+<span class="sourceLineNo">615</span>//                      <a name="line.615"></a>
+<span class="sourceLineNo">616</span>//                      String post = "";<a name="line.616"></a>
+<span class="sourceLineNo">617</span>//                      Color color = Misc.getTextColor();<a name="line.617"></a>
+<span class="sourceLineNo">618</span>//                      Color postColor = color;<a name="line.618"></a>
+<span class="sourceLineNo">619</span>//                      if (entity.getMemoryWithoutUpdate().getBoolean(RemnantSystemType.DESTROYED.getBeaconFlag())) {<a name="line.619"></a>
+<span class="sourceLineNo">620</span>//                              post = "low";<a name="line.620"></a>
+<span class="sourceLineNo">621</span>//                              postColor = Misc.getPositiveHighlightColor();<a name="line.621"></a>
+<span class="sourceLineNo">622</span>//                      } else if (entity.getMemoryWithoutUpdate().getBoolean(RemnantSystemType.SUPPRESSED.getBeaconFlag())) {<a name="line.622"></a>
+<span class="sourceLineNo">623</span>//                              post = "medium";<a name="line.623"></a>
+<span class="sourceLineNo">624</span>//                              postColor = Misc.getHighlightColor();<a name="line.624"></a>
+<span class="sourceLineNo">625</span>//                      } else if (entity.getMemoryWithoutUpdate().getBoolean(RemnantSystemType.RESURGENT.getBeaconFlag())) {<a name="line.625"></a>
+<span class="sourceLineNo">626</span>//                              post = "high";<a name="line.626"></a>
+<span class="sourceLineNo">627</span>//                              postColor = Misc.getNegativeHighlightColor();<a name="line.627"></a>
+<span class="sourceLineNo">628</span>//                      }<a name="line.628"></a>
+<span class="sourceLineNo">629</span>//                      if (!post.isEmpty()) {<a name="line.629"></a>
+<span class="sourceLineNo">630</span>//                              tooltip.setParaFontDefault();<a name="line.630"></a>
+<span class="sourceLineNo">631</span>//                              tooltip.addPara(BaseIntelPlugin.BULLET + "Danger level: " + post, 10f, color, postColor, post);<a name="line.631"></a>
+<span class="sourceLineNo">632</span>//                      }<a name="line.632"></a>
+<span class="sourceLineNo">633</span>//              }<a name="line.633"></a>
+<span class="sourceLineNo">634</span>//              <a name="line.634"></a>
+<span class="sourceLineNo">635</span>//      }<a name="line.635"></a>
+<span class="sourceLineNo">636</span>}<a name="line.636"></a>
+<span class="sourceLineNo">637</span><a name="line.637"></a>
+<span class="sourceLineNo">638</span><a name="line.638"></a>
+<span class="sourceLineNo">639</span><a name="line.639"></a>
+<span class="sourceLineNo">640</span><a name="line.640"></a>
+<span class="sourceLineNo">641</span><a name="line.641"></a>
+<span class="sourceLineNo">642</span><a name="line.642"></a>
+<span class="sourceLineNo">643</span><a name="line.643"></a>
+<span class="sourceLineNo">644</span><a name="line.644"></a>
+<span class="sourceLineNo">645</span><a name="line.645"></a>
 
 
 

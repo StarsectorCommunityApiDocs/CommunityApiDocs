@@ -157,7 +157,7 @@
 <span class="sourceLineNo">149</span>                public boolean isInSystem() {<a name="line.149"></a>
 <span class="sourceLineNo">150</span>                        if (to == null &amp;&amp; from != null &amp;&amp; from.getContainingLocation() != null &amp;&amp; !from.getContainingLocation().isHyperspace()) return true;<a name="line.150"></a>
 <span class="sourceLineNo">151</span>                        <a name="line.151"></a>
-<span class="sourceLineNo">152</span>                        if (!from.getContainingLocation().isHyperspace() &amp;&amp; <a name="line.152"></a>
+<span class="sourceLineNo">152</span>                        if (from != null &amp;&amp; !from.getContainingLocation().isHyperspace() &amp;&amp; <a name="line.152"></a>
 <span class="sourceLineNo">153</span>                                        from.getContainingLocation() == to.getContainingLocation()) {<a name="line.153"></a>
 <span class="sourceLineNo">154</span>                                return true;<a name="line.154"></a>
 <span class="sourceLineNo">155</span>                        }<a name="line.155"></a>

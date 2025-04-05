@@ -8,396 +8,543 @@
 <div class="sourceContainer">
 <pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.ids;<a name="line.1"></a>
 <span class="sourceLineNo">002</span><a name="line.2"></a>
-<span class="sourceLineNo">003</span>public class Tags {<a name="line.3"></a>
-<span class="sourceLineNo">004</span>        <a name="line.4"></a>
-<span class="sourceLineNo">005</span>        /**<a name="line.5"></a>
-<span class="sourceLineNo">006</span>         * On fleet members and on variants.<a name="line.6"></a>
-<span class="sourceLineNo">007</span>         */<a name="line.7"></a>
-<span class="sourceLineNo">008</span>        public static final String TAG_NO_AUTOFIT = "no_autofit";<a name="line.8"></a>
-<span class="sourceLineNo">009</span>        public static final String TAG_AUTOMATED_NO_PENALTY = "no_auto_penalty";<a name="line.9"></a>
-<span class="sourceLineNo">010</span>        public static final String TAG_RETAIN_SMODS_ON_RECOVERY = "retain_smods_on_recovery";<a name="line.10"></a>
-<span class="sourceLineNo">011</span>        //public static final String NO_RESTORATION = "no_restoration";<a name="line.11"></a>
-<span class="sourceLineNo">012</span>        <a name="line.12"></a>
-<span class="sourceLineNo">013</span>        public static final String TAG_NO_AUTOFIT_UNLESS_PLAYER = "no_autofit_unless_player";<a name="line.13"></a>
-<span class="sourceLineNo">014</span>        <a name="line.14"></a>
-<span class="sourceLineNo">015</span>        /**<a name="line.15"></a>
-<span class="sourceLineNo">016</span>         * In ship_systems.csv, NOT on ships<a name="line.16"></a>
-<span class="sourceLineNo">017</span>         */<a name="line.17"></a>
-<span class="sourceLineNo">018</span>        public static final String SYSTEM_USES_DAMPER_FIELD_AI = "uses_damper_ai";<a name="line.18"></a>
-<span class="sourceLineNo">019</span>        <a name="line.19"></a>
-<span class="sourceLineNo">020</span>        public static final String SPECIAL_ALLOWS_SYSTEM_USE = "special_allows_system_use";<a name="line.20"></a>
-<span class="sourceLineNo">021</span>        public static final String SYSTEM_ALLOWS_SPECIAL_USE = "system_allows_special_use";<a name="line.21"></a>
-<span class="sourceLineNo">022</span>        <a name="line.22"></a>
-<span class="sourceLineNo">023</span>        <a name="line.23"></a>
-<span class="sourceLineNo">024</span>        /**<a name="line.24"></a>
-<span class="sourceLineNo">025</span>         * Derelict ship does not allow story point recovery. <a name="line.25"></a>
-<span class="sourceLineNo">026</span>         */<a name="line.26"></a>
-<span class="sourceLineNo">027</span>        public static final String UNRECOVERABLE = "unrecoverable";<a name="line.27"></a>
+<span class="sourceLineNo">003</span>/**<a name="line.3"></a>
+<span class="sourceLineNo">004</span> * @author Alex<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *<a name="line.5"></a>
+<span class="sourceLineNo">006</span> */<a name="line.6"></a>
+<span class="sourceLineNo">007</span>public class Tags {<a name="line.7"></a>
+<span class="sourceLineNo">008</span>        <a name="line.8"></a>
+<span class="sourceLineNo">009</span>        /**<a name="line.9"></a>
+<span class="sourceLineNo">010</span>         * On fleet members and on variants.<a name="line.10"></a>
+<span class="sourceLineNo">011</span>         */<a name="line.11"></a>
+<span class="sourceLineNo">012</span>        public static final String TAG_NO_AUTOFIT = "no_autofit";<a name="line.12"></a>
+<span class="sourceLineNo">013</span>        public static final String TAG_AUTOMATED_NO_PENALTY = "no_auto_penalty";<a name="line.13"></a>
+<span class="sourceLineNo">014</span>        public static final String TAG_RETAIN_SMODS_ON_RECOVERY = "retain_smods_on_recovery";<a name="line.14"></a>
+<span class="sourceLineNo">015</span>        //public static final String NO_RESTORATION = "no_restoration";<a name="line.15"></a>
+<span class="sourceLineNo">016</span>        <a name="line.16"></a>
+<span class="sourceLineNo">017</span>        public static final String TAG_NO_AUTOFIT_UNLESS_PLAYER = "no_autofit_unless_player";<a name="line.17"></a>
+<span class="sourceLineNo">018</span>        <a name="line.18"></a>
+<span class="sourceLineNo">019</span>        public static final String NO_SIM = "no_sim";<a name="line.19"></a>
+<span class="sourceLineNo">020</span>        <a name="line.20"></a>
+<span class="sourceLineNo">021</span>        /**<a name="line.21"></a>
+<span class="sourceLineNo">022</span>         * On hulls. Full CR recovery after combat, to max value.<a name="line.22"></a>
+<span class="sourceLineNo">023</span>         */<a name="line.23"></a>
+<span class="sourceLineNo">024</span>        public static final String FULL_CR_RECOVERY = "full_cr_recovery";<a name="line.24"></a>
+<span class="sourceLineNo">025</span>        <a name="line.25"></a>
+<span class="sourceLineNo">026</span>        public static final String INDUSTRY_DO_NOT_SHOW_IN_BUILD_DIALOG = "do_not_show_in_build_dialog";<a name="line.26"></a>
+<span class="sourceLineNo">027</span>        <a name="line.27"></a>
 <span class="sourceLineNo">028</span>        <a name="line.28"></a>
-<span class="sourceLineNo">029</span>        public static final String VARIANT_ALLOW_EXCESS_OP_ETC = "variant_allow_excess_op_etc";<a name="line.29"></a>
-<span class="sourceLineNo">030</span>        public static final String VARIANT_ALWAYS_RETAIN_SMODS_ON_SALVAGE = "variant_always_retain_smods_on_salvage";<a name="line.30"></a>
-<span class="sourceLineNo">031</span>        public static final String VARIANT_CONSISTENT_WEAPON_DROPS = "consistent_weapon_drops";<a name="line.31"></a>
-<span class="sourceLineNo">032</span>        public static final String VARIANT_DO_NOT_DROP_AI_CORE_FROM_CAPTAIN = "no_ai_core_drop";<a name="line.32"></a>
-<span class="sourceLineNo">033</span>        public static final String VARIANT_ALWAYS_RECOVERABLE = "always_recoverable";<a name="line.33"></a>
-<span class="sourceLineNo">034</span>        public static final String VARIANT_UNBOARDABLE = "unboardable";<a name="line.34"></a>
+<span class="sourceLineNo">029</span>        /**<a name="line.29"></a>
+<span class="sourceLineNo">030</span>         * Put on a hullmod that it's apply() methods don't get called when the player is using autofit from the<a name="line.30"></a>
+<span class="sourceLineNo">031</span>         * refit screen.<a name="line.31"></a>
+<span class="sourceLineNo">032</span>         */<a name="line.32"></a>
+<span class="sourceLineNo">033</span>        public static final String DO_NOT_APPLY_HULLMOD_DURING_AUTOFIT = "do_not_apply_hullmod_during_autofit"; <a name="line.33"></a>
+<span class="sourceLineNo">034</span>        <a name="line.34"></a>
 <span class="sourceLineNo">035</span>        <a name="line.35"></a>
 <span class="sourceLineNo">036</span>        <a name="line.36"></a>
-<span class="sourceLineNo">037</span>        public static final String HULL_UNRESTORABLE = "unrestorable";<a name="line.37"></a>
-<span class="sourceLineNo">038</span>        public static final String VARIANT_UNRESTORABLE = "unrestorable";<a name="line.38"></a>
-<span class="sourceLineNo">039</span>        <a name="line.39"></a>
-<span class="sourceLineNo">040</span>        <a name="line.40"></a>
-<span class="sourceLineNo">041</span>        /**<a name="line.41"></a>
-<span class="sourceLineNo">042</span>         * Faster spawning for a not-a-real-ship just used to fire beams (and generate threat for the AI to respond to them).<a name="line.42"></a>
-<span class="sourceLineNo">043</span>         * Automatically added by createFXDrone(). <a name="line.43"></a>
-<span class="sourceLineNo">044</span>         */<a name="line.44"></a>
-<span class="sourceLineNo">045</span>        public static final String VARIANT_FX_DRONE = "fx_drone";<a name="line.45"></a>
-<span class="sourceLineNo">046</span><a name="line.46"></a>
+<span class="sourceLineNo">037</span>        /**<a name="line.37"></a>
+<span class="sourceLineNo">038</span>         * For weapon tooltip. <a name="line.38"></a>
+<span class="sourceLineNo">039</span>         */<a name="line.39"></a>
+<span class="sourceLineNo">040</span>        public static final String NO_STANDARD_DATA = "no_standard_data";<a name="line.40"></a>
+<span class="sourceLineNo">041</span>        <a name="line.41"></a>
+<span class="sourceLineNo">042</span>        <a name="line.42"></a>
+<span class="sourceLineNo">043</span>        /**<a name="line.43"></a>
+<span class="sourceLineNo">044</span>         * On hull specs and variants. Not required - just an extra way to signal the ship is automated.<a name="line.44"></a>
+<span class="sourceLineNo">045</span>         */<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        public static final String AUTOMATED = "automated";<a name="line.46"></a>
 <span class="sourceLineNo">047</span>        <a name="line.47"></a>
-<span class="sourceLineNo">048</span>        <a name="line.48"></a>
-<span class="sourceLineNo">049</span>        /**<a name="line.49"></a>
-<span class="sourceLineNo">050</span>         * For phase cloak, whether it can be disrupted by nearby shots/objects.<a name="line.50"></a>
-<span class="sourceLineNo">051</span>         */<a name="line.51"></a>
-<span class="sourceLineNo">052</span>        public static final String DISRUPTABLE = "disruptable";<a name="line.52"></a>
-<span class="sourceLineNo">053</span>        <a name="line.53"></a>
-<span class="sourceLineNo">054</span>        public static final String NO_MARKET_INFO = "no_market_info";<a name="line.54"></a>
-<span class="sourceLineNo">055</span>        <a name="line.55"></a>
-<span class="sourceLineNo">056</span>        <a name="line.56"></a>
+<span class="sourceLineNo">048</span>        /**<a name="line.48"></a>
+<span class="sourceLineNo">049</span>         * Does not generate supplies/machinery/fuel/weapons/hullmods/etc - anything at all - when destroyed in battle.<a name="line.49"></a>
+<span class="sourceLineNo">050</span>         */<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        public static final String NO_BATTLE_SALVAGE= "no_battle_salvage";<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        <a name="line.52"></a>
+<span class="sourceLineNo">053</span>        /**<a name="line.53"></a>
+<span class="sourceLineNo">054</span>         * On ship hulls.<a name="line.54"></a>
+<span class="sourceLineNo">055</span>         */<a name="line.55"></a>
+<span class="sourceLineNo">056</span>        public static final String MONSTER = "monster";<a name="line.56"></a>
 <span class="sourceLineNo">057</span>        <a name="line.57"></a>
-<span class="sourceLineNo">058</span>        public static final String MARKET_NO_INDUSTRIES_ALLOWED = "market_no_industries_allowed";<a name="line.58"></a>
+<span class="sourceLineNo">058</span>        public static final String CENTER_DIAMOND_ON_HULL_CENTER = "center_diamond_on_hull_center";<a name="line.58"></a>
 <span class="sourceLineNo">059</span>        <a name="line.59"></a>
-<span class="sourceLineNo">060</span>        public static final String MARKET_NO_OFFICER_SPAWN = "market_no_officer_spawn";<a name="line.60"></a>
-<span class="sourceLineNo">061</span>        <a name="line.61"></a>
-<span class="sourceLineNo">062</span>        <a name="line.62"></a>
-<span class="sourceLineNo">063</span>        public static final String AUTOMATED_RECOVERABLE = "auto_rec";<a name="line.63"></a>
+<span class="sourceLineNo">060</span>        /**<a name="line.60"></a>
+<span class="sourceLineNo">061</span>         * In ship_systems.csv, NOT on ships<a name="line.61"></a>
+<span class="sourceLineNo">062</span>         */<a name="line.62"></a>
+<span class="sourceLineNo">063</span>        public static final String SYSTEM_USES_DAMPER_FIELD_AI = "uses_damper_ai";<a name="line.63"></a>
 <span class="sourceLineNo">064</span>        <a name="line.64"></a>
-<span class="sourceLineNo">065</span>        public static final String RESTRICTED = "restricted";<a name="line.65"></a>
-<span class="sourceLineNo">066</span>        <a name="line.66"></a>
-<span class="sourceLineNo">067</span>        public static final String MILITARY_MARKET_ONLY = "req_military";<a name="line.67"></a>
+<span class="sourceLineNo">065</span>        public static final String SPECIAL_ALLOWS_SYSTEM_USE = "special_allows_system_use";<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        public static final String SYSTEM_ALLOWS_SPECIAL_USE = "system_allows_special_use";<a name="line.66"></a>
+<span class="sourceLineNo">067</span>        <a name="line.67"></a>
 <span class="sourceLineNo">068</span>        <a name="line.68"></a>
 <span class="sourceLineNo">069</span>        /**<a name="line.69"></a>
-<span class="sourceLineNo">070</span>         * Fighter wings with this tag can be installed on automated ships. <a name="line.70"></a>
+<span class="sourceLineNo">070</span>         * Derelict ship does not allow story point recovery. <a name="line.70"></a>
 <span class="sourceLineNo">071</span>         */<a name="line.71"></a>
-<span class="sourceLineNo">072</span>        public static final String AUTOMATED_FIGHTER = "auto_fighter";<a name="line.72"></a>
-<span class="sourceLineNo">073</span>        public static final String ONLY_ALLOW_AUTOMATED_FIGHTERS = "only_allow_automated_fighters";<a name="line.73"></a>
-<span class="sourceLineNo">074</span>        <a name="line.74"></a>
-<span class="sourceLineNo">075</span>        <a name="line.75"></a>
-<span class="sourceLineNo">076</span>        public static final String NO_ENTITY_TOOLTIP = "no_entity_tooltip";  <a name="line.76"></a>
-<span class="sourceLineNo">077</span>        <a name="line.77"></a>
-<span class="sourceLineNo">078</span>        public static final String NO_TOPOGRAPHY_SCANS = "no_topography_scans";<a name="line.78"></a>
-<span class="sourceLineNo">079</span>        <a name="line.79"></a>
-<span class="sourceLineNo">080</span>        public static final String PK_SYSTEM = "pk_system";<a name="line.80"></a>
-<span class="sourceLineNo">081</span>        public static final String SYSTEM_CUT_OFF_FROM_HYPER = "system_cut_off_from_hyper";<a name="line.81"></a>
-<span class="sourceLineNo">082</span>        public static final String SYSTEM_ABYSSAL = "system_abyssal";<a name="line.82"></a>
-<span class="sourceLineNo">083</span>        <a name="line.83"></a>
-<span class="sourceLineNo">084</span>        public static final String THEME_HIDDEN = "theme_hidden";<a name="line.84"></a>
-<span class="sourceLineNo">085</span>        <a name="line.85"></a>
-<span class="sourceLineNo">086</span>        public static final String THEME_CORE_UNPOPULATED = "theme_core_unpopulated";<a name="line.86"></a>
-<span class="sourceLineNo">087</span>        public static final String THEME_CORE_POPULATED = "theme_core_populated";<a name="line.87"></a>
-<span class="sourceLineNo">088</span>        public static final String THEME_CORE = "theme_core";<a name="line.88"></a>
-<span class="sourceLineNo">089</span>        <a name="line.89"></a>
-<span class="sourceLineNo">090</span>        public static final String DO_NOT_SHOW_STRANDED_DIALOG = "do_not_show_stranded_dialog";<a name="line.90"></a>
+<span class="sourceLineNo">072</span>        public static final String UNRECOVERABLE = "unrecoverable";<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        <a name="line.73"></a>
+<span class="sourceLineNo">074</span>        public static final String VARIANT_ALLOW_EXCESS_OP_ETC = "variant_allow_excess_op_etc";<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        public static final String VARIANT_ALWAYS_RETAIN_SMODS_ON_SALVAGE = "variant_always_retain_smods_on_salvage";<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        public static final String VARIANT_CONSISTENT_WEAPON_DROPS = "consistent_weapon_drops";<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        public static final String VARIANT_DO_NOT_DROP_AI_CORE_FROM_CAPTAIN = "no_ai_core_drop";<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        public static final String VARIANT_ALWAYS_RECOVERABLE = "always_recoverable";<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        public static final String VARIANT_UNBOARDABLE = "unboardable";<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        <a name="line.80"></a>
+<span class="sourceLineNo">081</span>        <a name="line.81"></a>
+<span class="sourceLineNo">082</span>        /**<a name="line.82"></a>
+<span class="sourceLineNo">083</span>         * Will not be used to initialize a modular ship's/station's default _Hull variant with a set of empty modules. <a name="line.83"></a>
+<span class="sourceLineNo">084</span>         */<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        public static final String SKIP_FOR_DEFAULT_HULL_MODULES = "skip_for_default_hull_modules";<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        <a name="line.86"></a>
+<span class="sourceLineNo">087</span>        <a name="line.87"></a>
+<span class="sourceLineNo">088</span>        public static final String HULL_UNRESTORABLE = "unrestorable";<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        public static final String VARIANT_UNRESTORABLE = "unrestorable";<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        <a name="line.90"></a>
 <span class="sourceLineNo">091</span>        <a name="line.91"></a>
 <span class="sourceLineNo">092</span>        /**<a name="line.92"></a>
-<span class="sourceLineNo">093</span>         * Used to mark systems that would be "interesting" for the player to visit, due to ruins, derelicts,<a name="line.93"></a>
-<span class="sourceLineNo">094</span>         * anything special, and so on. These systems will be more likely to be picked for containing the <a name="line.94"></a>
-<span class="sourceLineNo">095</span>         * targets of randomly generated missions. Should ONLY be used where it's acceptable that this may happen. <a name="line.95"></a>
-<span class="sourceLineNo">096</span>         */<a name="line.96"></a>
-<span class="sourceLineNo">097</span>        public static final String THEME_INTERESTING = "theme_interesting";<a name="line.97"></a>
+<span class="sourceLineNo">093</span>         * Faster spawning for a not-a-real-ship just used to fire beams (and generate threat for the AI to respond to them).<a name="line.93"></a>
+<span class="sourceLineNo">094</span>         * Automatically added by createFXDrone(). <a name="line.94"></a>
+<span class="sourceLineNo">095</span>         */<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        public static final String VARIANT_FX_DRONE = "fx_drone";<a name="line.96"></a>
+<span class="sourceLineNo">097</span><a name="line.97"></a>
 <span class="sourceLineNo">098</span>        <a name="line.98"></a>
-<span class="sourceLineNo">099</span>        /**<a name="line.99"></a>
-<span class="sourceLineNo">100</span>         * Used to mark systems that would be "interesting" for the player to visit, due to ruins, derelicts,<a name="line.100"></a>
-<span class="sourceLineNo">101</span>         * anything special, and so on. These systems will be more likely to be picked for containing the <a name="line.101"></a>
-<span class="sourceLineNo">102</span>         * targets of randomly generated missions. Should ONLY be used where it's acceptable that this may happen. <a name="line.102"></a>
-<span class="sourceLineNo">103</span>         */<a name="line.103"></a>
-<span class="sourceLineNo">104</span>        public static final String THEME_INTERESTING_MINOR = "theme_interesting_minor";<a name="line.104"></a>
-<span class="sourceLineNo">105</span>        <a name="line.105"></a>
-<span class="sourceLineNo">106</span>        public static final String THEME_MISC = "theme_misc";<a name="line.106"></a>
-<span class="sourceLineNo">107</span>        public static final String THEME_MISC_SKIP = "theme_misc_skip";<a name="line.107"></a>
+<span class="sourceLineNo">099</span>        <a name="line.99"></a>
+<span class="sourceLineNo">100</span>        /**<a name="line.100"></a>
+<span class="sourceLineNo">101</span>         * For phase cloak, whether it can be disrupted by nearby shots/objects.<a name="line.101"></a>
+<span class="sourceLineNo">102</span>         */<a name="line.102"></a>
+<span class="sourceLineNo">103</span>        public static final String DISRUPTABLE = "disruptable";<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        <a name="line.104"></a>
+<span class="sourceLineNo">105</span>        public static final String NO_MARKET_INFO = "no_market_info";<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        <a name="line.106"></a>
+<span class="sourceLineNo">107</span>        <a name="line.107"></a>
 <span class="sourceLineNo">108</span>        <a name="line.108"></a>
-<span class="sourceLineNo">109</span>        public static final String THEME_RUINS = "theme_ruins";<a name="line.109"></a>
-<span class="sourceLineNo">110</span>        public static final String THEME_RUINS_MAIN = "theme_ruins_main";<a name="line.110"></a>
-<span class="sourceLineNo">111</span>        public static final String THEME_RUINS_SECONDARY = "theme_ruins_secondary";<a name="line.111"></a>
+<span class="sourceLineNo">109</span>        public static final String MARKET_NO_INDUSTRIES_ALLOWED = "market_no_industries_allowed";<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        <a name="line.110"></a>
+<span class="sourceLineNo">111</span>        public static final String MARKET_NO_OFFICER_SPAWN = "market_no_officer_spawn";<a name="line.111"></a>
 <span class="sourceLineNo">112</span>        <a name="line.112"></a>
-<span class="sourceLineNo">113</span>        /**<a name="line.113"></a>
-<span class="sourceLineNo">114</span>         * Marker meaning that this system should not be picked again for something special during procgen, like<a name="line.114"></a>
-<span class="sourceLineNo">115</span>         * the "Red Planet" mission.<a name="line.115"></a>
-<span class="sourceLineNo">116</span>         */<a name="line.116"></a>
-<span class="sourceLineNo">117</span>        public static final String THEME_SPECIAL = "theme_special";<a name="line.117"></a>
-<span class="sourceLineNo">118</span>        <a name="line.118"></a>
-<span class="sourceLineNo">119</span>        public static final String THEME_DERELICT = "theme_derelict";<a name="line.119"></a>
-<span class="sourceLineNo">120</span>        public static final String THEME_DERELICT_MOTHERSHIP = "theme_derelict_mothership";<a name="line.120"></a>
-<span class="sourceLineNo">121</span>        public static final String THEME_DERELICT_CRYOSLEEPER = "theme_derelict_cryosleeper";<a name="line.121"></a>
-<span class="sourceLineNo">122</span>        public static final String THEME_DERELICT_SURVEY_SHIP = "theme_derelict_survey_ship";<a name="line.122"></a>
-<span class="sourceLineNo">123</span>        public static final String THEME_DERELICT_PROBES = "theme_derelict_probes";<a name="line.123"></a>
-<span class="sourceLineNo">124</span>        <a name="line.124"></a>
-<span class="sourceLineNo">125</span>        public static final String HAS_CORONAL_TAP = "has_coronal_tap";<a name="line.125"></a>
+<span class="sourceLineNo">113</span>        <a name="line.113"></a>
+<span class="sourceLineNo">114</span>        public static final String AUTOMATED_RECOVERABLE = "auto_rec";<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        <a name="line.115"></a>
+<span class="sourceLineNo">116</span>        public static final String RESTRICTED = "restricted";<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        <a name="line.117"></a>
+<span class="sourceLineNo">118</span>        public static final String MILITARY_MARKET_ONLY = "req_military";<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        <a name="line.119"></a>
+<span class="sourceLineNo">120</span>        /**<a name="line.120"></a>
+<span class="sourceLineNo">121</span>         * Fighter wings with this tag can be installed on automated ships. <a name="line.121"></a>
+<span class="sourceLineNo">122</span>         */<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        public static final String AUTOMATED_FIGHTER = "auto_fighter";<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        public static final String ONLY_ALLOW_AUTOMATED_FIGHTERS = "only_allow_automated_fighters";<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        <a name="line.125"></a>
 <span class="sourceLineNo">126</span>        <a name="line.126"></a>
-<span class="sourceLineNo">127</span>        public static final String THEME_UNSAFE = "theme_unsafe"; // relatively powerful fleets that may interfere with missions<a name="line.127"></a>
-<span class="sourceLineNo">128</span>        public static final String THEME_REMNANT = "theme_remnant";<a name="line.128"></a>
-<span class="sourceLineNo">129</span>        public static final String THEME_REMNANT_MAIN = "theme_remnant_main";<a name="line.129"></a>
-<span class="sourceLineNo">130</span>        public static final String THEME_REMNANT_SECONDARY = "theme_remnant_secondary";<a name="line.130"></a>
-<span class="sourceLineNo">131</span>        public static final String THEME_REMNANT_NO_FLEETS = "theme_remnant_no_fleets";<a name="line.131"></a>
-<span class="sourceLineNo">132</span>        public static final String THEME_REMNANT_DESTROYED = "theme_remnant_destroyed";<a name="line.132"></a>
-<span class="sourceLineNo">133</span>        public static final String THEME_REMNANT_SUPPRESSED = "theme_remnant_suppressed";<a name="line.133"></a>
-<span class="sourceLineNo">134</span>        public static final String THEME_REMNANT_RESURGENT = "theme_remnant_resurgent";<a name="line.134"></a>
+<span class="sourceLineNo">127</span>        <a name="line.127"></a>
+<span class="sourceLineNo">128</span>        public static final String NO_ENTITY_TOOLTIP = "no_entity_tooltip";  <a name="line.128"></a>
+<span class="sourceLineNo">129</span>        <a name="line.129"></a>
+<span class="sourceLineNo">130</span>        public static final String NO_TOPOGRAPHY_SCANS = "no_topography_scans";<a name="line.130"></a>
+<span class="sourceLineNo">131</span>        <a name="line.131"></a>
+<span class="sourceLineNo">132</span>        public static final String PK_SYSTEM = "pk_system";<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        public static final String SYSTEM_CUT_OFF_FROM_HYPER = "system_cut_off_from_hyper";<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        public static final String SYSTEM_ABYSSAL = "system_abyssal";<a name="line.134"></a>
 <span class="sourceLineNo">135</span>        <a name="line.135"></a>
-<span class="sourceLineNo">136</span>        public static final String SALVAGE_ENTITY_NO_REMOVE = "no_remove";<a name="line.136"></a>
-<span class="sourceLineNo">137</span>        public static final String SALVAGE_ENTITY_NO_DEBRIS = "no_debris";<a name="line.137"></a>
-<span class="sourceLineNo">138</span>        public static final String SALVAGE_ENTITY_NON_CUSTOM = "not_a_custom_entity";<a name="line.138"></a>
-<span class="sourceLineNo">139</span>        //public static final String SALVAGE_ENTITY_NO_SALVAGE = "no_salvage";<a name="line.139"></a>
-<span class="sourceLineNo">140</span>        <a name="line.140"></a>
-<span class="sourceLineNo">141</span>        public static final String WEAPON_REMNANTS = "remnant";<a name="line.141"></a>
-<span class="sourceLineNo">142</span>        public static final String SHIP_REMNANTS = "remnant";<a name="line.142"></a>
+<span class="sourceLineNo">136</span>        public static final String SYSTEM_CAN_SPAWN_THREAT = "system_can_spawn_threat";<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        <a name="line.137"></a>
+<span class="sourceLineNo">138</span>        public static final String THEME_HIDDEN = "theme_hidden";<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        <a name="line.139"></a>
+<span class="sourceLineNo">140</span>        public static final String THEME_CORE_UNPOPULATED = "theme_core_unpopulated";<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        public static final String THEME_CORE_POPULATED = "theme_core_populated";<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        public static final String THEME_CORE = "theme_core";<a name="line.142"></a>
 <span class="sourceLineNo">143</span>        <a name="line.143"></a>
-<span class="sourceLineNo">144</span>        public static final String SHIP_CAN_NOT_SCUTTLE = "ship_can_not_scuttle";<a name="line.144"></a>
-<span class="sourceLineNo">145</span>        public static final String SHIP_UNIQUE_SIGNATURE = "ship_unique_signature";<a name="line.145"></a>
-<span class="sourceLineNo">146</span>        <a name="line.146"></a>
-<span class="sourceLineNo">147</span>        public static final String SHIP_RECOVERABLE = "ship_recoverable";<a name="line.147"></a>
-<span class="sourceLineNo">148</span>        public static final String SHIP_LIMITED_TOOLTIP = "ship_limited_tooltip";<a name="line.148"></a>
-<span class="sourceLineNo">149</span>        //public static final String SHIP_DESC_ID = "ship_desc_id";<a name="line.149"></a>
-<span class="sourceLineNo">150</span>        <a name="line.150"></a>
-<span class="sourceLineNo">151</span>        public static final String DO_NOT_RESPAWN_PLAYER_IN = "do_not_respawn_player_in";<a name="line.151"></a>
+<span class="sourceLineNo">144</span>        public static final String DO_NOT_SHOW_STRANDED_DIALOG = "do_not_show_stranded_dialog";<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        <a name="line.145"></a>
+<span class="sourceLineNo">146</span>        /**<a name="line.146"></a>
+<span class="sourceLineNo">147</span>         * Used to mark systems that would be "interesting" for the player to visit, due to ruins, derelicts,<a name="line.147"></a>
+<span class="sourceLineNo">148</span>         * anything special, and so on. These systems will be more likely to be picked for containing the <a name="line.148"></a>
+<span class="sourceLineNo">149</span>         * targets of randomly generated missions. Should ONLY be used where it's acceptable that this may happen. <a name="line.149"></a>
+<span class="sourceLineNo">150</span>         */<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        public static final String THEME_INTERESTING = "theme_interesting";<a name="line.151"></a>
 <span class="sourceLineNo">152</span>        <a name="line.152"></a>
-<span class="sourceLineNo">153</span>        <a name="line.153"></a>
-<span class="sourceLineNo">154</span>        <a name="line.154"></a>
-<span class="sourceLineNo">155</span>        public static final String MODULE_UNSELECTABLE = "module_unselectable";<a name="line.155"></a>
-<span class="sourceLineNo">156</span>        public static final String MODULE_REFIT_BRIGHT = "module_refit_bright";<a name="line.156"></a>
-<span class="sourceLineNo">157</span>        public static final String MODULE_NO_STATUS_BAR = "module_no_status_bar";<a name="line.157"></a>
-<span class="sourceLineNo">158</span>        public static final String MODULE_HULL_BAR_ONLY = "module_hull_bar_only";<a name="line.158"></a>
+<span class="sourceLineNo">153</span>        /**<a name="line.153"></a>
+<span class="sourceLineNo">154</span>         * Used to mark systems that would be "interesting" for the player to visit, due to ruins, derelicts,<a name="line.154"></a>
+<span class="sourceLineNo">155</span>         * anything special, and so on. These systems will be more likely to be picked for containing the <a name="line.155"></a>
+<span class="sourceLineNo">156</span>         * targets of randomly generated missions. Should ONLY be used where it's acceptable that this may happen. <a name="line.156"></a>
+<span class="sourceLineNo">157</span>         */<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        public static final String THEME_INTERESTING_MINOR = "theme_interesting_minor";<a name="line.158"></a>
 <span class="sourceLineNo">159</span>        <a name="line.159"></a>
-<span class="sourceLineNo">160</span>        <a name="line.160"></a>
-<span class="sourceLineNo">161</span>        public static final String HULLMOD_PHASE_BRAWLER = "phase_brawler";<a name="line.161"></a>
+<span class="sourceLineNo">160</span>        public static final String THEME_MISC = "theme_misc";<a name="line.160"></a>
+<span class="sourceLineNo">161</span>        public static final String THEME_MISC_SKIP = "theme_misc_skip";<a name="line.161"></a>
 <span class="sourceLineNo">162</span>        <a name="line.162"></a>
-<span class="sourceLineNo">163</span>        public static final String HULLMOD_NO_DROP = "no_drop";<a name="line.163"></a>
-<span class="sourceLineNo">164</span>        public static final String HULLMOD_NO_DROP_SALVAGE = "no_drop_salvage";<a name="line.164"></a>
-<span class="sourceLineNo">165</span>        <a name="line.165"></a>
-<span class="sourceLineNo">166</span>        // battle-damage related hullmods<a name="line.166"></a>
-<span class="sourceLineNo">167</span>        public static final String HULLMOD_DMOD = "dmod";<a name="line.167"></a>
-<span class="sourceLineNo">168</span>        public static final String HULLMOD_DAMAGE = "damage";<a name="line.168"></a>
-<span class="sourceLineNo">169</span>        public static final String HULLMOD_DAMAGE_PHASE = "phaseDamage";<a name="line.169"></a>
-<span class="sourceLineNo">170</span>        public static final String HULLMOD_CIV = "civ";<a name="line.170"></a>
-<span class="sourceLineNo">171</span>        public static final String HULLMOD_REQ_SHIELDS = "reqShields";<a name="line.171"></a>
-<span class="sourceLineNo">172</span>        public static final String HULLMOD_NOT_CIV = "notCiv";<a name="line.172"></a>
-<span class="sourceLineNo">173</span>        public static final String HULLMOD_CIV_ONLY = "civOnly";<a name="line.173"></a>
-<span class="sourceLineNo">174</span>        public static final String HULLMOD_DAMAGE_STRUCT = "damageStruct";<a name="line.174"></a>
-<span class="sourceLineNo">175</span>        public static final String HULLMOD_DESTROYED_ALWAYS = "destroyedDamageAlways";<a name="line.175"></a>
-<span class="sourceLineNo">176</span>        //public static final String HULLMOD_CIV_ALWAYS = "civDamageAlways";<a name="line.176"></a>
-<span class="sourceLineNo">177</span>        public static final String HULLMOD_FIGHTER_BAY_DAMAGE = "fighterBayDamage";<a name="line.177"></a>
-<span class="sourceLineNo">178</span>        public static final String HULLMOD_CARRIER_ALWAYS = "carrierDamageAlways";<a name="line.178"></a>
-<span class="sourceLineNo">179</span>        public static final String HULLMOD_PEAK_TIME = "peak_time";<a name="line.179"></a>
-<span class="sourceLineNo">180</span>        public static final String HULLMOD_NOT_PHASE = "notPhase";<a name="line.180"></a>
-<span class="sourceLineNo">181</span>        public static final String HULLMOD_NOT_AUTO = "notAuto";<a name="line.181"></a>
-<span class="sourceLineNo">182</span>        <a name="line.182"></a>
-<span class="sourceLineNo">183</span>        public static final String HULLMOD_NO_BUILD_IN = "no_build_in";<a name="line.183"></a>
-<span class="sourceLineNo">184</span>        <a name="line.184"></a>
-<span class="sourceLineNo">185</span>        public static final String HULLMOD_SHIELDS = "shields";<a name="line.185"></a>
-<span class="sourceLineNo">186</span>        public static final String HULLMOD_DEFENSIVE = "defensive";<a name="line.186"></a>
-<span class="sourceLineNo">187</span>        public static final String HULLMOD_OFFENSIVE = "offensive";<a name="line.187"></a>
-<span class="sourceLineNo">188</span>        public static final String HULLMOD_ENGINES = "engines";<a name="line.188"></a>
-<span class="sourceLineNo">189</span>        public static final String HULLMOD_SPECIAL = "special";<a name="line.189"></a>
-<span class="sourceLineNo">190</span>        <a name="line.190"></a>
-<span class="sourceLineNo">191</span>        <a name="line.191"></a>
-<span class="sourceLineNo">192</span>        public static final String WING_NO_DROP = "no_drop";<a name="line.192"></a>
-<span class="sourceLineNo">193</span>        public static final String WING_NO_SELL = "no_sell";<a name="line.193"></a>
+<span class="sourceLineNo">163</span>        public static final String THEME_RUINS = "theme_ruins";<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        public static final String THEME_RUINS_MAIN = "theme_ruins_main";<a name="line.164"></a>
+<span class="sourceLineNo">165</span>        public static final String THEME_RUINS_SECONDARY = "theme_ruins_secondary";<a name="line.165"></a>
+<span class="sourceLineNo">166</span>        <a name="line.166"></a>
+<span class="sourceLineNo">167</span>        /**<a name="line.167"></a>
+<span class="sourceLineNo">168</span>         * Marker meaning that this system should not be picked again for something special during procgen, like<a name="line.168"></a>
+<span class="sourceLineNo">169</span>         * the "Red Planet" mission.<a name="line.169"></a>
+<span class="sourceLineNo">170</span>         */<a name="line.170"></a>
+<span class="sourceLineNo">171</span>        public static final String THEME_SPECIAL = "theme_special";<a name="line.171"></a>
+<span class="sourceLineNo">172</span>        <a name="line.172"></a>
+<span class="sourceLineNo">173</span>        public static final String THEME_DERELICT = "theme_derelict";<a name="line.173"></a>
+<span class="sourceLineNo">174</span>        public static final String THEME_DERELICT_MOTHERSHIP = "theme_derelict_mothership";<a name="line.174"></a>
+<span class="sourceLineNo">175</span>        public static final String THEME_DERELICT_CRYOSLEEPER = "theme_derelict_cryosleeper";<a name="line.175"></a>
+<span class="sourceLineNo">176</span>        public static final String THEME_DERELICT_SURVEY_SHIP = "theme_derelict_survey_ship";<a name="line.176"></a>
+<span class="sourceLineNo">177</span>        public static final String THEME_DERELICT_PROBES = "theme_derelict_probes";<a name="line.177"></a>
+<span class="sourceLineNo">178</span>        <a name="line.178"></a>
+<span class="sourceLineNo">179</span>        public static final String HAS_CORONAL_TAP = "has_coronal_tap";<a name="line.179"></a>
+<span class="sourceLineNo">180</span>        <a name="line.180"></a>
+<span class="sourceLineNo">181</span>        public static final String THEME_UNSAFE = "theme_unsafe"; // relatively powerful fleets that may interfere with missions<a name="line.181"></a>
+<span class="sourceLineNo">182</span>        public static final String THEME_REMNANT = "theme_remnant";<a name="line.182"></a>
+<span class="sourceLineNo">183</span>        public static final String THEME_REMNANT_MAIN = "theme_remnant_main";<a name="line.183"></a>
+<span class="sourceLineNo">184</span>        public static final String THEME_REMNANT_SECONDARY = "theme_remnant_secondary";<a name="line.184"></a>
+<span class="sourceLineNo">185</span>        public static final String THEME_REMNANT_NO_FLEETS = "theme_remnant_no_fleets";<a name="line.185"></a>
+<span class="sourceLineNo">186</span>        public static final String THEME_REMNANT_DESTROYED = "theme_remnant_destroyed";<a name="line.186"></a>
+<span class="sourceLineNo">187</span>        public static final String THEME_REMNANT_SUPPRESSED = "theme_remnant_suppressed";<a name="line.187"></a>
+<span class="sourceLineNo">188</span>        public static final String THEME_REMNANT_RESURGENT = "theme_remnant_resurgent";<a name="line.188"></a>
+<span class="sourceLineNo">189</span>        <a name="line.189"></a>
+<span class="sourceLineNo">190</span>        public static final String SALVAGE_ENTITY_NO_REMOVE = "no_remove";<a name="line.190"></a>
+<span class="sourceLineNo">191</span>        public static final String SALVAGE_ENTITY_NO_DEBRIS = "no_debris";<a name="line.191"></a>
+<span class="sourceLineNo">192</span>        public static final String SALVAGE_ENTITY_NON_CUSTOM = "not_a_custom_entity";<a name="line.192"></a>
+<span class="sourceLineNo">193</span>        //public static final String SALVAGE_ENTITY_NO_SALVAGE = "no_salvage";<a name="line.193"></a>
 <span class="sourceLineNo">194</span>        <a name="line.194"></a>
-<span class="sourceLineNo">195</span>        public static final String WING_RAPID_REFORM = "rapid_reform";<a name="line.195"></a>
-<span class="sourceLineNo">196</span>        public static final String WING_LEADER_NO_SWARM = "leader_no_swarm";<a name="line.196"></a>
-<span class="sourceLineNo">197</span>        public static final String WING_WINGMEN_NO_SWARM = "wingmen_no_swarm";<a name="line.197"></a>
-<span class="sourceLineNo">198</span>        public static final String WING_MATCH_LEADER_FACING = "match_leader_facing";<a name="line.198"></a>
-<span class="sourceLineNo">199</span>        public static final String WING_ATTACK_AT_AN_ANGLE = "attack_at_an_angle";<a name="line.199"></a>
-<span class="sourceLineNo">200</span>        public static final String WING_INDEPENDENT_OF_CARRIER = "independent_of_carrier";<a name="line.200"></a>
-<span class="sourceLineNo">201</span>        public static final String WING_TARGET_ESCORT_TARGET = "target_escort_target";<a name="line.201"></a>
-<span class="sourceLineNo">202</span>        <a name="line.202"></a>
-<span class="sourceLineNo">203</span>        /**<a name="line.203"></a>
-<span class="sourceLineNo">204</span>         * Can apply to wing or to fighter's hull variant. <a name="line.204"></a>
-<span class="sourceLineNo">205</span>         */<a name="line.205"></a>
-<span class="sourceLineNo">206</span>        public static final String WING_STAY_IN_FRONT_OF_SHIP = "stay_in_front_of_ship";<a name="line.206"></a>
+<span class="sourceLineNo">195</span>        public static final String WEAPON_REMNANTS = "remnant";<a name="line.195"></a>
+<span class="sourceLineNo">196</span>        public static final String SHIP_REMNANTS = "remnant";<a name="line.196"></a>
+<span class="sourceLineNo">197</span>        <a name="line.197"></a>
+<span class="sourceLineNo">198</span>        public static final String SHIP_CAN_NOT_SCUTTLE = "ship_can_not_scuttle";<a name="line.198"></a>
+<span class="sourceLineNo">199</span>        public static final String SHIP_UNIQUE_SIGNATURE = "ship_unique_signature";<a name="line.199"></a>
+<span class="sourceLineNo">200</span>        <a name="line.200"></a>
+<span class="sourceLineNo">201</span>        public static final String SHIP_RECOVERABLE = "ship_recoverable";<a name="line.201"></a>
+<span class="sourceLineNo">202</span>        public static final String SHIP_LIMITED_TOOLTIP = "ship_limited_tooltip";<a name="line.202"></a>
+<span class="sourceLineNo">203</span>        public static final String LIMITED_TOOLTIP_IF_LOCKED = "limited_tooltip_if_locked";<a name="line.203"></a>
+<span class="sourceLineNo">204</span>        //public static final String SHIP_DESC_ID = "ship_desc_id";<a name="line.204"></a>
+<span class="sourceLineNo">205</span>        <a name="line.205"></a>
+<span class="sourceLineNo">206</span>        public static final String DO_NOT_RESPAWN_PLAYER_IN = "do_not_respawn_player_in";<a name="line.206"></a>
 <span class="sourceLineNo">207</span>        <a name="line.207"></a>
-<span class="sourceLineNo">208</span>        public static final String NO_DROP = "no_drop"; // general-purpose<a name="line.208"></a>
-<span class="sourceLineNo">209</span>        public static final String NO_BP_DROP = "no_bp_drop"; // no blueprints dropped during raid<a name="line.209"></a>
-<span class="sourceLineNo">210</span>        public static final String WEAPON_NO_SELL = "no_sell"; // not for sale at markets<a name="line.210"></a>
-<span class="sourceLineNo">211</span>        public static final String NO_SELL = "no_sell"; // not for sale at markets<a name="line.211"></a>
-<span class="sourceLineNo">212</span>        <a name="line.212"></a>
-<span class="sourceLineNo">213</span>        public static final String MISSION_ITEM = "mission_item";<a name="line.213"></a>
+<span class="sourceLineNo">208</span>        <a name="line.208"></a>
+<span class="sourceLineNo">209</span>        <a name="line.209"></a>
+<span class="sourceLineNo">210</span>        public static final String MODULE_UNSELECTABLE = "module_unselectable";<a name="line.210"></a>
+<span class="sourceLineNo">211</span>        public static final String MODULE_REFIT_BRIGHT = "module_refit_bright";<a name="line.211"></a>
+<span class="sourceLineNo">212</span>        public static final String MODULE_NO_STATUS_BAR = "module_no_status_bar";<a name="line.212"></a>
+<span class="sourceLineNo">213</span>        public static final String MODULE_HULL_BAR_ONLY = "module_hull_bar_only";<a name="line.213"></a>
 <span class="sourceLineNo">214</span>        <a name="line.214"></a>
 <span class="sourceLineNo">215</span>        <a name="line.215"></a>
-<span class="sourceLineNo">216</span>        /**<a name="line.216"></a>
-<span class="sourceLineNo">217</span>         * Stuff that shouldn't be able to be destroyed. Currently only works for campaign objectives.<a name="line.217"></a>
-<span class="sourceLineNo">218</span>         * See also: MemFlags.STORY_CRITIAL, for things that are story critical with specific "reasons" and<a name="line.218"></a>
-<span class="sourceLineNo">219</span>         * stop being critical once the reasons are all no longer valid.<a name="line.219"></a>
-<span class="sourceLineNo">220</span>         */<a name="line.220"></a>
-<span class="sourceLineNo">221</span>        public static final String STORY_CRITICAL = "story_critical";<a name="line.221"></a>
-<span class="sourceLineNo">222</span>        <a name="line.222"></a>
-<span class="sourceLineNo">223</span>        <a name="line.223"></a>
-<span class="sourceLineNo">224</span>        public static final String STAR = "star";<a name="line.224"></a>
-<span class="sourceLineNo">225</span>        public static final String PLANET = "planet";<a name="line.225"></a>
-<span class="sourceLineNo">226</span>        public static final String GAS_GIANT = "gas_giant";<a name="line.226"></a>
-<span class="sourceLineNo">227</span>        public static final String TERRAIN = "terrain";<a name="line.227"></a>
-<span class="sourceLineNo">228</span>        public static final String SYSTEM_ANCHOR = "system_anchor";<a name="line.228"></a>
-<span class="sourceLineNo">229</span>        public static final String NON_CLICKABLE = "non_clickable";<a name="line.229"></a>
-<span class="sourceLineNo">230</span>        public static final String FADING_OUT_AND_EXPIRING = "fading_out_and_expiring";<a name="line.230"></a>
-<span class="sourceLineNo">231</span>        <a name="line.231"></a>
-<span class="sourceLineNo">232</span>        public static final String ACCRETION_DISK = "accretion_disk";<a name="line.232"></a>
-<span class="sourceLineNo">233</span>        <a name="line.233"></a>
-<span class="sourceLineNo">234</span>        public static final String AMBIENT_LS = "ambient_ls";<a name="line.234"></a>
-<span class="sourceLineNo">235</span>        <a name="line.235"></a>
-<span class="sourceLineNo">236</span>        public static final String HAS_INTERACTION_DIALOG = "has_interaction_dialog";<a name="line.236"></a>
+<span class="sourceLineNo">216</span>        public static final String HULLMOD_PHASE_BRAWLER = "phase_brawler";<a name="line.216"></a>
+<span class="sourceLineNo">217</span>        <a name="line.217"></a>
+<span class="sourceLineNo">218</span>        public static final String HULLMOD_NO_DROP = "no_drop";<a name="line.218"></a>
+<span class="sourceLineNo">219</span>        public static final String HULLMOD_NO_DROP_SALVAGE = "no_drop_salvage";<a name="line.219"></a>
+<span class="sourceLineNo">220</span>        <a name="line.220"></a>
+<span class="sourceLineNo">221</span>        // battle-damage related hullmods<a name="line.221"></a>
+<span class="sourceLineNo">222</span>        public static final String HULLMOD_DMOD = "dmod";<a name="line.222"></a>
+<span class="sourceLineNo">223</span>        public static final String HULLMOD_DAMAGE = "damage";<a name="line.223"></a>
+<span class="sourceLineNo">224</span>        public static final String HULLMOD_DAMAGE_PHASE = "phaseDamage";<a name="line.224"></a>
+<span class="sourceLineNo">225</span>        public static final String HULLMOD_CIV = "civ";<a name="line.225"></a>
+<span class="sourceLineNo">226</span>        public static final String HULLMOD_REQ_SHIELDS = "reqShields";<a name="line.226"></a>
+<span class="sourceLineNo">227</span>        public static final String HULLMOD_NOT_CIV = "notCiv";<a name="line.227"></a>
+<span class="sourceLineNo">228</span>        public static final String HULLMOD_CIV_ONLY = "civOnly";<a name="line.228"></a>
+<span class="sourceLineNo">229</span>        public static final String HULLMOD_DAMAGE_STRUCT = "damageStruct";<a name="line.229"></a>
+<span class="sourceLineNo">230</span>        public static final String HULLMOD_DESTROYED_ALWAYS = "destroyedDamageAlways";<a name="line.230"></a>
+<span class="sourceLineNo">231</span>        //public static final String HULLMOD_CIV_ALWAYS = "civDamageAlways";<a name="line.231"></a>
+<span class="sourceLineNo">232</span>        public static final String HULLMOD_FIGHTER_BAY_DAMAGE = "fighterBayDamage";<a name="line.232"></a>
+<span class="sourceLineNo">233</span>        public static final String HULLMOD_CARRIER_ALWAYS = "carrierDamageAlways";<a name="line.233"></a>
+<span class="sourceLineNo">234</span>        public static final String HULLMOD_PEAK_TIME = "peak_time";<a name="line.234"></a>
+<span class="sourceLineNo">235</span>        public static final String HULLMOD_NOT_PHASE = "notPhase";<a name="line.235"></a>
+<span class="sourceLineNo">236</span>        public static final String HULLMOD_NOT_AUTO = "notAuto";<a name="line.236"></a>
 <span class="sourceLineNo">237</span>        <a name="line.237"></a>
-<span class="sourceLineNo">238</span>//      public static final String MARKET_PATROL = "market_patrol";<a name="line.238"></a>
-<span class="sourceLineNo">239</span>//      public static final String MARKET_MILITARY = "market_military";<a name="line.239"></a>
-<span class="sourceLineNo">240</span>        <a name="line.240"></a>
-<span class="sourceLineNo">241</span>        public static final String COMM_RELAY = "comm_relay";<a name="line.241"></a>
-<span class="sourceLineNo">242</span>        public static final String NAV_BUOY = "nav_buoy";<a name="line.242"></a>
-<span class="sourceLineNo">243</span>        public static final String SENSOR_ARRAY = "sensor_array";<a name="line.243"></a>
-<span class="sourceLineNo">244</span>        public static final String OBJECTIVE = "objective";<a name="line.244"></a>
-<span class="sourceLineNo">245</span>        public static final String STABLE_LOCATION = "stable_location";<a name="line.245"></a>
-<span class="sourceLineNo">246</span>        public static final String MISSION_LOCATION = "mission_location";<a name="line.246"></a>
-<span class="sourceLineNo">247</span>        public static final String MAKESHIFT = "makeshift";<a name="line.247"></a>
-<span class="sourceLineNo">248</span>        <a name="line.248"></a>
+<span class="sourceLineNo">238</span>        public static final String HULLMOD_NO_BUILD_IN = "no_build_in";<a name="line.238"></a>
+<span class="sourceLineNo">239</span>        <a name="line.239"></a>
+<span class="sourceLineNo">240</span>        public static final String HULLMOD_SHIELDS = "shields";<a name="line.240"></a>
+<span class="sourceLineNo">241</span>        public static final String HULLMOD_DEFENSIVE = "defensive";<a name="line.241"></a>
+<span class="sourceLineNo">242</span>        public static final String HULLMOD_OFFENSIVE = "offensive";<a name="line.242"></a>
+<span class="sourceLineNo">243</span>        public static final String HULLMOD_ENGINES = "engines";<a name="line.243"></a>
+<span class="sourceLineNo">244</span>        public static final String HULLMOD_SPECIAL = "special";<a name="line.244"></a>
+<span class="sourceLineNo">245</span>        <a name="line.245"></a>
+<span class="sourceLineNo">246</span>        <a name="line.246"></a>
+<span class="sourceLineNo">247</span>        public static final String WING_NO_DROP = "no_drop";<a name="line.247"></a>
+<span class="sourceLineNo">248</span>        public static final String WING_NO_SELL = "no_sell";<a name="line.248"></a>
 <span class="sourceLineNo">249</span>        <a name="line.249"></a>
-<span class="sourceLineNo">250</span>        public static final String USE_STATION_VISUAL = "use_station_visual";<a name="line.250"></a>
-<span class="sourceLineNo">251</span>        <a name="line.251"></a>
-<span class="sourceLineNo">252</span>        public static final String STATION = "station";<a name="line.252"></a>
-<span class="sourceLineNo">253</span>        public static final String GATE = "gate";<a name="line.253"></a>
-<span class="sourceLineNo">254</span>        public static final String ORBITAL_JUNK = "orbital_junk";<a name="line.254"></a>
-<span class="sourceLineNo">255</span>        <a name="line.255"></a>
-<span class="sourceLineNo">256</span>        public static final String TRANSIENT = "transient";<a name="line.256"></a>
-<span class="sourceLineNo">257</span>        public static final String JUMP_POINT = "jump_point";<a name="line.257"></a>
-<span class="sourceLineNo">258</span>        public static final String STELLAR_MIRROR = "stellar_mirror";<a name="line.258"></a>
-<span class="sourceLineNo">259</span>        public static final String STELLAR_SHADE = "stellar_shade";<a name="line.259"></a>
+<span class="sourceLineNo">250</span>        public static final String WING_RAPID_REFORM = "rapid_reform";<a name="line.250"></a>
+<span class="sourceLineNo">251</span>        public static final String WING_LEADER_NO_SWARM = "leader_no_swarm";<a name="line.251"></a>
+<span class="sourceLineNo">252</span>        public static final String WING_WINGMEN_NO_SWARM = "wingmen_no_swarm";<a name="line.252"></a>
+<span class="sourceLineNo">253</span>        //public static final String WING_WINGMEN_ALWAYS_SWARM = "wingmen_always_swarm";<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        public static final String WING_MATCH_LEADER_FACING = "match_leader_facing";<a name="line.254"></a>
+<span class="sourceLineNo">255</span>        public static final String WING_ATTACK_AT_AN_ANGLE = "attack_at_an_angle";<a name="line.255"></a>
+<span class="sourceLineNo">256</span>        public static final String WING_KEEP_AT_RANGE = "keep_at_range";<a name="line.256"></a>
+<span class="sourceLineNo">257</span>        public static final String WING_INDEPENDENT_OF_CARRIER = "independent_of_carrier";<a name="line.257"></a>
+<span class="sourceLineNo">258</span>        public static final String WING_TARGET_ESCORT_TARGET = "target_escort_target";<a name="line.258"></a>
+<span class="sourceLineNo">259</span>        <a name="line.259"></a>
 <span class="sourceLineNo">260</span>        <a name="line.260"></a>
-<span class="sourceLineNo">261</span>        public static final String CRYOSLEEPER = "cryosleeper";<a name="line.261"></a>
-<span class="sourceLineNo">262</span>        public static final String CORONAL_TAP = "coronal_tap";<a name="line.262"></a>
-<span class="sourceLineNo">263</span>        <a name="line.263"></a>
-<span class="sourceLineNo">264</span>        public static final String WARNING_BEACON = "warning_beacon";<a name="line.264"></a>
-<span class="sourceLineNo">265</span>        public static final String BEACON_LOW = "beacon_low";<a name="line.265"></a>
-<span class="sourceLineNo">266</span>        public static final String BEACON_MEDIUM = "beacon_medium";<a name="line.266"></a>
-<span class="sourceLineNo">267</span>        public static final String BEACON_HIGH = "beacon_high";<a name="line.267"></a>
-<span class="sourceLineNo">268</span>        <a name="line.268"></a>
-<span class="sourceLineNo">269</span>        <a name="line.269"></a>
-<span class="sourceLineNo">270</span>        public static final String PROTECTS_FROM_CORONA_IN_BATTLE  = "protects_from_corona_in_battle";<a name="line.270"></a>
-<span class="sourceLineNo">271</span>        <a name="line.271"></a>
-<span class="sourceLineNo">272</span>        public static final String SALVAGE_MUSIC= "salvage_music";<a name="line.272"></a>
+<span class="sourceLineNo">261</span>        /**<a name="line.261"></a>
+<span class="sourceLineNo">262</span>         * On fighter hull.<a name="line.262"></a>
+<span class="sourceLineNo">263</span>         */<a name="line.263"></a>
+<span class="sourceLineNo">264</span>        public static final String THREAT_SWARM_AI = "threat_swarm_ai";<a name="line.264"></a>
+<span class="sourceLineNo">265</span>        public static final String SWARM_FIGHTER = "swarm_fighter";<a name="line.265"></a>
+<span class="sourceLineNo">266</span>        <a name="line.266"></a>
+<span class="sourceLineNo">267</span>        <a name="line.267"></a>
+<span class="sourceLineNo">268</span>        public static final String THREAT = "threat";<a name="line.268"></a>
+<span class="sourceLineNo">269</span>        public static final String THREAT_TIMID = "threat_timid";<a name="line.269"></a>
+<span class="sourceLineNo">270</span>        public static final String THREAT_CAUTIOUS = "threat_cautious";<a name="line.270"></a>
+<span class="sourceLineNo">271</span>        public static final String THREAT_AGGRESSIVE = "threat_aggressive";<a name="line.271"></a>
+<span class="sourceLineNo">272</span>        public static final String THREAT_RECKLESS = "threat_reckless";<a name="line.272"></a>
 <span class="sourceLineNo">273</span>        <a name="line.273"></a>
-<span class="sourceLineNo">274</span>        public static final String SALVAGEABLE = "salvageable";<a name="line.274"></a>
-<span class="sourceLineNo">275</span>        public static final String DEBRIS_FIELD = "debris";<a name="line.275"></a>
-<span class="sourceLineNo">276</span>        <a name="line.276"></a>
-<span class="sourceLineNo">277</span>        public static final String WRECK = "wreck";<a name="line.277"></a>
-<span class="sourceLineNo">278</span>        <a name="line.278"></a>
-<span class="sourceLineNo">279</span>        public static final String SYSTEM_ALREADY_USED_FOR_STORY = "system_already_used_for_story";<a name="line.279"></a>
-<span class="sourceLineNo">280</span>        <a name="line.280"></a>
-<span class="sourceLineNo">281</span>        /**<a name="line.281"></a>
-<span class="sourceLineNo">282</span>         * Will expire at some point in the near future; not everything that expires is guaranteed to have this tag.<a name="line.282"></a>
-<span class="sourceLineNo">283</span>         */<a name="line.283"></a>
-<span class="sourceLineNo">284</span>        public static final String EXPIRES = "expires";<a name="line.284"></a>
-<span class="sourceLineNo">285</span>        <a name="line.285"></a>
-<span class="sourceLineNo">286</span>        public static final String NOT_RANDOM_MISSION_TARGET = "not_random_mission_target";<a name="line.286"></a>
-<span class="sourceLineNo">287</span>        <a name="line.287"></a>
-<span class="sourceLineNo">288</span><a name="line.288"></a>
-<span class="sourceLineNo">289</span>        <a name="line.289"></a>
-<span class="sourceLineNo">290</span>        public static final String NEUTRINO = "neutrino";<a name="line.290"></a>
-<span class="sourceLineNo">291</span>        public static final String NEUTRINO_LOW = "neutrino_low";<a name="line.291"></a>
-<span class="sourceLineNo">292</span>        public static final String NEUTRINO_HIGH = "neutrino_high";<a name="line.292"></a>
-<span class="sourceLineNo">293</span>        <a name="line.293"></a>
-<span class="sourceLineNo">294</span>        public static final String REPORT_REP = "reputation_change";<a name="line.294"></a>
-<span class="sourceLineNo">295</span>        public static final String REPORT_PRICES = "prices";<a name="line.295"></a>
-<span class="sourceLineNo">296</span>        public static final String REPORT_IMPORTANT = "important";<a name="line.296"></a>
-<span class="sourceLineNo">297</span>        public static final String REPORT_NOMAP = "nomap";<a name="line.297"></a>
-<span class="sourceLineNo">298</span>        public static final String REPORT_NO_SYSTEM = "no_system_prefix";<a name="line.298"></a>
-<span class="sourceLineNo">299</span>        public static final String FLEET_LOG = "fleet_log";<a name="line.299"></a>
-<span class="sourceLineNo">300</span>        public static final String INCOME_REPORT = "income_report";<a name="line.300"></a>
-<span class="sourceLineNo">301</span>        <a name="line.301"></a>
-<span class="sourceLineNo">302</span>        <a name="line.302"></a>
-<span class="sourceLineNo">303</span>//      public static final String INTEL_HOSTILE = "Hostile";<a name="line.303"></a>
-<span class="sourceLineNo">304</span>//      public static final String INTEL_NOT_HOSTILE = "Not Hostile";<a name="line.304"></a>
-<span class="sourceLineNo">305</span>        <a name="line.305"></a>
-<span class="sourceLineNo">306</span>        public static final String MISSION_PRIORITY = "priority";<a name="line.306"></a>
-<span class="sourceLineNo">307</span>        public static final String MISSION_NON_REPEATABLE = "non_repeatable";<a name="line.307"></a>
-<span class="sourceLineNo">308</span>        <a name="line.308"></a>
-<span class="sourceLineNo">309</span>        public static final String INTEL_IMPORTANT = "Important";<a name="line.309"></a>
-<span class="sourceLineNo">310</span>        public static final String INTEL_NEW = "New";<a name="line.310"></a>
-<span class="sourceLineNo">311</span>        public static final String INTEL_BOUNTY = "Bounties";<a name="line.311"></a>
-<span class="sourceLineNo">312</span>        public static final String INTEL_MAJOR_EVENT = "Major events";<a name="line.312"></a>
-<span class="sourceLineNo">313</span>        public static final String INTEL_CONTACTS = "Contacts";<a name="line.313"></a>
-<span class="sourceLineNo">314</span>        public static final String INTEL_FLEET_DEPARTURES = "Fleet departures";<a name="line.314"></a>
-<span class="sourceLineNo">315</span>        public static final String INTEL_SMUGGLING = "Smuggling";<a name="line.315"></a>
-<span class="sourceLineNo">316</span>        public static final String INTEL_EXPLORATION = "Exploration";<a name="line.316"></a>
-<span class="sourceLineNo">317</span>        public static final String INTEL_FLEET_LOG = "Fleet log";<a name="line.317"></a>
-<span class="sourceLineNo">318</span>        public static final String INTEL_LOCAL = "Local";<a name="line.318"></a>
-<span class="sourceLineNo">319</span>        public static final String INTEL_TRADE = "Trade";<a name="line.319"></a>
-<span class="sourceLineNo">320</span>        public static final String INTEL_MISSIONS = "Missions";<a name="line.320"></a>
-<span class="sourceLineNo">321</span>        //public static final String INTEL_OFFERS = "Offers";<a name="line.321"></a>
-<span class="sourceLineNo">322</span>        public static final String INTEL_ACCEPTED = "Accepted";<a name="line.322"></a>
-<span class="sourceLineNo">323</span>        public static final String INTEL_STORY = "Story";<a name="line.323"></a>
-<span class="sourceLineNo">324</span>        public static final String INTEL_COMMISSION = "Commission";<a name="line.324"></a>
-<span class="sourceLineNo">325</span>        public static final String INTEL_AGREEMENTS = "Agreements";<a name="line.325"></a>
-<span class="sourceLineNo">326</span>        public static final String INTEL_HOSTILITIES = "Hostilities";<a name="line.326"></a>
-<span class="sourceLineNo">327</span>        public static final String INTEL_MILITARY = "Military";<a name="line.327"></a>
-<span class="sourceLineNo">328</span>        public static final String INTEL_BEACON = "Warning beacons";<a name="line.328"></a>
-<span class="sourceLineNo">329</span>        public static final String INTEL_GATES = "Gates";<a name="line.329"></a>
-<span class="sourceLineNo">330</span>        public static final String INTEL_SHRINES = "Luddic shrines";<a name="line.330"></a>
-<span class="sourceLineNo">331</span>        public static final String INTEL_COLONIES = "Colony threats";<a name="line.331"></a>
-<span class="sourceLineNo">332</span>        public static final String INTEL_COMM_SNIFFERS = "Comm sniffers";<a name="line.332"></a>
+<span class="sourceLineNo">274</span>        public static final String THREAT_HIVE = "threat_hive";<a name="line.274"></a>
+<span class="sourceLineNo">275</span>        public static final String THREAT_OVERSEER = "threat_overseer";<a name="line.275"></a>
+<span class="sourceLineNo">276</span>        public static final String THREAT_FABRICATOR = "threat_fabricator";<a name="line.276"></a>
+<span class="sourceLineNo">277</span>        public static final String THREAT_COMBAT = "threat_combat";<a name="line.277"></a>
+<span class="sourceLineNo">278</span>        public static final String THREAT_SKIRMISH = "threat_skirmish";<a name="line.278"></a>
+<span class="sourceLineNo">279</span>        <a name="line.279"></a>
+<span class="sourceLineNo">280</span>        public static final String FRAGMENT = "fragment";<a name="line.280"></a>
+<span class="sourceLineNo">281</span>        public static final String FRAGMENT_GLOW = "fragment_glow";<a name="line.281"></a>
+<span class="sourceLineNo">282</span>        <a name="line.282"></a>
+<span class="sourceLineNo">283</span>        public static final String DWELLER = "dweller";<a name="line.283"></a>
+<span class="sourceLineNo">284</span>        public static final String DWELLER_TIMID = "dweller_timid";<a name="line.284"></a>
+<span class="sourceLineNo">285</span>        public static final String DWELLER_CAUTIOUS = "dweller_cautious";<a name="line.285"></a>
+<span class="sourceLineNo">286</span>        public static final String DWELLER_AGGRESSIVE = "dweller_aggressive";<a name="line.286"></a>
+<span class="sourceLineNo">287</span>        public static final String DWELLER_RECKLESS = "dweller_reckless";<a name="line.287"></a>
+<span class="sourceLineNo">288</span>        public static final String DWELLER_VORTEX = "dweller_vortex";<a name="line.288"></a>
+<span class="sourceLineNo">289</span>        public static final String DWELLER_EJECTA = "dweller_ejecta";<a name="line.289"></a>
+<span class="sourceLineNo">290</span>        <a name="line.290"></a>
+<span class="sourceLineNo">291</span>        /**<a name="line.291"></a>
+<span class="sourceLineNo">292</span>         * On human-ship shrouded hullmods.<a name="line.292"></a>
+<span class="sourceLineNo">293</span>         */<a name="line.293"></a>
+<span class="sourceLineNo">294</span>        public static final String SHROUDED = "shrouded";<a name="line.294"></a>
+<span class="sourceLineNo">295</span>        <a name="line.295"></a>
+<span class="sourceLineNo">296</span>        <a name="line.296"></a>
+<span class="sourceLineNo">297</span>        public static final String NO_ARMOR_SCHEMATIC = "no_armor_schematic";<a name="line.297"></a>
+<span class="sourceLineNo">298</span>        <a name="line.298"></a>
+<span class="sourceLineNo">299</span>        //public static final String FRAGMENT_SWARM_START_WITH_ZERO_FRAGMENTS = "fragment_swarm_start_with_zero_fragments";<a name="line.299"></a>
+<span class="sourceLineNo">300</span>        <a name="line.300"></a>
+<span class="sourceLineNo">301</span>        /**<a name="line.301"></a>
+<span class="sourceLineNo">302</span>         * Unused/unimplemented.<a name="line.302"></a>
+<span class="sourceLineNo">303</span>         */<a name="line.303"></a>
+<span class="sourceLineNo">304</span>        public static final String OVERSEER_CHARGE = "overseer_charge";<a name="line.304"></a>
+<span class="sourceLineNo">305</span>        public static final String OVERSEER_CHARGE_FIGHTER = "overseer_charge_fighter";<a name="line.305"></a>
+<span class="sourceLineNo">306</span>        <a name="line.306"></a>
+<span class="sourceLineNo">307</span>        /**<a name="line.307"></a>
+<span class="sourceLineNo">308</span>         * Can apply to wing or to fighter's hull variant. <a name="line.308"></a>
+<span class="sourceLineNo">309</span>         */<a name="line.309"></a>
+<span class="sourceLineNo">310</span>        public static final String WING_STAY_IN_FRONT_OF_SHIP = "stay_in_front_of_ship";<a name="line.310"></a>
+<span class="sourceLineNo">311</span>        <a name="line.311"></a>
+<span class="sourceLineNo">312</span>        public static final String NO_DROP = "no_drop"; // general-purpose<a name="line.312"></a>
+<span class="sourceLineNo">313</span>        public static final String NO_BP_DROP = "no_bp_drop"; // no blueprints dropped during raid<a name="line.313"></a>
+<span class="sourceLineNo">314</span>        public static final String WEAPON_NO_SELL = "no_sell"; // not for sale at markets<a name="line.314"></a>
+<span class="sourceLineNo">315</span>        public static final String NO_SELL = "no_sell"; // not for sale at markets<a name="line.315"></a>
+<span class="sourceLineNo">316</span>        <a name="line.316"></a>
+<span class="sourceLineNo">317</span>        public static final String MISSION_ITEM = "mission_item";<a name="line.317"></a>
+<span class="sourceLineNo">318</span>        <a name="line.318"></a>
+<span class="sourceLineNo">319</span>        /**<a name="line.319"></a>
+<span class="sourceLineNo">320</span>         * Included in the planet search filter, if known about<a name="line.320"></a>
+<span class="sourceLineNo">321</span>         */<a name="line.321"></a>
+<span class="sourceLineNo">322</span>        public static final String PLANET_SEARCH = "planet_search";<a name="line.322"></a>
+<span class="sourceLineNo">323</span>        public static final String SHOW_IN_PLANET_LIST = "show_in_planet_list";<a name="line.323"></a>
+<span class="sourceLineNo">324</span>        public static final String COLONY_ITEM = "colony_item";<a name="line.324"></a>
+<span class="sourceLineNo">325</span>        <a name="line.325"></a>
+<span class="sourceLineNo">326</span>        <a name="line.326"></a>
+<span class="sourceLineNo">327</span>        /**<a name="line.327"></a>
+<span class="sourceLineNo">328</span>         * Stuff that shouldn't be able to be destroyed. Currently only works for campaign objectives.<a name="line.328"></a>
+<span class="sourceLineNo">329</span>         * See also: MemFlags.STORY_CRITIAL, for things that are story critical with specific "reasons" and<a name="line.329"></a>
+<span class="sourceLineNo">330</span>         * stop being critical once the reasons are all no longer valid.<a name="line.330"></a>
+<span class="sourceLineNo">331</span>         */<a name="line.331"></a>
+<span class="sourceLineNo">332</span>        public static final String STORY_CRITICAL = "story_critical";<a name="line.332"></a>
 <span class="sourceLineNo">333</span>        <a name="line.333"></a>
-<span class="sourceLineNo">334</span>        public static final String INTEL_DECIVILIZED = "Decivilized";<a name="line.334"></a>
-<span class="sourceLineNo">335</span>        <a name="line.335"></a>
-<span class="sourceLineNo">336</span>        public static final String INTEL_PRODUCTION = "Production";<a name="line.336"></a>
-<span class="sourceLineNo">337</span>        <a name="line.337"></a>
-<span class="sourceLineNo">338</span>        public static final String CONTACT_MILITARY = "military";<a name="line.338"></a>
-<span class="sourceLineNo">339</span>        public static final String CONTACT_TRADE = "trade";<a name="line.339"></a>
-<span class="sourceLineNo">340</span>        public static final String CONTACT_UNDERWORLD = "underworld";<a name="line.340"></a>
-<span class="sourceLineNo">341</span>        public static final String CONTACT_SCIENCE = "science";<a name="line.341"></a>
-<span class="sourceLineNo">342</span>        public static final String CONTACT_PATHER = "pather";<a name="line.342"></a>
-<span class="sourceLineNo">343</span>        <a name="line.343"></a>
-<span class="sourceLineNo">344</span>        public static final String INVOLUNTARY_RETIREMENT = "involuntary_retirement";<a name="line.344"></a>
-<span class="sourceLineNo">345</span>        public static final String REPLACEMENT_ARCHON = "replacement_archon";<a name="line.345"></a>
+<span class="sourceLineNo">334</span>        <a name="line.334"></a>
+<span class="sourceLineNo">335</span>        public static final String STAR = "star";<a name="line.335"></a>
+<span class="sourceLineNo">336</span>        public static final String PLANET = "planet";<a name="line.336"></a>
+<span class="sourceLineNo">337</span>        public static final String GAS_GIANT = "gas_giant";<a name="line.337"></a>
+<span class="sourceLineNo">338</span>        public static final String TERRAIN = "terrain";<a name="line.338"></a>
+<span class="sourceLineNo">339</span>        public static final String SYSTEM_ANCHOR = "system_anchor";<a name="line.339"></a>
+<span class="sourceLineNo">340</span>        public static final String NON_CLICKABLE = "non_clickable";<a name="line.340"></a>
+<span class="sourceLineNo">341</span>        public static final String FADING_OUT_AND_EXPIRING = "fading_out_and_expiring";<a name="line.341"></a>
+<span class="sourceLineNo">342</span>        <a name="line.342"></a>
+<span class="sourceLineNo">343</span>        public static final String ACCRETION_DISK = "accretion_disk";<a name="line.343"></a>
+<span class="sourceLineNo">344</span>        <a name="line.344"></a>
+<span class="sourceLineNo">345</span>        public static final String AMBIENT_LS = "ambient_ls";<a name="line.345"></a>
 <span class="sourceLineNo">346</span>        <a name="line.346"></a>
-<span class="sourceLineNo">347</span>        public static final String GHOST = "ghost";<a name="line.347"></a>
+<span class="sourceLineNo">347</span>        public static final String HAS_INTERACTION_DIALOG = "has_interaction_dialog";<a name="line.347"></a>
 <span class="sourceLineNo">348</span>        <a name="line.348"></a>
-<span class="sourceLineNo">349</span>        public static final String UNAFFECTED_BY_SLIPSTREAM = "unaffected_by_slipstream";<a name="line.349"></a>
-<span class="sourceLineNo">350</span>        public static final String IMMUNE_TO_REMORA_PULSE = "immune_to_remora_pulse";<a name="line.350"></a>
-<span class="sourceLineNo">351</span>        public static final String ZIG_GHOST = "zig_ghost";<a name="line.351"></a>
-<span class="sourceLineNo">352</span>        <a name="line.352"></a>
-<span class="sourceLineNo">353</span>        public static final String OMEGA = "omega";<a name="line.353"></a>
-<span class="sourceLineNo">354</span>        <a name="line.354"></a>
-<span class="sourceLineNo">355</span>        public static final String DAMAGE_SPECIAL = "damage_special";<a name="line.355"></a>
-<span class="sourceLineNo">356</span>        public static final String DAMAGE_SOFT_FLUX = "damage_soft_flux";<a name="line.356"></a>
-<span class="sourceLineNo">357</span>        <a name="line.357"></a>
-<span class="sourceLineNo">358</span>        public static final String LIDAR = "lidar";<a name="line.358"></a>
-<span class="sourceLineNo">359</span>        public static final String NOVA = "nova";<a name="line.359"></a>
-<span class="sourceLineNo">360</span>        public static final String FIXED_RANGE = "fixed_range";<a name="line.360"></a>
-<span class="sourceLineNo">361</span>        <a name="line.361"></a>
-<span class="sourceLineNo">362</span>        public static final String FIRES_ONE_BURST = "fires_one_burst";<a name="line.362"></a>
-<span class="sourceLineNo">363</span>        <a name="line.363"></a>
-<span class="sourceLineNo">364</span>        public static final String KANTA_GIFT = "kanta_gift";<a name="line.364"></a>
-<span class="sourceLineNo">365</span>        <a name="line.365"></a>
-<span class="sourceLineNo">366</span>        public static final String LUDDIC_SHRINE = "luddic_shrine";<a name="line.366"></a>
-<span class="sourceLineNo">367</span>        <a name="line.367"></a>
-<span class="sourceLineNo">368</span>        public static final String SLIPSTREAM_VISIBLE_IN_ABYSS = "slipstream_visible_in_abyss";<a name="line.368"></a>
-<span class="sourceLineNo">369</span>        <a name="line.369"></a>
-<span class="sourceLineNo">370</span>        public static final String TEMPORARY_LOCATION = "temporary_location";<a name="line.370"></a>
-<span class="sourceLineNo">371</span>        public static final String STAR_HIDDEN_ON_MAP = "star_hidden_on_map";<a name="line.371"></a>
-<span class="sourceLineNo">372</span>        <a name="line.372"></a>
-<span class="sourceLineNo">373</span>        // MissileAutoloader<a name="line.373"></a>
-<span class="sourceLineNo">374</span>        public static final String RELOAD_1PT = "reload_1pt";<a name="line.374"></a>
-<span class="sourceLineNo">375</span>        public static final String RELOAD_1_AND_A_HALF_PT = "reload_1_and_a_half_pt";<a name="line.375"></a>
-<span class="sourceLineNo">376</span>        public static final String RELOAD_2PT = "reload_2pt";<a name="line.376"></a>
-<span class="sourceLineNo">377</span>        public static final String RELOAD_3PT = "reload_3pt";<a name="line.377"></a>
-<span class="sourceLineNo">378</span>        public static final String RELOAD_4PT = "reload_4pt";<a name="line.378"></a>
-<span class="sourceLineNo">379</span>        public static final String RELOAD_5PT = "reload_5pt";<a name="line.379"></a>
-<span class="sourceLineNo">380</span>        public static final String RELOAD_6PT = "reload_6pt";<a name="line.380"></a>
-<span class="sourceLineNo">381</span>        public static final String NO_RELOAD = "no_reload";<a name="line.381"></a>
-<span class="sourceLineNo">382</span>        <a name="line.382"></a>
+<span class="sourceLineNo">349</span>//      public static final String MARKET_PATROL = "market_patrol";<a name="line.349"></a>
+<span class="sourceLineNo">350</span>//      public static final String MARKET_MILITARY = "market_military";<a name="line.350"></a>
+<span class="sourceLineNo">351</span>        <a name="line.351"></a>
+<span class="sourceLineNo">352</span>        public static final String COMM_RELAY = "comm_relay";<a name="line.352"></a>
+<span class="sourceLineNo">353</span>        public static final String NAV_BUOY = "nav_buoy";<a name="line.353"></a>
+<span class="sourceLineNo">354</span>        public static final String SENSOR_ARRAY = "sensor_array";<a name="line.354"></a>
+<span class="sourceLineNo">355</span>        public static final String OBJECTIVE = "objective";<a name="line.355"></a>
+<span class="sourceLineNo">356</span>        public static final String STABLE_LOCATION = "stable_location";<a name="line.356"></a>
+<span class="sourceLineNo">357</span>        public static final String MISSION_LOCATION = "mission_location";<a name="line.357"></a>
+<span class="sourceLineNo">358</span>        public static final String MAKESHIFT = "makeshift";<a name="line.358"></a>
+<span class="sourceLineNo">359</span>        <a name="line.359"></a>
+<span class="sourceLineNo">360</span>        <a name="line.360"></a>
+<span class="sourceLineNo">361</span>        public static final String USE_STATION_VISUAL = "use_station_visual";<a name="line.361"></a>
+<span class="sourceLineNo">362</span>        <a name="line.362"></a>
+<span class="sourceLineNo">363</span>        public static final String STATION = "station";<a name="line.363"></a>
+<span class="sourceLineNo">364</span>        public static final String GATE = "gate";<a name="line.364"></a>
+<span class="sourceLineNo">365</span>        public static final String ORBITAL_JUNK = "orbital_junk";<a name="line.365"></a>
+<span class="sourceLineNo">366</span>        <a name="line.366"></a>
+<span class="sourceLineNo">367</span>        public static final String TRANSIENT = "transient";<a name="line.367"></a>
+<span class="sourceLineNo">368</span>        public static final String JUMP_POINT = "jump_point";<a name="line.368"></a>
+<span class="sourceLineNo">369</span>        public static final String STELLAR_MIRROR = "stellar_mirror";<a name="line.369"></a>
+<span class="sourceLineNo">370</span>        public static final String STELLAR_SHADE = "stellar_shade";<a name="line.370"></a>
+<span class="sourceLineNo">371</span>        <a name="line.371"></a>
+<span class="sourceLineNo">372</span>        public static final String CRYOSLEEPER = "cryosleeper";<a name="line.372"></a>
+<span class="sourceLineNo">373</span>        public static final String CORONAL_TAP = "coronal_tap";<a name="line.373"></a>
+<span class="sourceLineNo">374</span>        <a name="line.374"></a>
+<span class="sourceLineNo">375</span>        public static final String WARNING_BEACON = "warning_beacon";<a name="line.375"></a>
+<span class="sourceLineNo">376</span>        public static final String BEACON_LOW = "beacon_low";<a name="line.376"></a>
+<span class="sourceLineNo">377</span>        public static final String BEACON_MEDIUM = "beacon_medium";<a name="line.377"></a>
+<span class="sourceLineNo">378</span>        public static final String BEACON_HIGH = "beacon_high";<a name="line.378"></a>
+<span class="sourceLineNo">379</span>        <a name="line.379"></a>
+<span class="sourceLineNo">380</span>        <a name="line.380"></a>
+<span class="sourceLineNo">381</span>        public static final String PROTECTS_FROM_CORONA_IN_BATTLE  = "protects_from_corona_in_battle";<a name="line.381"></a>
+<span class="sourceLineNo">382</span>        public static final String FLEET_IGNORES_CORONA = "fleet_ignores_corona";<a name="line.382"></a>
 <span class="sourceLineNo">383</span>        <a name="line.383"></a>
-<span class="sourceLineNo">384</span>}<a name="line.384"></a>
-<span class="sourceLineNo">385</span><a name="line.385"></a>
-<span class="sourceLineNo">386</span><a name="line.386"></a>
-<span class="sourceLineNo">387</span><a name="line.387"></a>
-<span class="sourceLineNo">388</span><a name="line.388"></a>
-<span class="sourceLineNo">389</span><a name="line.389"></a>
-<span class="sourceLineNo">390</span><a name="line.390"></a>
-<span class="sourceLineNo">391</span><a name="line.391"></a>
-<span class="sourceLineNo">392</span><a name="line.392"></a>
+<span class="sourceLineNo">384</span>        public static final String SALVAGE_MUSIC= "salvage_music";<a name="line.384"></a>
+<span class="sourceLineNo">385</span>        <a name="line.385"></a>
+<span class="sourceLineNo">386</span>        public static final String SALVAGEABLE = "salvageable";<a name="line.386"></a>
+<span class="sourceLineNo">387</span>        public static final String DEBRIS_FIELD = "debris";<a name="line.387"></a>
+<span class="sourceLineNo">388</span>        <a name="line.388"></a>
+<span class="sourceLineNo">389</span>        public static final String WRECK = "wreck";<a name="line.389"></a>
+<span class="sourceLineNo">390</span>        <a name="line.390"></a>
+<span class="sourceLineNo">391</span>        public static final String SYSTEM_ALREADY_USED_FOR_STORY = "system_already_used_for_story";<a name="line.391"></a>
+<span class="sourceLineNo">392</span>        <a name="line.392"></a>
+<span class="sourceLineNo">393</span>        /**<a name="line.393"></a>
+<span class="sourceLineNo">394</span>         * Will expire at some point in the near future; not everything that expires is guaranteed to have this tag.<a name="line.394"></a>
+<span class="sourceLineNo">395</span>         */<a name="line.395"></a>
+<span class="sourceLineNo">396</span>        public static final String EXPIRES = "expires";<a name="line.396"></a>
+<span class="sourceLineNo">397</span>        <a name="line.397"></a>
+<span class="sourceLineNo">398</span>        public static final String NOT_RANDOM_MISSION_TARGET = "not_random_mission_target";<a name="line.398"></a>
+<span class="sourceLineNo">399</span>        <a name="line.399"></a>
+<span class="sourceLineNo">400</span><a name="line.400"></a>
+<span class="sourceLineNo">401</span>        <a name="line.401"></a>
+<span class="sourceLineNo">402</span>        public static final String NEUTRINO = "neutrino";<a name="line.402"></a>
+<span class="sourceLineNo">403</span>        public static final String NEUTRINO_LOW = "neutrino_low";<a name="line.403"></a>
+<span class="sourceLineNo">404</span>        public static final String NEUTRINO_HIGH = "neutrino_high";<a name="line.404"></a>
+<span class="sourceLineNo">405</span>        <a name="line.405"></a>
+<span class="sourceLineNo">406</span>        public static final String REPORT_REP = "reputation_change";<a name="line.406"></a>
+<span class="sourceLineNo">407</span>        public static final String REPORT_PRICES = "prices";<a name="line.407"></a>
+<span class="sourceLineNo">408</span>        public static final String REPORT_IMPORTANT = "important";<a name="line.408"></a>
+<span class="sourceLineNo">409</span>        public static final String REPORT_NOMAP = "nomap";<a name="line.409"></a>
+<span class="sourceLineNo">410</span>        public static final String REPORT_NO_SYSTEM = "no_system_prefix";<a name="line.410"></a>
+<span class="sourceLineNo">411</span>        public static final String FLEET_LOG = "fleet_log";<a name="line.411"></a>
+<span class="sourceLineNo">412</span>        public static final String INCOME_REPORT = "income_report";<a name="line.412"></a>
+<span class="sourceLineNo">413</span>        <a name="line.413"></a>
+<span class="sourceLineNo">414</span>        <a name="line.414"></a>
+<span class="sourceLineNo">415</span>//      public static final String INTEL_HOSTILE = "Hostile";<a name="line.415"></a>
+<span class="sourceLineNo">416</span>//      public static final String INTEL_NOT_HOSTILE = "Not Hostile";<a name="line.416"></a>
+<span class="sourceLineNo">417</span>        <a name="line.417"></a>
+<span class="sourceLineNo">418</span>        public static final String MISSION_PRIORITY = "priority";<a name="line.418"></a>
+<span class="sourceLineNo">419</span>        public static final String MISSION_NON_REPEATABLE = "non_repeatable";<a name="line.419"></a>
+<span class="sourceLineNo">420</span>        <a name="line.420"></a>
+<span class="sourceLineNo">421</span>        public static final String INTEL_IMPORTANT = "Important";<a name="line.421"></a>
+<span class="sourceLineNo">422</span>        public static final String INTEL_NEW = "New";<a name="line.422"></a>
+<span class="sourceLineNo">423</span>        public static final String INTEL_BOUNTY = "Bounties";<a name="line.423"></a>
+<span class="sourceLineNo">424</span>        public static final String INTEL_MAJOR_EVENT = "Major events";<a name="line.424"></a>
+<span class="sourceLineNo">425</span>        public static final String INTEL_CONTACTS = "Contacts";<a name="line.425"></a>
+<span class="sourceLineNo">426</span>        public static final String INTEL_FLEET_DEPARTURES = "Fleet departures";<a name="line.426"></a>
+<span class="sourceLineNo">427</span>        public static final String INTEL_SMUGGLING = "Smuggling";<a name="line.427"></a>
+<span class="sourceLineNo">428</span>        public static final String INTEL_EXPLORATION = "Exploration";<a name="line.428"></a>
+<span class="sourceLineNo">429</span>        public static final String INTEL_MARKER = "Marker";<a name="line.429"></a>
+<span class="sourceLineNo">430</span>        public static final String INTEL_FLEET_LOG = "Fleet log";<a name="line.430"></a>
+<span class="sourceLineNo">431</span>        public static final String INTEL_SALVAGE = "Salvage";<a name="line.431"></a>
+<span class="sourceLineNo">432</span>        public static final String INTEL_LOCAL = "Local";<a name="line.432"></a>
+<span class="sourceLineNo">433</span>        public static final String INTEL_TRADE = "Trade";<a name="line.433"></a>
+<span class="sourceLineNo">434</span>        public static final String INTEL_MISSIONS = "Missions";<a name="line.434"></a>
+<span class="sourceLineNo">435</span>        //public static final String INTEL_OFFERS = "Offers";<a name="line.435"></a>
+<span class="sourceLineNo">436</span>        public static final String INTEL_ACCEPTED = "Accepted";<a name="line.436"></a>
+<span class="sourceLineNo">437</span>        public static final String INTEL_STORY = "Story";<a name="line.437"></a>
+<span class="sourceLineNo">438</span>        public static final String INTEL_COMMISSION = "Commission";<a name="line.438"></a>
+<span class="sourceLineNo">439</span>        public static final String INTEL_AGREEMENTS = "Agreements";<a name="line.439"></a>
+<span class="sourceLineNo">440</span>        public static final String INTEL_HOSTILITIES = "Hostilities";<a name="line.440"></a>
+<span class="sourceLineNo">441</span>        public static final String INTEL_MILITARY = "Military";<a name="line.441"></a>
+<span class="sourceLineNo">442</span>        public static final String INTEL_BEACON = "Warning beacons";<a name="line.442"></a>
+<span class="sourceLineNo">443</span>        public static final String INTEL_GATES = "Gates";<a name="line.443"></a>
+<span class="sourceLineNo">444</span>        public static final String INTEL_SHRINES = "Luddic shrines";<a name="line.444"></a>
+<span class="sourceLineNo">445</span>        public static final String INTEL_COLONIES = "Colony threats";<a name="line.445"></a>
+<span class="sourceLineNo">446</span>        public static final String INTEL_COMM_SNIFFERS = "Comm sniffers";<a name="line.446"></a>
+<span class="sourceLineNo">447</span>        <a name="line.447"></a>
+<span class="sourceLineNo">448</span>        public static final String INTEL_DECIVILIZED = "Decivilized";<a name="line.448"></a>
+<span class="sourceLineNo">449</span>        <a name="line.449"></a>
+<span class="sourceLineNo">450</span>        public static final String INTEL_PRODUCTION = "Production";<a name="line.450"></a>
+<span class="sourceLineNo">451</span>        <a name="line.451"></a>
+<span class="sourceLineNo">452</span>        public static final String CONTACT_MILITARY = "military";<a name="line.452"></a>
+<span class="sourceLineNo">453</span>        public static final String CONTACT_TRADE = "trade";<a name="line.453"></a>
+<span class="sourceLineNo">454</span>        public static final String CONTACT_UNDERWORLD = "underworld";<a name="line.454"></a>
+<span class="sourceLineNo">455</span>        public static final String CONTACT_SCIENCE = "science";<a name="line.455"></a>
+<span class="sourceLineNo">456</span>        public static final String CONTACT_PATHER = "pather";<a name="line.456"></a>
+<span class="sourceLineNo">457</span>        <a name="line.457"></a>
+<span class="sourceLineNo">458</span>        public static final String INVOLUNTARY_RETIREMENT = "involuntary_retirement";<a name="line.458"></a>
+<span class="sourceLineNo">459</span>        public static final String REPLACEMENT_ARCHON = "replacement_archon";<a name="line.459"></a>
+<span class="sourceLineNo">460</span>        <a name="line.460"></a>
+<span class="sourceLineNo">461</span>        public static final String GHOST = "ghost";<a name="line.461"></a>
+<span class="sourceLineNo">462</span>        <a name="line.462"></a>
+<span class="sourceLineNo">463</span>        public static final String UNAFFECTED_BY_SLIPSTREAM = "unaffected_by_slipstream";<a name="line.463"></a>
+<span class="sourceLineNo">464</span>        public static final String IMMUNE_TO_REMORA_PULSE = "immune_to_remora_pulse";<a name="line.464"></a>
+<span class="sourceLineNo">465</span>        public static final String ZIG_GHOST = "zig_ghost";<a name="line.465"></a>
+<span class="sourceLineNo">466</span>        <a name="line.466"></a>
+<span class="sourceLineNo">467</span>        public static final String OMEGA = "omega";<a name="line.467"></a>
+<span class="sourceLineNo">468</span>        <a name="line.468"></a>
+<span class="sourceLineNo">469</span>        public static final String DAMAGE_SPECIAL = "damage_special";<a name="line.469"></a>
+<span class="sourceLineNo">470</span>        public static final String DAMAGE_SOFT_FLUX = "damage_soft_flux";<a name="line.470"></a>
+<span class="sourceLineNo">471</span>        <a name="line.471"></a>
+<span class="sourceLineNo">472</span>        public static final String LIDAR = "lidar";<a name="line.472"></a>
+<span class="sourceLineNo">473</span>        public static final String NOVA = "nova";<a name="line.473"></a>
+<span class="sourceLineNo">474</span>        public static final String FIXED_RANGE = "fixed_range";<a name="line.474"></a>
+<span class="sourceLineNo">475</span>        <a name="line.475"></a>
+<span class="sourceLineNo">476</span>        public static final String FIRES_ONE_BURST = "fires_one_burst";<a name="line.476"></a>
+<span class="sourceLineNo">477</span>        <a name="line.477"></a>
+<span class="sourceLineNo">478</span>        public static final String KANTA_GIFT = "kanta_gift";<a name="line.478"></a>
+<span class="sourceLineNo">479</span>        <a name="line.479"></a>
+<span class="sourceLineNo">480</span>        public static final String LUDDIC_SHRINE = "luddic_shrine";<a name="line.480"></a>
+<span class="sourceLineNo">481</span>        <a name="line.481"></a>
+<span class="sourceLineNo">482</span>        public static final String SLIPSTREAM_VISIBLE_IN_ABYSS = "slipstream_visible_in_abyss";<a name="line.482"></a>
+<span class="sourceLineNo">483</span>        <a name="line.483"></a>
+<span class="sourceLineNo">484</span>        public static final String TEMPORARY_LOCATION = "temporary_location";<a name="line.484"></a>
+<span class="sourceLineNo">485</span>        public static final String STAR_HIDDEN_ON_MAP = "star_hidden_on_map";<a name="line.485"></a>
+<span class="sourceLineNo">486</span>        <a name="line.486"></a>
+<span class="sourceLineNo">487</span>        // MissileAutoloader<a name="line.487"></a>
+<span class="sourceLineNo">488</span>        public static final String RELOAD_1PT = "reload_1pt";<a name="line.488"></a>
+<span class="sourceLineNo">489</span>        public static final String RELOAD_1_AND_A_HALF_PT = "reload_1_and_a_half_pt";<a name="line.489"></a>
+<span class="sourceLineNo">490</span>        public static final String RELOAD_2PT = "reload_2pt";<a name="line.490"></a>
+<span class="sourceLineNo">491</span>        public static final String RELOAD_3PT = "reload_3pt";<a name="line.491"></a>
+<span class="sourceLineNo">492</span>        public static final String RELOAD_4PT = "reload_4pt";<a name="line.492"></a>
+<span class="sourceLineNo">493</span>        public static final String RELOAD_5PT = "reload_5pt";<a name="line.493"></a>
+<span class="sourceLineNo">494</span>        public static final String RELOAD_6PT = "reload_6pt";<a name="line.494"></a>
+<span class="sourceLineNo">495</span>        public static final String NO_RELOAD = "no_reload";<a name="line.495"></a>
+<span class="sourceLineNo">496</span>        <a name="line.496"></a>
+<span class="sourceLineNo">497</span>        // ship systems<a name="line.497"></a>
+<span class="sourceLineNo">498</span>        public static final String SHIP_SYSTEM_DEFENSIVE = "defensive";<a name="line.498"></a>
+<span class="sourceLineNo">499</span>        public static final String SHIP_SYSTEM_OFFENSIVE = "offensive";<a name="line.499"></a>
+<span class="sourceLineNo">500</span>        public static final String SHIP_SYSTEM_MOVEMENT = "movement";<a name="line.500"></a>
+<span class="sourceLineNo">501</span>        <a name="line.501"></a>
+<span class="sourceLineNo">502</span>        // general - inclusion in codex<a name="line.502"></a>
+<span class="sourceLineNo">503</span>        <a name="line.503"></a>
+<span class="sourceLineNo">504</span>        public static final String HIDE_IN_CODEX = "hide_in_codex";<a name="line.504"></a>
+<span class="sourceLineNo">505</span>        <a name="line.505"></a>
+<span class="sourceLineNo">506</span>        <a name="line.506"></a>
+<span class="sourceLineNo">507</span>        /**<a name="line.507"></a>
+<span class="sourceLineNo">508</span>         * For fighters that need a ship entry instead of a fighter wing entry. <a name="line.508"></a>
+<span class="sourceLineNo">509</span>         */<a name="line.509"></a>
+<span class="sourceLineNo">510</span>        public static final String SHOW_IN_CODEX_AS_SHIP = "show_in_codex_as_ship";<a name="line.510"></a>
+<span class="sourceLineNo">511</span><a name="line.511"></a>
+<span class="sourceLineNo">512</span>        /**<a name="line.512"></a>
+<span class="sourceLineNo">513</span>         * Difference from "hide" is that invisible can be seen if selected with code, i.e.<a name="line.513"></a>
+<span class="sourceLineNo">514</span>         *  the entry actually exists. <a name="line.514"></a>
+<span class="sourceLineNo">515</span>         */<a name="line.515"></a>
+<span class="sourceLineNo">516</span>        public static final String INVISIBLE_IN_CODEX = "invisible_in_codex";<a name="line.516"></a>
+<span class="sourceLineNo">517</span>        public static final String CODEX_UNLOCKABLE = "codex_unlockable";<a name="line.517"></a>
+<span class="sourceLineNo">518</span>        public static final String CODEX_REQUIRE_RELATED = "codex_require_related";<a name="line.518"></a>
+<span class="sourceLineNo">519</span>        public static final String SHOW_IN_CODEX = "show_in_codex";<a name="line.519"></a>
+<span class="sourceLineNo">520</span>        <a name="line.520"></a>
+<span class="sourceLineNo">521</span>        public static final String DWELLER_LIGHT = "dweller_light";<a name="line.521"></a>
+<span class="sourceLineNo">522</span>        <a name="line.522"></a>
+<span class="sourceLineNo">523</span>        /**<a name="line.523"></a>
+<span class="sourceLineNo">524</span>         * Just #league things<a name="line.524"></a>
+<span class="sourceLineNo">525</span>         */<a name="line.525"></a>
+<span class="sourceLineNo">526</span>        public static final String GENS_YARIBAY = "gens_yaribay";<a name="line.526"></a>
+<span class="sourceLineNo">527</span>        public static final String GENS_HANNAN = "gens_hannan";<a name="line.527"></a>
+<span class="sourceLineNo">528</span>        public static final String GENS_KATO = "gens_kato";<a name="line.528"></a>
+<span class="sourceLineNo">529</span>        <a name="line.529"></a>
+<span class="sourceLineNo">530</span>        <a name="line.530"></a>
+<span class="sourceLineNo">531</span>}<a name="line.531"></a>
+<span class="sourceLineNo">532</span><a name="line.532"></a>
+<span class="sourceLineNo">533</span><a name="line.533"></a>
+<span class="sourceLineNo">534</span><a name="line.534"></a>
+<span class="sourceLineNo">535</span><a name="line.535"></a>
+<span class="sourceLineNo">536</span><a name="line.536"></a>
+<span class="sourceLineNo">537</span><a name="line.537"></a>
+<span class="sourceLineNo">538</span><a name="line.538"></a>
+<span class="sourceLineNo">539</span><a name="line.539"></a>
 
 
 

@@ -291,51 +291,58 @@
 <span class="sourceLineNo">283</span>                                CommoditySpecAPI spec = Global.getSettings().getCommoditySpec(commodityId);<a name="line.283"></a>
 <span class="sourceLineNo">284</span>                                <a name="line.284"></a>
 <span class="sourceLineNo">285</span>                                String industryId = INDUSTRY.get(commodityId);<a name="line.285"></a>
-<span class="sourceLineNo">286</span>                                IndustrySpecAPI ind = Global.getSettings().getIndustrySpec(industryId);<a name="line.286"></a>
-<span class="sourceLineNo">287</span>                                <a name="line.287"></a>
-<span class="sourceLineNo">288</span>                                <a name="line.288"></a>
-<span class="sourceLineNo">289</span>                                String str = "" + mod;<a name="line.289"></a>
-<span class="sourceLineNo">290</span>                                if (mod &gt; 0) str = "+" + mod;<a name="line.290"></a>
-<span class="sourceLineNo">291</span>                                String text = "";<a name="line.291"></a>
-<span class="sourceLineNo">292</span>                                if (mod == 0) {<a name="line.292"></a>
-<span class="sourceLineNo">293</span>                                        text = "No bonuses or penalties to " + spec.getName().toLowerCase() + " production (" + ind.getName() + ")";<a name="line.293"></a>
-<span class="sourceLineNo">294</span>                                } else {<a name="line.294"></a>
-<span class="sourceLineNo">295</span>                                        //text = "" + str + " to " + spec.getName().toLowerCase() + " production.";<a name="line.295"></a>
-<span class="sourceLineNo">296</span>                                        text = "" + str + " " + spec.getName().toLowerCase() + " production (" + ind.getName() + ")";<a name="line.296"></a>
-<span class="sourceLineNo">297</span>                                }<a name="line.297"></a>
-<span class="sourceLineNo">298</span>                                float pad = 10f;<a name="line.298"></a>
-<span class="sourceLineNo">299</span>                                tooltip.addPara(text, pad, Misc.getHighlightColor(), str);<a name="line.299"></a>
-<span class="sourceLineNo">300</span>                        }<a name="line.300"></a>
-<span class="sourceLineNo">301</span>                }<a name="line.301"></a>
-<span class="sourceLineNo">302</span>        }<a name="line.302"></a>
-<span class="sourceLineNo">303</span>        <a name="line.303"></a>
-<span class="sourceLineNo">304</span>        <a name="line.304"></a>
-<span class="sourceLineNo">305</span>        public void modifyIncoming(MarketAPI market, PopulationComposition incoming) {<a name="line.305"></a>
-<span class="sourceLineNo">306</span>                float qty = 0f;<a name="line.306"></a>
-<span class="sourceLineNo">307</span>                if (Conditions.FARMLAND_POOR.equals(condition.getId())) {<a name="line.307"></a>
-<span class="sourceLineNo">308</span>                        qty = 5f;<a name="line.308"></a>
-<span class="sourceLineNo">309</span>                } else if (Conditions.FARMLAND_ADEQUATE.equals(condition.getId())) {<a name="line.309"></a>
-<span class="sourceLineNo">310</span>                        qty = 10f;<a name="line.310"></a>
-<span class="sourceLineNo">311</span>                } else if (Conditions.FARMLAND_RICH.equals(condition.getId())) {<a name="line.311"></a>
-<span class="sourceLineNo">312</span>                        qty = 20f;<a name="line.312"></a>
-<span class="sourceLineNo">313</span>                } else if (Conditions.FARMLAND_BOUNTIFUL.equals(condition.getId())) {<a name="line.313"></a>
-<span class="sourceLineNo">314</span>                        qty = 30f;<a name="line.314"></a>
-<span class="sourceLineNo">315</span>                } else if (Conditions.WATER_SURFACE.equals(condition.getId())) {<a name="line.315"></a>
-<span class="sourceLineNo">316</span>                        qty = 10f;<a name="line.316"></a>
-<span class="sourceLineNo">317</span>                }<a name="line.317"></a>
-<span class="sourceLineNo">318</span>                if (qty &gt; 0) {<a name="line.318"></a>
-<span class="sourceLineNo">319</span>                        incoming.add(Factions.LUDDIC_CHURCH, qty);<a name="line.319"></a>
-<span class="sourceLineNo">320</span>                }<a name="line.320"></a>
-<span class="sourceLineNo">321</span>        }<a name="line.321"></a>
-<span class="sourceLineNo">322</span><a name="line.322"></a>
-<span class="sourceLineNo">323</span><a name="line.323"></a>
-<span class="sourceLineNo">324</span>        <a name="line.324"></a>
-<span class="sourceLineNo">325</span>        <a name="line.325"></a>
-<span class="sourceLineNo">326</span>}<a name="line.326"></a>
-<span class="sourceLineNo">327</span><a name="line.327"></a>
-<span class="sourceLineNo">328</span><a name="line.328"></a>
+<span class="sourceLineNo">286</span>                                if (commodityId.equals(Commodities.FOOD) &amp;&amp; condition.getId().equals(Conditions.WATER_SURFACE) &amp;&amp;<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                                                industryId.equals(Industries.FARMING)) {<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                                        industryId = Industries.AQUACULTURE;<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                                } else if (commodityId.equals(Commodities.LOBSTER) &amp;&amp; condition.getId().equals(Conditions.VOLTURNIAN_LOBSTER_PENS) &amp;&amp;<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                                                industryId.equals(Industries.FARMING)) {<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                                        industryId = Industries.AQUACULTURE;<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                                }<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                                IndustrySpecAPI ind = Global.getSettings().getIndustrySpec(industryId);<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                                <a name="line.294"></a>
+<span class="sourceLineNo">295</span>                                <a name="line.295"></a>
+<span class="sourceLineNo">296</span>                                String str = "" + mod;<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                                if (mod &gt; 0) str = "+" + mod;<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                                String text = "";<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                                if (mod == 0) {<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                                        text = "No bonuses or penalties to " + spec.getName().toLowerCase() + " production (" + ind.getName() + ")";<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                                } else {<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                                        //text = "" + str + " to " + spec.getName().toLowerCase() + " production.";<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                                        text = "" + str + " " + spec.getName().toLowerCase() + " production (" + ind.getName() + ")";<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                                }<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                                float pad = 10f;<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                                tooltip.addPara(text, pad, Misc.getHighlightColor(), str);<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                        }<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                }<a name="line.308"></a>
+<span class="sourceLineNo">309</span>        }<a name="line.309"></a>
+<span class="sourceLineNo">310</span>        <a name="line.310"></a>
+<span class="sourceLineNo">311</span>        <a name="line.311"></a>
+<span class="sourceLineNo">312</span>        public void modifyIncoming(MarketAPI market, PopulationComposition incoming) {<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                float qty = 0f;<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                if (Conditions.FARMLAND_POOR.equals(condition.getId())) {<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                        qty = 5f;<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                } else if (Conditions.FARMLAND_ADEQUATE.equals(condition.getId())) {<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                        qty = 10f;<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                } else if (Conditions.FARMLAND_RICH.equals(condition.getId())) {<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                        qty = 20f;<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                } else if (Conditions.FARMLAND_BOUNTIFUL.equals(condition.getId())) {<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                        qty = 30f;<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                } else if (Conditions.WATER_SURFACE.equals(condition.getId())) {<a name="line.322"></a>
+<span class="sourceLineNo">323</span>                        qty = 10f;<a name="line.323"></a>
+<span class="sourceLineNo">324</span>                }<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                if (qty &gt; 0) {<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                        incoming.add(Factions.LUDDIC_CHURCH, qty);<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                }<a name="line.327"></a>
+<span class="sourceLineNo">328</span>        }<a name="line.328"></a>
 <span class="sourceLineNo">329</span><a name="line.329"></a>
 <span class="sourceLineNo">330</span><a name="line.330"></a>
+<span class="sourceLineNo">331</span>        <a name="line.331"></a>
+<span class="sourceLineNo">332</span>        <a name="line.332"></a>
+<span class="sourceLineNo">333</span>}<a name="line.333"></a>
+<span class="sourceLineNo">334</span><a name="line.334"></a>
+<span class="sourceLineNo">335</span><a name="line.335"></a>
+<span class="sourceLineNo">336</span><a name="line.336"></a>
+<span class="sourceLineNo">337</span><a name="line.337"></a>
 
 
 

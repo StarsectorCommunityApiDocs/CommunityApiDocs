@@ -248,65 +248,69 @@
 <span class="sourceLineNo">240</span>        <a name="line.240"></a>
 <span class="sourceLineNo">241</span>        @Override<a name="line.241"></a>
 <span class="sourceLineNo">242</span>        public void addDescriptionForNonEndStage(TooltipMakerAPI info, float width, float height) {<a name="line.242"></a>
-<span class="sourceLineNo">243</span>                float opad = 10f;<a name="line.243"></a>
-<span class="sourceLineNo">244</span>                Color h = Misc.getHighlightColor();<a name="line.244"></a>
-<span class="sourceLineNo">245</span>                if (currentStage == Stage.EXTRACT) {<a name="line.245"></a>
-<span class="sourceLineNo">246</span>                        info.addPara("Extract agent located " +<a name="line.246"></a>
-<span class="sourceLineNo">247</span>                                         market.getOnOrAt() + " " + market.getName() + <a name="line.247"></a>
-<span class="sourceLineNo">248</span>                                         " in the " + market.getStarSystem().getNameWithLowercaseTypeShort() + ".", opad);<a name="line.248"></a>
-<span class="sourceLineNo">249</span>                        if (variation == Variation.PIRATE_BASE || variation == Variation.LUDDIC_PATH_BASE) {<a name="line.249"></a>
-<span class="sourceLineNo">250</span>                                FactionAPI f = market.getFaction();<a name="line.250"></a>
-<span class="sourceLineNo">251</span>                                info.addPara("The target location is " + f.getPersonNamePrefixAOrAn() + " %s base.",<a name="line.251"></a>
-<span class="sourceLineNo">252</span>                                                         opad, f.getBaseUIColor(), f.getPersonNamePrefix());<a name="line.252"></a>
-<span class="sourceLineNo">253</span>                                <a name="line.253"></a>
-<span class="sourceLineNo">254</span>//                              info.addPara("The operation will require a sizeable marine contingent and will face active " +<a name="line.254"></a>
-<span class="sourceLineNo">255</span>//                                              "resistance. A close assessment of the station's internal defenses is " +<a name="line.255"></a>
-<span class="sourceLineNo">256</span>//                                              "required to determine the forces necessary.", opad);<a name="line.256"></a>
-<span class="sourceLineNo">257</span>                        } else {<a name="line.257"></a>
-<span class="sourceLineNo">258</span>                                FactionAPI f = market.getFaction();<a name="line.258"></a>
-<span class="sourceLineNo">259</span>                                LabelAPI label = info.addPara("The target location is a size %s " +<a name="line.259"></a>
-<span class="sourceLineNo">260</span>                                                                "colony controlled by " + f.getDisplayNameWithArticle() + ".",<a name="line.260"></a>
-<span class="sourceLineNo">261</span>                                                         opad, f.getBaseUIColor(),<a name="line.261"></a>
-<span class="sourceLineNo">262</span>                                                         "" + market.getSize(), f.getDisplayNameWithArticleWithoutArticle());<a name="line.262"></a>
-<span class="sourceLineNo">263</span>                                label.setHighlight("" + market.getSize(), f.getDisplayNameWithArticleWithoutArticle());<a name="line.263"></a>
-<span class="sourceLineNo">264</span>                                label.setHighlightColors(h, f.getBaseUIColor());<a name="line.264"></a>
-<span class="sourceLineNo">265</span>                                <a name="line.265"></a>
-<span class="sourceLineNo">266</span>//                              info.addPara("The operation will require a sizeable marine contingent and will face active " +<a name="line.266"></a>
-<span class="sourceLineNo">267</span>//                                              "resistance. A close assessment of the colony's ground defenses is " +<a name="line.267"></a>
-<span class="sourceLineNo">268</span>//                                              "required to determine the forces necessary.", opad);<a name="line.268"></a>
-<span class="sourceLineNo">269</span>                        }<a name="line.269"></a>
-<span class="sourceLineNo">270</span>                        addCustomRaidInfo(market, danger, info, opad);<a name="line.270"></a>
-<span class="sourceLineNo">271</span>                        <a name="line.271"></a>
-<span class="sourceLineNo">272</span>                } else if (currentStage == Stage.RETURN) {<a name="line.272"></a>
-<span class="sourceLineNo">273</span>                        info.addPara(getReturnText(getPerson().getMarket().getName()) + ".", opad);<a name="line.273"></a>
-<span class="sourceLineNo">274</span>                }<a name="line.274"></a>
-<span class="sourceLineNo">275</span>        }<a name="line.275"></a>
-<span class="sourceLineNo">276</span><a name="line.276"></a>
-<span class="sourceLineNo">277</span>        @Override<a name="line.277"></a>
-<span class="sourceLineNo">278</span>        public boolean addNextStepText(TooltipMakerAPI info, Color tc, float pad) {<a name="line.278"></a>
-<span class="sourceLineNo">279</span>                Color h = Misc.getHighlightColor();<a name="line.279"></a>
-<span class="sourceLineNo">280</span>                if (currentStage == Stage.EXTRACT) {<a name="line.280"></a>
-<span class="sourceLineNo">281</span>                                info.addPara("Extract agent from " +<a name="line.281"></a>
-<span class="sourceLineNo">282</span>                                                         market.getName() + <a name="line.282"></a>
-<span class="sourceLineNo">283</span>                                                         " in the " + market.getStarSystem().getNameWithLowercaseTypeShort() + ".", pad, tc,<a name="line.283"></a>
-<span class="sourceLineNo">284</span>                                                         market.getFaction().getBaseUIColor(), market.getName());<a name="line.284"></a>
-<span class="sourceLineNo">285</span>                                return true;<a name="line.285"></a>
-<span class="sourceLineNo">286</span>                } else if (currentStage == Stage.RETURN) {<a name="line.286"></a>
-<span class="sourceLineNo">287</span>                        info.addPara(getReturnTextShort(getPerson().getMarket().getName()), tc, pad);<a name="line.287"></a>
-<span class="sourceLineNo">288</span>                        return true;<a name="line.288"></a>
-<span class="sourceLineNo">289</span>                }<a name="line.289"></a>
-<span class="sourceLineNo">290</span>                return false;<a name="line.290"></a>
-<span class="sourceLineNo">291</span>        }       <a name="line.291"></a>
-<span class="sourceLineNo">292</span>        <a name="line.292"></a>
-<span class="sourceLineNo">293</span>        @Override<a name="line.293"></a>
-<span class="sourceLineNo">294</span>        public String getBaseName() {<a name="line.294"></a>
-<span class="sourceLineNo">295</span>                return "Combat Extraction";<a name="line.295"></a>
-<span class="sourceLineNo">296</span>        }<a name="line.296"></a>
-<span class="sourceLineNo">297</span>}<a name="line.297"></a>
-<span class="sourceLineNo">298</span><a name="line.298"></a>
-<span class="sourceLineNo">299</span><a name="line.299"></a>
-<span class="sourceLineNo">300</span><a name="line.300"></a>
-<span class="sourceLineNo">301</span><a name="line.301"></a>
+<span class="sourceLineNo">243</span>                if (getPerson() == null || getPerson().getMarket() == null) return;<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                <a name="line.244"></a>
+<span class="sourceLineNo">245</span>                float opad = 10f;<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                Color h = Misc.getHighlightColor();<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                if (currentStage == Stage.EXTRACT) {<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                        info.addPara("Extract agent located " +<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                                         market.getOnOrAt() + " " + market.getName() + <a name="line.249"></a>
+<span class="sourceLineNo">250</span>                                         " in the " + market.getStarSystem().getNameWithLowercaseTypeShort() + ".", opad);<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                        if (variation == Variation.PIRATE_BASE || variation == Variation.LUDDIC_PATH_BASE) {<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                                FactionAPI f = market.getFaction();<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                                info.addPara("The target location is " + f.getPersonNamePrefixAOrAn() + " %s base.",<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                                                         opad, f.getBaseUIColor(), f.getPersonNamePrefix());<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                                <a name="line.255"></a>
+<span class="sourceLineNo">256</span>//                              info.addPara("The operation will require a sizeable marine contingent and will face active " +<a name="line.256"></a>
+<span class="sourceLineNo">257</span>//                                              "resistance. A close assessment of the station's internal defenses is " +<a name="line.257"></a>
+<span class="sourceLineNo">258</span>//                                              "required to determine the forces necessary.", opad);<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                        } else {<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                                FactionAPI f = market.getFaction();<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                                LabelAPI label = info.addPara("The target location is a size %s " +<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                                                                "colony controlled by " + f.getDisplayNameWithArticle() + ".",<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                                                         opad, f.getBaseUIColor(),<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                                                         "" + market.getSize(), f.getDisplayNameWithArticleWithoutArticle());<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                                label.setHighlight("" + market.getSize(), f.getDisplayNameWithArticleWithoutArticle());<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                                label.setHighlightColors(h, f.getBaseUIColor());<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                                <a name="line.267"></a>
+<span class="sourceLineNo">268</span>//                              info.addPara("The operation will require a sizeable marine contingent and will face active " +<a name="line.268"></a>
+<span class="sourceLineNo">269</span>//                                              "resistance. A close assessment of the colony's ground defenses is " +<a name="line.269"></a>
+<span class="sourceLineNo">270</span>//                                              "required to determine the forces necessary.", opad);<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                        }<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                        addCustomRaidInfo(market, danger, info, opad);<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                        <a name="line.273"></a>
+<span class="sourceLineNo">274</span>                } else if (currentStage == Stage.RETURN) {<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                        info.addPara(getReturnText(getPerson().getMarket().getName()) + ".", opad);<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                }<a name="line.276"></a>
+<span class="sourceLineNo">277</span>        }<a name="line.277"></a>
+<span class="sourceLineNo">278</span><a name="line.278"></a>
+<span class="sourceLineNo">279</span>        @Override<a name="line.279"></a>
+<span class="sourceLineNo">280</span>        public boolean addNextStepText(TooltipMakerAPI info, Color tc, float pad) {<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                if (getPerson() == null || getPerson().getMarket() == null) return false;<a name="line.281"></a>
+<span class="sourceLineNo">282</span>                <a name="line.282"></a>
+<span class="sourceLineNo">283</span>                Color h = Misc.getHighlightColor();<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                if (currentStage == Stage.EXTRACT) {<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                                info.addPara("Extract agent from " +<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                                                         market.getName() + <a name="line.286"></a>
+<span class="sourceLineNo">287</span>                                                         " in the " + market.getStarSystem().getNameWithLowercaseTypeShort() + ".", pad, tc,<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                                                         market.getFaction().getBaseUIColor(), market.getName());<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                                return true;<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                } else if (currentStage == Stage.RETURN) {<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                        info.addPara(getReturnTextShort(getPerson().getMarket().getName()), tc, pad);<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                        return true;<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                }<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                return false;<a name="line.294"></a>
+<span class="sourceLineNo">295</span>        }       <a name="line.295"></a>
+<span class="sourceLineNo">296</span>        <a name="line.296"></a>
+<span class="sourceLineNo">297</span>        @Override<a name="line.297"></a>
+<span class="sourceLineNo">298</span>        public String getBaseName() {<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                return "Combat Extraction";<a name="line.299"></a>
+<span class="sourceLineNo">300</span>        }<a name="line.300"></a>
+<span class="sourceLineNo">301</span>}<a name="line.301"></a>
+<span class="sourceLineNo">302</span><a name="line.302"></a>
+<span class="sourceLineNo">303</span><a name="line.303"></a>
+<span class="sourceLineNo">304</span><a name="line.304"></a>
+<span class="sourceLineNo">305</span><a name="line.305"></a>
 
 
 

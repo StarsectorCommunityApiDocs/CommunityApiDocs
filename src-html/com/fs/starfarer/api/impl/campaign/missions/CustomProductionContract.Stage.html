@@ -8,804 +8,804 @@
 <div class="sourceContainer">
 <pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.campaign.missions;<a name="line.1"></a>
 <span class="sourceLineNo">002</span><a name="line.2"></a>
-<span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
-<span class="sourceLineNo">004</span>import java.util.ArrayList;<a name="line.4"></a>
-<span class="sourceLineNo">005</span>import java.util.Collections;<a name="line.5"></a>
-<span class="sourceLineNo">006</span>import java.util.Comparator;<a name="line.6"></a>
-<span class="sourceLineNo">007</span>import java.util.LinkedHashMap;<a name="line.7"></a>
-<span class="sourceLineNo">008</span>import java.util.LinkedHashSet;<a name="line.8"></a>
-<span class="sourceLineNo">009</span>import java.util.List;<a name="line.9"></a>
-<span class="sourceLineNo">010</span>import java.util.Map;<a name="line.10"></a>
-<span class="sourceLineNo">011</span>import java.util.Set;<a name="line.11"></a>
-<span class="sourceLineNo">012</span><a name="line.12"></a>
-<span class="sourceLineNo">013</span>import org.lwjgl.util.vector.Vector2f;<a name="line.13"></a>
-<span class="sourceLineNo">014</span><a name="line.14"></a>
-<span class="sourceLineNo">015</span>import com.fs.starfarer.api.Global;<a name="line.15"></a>
-<span class="sourceLineNo">016</span>import com.fs.starfarer.api.campaign.BaseCustomProductionPickerDelegateImpl;<a name="line.16"></a>
-<span class="sourceLineNo">017</span>import com.fs.starfarer.api.campaign.CampaignFleetAPI;<a name="line.17"></a>
-<span class="sourceLineNo">018</span>import com.fs.starfarer.api.campaign.CargoAPI;<a name="line.18"></a>
-<span class="sourceLineNo">019</span>import com.fs.starfarer.api.campaign.FactionAPI;<a name="line.19"></a>
-<span class="sourceLineNo">020</span>import com.fs.starfarer.api.campaign.FactionAPI.ShipPickMode;<a name="line.20"></a>
-<span class="sourceLineNo">021</span>import com.fs.starfarer.api.campaign.FactionProductionAPI;<a name="line.21"></a>
-<span class="sourceLineNo">022</span>import com.fs.starfarer.api.campaign.FactionProductionAPI.ItemInProductionAPI;<a name="line.22"></a>
-<span class="sourceLineNo">023</span>import com.fs.starfarer.api.campaign.FactionProductionAPI.ProductionItemType;<a name="line.23"></a>
-<span class="sourceLineNo">024</span>import com.fs.starfarer.api.campaign.FleetInflater;<a name="line.24"></a>
-<span class="sourceLineNo">025</span>import com.fs.starfarer.api.campaign.InteractionDialogAPI;<a name="line.25"></a>
-<span class="sourceLineNo">026</span>import com.fs.starfarer.api.campaign.PersonImportance;<a name="line.26"></a>
-<span class="sourceLineNo">027</span>import com.fs.starfarer.api.campaign.SectorEntityToken;<a name="line.27"></a>
-<span class="sourceLineNo">028</span>import com.fs.starfarer.api.campaign.econ.MarketAPI;<a name="line.28"></a>
-<span class="sourceLineNo">029</span>import com.fs.starfarer.api.campaign.rules.MemoryAPI;<a name="line.29"></a>
-<span class="sourceLineNo">030</span>import com.fs.starfarer.api.characters.PersonAPI;<a name="line.30"></a>
-<span class="sourceLineNo">031</span>import com.fs.starfarer.api.combat.ShipAPI.HullSize;<a name="line.31"></a>
-<span class="sourceLineNo">032</span>import com.fs.starfarer.api.combat.ShipHullSpecAPI;<a name="line.32"></a>
-<span class="sourceLineNo">033</span>import com.fs.starfarer.api.combat.ShipHullSpecAPI.ShipTypeHints;<a name="line.33"></a>
-<span class="sourceLineNo">034</span>import com.fs.starfarer.api.combat.WeaponAPI;<a name="line.34"></a>
-<span class="sourceLineNo">035</span>import com.fs.starfarer.api.combat.WeaponAPI.AIHints;<a name="line.35"></a>
-<span class="sourceLineNo">036</span>import com.fs.starfarer.api.combat.WeaponAPI.WeaponSize;<a name="line.36"></a>
-<span class="sourceLineNo">037</span>import com.fs.starfarer.api.combat.WeaponAPI.WeaponType;<a name="line.37"></a>
-<span class="sourceLineNo">038</span>import com.fs.starfarer.api.fleet.FleetMemberAPI;<a name="line.38"></a>
-<span class="sourceLineNo">039</span>import com.fs.starfarer.api.impl.campaign.CoreReputationPlugin.RepActions;<a name="line.39"></a>
-<span class="sourceLineNo">040</span>import com.fs.starfarer.api.impl.campaign.econ.impl.ShipQuality;<a name="line.40"></a>
-<span class="sourceLineNo">041</span>import com.fs.starfarer.api.impl.campaign.fleets.DefaultFleetInflaterParams;<a name="line.41"></a>
-<span class="sourceLineNo">042</span>import com.fs.starfarer.api.impl.campaign.ids.Commodities;<a name="line.42"></a>
-<span class="sourceLineNo">043</span>import com.fs.starfarer.api.impl.campaign.ids.Conditions;<a name="line.43"></a>
-<span class="sourceLineNo">044</span>import com.fs.starfarer.api.impl.campaign.ids.Factions;<a name="line.44"></a>
-<span class="sourceLineNo">045</span>import com.fs.starfarer.api.impl.campaign.ids.FleetTypes;<a name="line.45"></a>
-<span class="sourceLineNo">046</span>import com.fs.starfarer.api.impl.campaign.ids.Items;<a name="line.46"></a>
-<span class="sourceLineNo">047</span>import com.fs.starfarer.api.impl.campaign.ids.Ranks;<a name="line.47"></a>
-<span class="sourceLineNo">048</span>import com.fs.starfarer.api.impl.campaign.ids.Tags;<a name="line.48"></a>
-<span class="sourceLineNo">049</span>import com.fs.starfarer.api.impl.campaign.intel.bases.PirateBaseManager;<a name="line.49"></a>
-<span class="sourceLineNo">050</span>import com.fs.starfarer.api.impl.campaign.intel.contacts.ContactIntel;<a name="line.50"></a>
-<span class="sourceLineNo">051</span>import com.fs.starfarer.api.impl.campaign.intel.misc.ProductionReportIntel.ProductionData;<a name="line.51"></a>
-<span class="sourceLineNo">052</span>import com.fs.starfarer.api.impl.campaign.missions.hub.HubMissionWithBarEvent;<a name="line.52"></a>
-<span class="sourceLineNo">053</span>import com.fs.starfarer.api.impl.campaign.rulecmd.AddRemoveCommodity;<a name="line.53"></a>
-<span class="sourceLineNo">054</span>import com.fs.starfarer.api.impl.campaign.rulecmd.FireBest;<a name="line.54"></a>
-<span class="sourceLineNo">055</span>import com.fs.starfarer.api.impl.campaign.submarkets.StoragePlugin;<a name="line.55"></a>
-<span class="sourceLineNo">056</span>import com.fs.starfarer.api.loading.FighterWingSpecAPI;<a name="line.56"></a>
-<span class="sourceLineNo">057</span>import com.fs.starfarer.api.loading.VariantSource;<a name="line.57"></a>
-<span class="sourceLineNo">058</span>import com.fs.starfarer.api.loading.WeaponSpecAPI;<a name="line.58"></a>
-<span class="sourceLineNo">059</span>import com.fs.starfarer.api.ui.Alignment;<a name="line.59"></a>
-<span class="sourceLineNo">060</span>import com.fs.starfarer.api.ui.LabelAPI;<a name="line.60"></a>
-<span class="sourceLineNo">061</span>import com.fs.starfarer.api.ui.SectorMapAPI;<a name="line.61"></a>
-<span class="sourceLineNo">062</span>import com.fs.starfarer.api.ui.TooltipMakerAPI;<a name="line.62"></a>
-<span class="sourceLineNo">063</span>import com.fs.starfarer.api.util.CountingMap;<a name="line.63"></a>
-<span class="sourceLineNo">064</span>import com.fs.starfarer.api.util.Misc;<a name="line.64"></a>
-<span class="sourceLineNo">065</span>import com.fs.starfarer.api.util.Misc.Token;<a name="line.65"></a>
-<span class="sourceLineNo">066</span>import com.fs.starfarer.api.util.WeightedRandomPicker;<a name="line.66"></a>
-<span class="sourceLineNo">067</span><a name="line.67"></a>
-<span class="sourceLineNo">068</span>public class CustomProductionContract extends HubMissionWithBarEvent {<a name="line.68"></a>
-<span class="sourceLineNo">069</span><a name="line.69"></a>
-<span class="sourceLineNo">070</span>        public static float ARMS_DEALER_PROB_PATROL_AFTER = 0.5f;<a name="line.70"></a>
-<span class="sourceLineNo">071</span>        <a name="line.71"></a>
-<span class="sourceLineNo">072</span>        public static float PROD_DAYS = 60f;<a name="line.72"></a>
-<span class="sourceLineNo">073</span>        <a name="line.73"></a>
-<span class="sourceLineNo">074</span>        public static float PROB_ARMS_DEALER_BAR = 0.25f;<a name="line.74"></a>
-<span class="sourceLineNo">075</span>        public static float PROB_MILITARY_BAR = 0.33f;<a name="line.75"></a>
-<span class="sourceLineNo">076</span>        public static float PROB_INDEPENDENT_BAR = 0.5f;<a name="line.76"></a>
-<span class="sourceLineNo">077</span>        <a name="line.77"></a>
-<span class="sourceLineNo">078</span>        public static float PROB_ARMS_DEALER_IS_CONTACT = 0.05f;<a name="line.78"></a>
-<span class="sourceLineNo">079</span>        <a name="line.79"></a>
-<span class="sourceLineNo">080</span>        public static float MIN_CAPACITY = 100000;<a name="line.80"></a>
-<span class="sourceLineNo">081</span>        public static float MAX_CAPACITY = 500000;<a name="line.81"></a>
-<span class="sourceLineNo">082</span>        public static int BAR_CAPACITY_BONUS_MIN = 50000;<a name="line.82"></a>
-<span class="sourceLineNo">083</span>        public static int BAR_CAPACITY_BONUS_MAX = 150000;<a name="line.83"></a>
-<span class="sourceLineNo">084</span>        <a name="line.84"></a>
+<span class="sourceLineNo">003</span>import java.util.ArrayList;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import java.util.Collections;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import java.util.Comparator;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import java.util.LinkedHashMap;<a name="line.6"></a>
+<span class="sourceLineNo">007</span>import java.util.LinkedHashSet;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import java.util.List;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import java.util.Map;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import java.util.Set;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>import java.awt.Color;<a name="line.12"></a>
+<span class="sourceLineNo">013</span><a name="line.13"></a>
+<span class="sourceLineNo">014</span>import org.lwjgl.util.vector.Vector2f;<a name="line.14"></a>
+<span class="sourceLineNo">015</span><a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.Global;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.campaign.BaseCustomProductionPickerDelegateImpl;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import com.fs.starfarer.api.campaign.CampaignFleetAPI;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import com.fs.starfarer.api.campaign.CargoAPI;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import com.fs.starfarer.api.campaign.FactionAPI;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import com.fs.starfarer.api.campaign.FactionAPI.ShipPickMode;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import com.fs.starfarer.api.campaign.FactionProductionAPI;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>import com.fs.starfarer.api.campaign.FactionProductionAPI.ItemInProductionAPI;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>import com.fs.starfarer.api.campaign.FactionProductionAPI.ProductionItemType;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>import com.fs.starfarer.api.campaign.FleetInflater;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>import com.fs.starfarer.api.campaign.InteractionDialogAPI;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>import com.fs.starfarer.api.campaign.PersonImportance;<a name="line.27"></a>
+<span class="sourceLineNo">028</span>import com.fs.starfarer.api.campaign.SectorEntityToken;<a name="line.28"></a>
+<span class="sourceLineNo">029</span>import com.fs.starfarer.api.campaign.econ.MarketAPI;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>import com.fs.starfarer.api.campaign.rules.MemoryAPI;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import com.fs.starfarer.api.characters.PersonAPI;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import com.fs.starfarer.api.combat.ShipAPI.HullSize;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import com.fs.starfarer.api.combat.ShipHullSpecAPI;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import com.fs.starfarer.api.combat.ShipHullSpecAPI.ShipTypeHints;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import com.fs.starfarer.api.combat.WeaponAPI;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import com.fs.starfarer.api.combat.WeaponAPI.AIHints;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import com.fs.starfarer.api.combat.WeaponAPI.WeaponSize;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import com.fs.starfarer.api.combat.WeaponAPI.WeaponType;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import com.fs.starfarer.api.fleet.FleetMemberAPI;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import com.fs.starfarer.api.impl.campaign.CoreReputationPlugin.RepActions;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import com.fs.starfarer.api.impl.campaign.econ.impl.ShipQuality;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import com.fs.starfarer.api.impl.campaign.fleets.DefaultFleetInflaterParams;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import com.fs.starfarer.api.impl.campaign.ids.Commodities;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import com.fs.starfarer.api.impl.campaign.ids.Conditions;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import com.fs.starfarer.api.impl.campaign.ids.Factions;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import com.fs.starfarer.api.impl.campaign.ids.FleetTypes;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import com.fs.starfarer.api.impl.campaign.ids.Items;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import com.fs.starfarer.api.impl.campaign.ids.Ranks;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import com.fs.starfarer.api.impl.campaign.ids.Tags;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import com.fs.starfarer.api.impl.campaign.intel.bases.PirateBaseManager;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import com.fs.starfarer.api.impl.campaign.intel.contacts.ContactIntel;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import com.fs.starfarer.api.impl.campaign.intel.misc.ProductionReportIntel.ProductionData;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import com.fs.starfarer.api.impl.campaign.missions.hub.HubMissionWithBarEvent;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import com.fs.starfarer.api.impl.campaign.rulecmd.AddRemoveCommodity;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import com.fs.starfarer.api.impl.campaign.rulecmd.FireBest;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import com.fs.starfarer.api.impl.campaign.submarkets.StoragePlugin;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import com.fs.starfarer.api.loading.FighterWingSpecAPI;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>import com.fs.starfarer.api.loading.VariantSource;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>import com.fs.starfarer.api.loading.WeaponSpecAPI;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>import com.fs.starfarer.api.ui.Alignment;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>import com.fs.starfarer.api.ui.LabelAPI;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>import com.fs.starfarer.api.ui.SectorMapAPI;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>import com.fs.starfarer.api.ui.TooltipMakerAPI;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>import com.fs.starfarer.api.util.CountingMap;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>import com.fs.starfarer.api.util.Misc;<a name="line.65"></a>
+<span class="sourceLineNo">066</span>import com.fs.starfarer.api.util.Misc.Token;<a name="line.66"></a>
+<span class="sourceLineNo">067</span>import com.fs.starfarer.api.util.WeightedRandomPicker;<a name="line.67"></a>
+<span class="sourceLineNo">068</span><a name="line.68"></a>
+<span class="sourceLineNo">069</span>public class CustomProductionContract extends HubMissionWithBarEvent {<a name="line.69"></a>
+<span class="sourceLineNo">070</span><a name="line.70"></a>
+<span class="sourceLineNo">071</span>        public static float ARMS_DEALER_PROB_PATROL_AFTER = 0.5f;<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        <a name="line.72"></a>
+<span class="sourceLineNo">073</span>        public static float PROD_DAYS = 60f;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>        <a name="line.74"></a>
+<span class="sourceLineNo">075</span>        public static float PROB_ARMS_DEALER_BAR = 0.25f;<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        public static float PROB_MILITARY_BAR = 0.33f;<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        public static float PROB_INDEPENDENT_BAR = 0.5f;<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        <a name="line.78"></a>
+<span class="sourceLineNo">079</span>        public static float PROB_ARMS_DEALER_IS_CONTACT = 0.05f;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        <a name="line.80"></a>
+<span class="sourceLineNo">081</span>        public static float MIN_CAPACITY = 100000;<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        public static float MAX_CAPACITY = 500000;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        public static int BAR_CAPACITY_BONUS_MIN = 50000;<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        public static int BAR_CAPACITY_BONUS_MAX = 150000;<a name="line.84"></a>
 <span class="sourceLineNo">085</span>        <a name="line.85"></a>
-<span class="sourceLineNo">086</span>        public static float MAX_PROD_CAPACITY_AT_SHIP_UNITS = 10;<a name="line.86"></a>
-<span class="sourceLineNo">087</span>        public static float MAX_PROD_CAPACITY_MULT = 0.25f;<a name="line.87"></a>
-<span class="sourceLineNo">088</span>        <a name="line.88"></a>
-<span class="sourceLineNo">089</span>        public static float DEALER_MIN_CAPACITY = 1000000;<a name="line.89"></a>
-<span class="sourceLineNo">090</span>        public static float DEALER_MAX_CAPACITY = 2000000;<a name="line.90"></a>
-<span class="sourceLineNo">091</span>        public static Map&lt;PersonImportance, Float&gt; DEALER_MULT = new LinkedHashMap&lt;PersonImportance, Float&gt;();<a name="line.91"></a>
-<span class="sourceLineNo">092</span>        static {<a name="line.92"></a>
-<span class="sourceLineNo">093</span>                DEALER_MULT.put(PersonImportance.VERY_LOW, 0.3f);<a name="line.93"></a>
-<span class="sourceLineNo">094</span>                DEALER_MULT.put(PersonImportance.LOW, 0.3f);<a name="line.94"></a>
-<span class="sourceLineNo">095</span>                DEALER_MULT.put(PersonImportance.MEDIUM, 0.3f);<a name="line.95"></a>
-<span class="sourceLineNo">096</span>                DEALER_MULT.put(PersonImportance.HIGH, 0.6f);<a name="line.96"></a>
-<span class="sourceLineNo">097</span>                DEALER_MULT.put(PersonImportance.VERY_HIGH, 1f);<a name="line.97"></a>
-<span class="sourceLineNo">098</span>        }<a name="line.98"></a>
-<span class="sourceLineNo">099</span>        <a name="line.99"></a>
-<span class="sourceLineNo">100</span>        public static float MILITARY_CAP_MULT = 0.6f;<a name="line.100"></a>
-<span class="sourceLineNo">101</span>        <a name="line.101"></a>
-<span class="sourceLineNo">102</span>        public static float MILITARY_MAX_COST_DECREASE = 0.3f;<a name="line.102"></a>
-<span class="sourceLineNo">103</span>        public static float TRADE_MAX_COST_INCREASE = 0.3f;<a name="line.103"></a>
-<span class="sourceLineNo">104</span>        public static float DEALER_FIXED_COST_INCREASE = 0.5f;<a name="line.104"></a>
-<span class="sourceLineNo">105</span>        public static float DEALER_VARIABLE_COST_INCREASE = 0.5f;<a name="line.105"></a>
-<span class="sourceLineNo">106</span>        <a name="line.106"></a>
-<span class="sourceLineNo">107</span>        public static enum Stage {<a name="line.107"></a>
-<span class="sourceLineNo">108</span>                WAITING,<a name="line.108"></a>
-<span class="sourceLineNo">109</span>                DELIVERED,<a name="line.109"></a>
-<span class="sourceLineNo">110</span>                COMPLETED, // unused, left in for save compat<a name="line.110"></a>
-<span class="sourceLineNo">111</span>                FAILED,<a name="line.111"></a>
-<span class="sourceLineNo">112</span>        }<a name="line.112"></a>
-<span class="sourceLineNo">113</span><a name="line.113"></a>
-<span class="sourceLineNo">114</span>        protected Set&lt;String&gt; ships = new LinkedHashSet&lt;String&gt;();<a name="line.114"></a>
-<span class="sourceLineNo">115</span>        protected Set&lt;String&gt; weapons = new LinkedHashSet&lt;String&gt;();<a name="line.115"></a>
-<span class="sourceLineNo">116</span>        protected Set&lt;String&gt; fighters = new LinkedHashSet&lt;String&gt;();<a name="line.116"></a>
-<span class="sourceLineNo">117</span>        <a name="line.117"></a>
-<span class="sourceLineNo">118</span>        protected boolean armsDealer = false;<a name="line.118"></a>
-<span class="sourceLineNo">119</span>        protected int maxCapacity;<a name="line.119"></a>
-<span class="sourceLineNo">120</span>        protected float costMult;<a name="line.120"></a>
-<span class="sourceLineNo">121</span>        protected ProductionData data;<a name="line.121"></a>
-<span class="sourceLineNo">122</span>        protected int cost;<a name="line.122"></a>
-<span class="sourceLineNo">123</span>        protected FactionAPI faction;<a name="line.123"></a>
-<span class="sourceLineNo">124</span>        protected MarketAPI market;<a name="line.124"></a>
-<span class="sourceLineNo">125</span>        <a name="line.125"></a>
-<span class="sourceLineNo">126</span>        @Override<a name="line.126"></a>
-<span class="sourceLineNo">127</span>        protected boolean create(MarketAPI createdAt, boolean barEvent) {<a name="line.127"></a>
-<span class="sourceLineNo">128</span>                //genRandom = Misc.random;<a name="line.128"></a>
-<span class="sourceLineNo">129</span>                <a name="line.129"></a>
-<span class="sourceLineNo">130</span>                boolean allowArmsDealer = true; // anywhere is fine<a name="line.130"></a>
-<span class="sourceLineNo">131</span>                boolean allowTrader = createdAt != null &amp;&amp; createdAt.getCommodityData(Commodities.SHIPS).getMaxSupply() &gt; 0;<a name="line.131"></a>
-<span class="sourceLineNo">132</span>                boolean allowMilitary = allowTrader &amp;&amp; createdAt != null &amp;&amp; Misc.isMilitary(createdAt);<a name="line.132"></a>
-<span class="sourceLineNo">133</span>                if (createdAt.isPlayerOwned()) {<a name="line.133"></a>
-<span class="sourceLineNo">134</span>                        allowTrader = false;<a name="line.134"></a>
-<span class="sourceLineNo">135</span>                        allowMilitary = false;<a name="line.135"></a>
-<span class="sourceLineNo">136</span>                }<a name="line.136"></a>
-<span class="sourceLineNo">137</span>                if (Factions.PIRATES.equals(createdAt.getFaction().getId())) {<a name="line.137"></a>
-<span class="sourceLineNo">138</span>                        allowMilitary = false;<a name="line.138"></a>
-<span class="sourceLineNo">139</span>                }<a name="line.139"></a>
-<span class="sourceLineNo">140</span>                <a name="line.140"></a>
-<span class="sourceLineNo">141</span>                if (barEvent) {<a name="line.141"></a>
-<span class="sourceLineNo">142</span>                        String post = null;<a name="line.142"></a>
-<span class="sourceLineNo">143</span>                        if (rollProbability(PROB_ARMS_DEALER_BAR) &amp;&amp; allowArmsDealer) {<a name="line.143"></a>
-<span class="sourceLineNo">144</span>                                setGiverRank(Ranks.CITIZEN);<a name="line.144"></a>
-<span class="sourceLineNo">145</span>                                post = Ranks.POST_ARMS_DEALER;<a name="line.145"></a>
-<span class="sourceLineNo">146</span>                                setGiverTags(Tags.CONTACT_UNDERWORLD);<a name="line.146"></a>
-<span class="sourceLineNo">147</span>                                setGiverFaction(Factions.PIRATES);<a name="line.147"></a>
-<span class="sourceLineNo">148</span>                        } else if (rollProbability(PROB_MILITARY_BAR) &amp;&amp; allowMilitary) {<a name="line.148"></a>
-<span class="sourceLineNo">149</span>                                List&lt;String&gt; posts = new ArrayList&lt;String&gt;();<a name="line.149"></a>
-<span class="sourceLineNo">150</span>                                posts.add(Ranks.POST_SUPPLY_OFFICER);<a name="line.150"></a>
-<span class="sourceLineNo">151</span>                                if (Misc.isMilitary(createdAt)) {<a name="line.151"></a>
-<span class="sourceLineNo">152</span>                                        posts.add(Ranks.POST_BASE_COMMANDER);<a name="line.152"></a>
-<span class="sourceLineNo">153</span>                                }<a name="line.153"></a>
-<span class="sourceLineNo">154</span>                                if (Misc.hasOrbitalStation(createdAt)) {<a name="line.154"></a>
-<span class="sourceLineNo">155</span>                                        posts.add(Ranks.POST_STATION_COMMANDER);<a name="line.155"></a>
-<span class="sourceLineNo">156</span>                                }<a name="line.156"></a>
-<span class="sourceLineNo">157</span>                                post = pickOne(posts);<a name="line.157"></a>
-<span class="sourceLineNo">158</span>                                setGiverRank(pickOne(Ranks.GROUND_CAPTAIN, Ranks.GROUND_COLONEL, Ranks.GROUND_MAJOR,<a name="line.158"></a>
-<span class="sourceLineNo">159</span>                                                         Ranks.SPACE_COMMANDER, Ranks.SPACE_CAPTAIN, Ranks.SPACE_ADMIRAL));<a name="line.159"></a>
-<span class="sourceLineNo">160</span>                                setGiverTags(Tags.CONTACT_MILITARY);<a name="line.160"></a>
-<span class="sourceLineNo">161</span>                        } else if (allowTrader) {<a name="line.161"></a>
-<span class="sourceLineNo">162</span>                                setGiverRank(Ranks.CITIZEN);<a name="line.162"></a>
-<span class="sourceLineNo">163</span>                                post = pickOne(Ranks.POST_TRADER, Ranks.POST_COMMODITIES_AGENT, Ranks.POST_PORTMASTER,<a name="line.163"></a>
-<span class="sourceLineNo">164</span>                                                           Ranks.POST_MERCHANT, Ranks.POST_INVESTOR, Ranks.POST_EXECUTIVE,<a name="line.164"></a>
-<span class="sourceLineNo">165</span>                                                           Ranks.POST_SENIOR_EXECUTIVE, Ranks.POST_ADMINISTRATOR);<a name="line.165"></a>
-<span class="sourceLineNo">166</span>                                setGiverTags(Tags.CONTACT_TRADE);<a name="line.166"></a>
-<span class="sourceLineNo">167</span>                                if (rollProbability(PROB_INDEPENDENT_BAR)) {<a name="line.167"></a>
-<span class="sourceLineNo">168</span>                                        setGiverFaction(Factions.INDEPENDENT);<a name="line.168"></a>
-<span class="sourceLineNo">169</span>                                }<a name="line.169"></a>
-<span class="sourceLineNo">170</span>                        }<a name="line.170"></a>
-<span class="sourceLineNo">171</span>                        if (post == null &amp;&amp; allowArmsDealer) {<a name="line.171"></a>
-<span class="sourceLineNo">172</span>                                setGiverRank(Ranks.CITIZEN);<a name="line.172"></a>
-<span class="sourceLineNo">173</span>                                post = Ranks.POST_ARMS_DEALER;<a name="line.173"></a>
-<span class="sourceLineNo">174</span>                                setGiverTags(Tags.CONTACT_UNDERWORLD);<a name="line.174"></a>
-<span class="sourceLineNo">175</span>                                setGiverFaction(Factions.PIRATES);<a name="line.175"></a>
-<span class="sourceLineNo">176</span>                        }<a name="line.176"></a>
-<span class="sourceLineNo">177</span>                        if (post == null) return false;<a name="line.177"></a>
-<span class="sourceLineNo">178</span>                        <a name="line.178"></a>
-<span class="sourceLineNo">179</span>                        setGiverPost(post);<a name="line.179"></a>
-<span class="sourceLineNo">180</span>                        if (post.equals(Ranks.POST_SENIOR_EXECUTIVE) ||<a name="line.180"></a>
-<span class="sourceLineNo">181</span>                                        post.equals(Ranks.POST_BASE_COMMANDER) ||<a name="line.181"></a>
-<span class="sourceLineNo">182</span>                                        post.equals(Ranks.POST_ADMINISTRATOR)) {<a name="line.182"></a>
-<span class="sourceLineNo">183</span>                                setGiverImportance(pickHighImportance());<a name="line.183"></a>
-<span class="sourceLineNo">184</span>                        } else if (post.equals(Ranks.POST_ARMS_DEALER)) {<a name="line.184"></a>
-<span class="sourceLineNo">185</span>                                setGiverImportance(pickArmsDealerImportance());<a name="line.185"></a>
-<span class="sourceLineNo">186</span>                        } else {<a name="line.186"></a>
-<span class="sourceLineNo">187</span>                                setGiverImportance(pickImportance());<a name="line.187"></a>
-<span class="sourceLineNo">188</span>                                <a name="line.188"></a>
-<span class="sourceLineNo">189</span>                        }<a name="line.189"></a>
-<span class="sourceLineNo">190</span>                        findOrCreateGiver(createdAt, false, false);<a name="line.190"></a>
-<span class="sourceLineNo">191</span>                        setGiverIsPotentialContactOnSuccess();<a name="line.191"></a>
-<span class="sourceLineNo">192</span>                }<a name="line.192"></a>
-<span class="sourceLineNo">193</span>                <a name="line.193"></a>
-<span class="sourceLineNo">194</span>                PersonAPI person = getPerson();<a name="line.194"></a>
-<span class="sourceLineNo">195</span>                if (person == null) return false;<a name="line.195"></a>
-<span class="sourceLineNo">196</span>                <a name="line.196"></a>
-<span class="sourceLineNo">197</span>                if (!setPersonMissionRef(person, "$cpc_ref")) {<a name="line.197"></a>
-<span class="sourceLineNo">198</span>                        return false;<a name="line.198"></a>
-<span class="sourceLineNo">199</span>                }<a name="line.199"></a>
-<span class="sourceLineNo">200</span>                <a name="line.200"></a>
-<span class="sourceLineNo">201</span>                market = getPerson().getMarket();<a name="line.201"></a>
-<span class="sourceLineNo">202</span>                if (market == null) return false;<a name="line.202"></a>
-<span class="sourceLineNo">203</span>                if (Misc.getStorage(market) == null) return false;<a name="line.203"></a>
-<span class="sourceLineNo">204</span>                <a name="line.204"></a>
-<span class="sourceLineNo">205</span>                faction = person.getFaction();<a name="line.205"></a>
-<span class="sourceLineNo">206</span>                <a name="line.206"></a>
-<span class="sourceLineNo">207</span>//              armsDealer = Ranks.POST_ARMS_DEALER.equals(person.getPostId());<a name="line.207"></a>
-<span class="sourceLineNo">208</span>//              if (!armsDealer) allowArmsDealer = false;<a name="line.208"></a>
-<span class="sourceLineNo">209</span>                armsDealer = getPerson().hasTag(Tags.CONTACT_UNDERWORLD);<a name="line.209"></a>
-<span class="sourceLineNo">210</span><a name="line.210"></a>
-<span class="sourceLineNo">211</span>                maxCapacity = getRoundNumber(MIN_CAPACITY + (MAX_CAPACITY - MIN_CAPACITY) * getQuality());<a name="line.211"></a>
-<span class="sourceLineNo">212</span>                if (barEvent) {<a name="line.212"></a>
-<span class="sourceLineNo">213</span>                        maxCapacity += genRoundNumber(BAR_CAPACITY_BONUS_MIN, BAR_CAPACITY_BONUS_MAX);<a name="line.213"></a>
-<span class="sourceLineNo">214</span>                }<a name="line.214"></a>
-<span class="sourceLineNo">215</span>                float capMult = market.getCommodityData(Commodities.SHIPS).getMaxSupply() / MAX_PROD_CAPACITY_AT_SHIP_UNITS;<a name="line.215"></a>
-<span class="sourceLineNo">216</span>                if (capMult &gt; 1) capMult = 1f;<a name="line.216"></a>
-<span class="sourceLineNo">217</span>                if (capMult &lt; MAX_PROD_CAPACITY_MULT) capMult = MAX_PROD_CAPACITY_MULT;<a name="line.217"></a>
-<span class="sourceLineNo">218</span>                maxCapacity *= capMult;<a name="line.218"></a>
-<span class="sourceLineNo">219</span>                if (person.hasTag(Tags.CONTACT_MILITARY) &amp;&amp; allowMilitary) {<a name="line.219"></a>
-<span class="sourceLineNo">220</span>                        maxCapacity *= MILITARY_CAP_MULT;<a name="line.220"></a>
-<span class="sourceLineNo">221</span>                }<a name="line.221"></a>
-<span class="sourceLineNo">222</span>                maxCapacity = getRoundNumber(maxCapacity);<a name="line.222"></a>
-<span class="sourceLineNo">223</span>                <a name="line.223"></a>
-<span class="sourceLineNo">224</span>                if (armsDealer &amp;&amp; allowArmsDealer) { // don't care about ship production, since it's just acquisition from wherever<a name="line.224"></a>
-<span class="sourceLineNo">225</span>                        PersonImportance imp = getPerson().getImportance();<a name="line.225"></a>
-<span class="sourceLineNo">226</span>                        float mult = DEALER_MULT.get(imp);<a name="line.226"></a>
-<span class="sourceLineNo">227</span>                        maxCapacity = getRoundNumber(mult * <a name="line.227"></a>
-<span class="sourceLineNo">228</span>                                                (DEALER_MIN_CAPACITY + (DEALER_MAX_CAPACITY - DEALER_MIN_CAPACITY) * getQuality()));<a name="line.228"></a>
-<span class="sourceLineNo">229</span>                }<a name="line.229"></a>
-<span class="sourceLineNo">230</span>                <a name="line.230"></a>
-<span class="sourceLineNo">231</span>                if (armsDealer &amp;&amp; allowArmsDealer) {<a name="line.231"></a>
-<span class="sourceLineNo">232</span>                        costMult = 1f + DEALER_FIXED_COST_INCREASE + DEALER_VARIABLE_COST_INCREASE * (1f - getRewardMultFraction());<a name="line.232"></a>
-<span class="sourceLineNo">233</span>                        addArmsDealerBlueprints();<a name="line.233"></a>
-<span class="sourceLineNo">234</span>                        if (ships.isEmpty() &amp;&amp; weapons.isEmpty() &amp;&amp; fighters.isEmpty()) return false;<a name="line.234"></a>
-<span class="sourceLineNo">235</span>                } else if (person.hasTag(Tags.CONTACT_MILITARY) &amp;&amp; allowMilitary) {<a name="line.235"></a>
-<span class="sourceLineNo">236</span>                        costMult = 1f - MILITARY_MAX_COST_DECREASE * getRewardMultFraction();<a name="line.236"></a>
-<span class="sourceLineNo">237</span>                        addMilitaryBlueprints();<a name="line.237"></a>
-<span class="sourceLineNo">238</span>                        if (ships.isEmpty() &amp;&amp; weapons.isEmpty() &amp;&amp; fighters.isEmpty()) return false;<a name="line.238"></a>
-<span class="sourceLineNo">239</span>                } else if (person.hasTag(Tags.CONTACT_TRADE) &amp;&amp; allowTrader) {<a name="line.239"></a>
-<span class="sourceLineNo">240</span>                        costMult = 1f + TRADE_MAX_COST_INCREASE * (1f - getRewardMultFraction());<a name="line.240"></a>
-<span class="sourceLineNo">241</span>                } else {<a name="line.241"></a>
-<span class="sourceLineNo">242</span>                        return false;<a name="line.242"></a>
-<span class="sourceLineNo">243</span>                }<a name="line.243"></a>
-<span class="sourceLineNo">244</span><a name="line.244"></a>
-<span class="sourceLineNo">245</span>                setStartingStage(Stage.WAITING);<a name="line.245"></a>
-<span class="sourceLineNo">246</span>                setSuccessStage(Stage.DELIVERED);<a name="line.246"></a>
-<span class="sourceLineNo">247</span>                setFailureStage(Stage.FAILED);<a name="line.247"></a>
-<span class="sourceLineNo">248</span>                setNoAbandon();<a name="line.248"></a>
-<span class="sourceLineNo">249</span>                <a name="line.249"></a>
-<span class="sourceLineNo">250</span>                connectWithDaysElapsed(Stage.WAITING, Stage.DELIVERED, PROD_DAYS);<a name="line.250"></a>
-<span class="sourceLineNo">251</span>                //connectWithDaysElapsed(Stage.WAITING, Stage.DELIVERED, 1f);<a name="line.251"></a>
-<span class="sourceLineNo">252</span>                setStageOnMarketDecivilized(Stage.FAILED, market);<a name="line.252"></a>
-<span class="sourceLineNo">253</span>                <a name="line.253"></a>
-<span class="sourceLineNo">254</span>                return true;<a name="line.254"></a>
-<span class="sourceLineNo">255</span>        }<a name="line.255"></a>
-<span class="sourceLineNo">256</span>        <a name="line.256"></a>
-<span class="sourceLineNo">257</span><a name="line.257"></a>
-<span class="sourceLineNo">258</span>        protected void addArmsDealerBlueprints() {<a name="line.258"></a>
-<span class="sourceLineNo">259</span>                boolean [] add = new boolean[3];<a name="line.259"></a>
-<span class="sourceLineNo">260</span>                add[genRandom.nextInt(add.length)] = true;<a name="line.260"></a>
+<span class="sourceLineNo">086</span>        <a name="line.86"></a>
+<span class="sourceLineNo">087</span>        public static float MAX_PROD_CAPACITY_AT_SHIP_UNITS = 10;<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        public static float MAX_PROD_CAPACITY_MULT = 0.25f;<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        <a name="line.89"></a>
+<span class="sourceLineNo">090</span>        public static float DEALER_MIN_CAPACITY = 1000000;<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        public static float DEALER_MAX_CAPACITY = 2000000;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        public static Map&lt;PersonImportance, Float&gt; DEALER_MULT = new LinkedHashMap&lt;PersonImportance, Float&gt;();<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        static {<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                DEALER_MULT.put(PersonImportance.VERY_LOW, 0.3f);<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                DEALER_MULT.put(PersonImportance.LOW, 0.3f);<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                DEALER_MULT.put(PersonImportance.MEDIUM, 0.3f);<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                DEALER_MULT.put(PersonImportance.HIGH, 0.6f);<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                DEALER_MULT.put(PersonImportance.VERY_HIGH, 1f);<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        }<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        <a name="line.100"></a>
+<span class="sourceLineNo">101</span>        public static float MILITARY_CAP_MULT = 0.6f;<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        <a name="line.102"></a>
+<span class="sourceLineNo">103</span>        public static float MILITARY_MAX_COST_DECREASE = 0.3f;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        public static float TRADE_MAX_COST_INCREASE = 0.3f;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        public static float DEALER_FIXED_COST_INCREASE = 0.5f;<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        public static float DEALER_VARIABLE_COST_INCREASE = 0.5f;<a name="line.106"></a>
+<span class="sourceLineNo">107</span>        <a name="line.107"></a>
+<span class="sourceLineNo">108</span>        public static enum Stage {<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                WAITING,<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                DELIVERED,<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                COMPLETED, // unused, left in for save compat<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                FAILED,<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        }<a name="line.113"></a>
+<span class="sourceLineNo">114</span><a name="line.114"></a>
+<span class="sourceLineNo">115</span>        protected Set&lt;String&gt; ships = new LinkedHashSet&lt;String&gt;();<a name="line.115"></a>
+<span class="sourceLineNo">116</span>        protected Set&lt;String&gt; weapons = new LinkedHashSet&lt;String&gt;();<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        protected Set&lt;String&gt; fighters = new LinkedHashSet&lt;String&gt;();<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        <a name="line.118"></a>
+<span class="sourceLineNo">119</span>        protected boolean armsDealer = false;<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        protected int maxCapacity;<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        protected float costMult;<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        protected ProductionData data;<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        protected int cost;<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        protected FactionAPI faction;<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        protected MarketAPI market;<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        <a name="line.126"></a>
+<span class="sourceLineNo">127</span>        @Override<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        protected boolean create(MarketAPI createdAt, boolean barEvent) {<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                //genRandom = Misc.random;<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                <a name="line.130"></a>
+<span class="sourceLineNo">131</span>                boolean allowArmsDealer = true; // anywhere is fine<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                boolean allowTrader = createdAt != null &amp;&amp; createdAt.getCommodityData(Commodities.SHIPS).getMaxSupply() &gt; 0;<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                boolean allowMilitary = allowTrader &amp;&amp; createdAt != null &amp;&amp; Misc.isMilitary(createdAt);<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                if (createdAt.isPlayerOwned()) {<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                        allowTrader = false;<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                        allowMilitary = false;<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                }<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                if (Factions.PIRATES.equals(createdAt.getFaction().getId())) {<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                        allowMilitary = false;<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                }<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                <a name="line.141"></a>
+<span class="sourceLineNo">142</span>                if (barEvent) {<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                        String post = null;<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                        if (rollProbability(PROB_ARMS_DEALER_BAR) &amp;&amp; allowArmsDealer) {<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                                setGiverRank(Ranks.CITIZEN);<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                                post = Ranks.POST_ARMS_DEALER;<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                                setGiverTags(Tags.CONTACT_UNDERWORLD);<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                                setGiverFaction(Factions.PIRATES);<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                        } else if (rollProbability(PROB_MILITARY_BAR) &amp;&amp; allowMilitary) {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                                List&lt;String&gt; posts = new ArrayList&lt;String&gt;();<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                                posts.add(Ranks.POST_SUPPLY_OFFICER);<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                                if (Misc.isMilitary(createdAt)) {<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                                        posts.add(Ranks.POST_BASE_COMMANDER);<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                                }<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                                if (Misc.hasOrbitalStation(createdAt)) {<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                                        posts.add(Ranks.POST_STATION_COMMANDER);<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                                }<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                                post = pickOne(posts);<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                                setGiverRank(pickOne(Ranks.GROUND_CAPTAIN, Ranks.GROUND_COLONEL, Ranks.GROUND_MAJOR,<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                                                         Ranks.SPACE_COMMANDER, Ranks.SPACE_CAPTAIN, Ranks.SPACE_ADMIRAL));<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                                setGiverTags(Tags.CONTACT_MILITARY);<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                        } else if (allowTrader) {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                                setGiverRank(Ranks.CITIZEN);<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                                post = pickOne(Ranks.POST_TRADER, Ranks.POST_COMMODITIES_AGENT, Ranks.POST_PORTMASTER,<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                                                           Ranks.POST_MERCHANT, Ranks.POST_INVESTOR, Ranks.POST_EXECUTIVE,<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                                                           Ranks.POST_SENIOR_EXECUTIVE, Ranks.POST_ADMINISTRATOR);<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                                setGiverTags(Tags.CONTACT_TRADE);<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                                if (rollProbability(PROB_INDEPENDENT_BAR)) {<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                                        setGiverFaction(Factions.INDEPENDENT);<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                                }<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                        }<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                        if (post == null &amp;&amp; allowArmsDealer) {<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                                setGiverRank(Ranks.CITIZEN);<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                                post = Ranks.POST_ARMS_DEALER;<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                                setGiverTags(Tags.CONTACT_UNDERWORLD);<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                                setGiverFaction(Factions.PIRATES);<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                        }<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                        if (post == null) return false;<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                        <a name="line.179"></a>
+<span class="sourceLineNo">180</span>                        setGiverPost(post);<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                        if (post.equals(Ranks.POST_SENIOR_EXECUTIVE) ||<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                                        post.equals(Ranks.POST_BASE_COMMANDER) ||<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                                        post.equals(Ranks.POST_ADMINISTRATOR)) {<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                                setGiverImportance(pickHighImportance());<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                        } else if (post.equals(Ranks.POST_ARMS_DEALER)) {<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                                setGiverImportance(pickArmsDealerImportance());<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                        } else {<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                                setGiverImportance(pickImportance());<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                                <a name="line.189"></a>
+<span class="sourceLineNo">190</span>                        }<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                        findOrCreateGiver(createdAt, false, false);<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                        setGiverIsPotentialContactOnSuccess();<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                }<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                <a name="line.194"></a>
+<span class="sourceLineNo">195</span>                PersonAPI person = getPerson();<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                if (person == null) return false;<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                <a name="line.197"></a>
+<span class="sourceLineNo">198</span>                if (!setPersonMissionRef(person, "$cpc_ref")) {<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                        return false;<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                }<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                <a name="line.201"></a>
+<span class="sourceLineNo">202</span>                market = getPerson().getMarket();<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                if (market == null) return false;<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                if (Misc.getStorage(market) == null) return false;<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                <a name="line.205"></a>
+<span class="sourceLineNo">206</span>                faction = person.getFaction();<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                <a name="line.207"></a>
+<span class="sourceLineNo">208</span>//              armsDealer = Ranks.POST_ARMS_DEALER.equals(person.getPostId());<a name="line.208"></a>
+<span class="sourceLineNo">209</span>//              if (!armsDealer) allowArmsDealer = false;<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                armsDealer = getPerson().hasTag(Tags.CONTACT_UNDERWORLD);<a name="line.210"></a>
+<span class="sourceLineNo">211</span><a name="line.211"></a>
+<span class="sourceLineNo">212</span>                maxCapacity = getRoundNumber(MIN_CAPACITY + (MAX_CAPACITY - MIN_CAPACITY) * getQuality());<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                if (barEvent) {<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                        maxCapacity += genRoundNumber(BAR_CAPACITY_BONUS_MIN, BAR_CAPACITY_BONUS_MAX);<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                }<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                float capMult = market.getCommodityData(Commodities.SHIPS).getMaxSupply() / MAX_PROD_CAPACITY_AT_SHIP_UNITS;<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                if (capMult &gt; 1) capMult = 1f;<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                if (capMult &lt; MAX_PROD_CAPACITY_MULT) capMult = MAX_PROD_CAPACITY_MULT;<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                maxCapacity *= capMult;<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                if (person.hasTag(Tags.CONTACT_MILITARY) &amp;&amp; allowMilitary) {<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                        maxCapacity *= MILITARY_CAP_MULT;<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                }<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                maxCapacity = getRoundNumber(maxCapacity);<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                <a name="line.224"></a>
+<span class="sourceLineNo">225</span>                if (armsDealer &amp;&amp; allowArmsDealer) { // don't care about ship production, since it's just acquisition from wherever<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                        PersonImportance imp = getPerson().getImportance();<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                        float mult = DEALER_MULT.get(imp);<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                        maxCapacity = getRoundNumber(mult * <a name="line.228"></a>
+<span class="sourceLineNo">229</span>                                                (DEALER_MIN_CAPACITY + (DEALER_MAX_CAPACITY - DEALER_MIN_CAPACITY) * getQuality()));<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                }<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                <a name="line.231"></a>
+<span class="sourceLineNo">232</span>                if (armsDealer &amp;&amp; allowArmsDealer) {<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                        costMult = 1f + DEALER_FIXED_COST_INCREASE + DEALER_VARIABLE_COST_INCREASE * (1f - getRewardMultFraction());<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                        addArmsDealerBlueprints();<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                        if (ships.isEmpty() &amp;&amp; weapons.isEmpty() &amp;&amp; fighters.isEmpty()) return false;<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                } else if (person.hasTag(Tags.CONTACT_MILITARY) &amp;&amp; allowMilitary) {<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                        costMult = 1f - MILITARY_MAX_COST_DECREASE * getRewardMultFraction();<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                        addMilitaryBlueprints();<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                        if (ships.isEmpty() &amp;&amp; weapons.isEmpty() &amp;&amp; fighters.isEmpty()) return false;<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                } else if (person.hasTag(Tags.CONTACT_TRADE) &amp;&amp; allowTrader) {<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                        costMult = 1f + TRADE_MAX_COST_INCREASE * (1f - getRewardMultFraction());<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                } else {<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                        return false;<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                }<a name="line.244"></a>
+<span class="sourceLineNo">245</span><a name="line.245"></a>
+<span class="sourceLineNo">246</span>                setStartingStage(Stage.WAITING);<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                setSuccessStage(Stage.DELIVERED);<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                setFailureStage(Stage.FAILED);<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                setNoAbandon();<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                <a name="line.250"></a>
+<span class="sourceLineNo">251</span>                connectWithDaysElapsed(Stage.WAITING, Stage.DELIVERED, PROD_DAYS);<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                //connectWithDaysElapsed(Stage.WAITING, Stage.DELIVERED, 1f);<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                setStageOnMarketDecivilized(Stage.FAILED, market);<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                <a name="line.254"></a>
+<span class="sourceLineNo">255</span>                return true;<a name="line.255"></a>
+<span class="sourceLineNo">256</span>        }<a name="line.256"></a>
+<span class="sourceLineNo">257</span>        <a name="line.257"></a>
+<span class="sourceLineNo">258</span><a name="line.258"></a>
+<span class="sourceLineNo">259</span>        protected void addArmsDealerBlueprints() {<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                boolean [] add = new boolean[3];<a name="line.260"></a>
 <span class="sourceLineNo">261</span>                add[genRandom.nextInt(add.length)] = true;<a name="line.261"></a>
 <span class="sourceLineNo">262</span>                add[genRandom.nextInt(add.length)] = true;<a name="line.262"></a>
-<span class="sourceLineNo">263</span>                <a name="line.263"></a>
-<span class="sourceLineNo">264</span>                PersonImportance imp = getPerson().getImportance();<a name="line.264"></a>
-<span class="sourceLineNo">265</span>                if (imp == PersonImportance.VERY_HIGH) {<a name="line.265"></a>
-<span class="sourceLineNo">266</span>                        add[0] = true;<a name="line.266"></a>
-<span class="sourceLineNo">267</span>                        add[1] = true;<a name="line.267"></a>
-<span class="sourceLineNo">268</span>                        add[2] = true;<a name="line.268"></a>
-<span class="sourceLineNo">269</span>                }<a name="line.269"></a>
-<span class="sourceLineNo">270</span><a name="line.270"></a>
-<span class="sourceLineNo">271</span>                Set&lt;WeaponType&gt; wTypes = new LinkedHashSet&lt;WeaponAPI.WeaponType&gt;();<a name="line.271"></a>
-<span class="sourceLineNo">272</span>                Set&lt;WeaponSize&gt; wSizes = new LinkedHashSet&lt;WeaponAPI.WeaponSize&gt;();<a name="line.272"></a>
-<span class="sourceLineNo">273</span>                Set&lt;HullSize&gt; hullSizes = new LinkedHashSet&lt;HullSize&gt;();<a name="line.273"></a>
-<span class="sourceLineNo">274</span><a name="line.274"></a>
-<span class="sourceLineNo">275</span>                WeightedRandomPicker&lt;WeaponType&gt; wTypePicker = new WeightedRandomPicker&lt;WeaponType&gt;(genRandom);<a name="line.275"></a>
-<span class="sourceLineNo">276</span>                wTypePicker.add(WeaponType.BALLISTIC);<a name="line.276"></a>
-<span class="sourceLineNo">277</span>                wTypePicker.add(WeaponType.ENERGY);<a name="line.277"></a>
-<span class="sourceLineNo">278</span>                wTypePicker.add(WeaponType.MISSILE);<a name="line.278"></a>
-<span class="sourceLineNo">279</span>                WeightedRandomPicker&lt;WeaponSize&gt; wSizePicker = new WeightedRandomPicker&lt;WeaponSize&gt;(genRandom);<a name="line.279"></a>
-<span class="sourceLineNo">280</span>                wSizePicker.add(WeaponSize.SMALL);<a name="line.280"></a>
-<span class="sourceLineNo">281</span>                wSizePicker.add(WeaponSize.MEDIUM);<a name="line.281"></a>
-<span class="sourceLineNo">282</span>                wSizePicker.add(WeaponSize.LARGE);<a name="line.282"></a>
-<span class="sourceLineNo">283</span>                <a name="line.283"></a>
-<span class="sourceLineNo">284</span>                int nWeapons = 0;<a name="line.284"></a>
-<span class="sourceLineNo">285</span>                int nShips = 0;<a name="line.285"></a>
-<span class="sourceLineNo">286</span>                int nFighters = 0;<a name="line.286"></a>
-<span class="sourceLineNo">287</span>                <a name="line.287"></a>
-<span class="sourceLineNo">288</span>                switch (imp) {<a name="line.288"></a>
-<span class="sourceLineNo">289</span>                case VERY_LOW:<a name="line.289"></a>
-<span class="sourceLineNo">290</span>                        add[1] = true;<a name="line.290"></a>
-<span class="sourceLineNo">291</span>                        wSizes.add(WeaponSize.SMALL);<a name="line.291"></a>
-<span class="sourceLineNo">292</span>                        wTypes.add(wTypePicker.pickAndRemove());<a name="line.292"></a>
-<span class="sourceLineNo">293</span>                        nWeapons = 5 + genRandom.nextInt(6);<a name="line.293"></a>
-<span class="sourceLineNo">294</span>                        nFighters = 1 + genRandom.nextInt(3);<a name="line.294"></a>
-<span class="sourceLineNo">295</span>                        break;<a name="line.295"></a>
-<span class="sourceLineNo">296</span>                case LOW:<a name="line.296"></a>
-<span class="sourceLineNo">297</span>                        add[1] = true;<a name="line.297"></a>
-<span class="sourceLineNo">298</span>                        wSizePicker.remove(WeaponSize.LARGE);<a name="line.298"></a>
-<span class="sourceLineNo">299</span>                        wSizes.add(wSizePicker.pickAndRemove());<a name="line.299"></a>
-<span class="sourceLineNo">300</span>                        wTypes.add(wTypePicker.pickAndRemove());<a name="line.300"></a>
-<span class="sourceLineNo">301</span>                        hullSizes.add(HullSize.FRIGATE);<a name="line.301"></a>
-<span class="sourceLineNo">302</span>                        nWeapons = 10 + genRandom.nextInt(6);<a name="line.302"></a>
-<span class="sourceLineNo">303</span>                        nShips = 5 + genRandom.nextInt(3);<a name="line.303"></a>
-<span class="sourceLineNo">304</span>                        nFighters = 3 + genRandom.nextInt(3);<a name="line.304"></a>
-<span class="sourceLineNo">305</span>                        break;<a name="line.305"></a>
-<span class="sourceLineNo">306</span>//              case LOW:<a name="line.306"></a>
-<span class="sourceLineNo">307</span>//              case VERY_LOW:<a name="line.307"></a>
-<span class="sourceLineNo">308</span>                case MEDIUM:<a name="line.308"></a>
-<span class="sourceLineNo">309</span>                        add[1] = true;<a name="line.309"></a>
-<span class="sourceLineNo">310</span>                        wSizes.add(wSizePicker.pickAndRemove());<a name="line.310"></a>
+<span class="sourceLineNo">263</span>                add[genRandom.nextInt(add.length)] = true;<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                <a name="line.264"></a>
+<span class="sourceLineNo">265</span>                PersonImportance imp = getPerson().getImportance();<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                if (imp == PersonImportance.VERY_HIGH) {<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                        add[0] = true;<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                        add[1] = true;<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                        add[2] = true;<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                }<a name="line.270"></a>
+<span class="sourceLineNo">271</span><a name="line.271"></a>
+<span class="sourceLineNo">272</span>                Set&lt;WeaponType&gt; wTypes = new LinkedHashSet&lt;WeaponAPI.WeaponType&gt;();<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                Set&lt;WeaponSize&gt; wSizes = new LinkedHashSet&lt;WeaponAPI.WeaponSize&gt;();<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                Set&lt;HullSize&gt; hullSizes = new LinkedHashSet&lt;HullSize&gt;();<a name="line.274"></a>
+<span class="sourceLineNo">275</span><a name="line.275"></a>
+<span class="sourceLineNo">276</span>                WeightedRandomPicker&lt;WeaponType&gt; wTypePicker = new WeightedRandomPicker&lt;WeaponType&gt;(genRandom);<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                wTypePicker.add(WeaponType.BALLISTIC);<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                wTypePicker.add(WeaponType.ENERGY);<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                wTypePicker.add(WeaponType.MISSILE);<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                WeightedRandomPicker&lt;WeaponSize&gt; wSizePicker = new WeightedRandomPicker&lt;WeaponSize&gt;(genRandom);<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                wSizePicker.add(WeaponSize.SMALL);<a name="line.281"></a>
+<span class="sourceLineNo">282</span>                wSizePicker.add(WeaponSize.MEDIUM);<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                wSizePicker.add(WeaponSize.LARGE);<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                <a name="line.284"></a>
+<span class="sourceLineNo">285</span>                int nWeapons = 0;<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                int nShips = 0;<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                int nFighters = 0;<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                <a name="line.288"></a>
+<span class="sourceLineNo">289</span>                switch (imp) {<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                case VERY_LOW:<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                        add[1] = true;<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                        wSizes.add(WeaponSize.SMALL);<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                        wTypes.add(wTypePicker.pickAndRemove());<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                        nWeapons = 5 + genRandom.nextInt(6);<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                        nFighters = 1 + genRandom.nextInt(3);<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                        break;<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                case LOW:<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                        add[1] = true;<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                        wSizePicker.remove(WeaponSize.LARGE);<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                        wSizes.add(wSizePicker.pickAndRemove());<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                        wTypes.add(wTypePicker.pickAndRemove());<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                        hullSizes.add(HullSize.FRIGATE);<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                        nWeapons = 10 + genRandom.nextInt(6);<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                        nShips = 5 + genRandom.nextInt(3);<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                        nFighters = 3 + genRandom.nextInt(3);<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                        break;<a name="line.306"></a>
+<span class="sourceLineNo">307</span>//              case LOW:<a name="line.307"></a>
+<span class="sourceLineNo">308</span>//              case VERY_LOW:<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                case MEDIUM:<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                        add[1] = true;<a name="line.310"></a>
 <span class="sourceLineNo">311</span>                        wSizes.add(wSizePicker.pickAndRemove());<a name="line.311"></a>
-<span class="sourceLineNo">312</span>                        wTypes.add(wTypePicker.pickAndRemove());<a name="line.312"></a>
-<span class="sourceLineNo">313</span>                        hullSizes.add(HullSize.FRIGATE);<a name="line.313"></a>
-<span class="sourceLineNo">314</span>                        hullSizes.add(HullSize.DESTROYER);<a name="line.314"></a>
-<span class="sourceLineNo">315</span>                        nWeapons = 20 + genRandom.nextInt(6);<a name="line.315"></a>
-<span class="sourceLineNo">316</span>                        nShips = 10 + genRandom.nextInt(3);<a name="line.316"></a>
-<span class="sourceLineNo">317</span>                        nFighters = 5 + genRandom.nextInt(3);<a name="line.317"></a>
-<span class="sourceLineNo">318</span>                        break;<a name="line.318"></a>
-<span class="sourceLineNo">319</span>                case HIGH:<a name="line.319"></a>
-<span class="sourceLineNo">320</span>                        add[1] = true;<a name="line.320"></a>
-<span class="sourceLineNo">321</span>                        wSizes.add(wSizePicker.pickAndRemove());<a name="line.321"></a>
+<span class="sourceLineNo">312</span>                        wSizes.add(wSizePicker.pickAndRemove());<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                        wTypes.add(wTypePicker.pickAndRemove());<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                        hullSizes.add(HullSize.FRIGATE);<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                        hullSizes.add(HullSize.DESTROYER);<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                        nWeapons = 20 + genRandom.nextInt(6);<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                        nShips = 10 + genRandom.nextInt(3);<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                        nFighters = 5 + genRandom.nextInt(3);<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                        break;<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                case HIGH:<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                        add[1] = true;<a name="line.321"></a>
 <span class="sourceLineNo">322</span>                        wSizes.add(wSizePicker.pickAndRemove());<a name="line.322"></a>
-<span class="sourceLineNo">323</span>                        wTypes.add(wTypePicker.pickAndRemove());<a name="line.323"></a>
+<span class="sourceLineNo">323</span>                        wSizes.add(wSizePicker.pickAndRemove());<a name="line.323"></a>
 <span class="sourceLineNo">324</span>                        wTypes.add(wTypePicker.pickAndRemove());<a name="line.324"></a>
-<span class="sourceLineNo">325</span>                        hullSizes.add(HullSize.FRIGATE);<a name="line.325"></a>
-<span class="sourceLineNo">326</span>                        hullSizes.add(HullSize.DESTROYER);<a name="line.326"></a>
-<span class="sourceLineNo">327</span>                        hullSizes.add(HullSize.CRUISER);<a name="line.327"></a>
-<span class="sourceLineNo">328</span>                        nWeapons = 20 + genRandom.nextInt(6);<a name="line.328"></a>
-<span class="sourceLineNo">329</span>                        nShips = 10 + genRandom.nextInt(3);<a name="line.329"></a>
-<span class="sourceLineNo">330</span>                        nFighters = 7 + genRandom.nextInt(3);<a name="line.330"></a>
-<span class="sourceLineNo">331</span>                        break;<a name="line.331"></a>
-<span class="sourceLineNo">332</span>                case VERY_HIGH:<a name="line.332"></a>
-<span class="sourceLineNo">333</span>                        wSizes.add(WeaponSize.SMALL);<a name="line.333"></a>
-<span class="sourceLineNo">334</span>                        wSizes.add(WeaponSize.MEDIUM);<a name="line.334"></a>
-<span class="sourceLineNo">335</span>                        wSizes.add(WeaponSize.LARGE);<a name="line.335"></a>
-<span class="sourceLineNo">336</span>                        <a name="line.336"></a>
-<span class="sourceLineNo">337</span>                        hullSizes.add(HullSize.FRIGATE);<a name="line.337"></a>
-<span class="sourceLineNo">338</span>                        hullSizes.add(HullSize.DESTROYER);<a name="line.338"></a>
-<span class="sourceLineNo">339</span>                        hullSizes.add(HullSize.CRUISER);<a name="line.339"></a>
-<span class="sourceLineNo">340</span>                        hullSizes.add(HullSize.CAPITAL_SHIP);<a name="line.340"></a>
-<span class="sourceLineNo">341</span>                        <a name="line.341"></a>
-<span class="sourceLineNo">342</span>                        wTypes.add(WeaponType.BALLISTIC);<a name="line.342"></a>
-<span class="sourceLineNo">343</span>                        wTypes.add(WeaponType.ENERGY);<a name="line.343"></a>
-<span class="sourceLineNo">344</span>                        wTypes.add(WeaponType.MISSILE);<a name="line.344"></a>
-<span class="sourceLineNo">345</span>                        nWeapons = 1000;<a name="line.345"></a>
-<span class="sourceLineNo">346</span>                        nShips = 1000;<a name="line.346"></a>
-<span class="sourceLineNo">347</span>                        nFighters = 1000;<a name="line.347"></a>
-<span class="sourceLineNo">348</span>                        break;<a name="line.348"></a>
-<span class="sourceLineNo">349</span>                }<a name="line.349"></a>
-<span class="sourceLineNo">350</span>                <a name="line.350"></a>
-<span class="sourceLineNo">351</span><a name="line.351"></a>
-<span class="sourceLineNo">352</span>                FactionProductionAPI prod = Global.getSector().getPlayerFaction().getProduction().clone();<a name="line.352"></a>
-<span class="sourceLineNo">353</span>                prod.clear();<a name="line.353"></a>
-<span class="sourceLineNo">354</span>                <a name="line.354"></a>
-<span class="sourceLineNo">355</span>                if (add[0]) {<a name="line.355"></a>
-<span class="sourceLineNo">356</span>                        WeightedRandomPicker&lt;String&gt; picker = new WeightedRandomPicker&lt;String&gt;(genRandom);<a name="line.356"></a>
-<span class="sourceLineNo">357</span>                        for (ShipHullSpecAPI spec : Global.getSettings().getAllShipHullSpecs()) {<a name="line.357"></a>
-<span class="sourceLineNo">358</span>                                //if (!spec.hasTag(Items.TAG_RARE_BP) &amp;&amp; !spec.hasTag(Items.TAG_DEALER)) continue;<a name="line.358"></a>
-<span class="sourceLineNo">359</span>                                if (spec.hasTag(Items.TAG_NO_DEALER)) continue;<a name="line.359"></a>
-<span class="sourceLineNo">360</span>                                if (spec.hasTag(Tags.NO_SELL) &amp;&amp; !spec.hasTag(Items.TAG_DEALER)) continue;<a name="line.360"></a>
-<span class="sourceLineNo">361</span>                                if (spec.hasTag(Tags.RESTRICTED)) continue;<a name="line.361"></a>
-<span class="sourceLineNo">362</span>                                if (spec.getHints().contains(ShipTypeHints.HIDE_IN_CODEX)) continue;<a name="line.362"></a>
-<span class="sourceLineNo">363</span>                                if (spec.getHints().contains(ShipTypeHints.UNBOARDABLE)) continue;<a name="line.363"></a>
-<span class="sourceLineNo">364</span>                                if (spec.isDefaultDHull()) continue; // || spec.isDHull()) continue;<a name="line.364"></a>
-<span class="sourceLineNo">365</span>                                if (spec.isDHullOldMethod()) continue;<a name="line.365"></a>
-<span class="sourceLineNo">366</span>                                if ("shuttlepod".equals(spec.getHullId())) continue;<a name="line.366"></a>
-<span class="sourceLineNo">367</span>                                if (ships.contains(spec.getHullId())) continue;<a name="line.367"></a>
-<span class="sourceLineNo">368</span>                                if (!hullSizes.contains(spec.getHullSize())) continue;<a name="line.368"></a>
-<span class="sourceLineNo">369</span>                                float cost = prod.createSampleItem(ProductionItemType.SHIP, spec.getHullId(), 1).getBaseCost();<a name="line.369"></a>
-<span class="sourceLineNo">370</span>                                cost = (int)Math.round(cost * costMult);<a name="line.370"></a>
-<span class="sourceLineNo">371</span>                                if (cost &gt; maxCapacity) continue;<a name="line.371"></a>
-<span class="sourceLineNo">372</span>                                picker.add(spec.getHullId(), 10f);<a name="line.372"></a>
-<span class="sourceLineNo">373</span>                        }<a name="line.373"></a>
-<span class="sourceLineNo">374</span>//                      int num = 2 + (int)Math.round(genRandom.nextInt(5) * getQuality());<a name="line.374"></a>
-<span class="sourceLineNo">375</span>//                      num += imp.ordinal() * 2;<a name="line.375"></a>
-<span class="sourceLineNo">376</span>//                      if (imp == PersonImportance.VERY_HIGH) num = 1000;<a name="line.376"></a>
-<span class="sourceLineNo">377</span>                        int num = nShips;<a name="line.377"></a>
-<span class="sourceLineNo">378</span>                        for (int i = 0; i &lt; num &amp;&amp; !picker.isEmpty(); i++) {<a name="line.378"></a>
-<span class="sourceLineNo">379</span>                                ships.add(picker.pickAndRemove());<a name="line.379"></a>
-<span class="sourceLineNo">380</span>                        }<a name="line.380"></a>
-<span class="sourceLineNo">381</span>                }<a name="line.381"></a>
-<span class="sourceLineNo">382</span>                <a name="line.382"></a>
-<span class="sourceLineNo">383</span>                if (add[1]) {<a name="line.383"></a>
-<span class="sourceLineNo">384</span>                        WeightedRandomPicker&lt;String&gt; picker = new WeightedRandomPicker&lt;String&gt;(genRandom);<a name="line.384"></a>
-<span class="sourceLineNo">385</span>                        for (WeaponSpecAPI spec : Global.getSettings().getAllWeaponSpecs()) {<a name="line.385"></a>
-<span class="sourceLineNo">386</span>                                //if (!spec.hasTag(Items.TAG_RARE_BP) &amp;&amp; !spec.hasTag(Items.TAG_DEALER)) continue;<a name="line.386"></a>
-<span class="sourceLineNo">387</span>                                if (spec.hasTag(Items.TAG_NO_DEALER)) continue;<a name="line.387"></a>
-<span class="sourceLineNo">388</span>                                if (spec.hasTag(Tags.NO_SELL) &amp;&amp; !spec.hasTag(Items.TAG_DEALER)) continue;<a name="line.388"></a>
-<span class="sourceLineNo">389</span>                                if (spec.hasTag(Tags.RESTRICTED)) continue;<a name="line.389"></a>
-<span class="sourceLineNo">390</span>                                if (spec.getAIHints().contains(AIHints.SYSTEM)) continue;<a name="line.390"></a>
-<span class="sourceLineNo">391</span>                                if (weapons.contains(spec.getWeaponId())) continue;<a name="line.391"></a>
-<span class="sourceLineNo">392</span>                                if (!wTypes.contains(spec.getType())) continue;<a name="line.392"></a>
-<span class="sourceLineNo">393</span>                                if (!wSizes.contains(spec.getSize())) continue;<a name="line.393"></a>
-<span class="sourceLineNo">394</span>                                float cost = prod.createSampleItem(ProductionItemType.WEAPON, spec.getWeaponId(), 1).getBaseCost();<a name="line.394"></a>
-<span class="sourceLineNo">395</span>                                cost = (int)Math.round(cost * costMult);<a name="line.395"></a>
-<span class="sourceLineNo">396</span>                                if (cost &gt; maxCapacity) continue;<a name="line.396"></a>
-<span class="sourceLineNo">397</span>                                picker.add(spec.getWeaponId(), 10f);<a name="line.397"></a>
-<span class="sourceLineNo">398</span>                        }<a name="line.398"></a>
-<span class="sourceLineNo">399</span>//                      int num = 3 + (int)Math.round(genRandom.nextInt(7) * getQuality());<a name="line.399"></a>
-<span class="sourceLineNo">400</span>//                      num += imp.ordinal() * 2;<a name="line.400"></a>
-<span class="sourceLineNo">401</span>//                      if (imp == PersonImportance.VERY_HIGH) num = 1000;<a name="line.401"></a>
-<span class="sourceLineNo">402</span>                        int num = nWeapons;<a name="line.402"></a>
-<span class="sourceLineNo">403</span>                        for (int i = 0; i &lt; num &amp;&amp; !picker.isEmpty(); i++) {<a name="line.403"></a>
-<span class="sourceLineNo">404</span>                                weapons.add(picker.pickAndRemove());<a name="line.404"></a>
-<span class="sourceLineNo">405</span>                        }<a name="line.405"></a>
-<span class="sourceLineNo">406</span>                }<a name="line.406"></a>
-<span class="sourceLineNo">407</span>                <a name="line.407"></a>
-<span class="sourceLineNo">408</span>                if (add[2]) {<a name="line.408"></a>
-<span class="sourceLineNo">409</span>                        WeightedRandomPicker&lt;String&gt; picker = new WeightedRandomPicker&lt;String&gt;(genRandom);<a name="line.409"></a>
-<span class="sourceLineNo">410</span>                        for (FighterWingSpecAPI spec : Global.getSettings().getAllFighterWingSpecs()) {<a name="line.410"></a>
-<span class="sourceLineNo">411</span>                                //if (!spec.hasTag(Items.TAG_RARE_BP) &amp;&amp; !spec.hasTag(Items.TAG_DEALER)) continue;<a name="line.411"></a>
-<span class="sourceLineNo">412</span>//                              if (spec.hasTag(Tags.NO_DROP)) continue;<a name="line.412"></a>
-<span class="sourceLineNo">413</span>//                              if (spec.hasTag(Tags.NO_SELL)) continue;<a name="line.413"></a>
-<span class="sourceLineNo">414</span>                                if (spec.hasTag(Items.TAG_NO_DEALER)) continue;<a name="line.414"></a>
-<span class="sourceLineNo">415</span>                                if (spec.hasTag(Tags.NO_SELL) &amp;&amp; !spec.hasTag(Items.TAG_DEALER)) continue;<a name="line.415"></a>
-<span class="sourceLineNo">416</span>                                if (spec.hasTag(Tags.RESTRICTED)) continue;<a name="line.416"></a>
-<span class="sourceLineNo">417</span>                                if (fighters.contains(spec.getId())) continue;<a name="line.417"></a>
-<span class="sourceLineNo">418</span>                                float cost = prod.createSampleItem(ProductionItemType.FIGHTER, spec.getId(), 1).getBaseCost();<a name="line.418"></a>
-<span class="sourceLineNo">419</span>                                cost = (int)Math.round(cost * costMult);<a name="line.419"></a>
-<span class="sourceLineNo">420</span>                                if (cost &gt; maxCapacity) continue;<a name="line.420"></a>
-<span class="sourceLineNo">421</span>                                picker.add(spec.getId(), 10f);<a name="line.421"></a>
-<span class="sourceLineNo">422</span>                        }<a name="line.422"></a>
-<span class="sourceLineNo">423</span>//                      int num = 1 + (int)Math.round(genRandom.nextInt(3) * getQuality());<a name="line.423"></a>
-<span class="sourceLineNo">424</span>//                      num += imp.ordinal() * 2;<a name="line.424"></a>
-<span class="sourceLineNo">425</span>//                      if (imp == PersonImportance.VERY_HIGH) num = 1000;<a name="line.425"></a>
-<span class="sourceLineNo">426</span>                        int num = nFighters;<a name="line.426"></a>
-<span class="sourceLineNo">427</span>                        for (int i = 0; i &lt; num &amp;&amp; !picker.isEmpty(); i++) {<a name="line.427"></a>
-<span class="sourceLineNo">428</span>                                fighters.add(picker.pickAndRemove());<a name="line.428"></a>
-<span class="sourceLineNo">429</span>                        }<a name="line.429"></a>
-<span class="sourceLineNo">430</span>                }<a name="line.430"></a>
-<span class="sourceLineNo">431</span>        }<a name="line.431"></a>
-<span class="sourceLineNo">432</span>        <a name="line.432"></a>
-<span class="sourceLineNo">433</span>        protected void addMilitaryBlueprints() {<a name="line.433"></a>
-<span class="sourceLineNo">434</span>                for (String id : faction.getKnownShips()) {<a name="line.434"></a>
-<span class="sourceLineNo">435</span>                        ShipHullSpecAPI spec = Global.getSettings().getHullSpec(id);<a name="line.435"></a>
-<span class="sourceLineNo">436</span>                        if (spec.hasTag(Tags.NO_SELL)) continue;<a name="line.436"></a>
-<span class="sourceLineNo">437</span>                        if (spec.isDHullOldMethod()) continue;<a name="line.437"></a>
-<span class="sourceLineNo">438</span>                        //if (spec.isDHull()) continue;<a name="line.438"></a>
-<span class="sourceLineNo">439</span>                        ships.add(id);<a name="line.439"></a>
-<span class="sourceLineNo">440</span>                }<a name="line.440"></a>
-<span class="sourceLineNo">441</span>                for (String id : faction.getKnownWeapons()) {<a name="line.441"></a>
-<span class="sourceLineNo">442</span>                        WeaponSpecAPI spec = Global.getSettings().getWeaponSpec(id);<a name="line.442"></a>
-<span class="sourceLineNo">443</span>                        if (spec.hasTag(Tags.NO_DROP)) continue;<a name="line.443"></a>
-<span class="sourceLineNo">444</span>                        if (spec.hasTag(Tags.NO_SELL)) continue;<a name="line.444"></a>
-<span class="sourceLineNo">445</span>                        weapons.add(id);<a name="line.445"></a>
-<span class="sourceLineNo">446</span>                }<a name="line.446"></a>
-<span class="sourceLineNo">447</span>                for (String id : faction.getKnownFighters()) {<a name="line.447"></a>
-<span class="sourceLineNo">448</span>                        FighterWingSpecAPI spec = Global.getSettings().getFighterWingSpec(id);<a name="line.448"></a>
-<span class="sourceLineNo">449</span>                        if (spec.hasTag(Tags.NO_DROP)) continue;<a name="line.449"></a>
-<span class="sourceLineNo">450</span>                        if (spec.hasTag(Tags.NO_SELL)) continue;<a name="line.450"></a>
-<span class="sourceLineNo">451</span>                        fighters.add(id);<a name="line.451"></a>
-<span class="sourceLineNo">452</span>                }<a name="line.452"></a>
-<span class="sourceLineNo">453</span>        }<a name="line.453"></a>
-<span class="sourceLineNo">454</span><a name="line.454"></a>
+<span class="sourceLineNo">325</span>                        wTypes.add(wTypePicker.pickAndRemove());<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                        hullSizes.add(HullSize.FRIGATE);<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                        hullSizes.add(HullSize.DESTROYER);<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                        hullSizes.add(HullSize.CRUISER);<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                        nWeapons = 20 + genRandom.nextInt(6);<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                        nShips = 10 + genRandom.nextInt(3);<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                        nFighters = 7 + genRandom.nextInt(3);<a name="line.331"></a>
+<span class="sourceLineNo">332</span>                        break;<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                case VERY_HIGH:<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                        wSizes.add(WeaponSize.SMALL);<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                        wSizes.add(WeaponSize.MEDIUM);<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                        wSizes.add(WeaponSize.LARGE);<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                        <a name="line.337"></a>
+<span class="sourceLineNo">338</span>                        hullSizes.add(HullSize.FRIGATE);<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                        hullSizes.add(HullSize.DESTROYER);<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                        hullSizes.add(HullSize.CRUISER);<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                        hullSizes.add(HullSize.CAPITAL_SHIP);<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                        <a name="line.342"></a>
+<span class="sourceLineNo">343</span>                        wTypes.add(WeaponType.BALLISTIC);<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                        wTypes.add(WeaponType.ENERGY);<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                        wTypes.add(WeaponType.MISSILE);<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                        nWeapons = 1000;<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                        nShips = 1000;<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                        nFighters = 1000;<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                        break;<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                }<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                <a name="line.351"></a>
+<span class="sourceLineNo">352</span><a name="line.352"></a>
+<span class="sourceLineNo">353</span>                FactionProductionAPI prod = Global.getSector().getPlayerFaction().getProduction().clone();<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                prod.clear();<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                <a name="line.355"></a>
+<span class="sourceLineNo">356</span>                if (add[0]) {<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                        WeightedRandomPicker&lt;String&gt; picker = new WeightedRandomPicker&lt;String&gt;(genRandom);<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                        for (ShipHullSpecAPI spec : Global.getSettings().getAllShipHullSpecs()) {<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                                //if (!spec.hasTag(Items.TAG_RARE_BP) &amp;&amp; !spec.hasTag(Items.TAG_DEALER)) continue;<a name="line.359"></a>
+<span class="sourceLineNo">360</span>                                if (spec.hasTag(Items.TAG_NO_DEALER)) continue;<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                                if (spec.hasTag(Tags.NO_SELL) &amp;&amp; !spec.hasTag(Items.TAG_DEALER)) continue;<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                                if (spec.hasTag(Tags.RESTRICTED)) continue;<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                                if (spec.getHints().contains(ShipTypeHints.HIDE_IN_CODEX)) continue;<a name="line.363"></a>
+<span class="sourceLineNo">364</span>                                if (spec.getHints().contains(ShipTypeHints.UNBOARDABLE)) continue;<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                                if (spec.isDefaultDHull()) continue; // || spec.isDHull()) continue;<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                                if (spec.isDHullOldMethod()) continue;<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                                if ("shuttlepod".equals(spec.getHullId())) continue;<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                                if (ships.contains(spec.getHullId())) continue;<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                                if (!hullSizes.contains(spec.getHullSize())) continue;<a name="line.369"></a>
+<span class="sourceLineNo">370</span>                                float cost = prod.createSampleItem(ProductionItemType.SHIP, spec.getHullId(), 1).getBaseCost();<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                                cost = (int)Math.round(cost * costMult);<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                                if (cost &gt; maxCapacity) continue;<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                                picker.add(spec.getHullId(), 10f);<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                        }<a name="line.374"></a>
+<span class="sourceLineNo">375</span>//                      int num = 2 + (int)Math.round(genRandom.nextInt(5) * getQuality());<a name="line.375"></a>
+<span class="sourceLineNo">376</span>//                      num += imp.ordinal() * 2;<a name="line.376"></a>
+<span class="sourceLineNo">377</span>//                      if (imp == PersonImportance.VERY_HIGH) num = 1000;<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                        int num = nShips;<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                        for (int i = 0; i &lt; num &amp;&amp; !picker.isEmpty(); i++) {<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                                ships.add(picker.pickAndRemove());<a name="line.380"></a>
+<span class="sourceLineNo">381</span>                        }<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                }<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                <a name="line.383"></a>
+<span class="sourceLineNo">384</span>                if (add[1]) {<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                        WeightedRandomPicker&lt;String&gt; picker = new WeightedRandomPicker&lt;String&gt;(genRandom);<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                        for (WeaponSpecAPI spec : Global.getSettings().getAllWeaponSpecs()) {<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                                //if (!spec.hasTag(Items.TAG_RARE_BP) &amp;&amp; !spec.hasTag(Items.TAG_DEALER)) continue;<a name="line.387"></a>
+<span class="sourceLineNo">388</span>                                if (spec.hasTag(Items.TAG_NO_DEALER)) continue;<a name="line.388"></a>
+<span class="sourceLineNo">389</span>                                if (spec.hasTag(Tags.NO_SELL) &amp;&amp; !spec.hasTag(Items.TAG_DEALER)) continue;<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                                if (spec.hasTag(Tags.RESTRICTED)) continue;<a name="line.390"></a>
+<span class="sourceLineNo">391</span>                                if (spec.getAIHints().contains(AIHints.SYSTEM)) continue;<a name="line.391"></a>
+<span class="sourceLineNo">392</span>                                if (weapons.contains(spec.getWeaponId())) continue;<a name="line.392"></a>
+<span class="sourceLineNo">393</span>                                if (!wTypes.contains(spec.getType())) continue;<a name="line.393"></a>
+<span class="sourceLineNo">394</span>                                if (!wSizes.contains(spec.getSize())) continue;<a name="line.394"></a>
+<span class="sourceLineNo">395</span>                                float cost = prod.createSampleItem(ProductionItemType.WEAPON, spec.getWeaponId(), 1).getBaseCost();<a name="line.395"></a>
+<span class="sourceLineNo">396</span>                                cost = (int)Math.round(cost * costMult);<a name="line.396"></a>
+<span class="sourceLineNo">397</span>                                if (cost &gt; maxCapacity) continue;<a name="line.397"></a>
+<span class="sourceLineNo">398</span>                                picker.add(spec.getWeaponId(), 10f);<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                        }<a name="line.399"></a>
+<span class="sourceLineNo">400</span>//                      int num = 3 + (int)Math.round(genRandom.nextInt(7) * getQuality());<a name="line.400"></a>
+<span class="sourceLineNo">401</span>//                      num += imp.ordinal() * 2;<a name="line.401"></a>
+<span class="sourceLineNo">402</span>//                      if (imp == PersonImportance.VERY_HIGH) num = 1000;<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                        int num = nWeapons;<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                        for (int i = 0; i &lt; num &amp;&amp; !picker.isEmpty(); i++) {<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                                weapons.add(picker.pickAndRemove());<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                        }<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                }<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                <a name="line.408"></a>
+<span class="sourceLineNo">409</span>                if (add[2]) {<a name="line.409"></a>
+<span class="sourceLineNo">410</span>                        WeightedRandomPicker&lt;String&gt; picker = new WeightedRandomPicker&lt;String&gt;(genRandom);<a name="line.410"></a>
+<span class="sourceLineNo">411</span>                        for (FighterWingSpecAPI spec : Global.getSettings().getAllFighterWingSpecs()) {<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                                //if (!spec.hasTag(Items.TAG_RARE_BP) &amp;&amp; !spec.hasTag(Items.TAG_DEALER)) continue;<a name="line.412"></a>
+<span class="sourceLineNo">413</span>//                              if (spec.hasTag(Tags.NO_DROP)) continue;<a name="line.413"></a>
+<span class="sourceLineNo">414</span>//                              if (spec.hasTag(Tags.NO_SELL)) continue;<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                                if (spec.hasTag(Items.TAG_NO_DEALER)) continue;<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                                if (spec.hasTag(Tags.NO_SELL) &amp;&amp; !spec.hasTag(Items.TAG_DEALER)) continue;<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                                if (spec.hasTag(Tags.RESTRICTED)) continue;<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                                if (fighters.contains(spec.getId())) continue;<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                                float cost = prod.createSampleItem(ProductionItemType.FIGHTER, spec.getId(), 1).getBaseCost();<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                                cost = (int)Math.round(cost * costMult);<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                                if (cost &gt; maxCapacity) continue;<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                                picker.add(spec.getId(), 10f);<a name="line.422"></a>
+<span class="sourceLineNo">423</span>                        }<a name="line.423"></a>
+<span class="sourceLineNo">424</span>//                      int num = 1 + (int)Math.round(genRandom.nextInt(3) * getQuality());<a name="line.424"></a>
+<span class="sourceLineNo">425</span>//                      num += imp.ordinal() * 2;<a name="line.425"></a>
+<span class="sourceLineNo">426</span>//                      if (imp == PersonImportance.VERY_HIGH) num = 1000;<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                        int num = nFighters;<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                        for (int i = 0; i &lt; num &amp;&amp; !picker.isEmpty(); i++) {<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                                fighters.add(picker.pickAndRemove());<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                        }<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                }<a name="line.431"></a>
+<span class="sourceLineNo">432</span>        }<a name="line.432"></a>
+<span class="sourceLineNo">433</span>        <a name="line.433"></a>
+<span class="sourceLineNo">434</span>        protected void addMilitaryBlueprints() {<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                for (String id : faction.getKnownShips()) {<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                        ShipHullSpecAPI spec = Global.getSettings().getHullSpec(id);<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                        if (spec.hasTag(Tags.NO_SELL)) continue;<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                        if (spec.isDHullOldMethod()) continue;<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                        //if (spec.isDHull()) continue;<a name="line.439"></a>
+<span class="sourceLineNo">440</span>                        ships.add(id);<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                }<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                for (String id : faction.getKnownWeapons()) {<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                        WeaponSpecAPI spec = Global.getSettings().getWeaponSpec(id);<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                        if (spec.hasTag(Tags.NO_DROP)) continue;<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                        if (spec.hasTag(Tags.NO_SELL)) continue;<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                        weapons.add(id);<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                }<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                for (String id : faction.getKnownFighters()) {<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                        FighterWingSpecAPI spec = Global.getSettings().getFighterWingSpec(id);<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                        if (spec.hasTag(Tags.NO_DROP)) continue;<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                        if (spec.hasTag(Tags.NO_SELL)) continue;<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                        fighters.add(id);<a name="line.452"></a>
+<span class="sourceLineNo">453</span>                }<a name="line.453"></a>
+<span class="sourceLineNo">454</span>        }<a name="line.454"></a>
 <span class="sourceLineNo">455</span><a name="line.455"></a>
-<span class="sourceLineNo">456</span>        protected void updateInteractionDataImpl() {<a name="line.456"></a>
-<span class="sourceLineNo">457</span>                set("$cpc_military", getPerson().hasTag(Tags.CONTACT_MILITARY));<a name="line.457"></a>
-<span class="sourceLineNo">458</span>                set("$cpc_trade", getPerson().hasTag(Tags.CONTACT_TRADE));<a name="line.458"></a>
-<span class="sourceLineNo">459</span>                set("$cpc_armsDealer", armsDealer);<a name="line.459"></a>
-<span class="sourceLineNo">460</span>                <a name="line.460"></a>
-<span class="sourceLineNo">461</span>                set("$cpc_barEvent", isBarEvent());<a name="line.461"></a>
-<span class="sourceLineNo">462</span>                set("$cpc_manOrWoman", getPerson().getManOrWoman());<a name="line.462"></a>
-<span class="sourceLineNo">463</span>                set("$cpc_maxCapacity", Misc.getWithDGS(maxCapacity));<a name="line.463"></a>
-<span class="sourceLineNo">464</span>                set("$cpc_costPercent", (int)Math.round(costMult * 100f) + "%");<a name="line.464"></a>
-<span class="sourceLineNo">465</span>                set("$cpc_days", "" + (int) PROD_DAYS);<a name="line.465"></a>
-<span class="sourceLineNo">466</span>        }<a name="line.466"></a>
-<span class="sourceLineNo">467</span>        <a name="line.467"></a>
-<span class="sourceLineNo">468</span>        @Override<a name="line.468"></a>
-<span class="sourceLineNo">469</span>        public void addDescriptionForCurrentStage(TooltipMakerAPI info, float width, float height) {<a name="line.469"></a>
-<span class="sourceLineNo">470</span>                float opad = 10f;<a name="line.470"></a>
-<span class="sourceLineNo">471</span>                Color h = Misc.getHighlightColor();<a name="line.471"></a>
-<span class="sourceLineNo">472</span>                if (currentStage == Stage.WAITING) {<a name="line.472"></a>
-<span class="sourceLineNo">473</span>                        float elapsed = getElapsedInCurrentStage();<a name="line.473"></a>
-<span class="sourceLineNo">474</span>                        int d = (int) Math.round(PROD_DAYS - elapsed);<a name="line.474"></a>
-<span class="sourceLineNo">475</span>                        PersonAPI person = getPerson();<a name="line.475"></a>
-<span class="sourceLineNo">476</span>                        <a name="line.476"></a>
-<span class="sourceLineNo">477</span>                        LabelAPI label = info.addPara("The order will be delivered to storage " + market.getOnOrAt() + " " + market.getName() + <a name="line.477"></a>
-<span class="sourceLineNo">478</span>                                        " in %s " + getDayOrDays(d) + ".", opad,<a name="line.478"></a>
-<span class="sourceLineNo">479</span>                                        Misc.getHighlightColor(), "" + d);<a name="line.479"></a>
-<span class="sourceLineNo">480</span>                        label.setHighlight(market.getName(), "" + d);<a name="line.480"></a>
-<span class="sourceLineNo">481</span>                        label.setHighlightColors(market.getFaction().getBaseUIColor(), h);<a name="line.481"></a>
-<span class="sourceLineNo">482</span>                        <a name="line.482"></a>
-<span class="sourceLineNo">483</span>                        //intel.createSmallDescription(info, width, height);<a name="line.483"></a>
-<span class="sourceLineNo">484</span>                        showCargoContents(info, width, height);<a name="line.484"></a>
-<span class="sourceLineNo">485</span>                        <a name="line.485"></a>
+<span class="sourceLineNo">456</span><a name="line.456"></a>
+<span class="sourceLineNo">457</span>        protected void updateInteractionDataImpl() {<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                set("$cpc_military", getPerson().hasTag(Tags.CONTACT_MILITARY));<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                set("$cpc_trade", getPerson().hasTag(Tags.CONTACT_TRADE));<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                set("$cpc_armsDealer", armsDealer);<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                <a name="line.461"></a>
+<span class="sourceLineNo">462</span>                set("$cpc_barEvent", isBarEvent());<a name="line.462"></a>
+<span class="sourceLineNo">463</span>                set("$cpc_manOrWoman", getPerson().getManOrWoman());<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                set("$cpc_maxCapacity", Misc.getWithDGS(maxCapacity));<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                set("$cpc_costPercent", (int)Math.round(costMult * 100f) + "%");<a name="line.465"></a>
+<span class="sourceLineNo">466</span>                set("$cpc_days", "" + (int) PROD_DAYS);<a name="line.466"></a>
+<span class="sourceLineNo">467</span>        }<a name="line.467"></a>
+<span class="sourceLineNo">468</span>        <a name="line.468"></a>
+<span class="sourceLineNo">469</span>        @Override<a name="line.469"></a>
+<span class="sourceLineNo">470</span>        public void addDescriptionForCurrentStage(TooltipMakerAPI info, float width, float height) {<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                float opad = 10f;<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                Color h = Misc.getHighlightColor();<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                if (currentStage == Stage.WAITING) {<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                        float elapsed = getElapsedInCurrentStage();<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                        int d = (int) Math.round(PROD_DAYS - elapsed);<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                        PersonAPI person = getPerson();<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                        <a name="line.477"></a>
+<span class="sourceLineNo">478</span>                        LabelAPI label = info.addPara("The order will be delivered to storage " + market.getOnOrAt() + " " + market.getName() + <a name="line.478"></a>
+<span class="sourceLineNo">479</span>                                        " in %s " + getDayOrDays(d) + ".", opad,<a name="line.479"></a>
+<span class="sourceLineNo">480</span>                                        Misc.getHighlightColor(), "" + d);<a name="line.480"></a>
+<span class="sourceLineNo">481</span>                        label.setHighlight(market.getName(), "" + d);<a name="line.481"></a>
+<span class="sourceLineNo">482</span>                        label.setHighlightColors(market.getFaction().getBaseUIColor(), h);<a name="line.482"></a>
+<span class="sourceLineNo">483</span>                        <a name="line.483"></a>
+<span class="sourceLineNo">484</span>                        //intel.createSmallDescription(info, width, height);<a name="line.484"></a>
+<span class="sourceLineNo">485</span>                        showCargoContents(info, width, height);<a name="line.485"></a>
 <span class="sourceLineNo">486</span>                        <a name="line.486"></a>
-<span class="sourceLineNo">487</span>                } else if (currentStage == Stage.DELIVERED) {<a name="line.487"></a>
-<span class="sourceLineNo">488</span>                        float elapsed = getElapsedInCurrentStage();<a name="line.488"></a>
-<span class="sourceLineNo">489</span>                        int d = (int) Math.round(elapsed);<a name="line.489"></a>
-<span class="sourceLineNo">490</span>                        LabelAPI label = info.addPara("The order was delivered to storage " + market.getOnOrAt() + " " + market.getName() + <a name="line.490"></a>
-<span class="sourceLineNo">491</span>                                        " %s " + getDayOrDays(d) + " ago.", opad,<a name="line.491"></a>
-<span class="sourceLineNo">492</span>                                        Misc.getHighlightColor(), "" + d);<a name="line.492"></a>
-<span class="sourceLineNo">493</span>                        label.setHighlight(market.getName(), "" + d);<a name="line.493"></a>
-<span class="sourceLineNo">494</span>                        label.setHighlightColors(market.getFaction().getBaseUIColor(), h);<a name="line.494"></a>
-<span class="sourceLineNo">495</span>                        <a name="line.495"></a>
-<span class="sourceLineNo">496</span>                        showCargoContents(info, width, height);<a name="line.496"></a>
-<span class="sourceLineNo">497</span>                        addDeleteButton(info, width);<a name="line.497"></a>
-<span class="sourceLineNo">498</span>                } else if (currentStage == Stage.FAILED) {<a name="line.498"></a>
-<span class="sourceLineNo">499</span>                        if (market.hasCondition(Conditions.DECIVILIZED)) {<a name="line.499"></a>
-<span class="sourceLineNo">500</span>                                info.addPara("This order will not be completed because %s" + <a name="line.500"></a>
-<span class="sourceLineNo">501</span>                                                " has decivilized.", opad,<a name="line.501"></a>
-<span class="sourceLineNo">502</span>                                                faction.getBaseUIColor(), market.getName());<a name="line.502"></a>
-<span class="sourceLineNo">503</span>                        } else {<a name="line.503"></a>
-<span class="sourceLineNo">504</span>                                info.addPara("You've learned that this order will not be completed.", opad);<a name="line.504"></a>
-<span class="sourceLineNo">505</span>                        }<a name="line.505"></a>
-<span class="sourceLineNo">506</span>                }<a name="line.506"></a>
-<span class="sourceLineNo">507</span>        }<a name="line.507"></a>
-<span class="sourceLineNo">508</span><a name="line.508"></a>
-<span class="sourceLineNo">509</span>        @Override<a name="line.509"></a>
-<span class="sourceLineNo">510</span>        public boolean addNextStepText(TooltipMakerAPI info, Color tc, float pad) {<a name="line.510"></a>
-<span class="sourceLineNo">511</span>                Color h = Misc.getHighlightColor();<a name="line.511"></a>
-<span class="sourceLineNo">512</span>                if (currentStage == Stage.WAITING) {<a name="line.512"></a>
-<span class="sourceLineNo">513</span>                        float elapsed = getElapsedInCurrentStage();<a name="line.513"></a>
-<span class="sourceLineNo">514</span>                        addDays(info, "until delivery", PROD_DAYS - elapsed, tc, pad);<a name="line.514"></a>
-<span class="sourceLineNo">515</span>                        return true;<a name="line.515"></a>
-<span class="sourceLineNo">516</span>                } else if (currentStage == Stage.DELIVERED) {<a name="line.516"></a>
-<span class="sourceLineNo">517</span>                        info.addPara("Delivered to %s", pad, tc, market.getFaction().getBaseUIColor(), market.getName());<a name="line.517"></a>
-<span class="sourceLineNo">518</span>                        return true;<a name="line.518"></a>
-<span class="sourceLineNo">519</span>                }<a name="line.519"></a>
-<span class="sourceLineNo">520</span>                return false;<a name="line.520"></a>
-<span class="sourceLineNo">521</span>        }       <a name="line.521"></a>
-<span class="sourceLineNo">522</span>        <a name="line.522"></a>
-<span class="sourceLineNo">523</span>        @Override<a name="line.523"></a>
-<span class="sourceLineNo">524</span>        public String getBaseName() {<a name="line.524"></a>
-<span class="sourceLineNo">525</span>                return "Custom Production Order";<a name="line.525"></a>
-<span class="sourceLineNo">526</span>        }<a name="line.526"></a>
-<span class="sourceLineNo">527</span>        <a name="line.527"></a>
-<span class="sourceLineNo">528</span>        protected String getMissionTypeNoun() {<a name="line.528"></a>
-<span class="sourceLineNo">529</span>                return "contract";<a name="line.529"></a>
-<span class="sourceLineNo">530</span>        }<a name="line.530"></a>
-<span class="sourceLineNo">531</span><a name="line.531"></a>
-<span class="sourceLineNo">532</span>        @Override<a name="line.532"></a>
-<span class="sourceLineNo">533</span>        public SectorEntityToken getMapLocation(SectorMapAPI map) {<a name="line.533"></a>
-<span class="sourceLineNo">534</span>                return market.getPrimaryEntity();<a name="line.534"></a>
-<span class="sourceLineNo">535</span>        }<a name="line.535"></a>
-<span class="sourceLineNo">536</span>        <a name="line.536"></a>
-<span class="sourceLineNo">537</span>        @Override<a name="line.537"></a>
-<span class="sourceLineNo">538</span>        public void acceptImpl(InteractionDialogAPI dialog, Map&lt;String, MemoryAPI&gt; memoryMap) {<a name="line.538"></a>
-<span class="sourceLineNo">539</span>                float f = (float) cost / (float) maxCapacity;<a name="line.539"></a>
-<span class="sourceLineNo">540</span>                float p = ContactIntel.DEFAULT_POTENTIAL_CONTACT_PROB * f;<a name="line.540"></a>
-<span class="sourceLineNo">541</span>                if (armsDealer) {<a name="line.541"></a>
-<span class="sourceLineNo">542</span>                        p = PROB_ARMS_DEALER_IS_CONTACT * f;<a name="line.542"></a>
-<span class="sourceLineNo">543</span>                }<a name="line.543"></a>
-<span class="sourceLineNo">544</span>                if (potentialContactsOnMissionSuccess != null) {<a name="line.544"></a>
-<span class="sourceLineNo">545</span>                        for (PotentialContactData data : potentialContactsOnMissionSuccess) {<a name="line.545"></a>
-<span class="sourceLineNo">546</span>                                data.probability = p;<a name="line.546"></a>
-<span class="sourceLineNo">547</span>                        }<a name="line.547"></a>
-<span class="sourceLineNo">548</span>                }<a name="line.548"></a>
-<span class="sourceLineNo">549</span>                <a name="line.549"></a>
-<span class="sourceLineNo">550</span>                AddRemoveCommodity.addCreditsLossText(cost, dialog.getTextPanel());<a name="line.550"></a>
-<span class="sourceLineNo">551</span>                Global.getSector().getPlayerFleet().getCargo().getCredits().subtract(cost);<a name="line.551"></a>
-<span class="sourceLineNo">552</span>                adjustRep(dialog.getTextPanel(), null, RepActions.MISSION_SUCCESS);<a name="line.552"></a>
-<span class="sourceLineNo">553</span>                addPotentialContacts(dialog);<a name="line.553"></a>
-<span class="sourceLineNo">554</span>                <a name="line.554"></a>
-<span class="sourceLineNo">555</span>                ships = null;<a name="line.555"></a>
-<span class="sourceLineNo">556</span>                fighters = null;<a name="line.556"></a>
-<span class="sourceLineNo">557</span>                weapons = null;<a name="line.557"></a>
-<span class="sourceLineNo">558</span>        }<a name="line.558"></a>
-<span class="sourceLineNo">559</span>        <a name="line.559"></a>
-<span class="sourceLineNo">560</span><a name="line.560"></a>
-<span class="sourceLineNo">561</span>        @Override<a name="line.561"></a>
-<span class="sourceLineNo">562</span>        public void setCurrentStage(Object next, InteractionDialogAPI dialog, Map&lt;String, MemoryAPI&gt; memoryMap) {<a name="line.562"></a>
-<span class="sourceLineNo">563</span>                super.setCurrentStage(next, dialog, memoryMap);<a name="line.563"></a>
-<span class="sourceLineNo">564</span>                <a name="line.564"></a>
-<span class="sourceLineNo">565</span>                if (currentStage == Stage.DELIVERED) {<a name="line.565"></a>
-<span class="sourceLineNo">566</span>                        StoragePlugin plugin = (StoragePlugin) Misc.getStorage(getPerson().getMarket());<a name="line.566"></a>
-<span class="sourceLineNo">567</span>                        if (plugin == null) return;<a name="line.567"></a>
-<span class="sourceLineNo">568</span>                        plugin.setPlayerPaidToUnlock(true);<a name="line.568"></a>
-<span class="sourceLineNo">569</span>                        <a name="line.569"></a>
-<span class="sourceLineNo">570</span>                        CargoAPI cargo = plugin.getCargo();<a name="line.570"></a>
-<span class="sourceLineNo">571</span>                        for (CargoAPI curr : data.data.values()) {<a name="line.571"></a>
-<span class="sourceLineNo">572</span>                                cargo.addAll(curr, true);<a name="line.572"></a>
-<span class="sourceLineNo">573</span>                        }<a name="line.573"></a>
-<span class="sourceLineNo">574</span>                        <a name="line.574"></a>
-<span class="sourceLineNo">575</span>                        //endSuccess(dialog, memoryMap);<a name="line.575"></a>
-<span class="sourceLineNo">576</span>                        <a name="line.576"></a>
-<span class="sourceLineNo">577</span>                        if (armsDealer &amp;&amp; rollProbability(ARMS_DEALER_PROB_PATROL_AFTER)) {<a name="line.577"></a>
-<span class="sourceLineNo">578</span>                                PersonAPI person = getPerson();<a name="line.578"></a>
-<span class="sourceLineNo">579</span>                                if (person == null || person.getMarket() == null) return;<a name="line.579"></a>
-<span class="sourceLineNo">580</span>                                String patrolFaction = person.getMarket().getFactionId();<a name="line.580"></a>
-<span class="sourceLineNo">581</span>                                if (patrolFaction.equals(person.getFaction().getId()) || <a name="line.581"></a>
-<span class="sourceLineNo">582</span>                                                Misc.isPirateFaction(person.getMarket().getFaction()) ||<a name="line.582"></a>
-<span class="sourceLineNo">583</span>                                                Misc.isDecentralized(person.getMarket().getFaction()) ||<a name="line.583"></a>
-<span class="sourceLineNo">584</span>                                                patrolFaction.equals(Factions.PLAYER)) {<a name="line.584"></a>
-<span class="sourceLineNo">585</span>                                        return;<a name="line.585"></a>
-<span class="sourceLineNo">586</span>                                }<a name="line.586"></a>
-<span class="sourceLineNo">587</span>                                <a name="line.587"></a>
-<span class="sourceLineNo">588</span>                                DelayedFleetEncounter e = new DelayedFleetEncounter(genRandom, getMissionId());<a name="line.588"></a>
-<span class="sourceLineNo">589</span>                                e.setDelayMedium();<a name="line.589"></a>
-<span class="sourceLineNo">590</span>                                e.setLocationCoreOnly(true, patrolFaction);<a name="line.590"></a>
-<span class="sourceLineNo">591</span>                                e.beginCreate();<a name="line.591"></a>
-<span class="sourceLineNo">592</span>                                e.triggerCreateFleet(FleetSize.LARGE, FleetQuality.DEFAULT, patrolFaction, FleetTypes.PATROL_LARGE, new Vector2f());<a name="line.592"></a>
-<span class="sourceLineNo">593</span>                                e.setFleetWantsThing(patrolFaction, <a name="line.593"></a>
-<span class="sourceLineNo">594</span>                                                "information regarding the arms dealer", "it",<a name="line.594"></a>
-<span class="sourceLineNo">595</span>                                                "information concerning the activities of known arms dealer, " + person.getNameString(),<a name="line.595"></a>
-<span class="sourceLineNo">596</span>                                                getRoundNumber(cost / 2),<a name="line.596"></a>
-<span class="sourceLineNo">597</span>                                                false, ComplicationRepImpact.FULL,<a name="line.597"></a>
-<span class="sourceLineNo">598</span>                                                DelayedFleetEncounter.TRIGGER_REP_LOSS_HIGH, getPerson());<a name="line.598"></a>
-<span class="sourceLineNo">599</span>                                e.triggerSetAdjustStrengthBasedOnQuality(true, getQuality());<a name="line.599"></a>
-<span class="sourceLineNo">600</span>                                e.triggerSetPatrol();<a name="line.600"></a>
-<span class="sourceLineNo">601</span>                                e.triggerSetStandardAggroInterceptFlags();<a name="line.601"></a>
-<span class="sourceLineNo">602</span>                                e.endCreate();<a name="line.602"></a>
-<span class="sourceLineNo">603</span>                        }<a name="line.603"></a>
-<span class="sourceLineNo">604</span>                }<a name="line.604"></a>
-<span class="sourceLineNo">605</span>        }<a name="line.605"></a>
-<span class="sourceLineNo">606</span>        <a name="line.606"></a>
+<span class="sourceLineNo">487</span>                        <a name="line.487"></a>
+<span class="sourceLineNo">488</span>                } else if (currentStage == Stage.DELIVERED) {<a name="line.488"></a>
+<span class="sourceLineNo">489</span>                        float elapsed = getElapsedInCurrentStage();<a name="line.489"></a>
+<span class="sourceLineNo">490</span>                        int d = (int) Math.round(elapsed);<a name="line.490"></a>
+<span class="sourceLineNo">491</span>                        LabelAPI label = info.addPara("The order was delivered to storage " + market.getOnOrAt() + " " + market.getName() + <a name="line.491"></a>
+<span class="sourceLineNo">492</span>                                        " %s " + getDayOrDays(d) + " ago.", opad,<a name="line.492"></a>
+<span class="sourceLineNo">493</span>                                        Misc.getHighlightColor(), "" + d);<a name="line.493"></a>
+<span class="sourceLineNo">494</span>                        label.setHighlight(market.getName(), "" + d);<a name="line.494"></a>
+<span class="sourceLineNo">495</span>                        label.setHighlightColors(market.getFaction().getBaseUIColor(), h);<a name="line.495"></a>
+<span class="sourceLineNo">496</span>                        <a name="line.496"></a>
+<span class="sourceLineNo">497</span>                        showCargoContents(info, width, height);<a name="line.497"></a>
+<span class="sourceLineNo">498</span>                        addDeleteButton(info, width);<a name="line.498"></a>
+<span class="sourceLineNo">499</span>                } else if (currentStage == Stage.FAILED) {<a name="line.499"></a>
+<span class="sourceLineNo">500</span>                        if (market.hasCondition(Conditions.DECIVILIZED)) {<a name="line.500"></a>
+<span class="sourceLineNo">501</span>                                info.addPara("This order will not be completed because %s" + <a name="line.501"></a>
+<span class="sourceLineNo">502</span>                                                " has decivilized.", opad,<a name="line.502"></a>
+<span class="sourceLineNo">503</span>                                                faction.getBaseUIColor(), market.getName());<a name="line.503"></a>
+<span class="sourceLineNo">504</span>                        } else {<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                                info.addPara("You've learned that this order will not be completed.", opad);<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                        }<a name="line.506"></a>
+<span class="sourceLineNo">507</span>                }<a name="line.507"></a>
+<span class="sourceLineNo">508</span>        }<a name="line.508"></a>
+<span class="sourceLineNo">509</span><a name="line.509"></a>
+<span class="sourceLineNo">510</span>        @Override<a name="line.510"></a>
+<span class="sourceLineNo">511</span>        public boolean addNextStepText(TooltipMakerAPI info, Color tc, float pad) {<a name="line.511"></a>
+<span class="sourceLineNo">512</span>                Color h = Misc.getHighlightColor();<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                if (currentStage == Stage.WAITING) {<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                        float elapsed = getElapsedInCurrentStage();<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                        addDays(info, "until delivery", PROD_DAYS - elapsed, tc, pad);<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                        return true;<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                } else if (currentStage == Stage.DELIVERED) {<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                        info.addPara("Delivered to %s", pad, tc, market.getFaction().getBaseUIColor(), market.getName());<a name="line.518"></a>
+<span class="sourceLineNo">519</span>                        return true;<a name="line.519"></a>
+<span class="sourceLineNo">520</span>                }<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                return false;<a name="line.521"></a>
+<span class="sourceLineNo">522</span>        }       <a name="line.522"></a>
+<span class="sourceLineNo">523</span>        <a name="line.523"></a>
+<span class="sourceLineNo">524</span>        @Override<a name="line.524"></a>
+<span class="sourceLineNo">525</span>        public String getBaseName() {<a name="line.525"></a>
+<span class="sourceLineNo">526</span>                return "Custom Production Order";<a name="line.526"></a>
+<span class="sourceLineNo">527</span>        }<a name="line.527"></a>
+<span class="sourceLineNo">528</span>        <a name="line.528"></a>
+<span class="sourceLineNo">529</span>        protected String getMissionTypeNoun() {<a name="line.529"></a>
+<span class="sourceLineNo">530</span>                return "contract";<a name="line.530"></a>
+<span class="sourceLineNo">531</span>        }<a name="line.531"></a>
+<span class="sourceLineNo">532</span><a name="line.532"></a>
+<span class="sourceLineNo">533</span>        @Override<a name="line.533"></a>
+<span class="sourceLineNo">534</span>        public SectorEntityToken getMapLocation(SectorMapAPI map) {<a name="line.534"></a>
+<span class="sourceLineNo">535</span>                return market.getPrimaryEntity();<a name="line.535"></a>
+<span class="sourceLineNo">536</span>        }<a name="line.536"></a>
+<span class="sourceLineNo">537</span>        <a name="line.537"></a>
+<span class="sourceLineNo">538</span>        @Override<a name="line.538"></a>
+<span class="sourceLineNo">539</span>        public void acceptImpl(InteractionDialogAPI dialog, Map&lt;String, MemoryAPI&gt; memoryMap) {<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                float f = (float) cost / (float) maxCapacity;<a name="line.540"></a>
+<span class="sourceLineNo">541</span>                float p = ContactIntel.DEFAULT_POTENTIAL_CONTACT_PROB * f;<a name="line.541"></a>
+<span class="sourceLineNo">542</span>                if (armsDealer) {<a name="line.542"></a>
+<span class="sourceLineNo">543</span>                        p = PROB_ARMS_DEALER_IS_CONTACT * f;<a name="line.543"></a>
+<span class="sourceLineNo">544</span>                }<a name="line.544"></a>
+<span class="sourceLineNo">545</span>                if (potentialContactsOnMissionSuccess != null) {<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                        for (PotentialContactData data : potentialContactsOnMissionSuccess) {<a name="line.546"></a>
+<span class="sourceLineNo">547</span>                                data.probability = p;<a name="line.547"></a>
+<span class="sourceLineNo">548</span>                        }<a name="line.548"></a>
+<span class="sourceLineNo">549</span>                }<a name="line.549"></a>
+<span class="sourceLineNo">550</span>                <a name="line.550"></a>
+<span class="sourceLineNo">551</span>                AddRemoveCommodity.addCreditsLossText(cost, dialog.getTextPanel());<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                Global.getSector().getPlayerFleet().getCargo().getCredits().subtract(cost);<a name="line.552"></a>
+<span class="sourceLineNo">553</span>                adjustRep(dialog.getTextPanel(), null, RepActions.MISSION_SUCCESS);<a name="line.553"></a>
+<span class="sourceLineNo">554</span>                addPotentialContacts(dialog);<a name="line.554"></a>
+<span class="sourceLineNo">555</span>                <a name="line.555"></a>
+<span class="sourceLineNo">556</span>                ships = null;<a name="line.556"></a>
+<span class="sourceLineNo">557</span>                fighters = null;<a name="line.557"></a>
+<span class="sourceLineNo">558</span>                weapons = null;<a name="line.558"></a>
+<span class="sourceLineNo">559</span>        }<a name="line.559"></a>
+<span class="sourceLineNo">560</span>        <a name="line.560"></a>
+<span class="sourceLineNo">561</span><a name="line.561"></a>
+<span class="sourceLineNo">562</span>        @Override<a name="line.562"></a>
+<span class="sourceLineNo">563</span>        public void setCurrentStage(Object next, InteractionDialogAPI dialog, Map&lt;String, MemoryAPI&gt; memoryMap) {<a name="line.563"></a>
+<span class="sourceLineNo">564</span>                super.setCurrentStage(next, dialog, memoryMap);<a name="line.564"></a>
+<span class="sourceLineNo">565</span>                <a name="line.565"></a>
+<span class="sourceLineNo">566</span>                if (currentStage == Stage.DELIVERED) {<a name="line.566"></a>
+<span class="sourceLineNo">567</span>                        StoragePlugin plugin = (StoragePlugin) Misc.getStorage(getPerson().getMarket());<a name="line.567"></a>
+<span class="sourceLineNo">568</span>                        if (plugin == null) return;<a name="line.568"></a>
+<span class="sourceLineNo">569</span>                        plugin.setPlayerPaidToUnlock(true);<a name="line.569"></a>
+<span class="sourceLineNo">570</span>                        <a name="line.570"></a>
+<span class="sourceLineNo">571</span>                        CargoAPI cargo = plugin.getCargo();<a name="line.571"></a>
+<span class="sourceLineNo">572</span>                        for (CargoAPI curr : data.data.values()) {<a name="line.572"></a>
+<span class="sourceLineNo">573</span>                                cargo.addAll(curr, true);<a name="line.573"></a>
+<span class="sourceLineNo">574</span>                        }<a name="line.574"></a>
+<span class="sourceLineNo">575</span>                        <a name="line.575"></a>
+<span class="sourceLineNo">576</span>                        //endSuccess(dialog, memoryMap);<a name="line.576"></a>
+<span class="sourceLineNo">577</span>                        <a name="line.577"></a>
+<span class="sourceLineNo">578</span>                        if (armsDealer &amp;&amp; rollProbability(ARMS_DEALER_PROB_PATROL_AFTER)) {<a name="line.578"></a>
+<span class="sourceLineNo">579</span>                                PersonAPI person = getPerson();<a name="line.579"></a>
+<span class="sourceLineNo">580</span>                                if (person == null || person.getMarket() == null) return;<a name="line.580"></a>
+<span class="sourceLineNo">581</span>                                String patrolFaction = person.getMarket().getFactionId();<a name="line.581"></a>
+<span class="sourceLineNo">582</span>                                if (patrolFaction.equals(person.getFaction().getId()) || <a name="line.582"></a>
+<span class="sourceLineNo">583</span>                                                Misc.isPirateFaction(person.getMarket().getFaction()) ||<a name="line.583"></a>
+<span class="sourceLineNo">584</span>                                                Misc.isDecentralized(person.getMarket().getFaction()) ||<a name="line.584"></a>
+<span class="sourceLineNo">585</span>                                                patrolFaction.equals(Factions.PLAYER)) {<a name="line.585"></a>
+<span class="sourceLineNo">586</span>                                        return;<a name="line.586"></a>
+<span class="sourceLineNo">587</span>                                }<a name="line.587"></a>
+<span class="sourceLineNo">588</span>                                <a name="line.588"></a>
+<span class="sourceLineNo">589</span>                                DelayedFleetEncounter e = new DelayedFleetEncounter(genRandom, getMissionId());<a name="line.589"></a>
+<span class="sourceLineNo">590</span>                                e.setDelayMedium();<a name="line.590"></a>
+<span class="sourceLineNo">591</span>                                e.setLocationCoreOnly(true, patrolFaction);<a name="line.591"></a>
+<span class="sourceLineNo">592</span>                                e.beginCreate();<a name="line.592"></a>
+<span class="sourceLineNo">593</span>                                e.triggerCreateFleet(FleetSize.LARGE, FleetQuality.DEFAULT, patrolFaction, FleetTypes.PATROL_LARGE, new Vector2f());<a name="line.593"></a>
+<span class="sourceLineNo">594</span>                                e.setFleetWantsThing(patrolFaction, <a name="line.594"></a>
+<span class="sourceLineNo">595</span>                                                "information regarding the arms dealer", "it",<a name="line.595"></a>
+<span class="sourceLineNo">596</span>                                                "information concerning the activities of known arms dealer, " + person.getNameString(),<a name="line.596"></a>
+<span class="sourceLineNo">597</span>                                                getRoundNumber(cost / 2),<a name="line.597"></a>
+<span class="sourceLineNo">598</span>                                                false, ComplicationRepImpact.FULL,<a name="line.598"></a>
+<span class="sourceLineNo">599</span>                                                DelayedFleetEncounter.TRIGGER_REP_LOSS_HIGH, getPerson());<a name="line.599"></a>
+<span class="sourceLineNo">600</span>                                e.triggerSetAdjustStrengthBasedOnQuality(true, getQuality());<a name="line.600"></a>
+<span class="sourceLineNo">601</span>                                e.triggerSetPatrol();<a name="line.601"></a>
+<span class="sourceLineNo">602</span>                                e.triggerSetStandardAggroInterceptFlags();<a name="line.602"></a>
+<span class="sourceLineNo">603</span>                                e.endCreate();<a name="line.603"></a>
+<span class="sourceLineNo">604</span>                        }<a name="line.604"></a>
+<span class="sourceLineNo">605</span>                }<a name="line.605"></a>
+<span class="sourceLineNo">606</span>        }<a name="line.606"></a>
 <span class="sourceLineNo">607</span>        <a name="line.607"></a>
-<span class="sourceLineNo">608</span>        @Override<a name="line.608"></a>
-<span class="sourceLineNo">609</span>        protected boolean callAction(final String action, final String ruleId, final InteractionDialogAPI dialog, <a name="line.609"></a>
-<span class="sourceLineNo">610</span>                                                                 final List&lt;Token&gt; params,<a name="line.610"></a>
-<span class="sourceLineNo">611</span>                                                                 final Map&lt;String, MemoryAPI&gt; memoryMap) {<a name="line.611"></a>
-<span class="sourceLineNo">612</span>                if ("pickPlayerBP".equals(action)) {<a name="line.612"></a>
-<span class="sourceLineNo">613</span>                        dialog.showCustomProductionPicker(new BaseCustomProductionPickerDelegateImpl() {<a name="line.613"></a>
-<span class="sourceLineNo">614</span>                                @Override<a name="line.614"></a>
-<span class="sourceLineNo">615</span>                                public float getCostMult() {<a name="line.615"></a>
-<span class="sourceLineNo">616</span>                                        return costMult;<a name="line.616"></a>
-<span class="sourceLineNo">617</span>                                }<a name="line.617"></a>
-<span class="sourceLineNo">618</span>                                @Override<a name="line.618"></a>
-<span class="sourceLineNo">619</span>                                public float getMaximumValue() {<a name="line.619"></a>
-<span class="sourceLineNo">620</span>                                        return maxCapacity;<a name="line.620"></a>
-<span class="sourceLineNo">621</span>                                }<a name="line.621"></a>
-<span class="sourceLineNo">622</span>                                @Override<a name="line.622"></a>
-<span class="sourceLineNo">623</span>                                public void notifyProductionSelected(FactionProductionAPI production) {<a name="line.623"></a>
-<span class="sourceLineNo">624</span>                                        convertProdToCargo(production);<a name="line.624"></a>
-<span class="sourceLineNo">625</span>                                        FireBest.fire(null, dialog, memoryMap, "CPCBlueprintsPicked");<a name="line.625"></a>
-<span class="sourceLineNo">626</span>                                }<a name="line.626"></a>
-<span class="sourceLineNo">627</span>                        });<a name="line.627"></a>
-<span class="sourceLineNo">628</span>                        return true;<a name="line.628"></a>
-<span class="sourceLineNo">629</span>                }<a name="line.629"></a>
-<span class="sourceLineNo">630</span>                if ("pickContactBP".equals(action)) {<a name="line.630"></a>
-<span class="sourceLineNo">631</span>                        dialog.showCustomProductionPicker(new BaseCustomProductionPickerDelegateImpl() {<a name="line.631"></a>
-<span class="sourceLineNo">632</span>                                @Override<a name="line.632"></a>
-<span class="sourceLineNo">633</span>                                public Set&lt;String&gt; getAvailableFighters() {<a name="line.633"></a>
-<span class="sourceLineNo">634</span>                                        return fighters;<a name="line.634"></a>
-<span class="sourceLineNo">635</span>                                }<a name="line.635"></a>
-<span class="sourceLineNo">636</span>                                @Override<a name="line.636"></a>
-<span class="sourceLineNo">637</span>                                public Set&lt;String&gt; getAvailableShipHulls() {<a name="line.637"></a>
-<span class="sourceLineNo">638</span>                                        return ships;<a name="line.638"></a>
-<span class="sourceLineNo">639</span>                                }<a name="line.639"></a>
-<span class="sourceLineNo">640</span>                                @Override<a name="line.640"></a>
-<span class="sourceLineNo">641</span>                                public Set&lt;String&gt; getAvailableWeapons() {<a name="line.641"></a>
-<span class="sourceLineNo">642</span>                                        return weapons;<a name="line.642"></a>
-<span class="sourceLineNo">643</span>                                }<a name="line.643"></a>
-<span class="sourceLineNo">644</span>                                @Override<a name="line.644"></a>
-<span class="sourceLineNo">645</span>                                public float getCostMult() {<a name="line.645"></a>
-<span class="sourceLineNo">646</span>                                        return costMult;<a name="line.646"></a>
-<span class="sourceLineNo">647</span>                                }<a name="line.647"></a>
-<span class="sourceLineNo">648</span>                                @Override<a name="line.648"></a>
-<span class="sourceLineNo">649</span>                                public float getMaximumValue() {<a name="line.649"></a>
-<span class="sourceLineNo">650</span>                                        return maxCapacity;<a name="line.650"></a>
-<span class="sourceLineNo">651</span>                                }<a name="line.651"></a>
-<span class="sourceLineNo">652</span>                                @Override<a name="line.652"></a>
-<span class="sourceLineNo">653</span>                                public void notifyProductionSelected(FactionProductionAPI production) {<a name="line.653"></a>
-<span class="sourceLineNo">654</span>                                        convertProdToCargo(production);<a name="line.654"></a>
-<span class="sourceLineNo">655</span>                                        FireBest.fire(null, dialog, memoryMap, "CPCBlueprintsPicked");<a name="line.655"></a>
-<span class="sourceLineNo">656</span>                                }<a name="line.656"></a>
-<span class="sourceLineNo">657</span>                        });<a name="line.657"></a>
-<span class="sourceLineNo">658</span>                        return true;<a name="line.658"></a>
-<span class="sourceLineNo">659</span>                }<a name="line.659"></a>
-<span class="sourceLineNo">660</span>                <a name="line.660"></a>
-<span class="sourceLineNo">661</span>                return super.callAction(action, ruleId, dialog, params, memoryMap);<a name="line.661"></a>
-<span class="sourceLineNo">662</span>        }<a name="line.662"></a>
-<span class="sourceLineNo">663</span>        <a name="line.663"></a>
+<span class="sourceLineNo">608</span>        <a name="line.608"></a>
+<span class="sourceLineNo">609</span>        @Override<a name="line.609"></a>
+<span class="sourceLineNo">610</span>        protected boolean callAction(final String action, final String ruleId, final InteractionDialogAPI dialog, <a name="line.610"></a>
+<span class="sourceLineNo">611</span>                                                                 final List&lt;Token&gt; params,<a name="line.611"></a>
+<span class="sourceLineNo">612</span>                                                                 final Map&lt;String, MemoryAPI&gt; memoryMap) {<a name="line.612"></a>
+<span class="sourceLineNo">613</span>                if ("pickPlayerBP".equals(action)) {<a name="line.613"></a>
+<span class="sourceLineNo">614</span>                        dialog.showCustomProductionPicker(new BaseCustomProductionPickerDelegateImpl() {<a name="line.614"></a>
+<span class="sourceLineNo">615</span>                                @Override<a name="line.615"></a>
+<span class="sourceLineNo">616</span>                                public float getCostMult() {<a name="line.616"></a>
+<span class="sourceLineNo">617</span>                                        return costMult;<a name="line.617"></a>
+<span class="sourceLineNo">618</span>                                }<a name="line.618"></a>
+<span class="sourceLineNo">619</span>                                @Override<a name="line.619"></a>
+<span class="sourceLineNo">620</span>                                public float getMaximumValue() {<a name="line.620"></a>
+<span class="sourceLineNo">621</span>                                        return maxCapacity;<a name="line.621"></a>
+<span class="sourceLineNo">622</span>                                }<a name="line.622"></a>
+<span class="sourceLineNo">623</span>                                @Override<a name="line.623"></a>
+<span class="sourceLineNo">624</span>                                public void notifyProductionSelected(FactionProductionAPI production) {<a name="line.624"></a>
+<span class="sourceLineNo">625</span>                                        convertProdToCargo(production);<a name="line.625"></a>
+<span class="sourceLineNo">626</span>                                        FireBest.fire(null, dialog, memoryMap, "CPCBlueprintsPicked");<a name="line.626"></a>
+<span class="sourceLineNo">627</span>                                }<a name="line.627"></a>
+<span class="sourceLineNo">628</span>                        });<a name="line.628"></a>
+<span class="sourceLineNo">629</span>                        return true;<a name="line.629"></a>
+<span class="sourceLineNo">630</span>                }<a name="line.630"></a>
+<span class="sourceLineNo">631</span>                if ("pickContactBP".equals(action)) {<a name="line.631"></a>
+<span class="sourceLineNo">632</span>                        dialog.showCustomProductionPicker(new BaseCustomProductionPickerDelegateImpl() {<a name="line.632"></a>
+<span class="sourceLineNo">633</span>                                @Override<a name="line.633"></a>
+<span class="sourceLineNo">634</span>                                public Set&lt;String&gt; getAvailableFighters() {<a name="line.634"></a>
+<span class="sourceLineNo">635</span>                                        return fighters;<a name="line.635"></a>
+<span class="sourceLineNo">636</span>                                }<a name="line.636"></a>
+<span class="sourceLineNo">637</span>                                @Override<a name="line.637"></a>
+<span class="sourceLineNo">638</span>                                public Set&lt;String&gt; getAvailableShipHulls() {<a name="line.638"></a>
+<span class="sourceLineNo">639</span>                                        return ships;<a name="line.639"></a>
+<span class="sourceLineNo">640</span>                                }<a name="line.640"></a>
+<span class="sourceLineNo">641</span>                                @Override<a name="line.641"></a>
+<span class="sourceLineNo">642</span>                                public Set&lt;String&gt; getAvailableWeapons() {<a name="line.642"></a>
+<span class="sourceLineNo">643</span>                                        return weapons;<a name="line.643"></a>
+<span class="sourceLineNo">644</span>                                }<a name="line.644"></a>
+<span class="sourceLineNo">645</span>                                @Override<a name="line.645"></a>
+<span class="sourceLineNo">646</span>                                public float getCostMult() {<a name="line.646"></a>
+<span class="sourceLineNo">647</span>                                        return costMult;<a name="line.647"></a>
+<span class="sourceLineNo">648</span>                                }<a name="line.648"></a>
+<span class="sourceLineNo">649</span>                                @Override<a name="line.649"></a>
+<span class="sourceLineNo">650</span>                                public float getMaximumValue() {<a name="line.650"></a>
+<span class="sourceLineNo">651</span>                                        return maxCapacity;<a name="line.651"></a>
+<span class="sourceLineNo">652</span>                                }<a name="line.652"></a>
+<span class="sourceLineNo">653</span>                                @Override<a name="line.653"></a>
+<span class="sourceLineNo">654</span>                                public void notifyProductionSelected(FactionProductionAPI production) {<a name="line.654"></a>
+<span class="sourceLineNo">655</span>                                        convertProdToCargo(production);<a name="line.655"></a>
+<span class="sourceLineNo">656</span>                                        FireBest.fire(null, dialog, memoryMap, "CPCBlueprintsPicked");<a name="line.656"></a>
+<span class="sourceLineNo">657</span>                                }<a name="line.657"></a>
+<span class="sourceLineNo">658</span>                        });<a name="line.658"></a>
+<span class="sourceLineNo">659</span>                        return true;<a name="line.659"></a>
+<span class="sourceLineNo">660</span>                }<a name="line.660"></a>
+<span class="sourceLineNo">661</span>                <a name="line.661"></a>
+<span class="sourceLineNo">662</span>                return super.callAction(action, ruleId, dialog, params, memoryMap);<a name="line.662"></a>
+<span class="sourceLineNo">663</span>        }<a name="line.663"></a>
 <span class="sourceLineNo">664</span>        <a name="line.664"></a>
-<span class="sourceLineNo">665</span>        protected void convertProdToCargo(FactionProductionAPI prod) {<a name="line.665"></a>
-<span class="sourceLineNo">666</span>                cost = prod.getTotalCurrentCost();<a name="line.666"></a>
-<span class="sourceLineNo">667</span>                data = new ProductionData();<a name="line.667"></a>
-<span class="sourceLineNo">668</span>                CargoAPI cargo = data.getCargo("Order manifest");<a name="line.668"></a>
-<span class="sourceLineNo">669</span>                <a name="line.669"></a>
-<span class="sourceLineNo">670</span>                float quality = ShipQuality.getShipQuality(market, market.getFactionId());<a name="line.670"></a>
-<span class="sourceLineNo">671</span>                if (armsDealer) {<a name="line.671"></a>
-<span class="sourceLineNo">672</span>                        quality = Math.max(quality, 1.5f); // high enough (with some margin, at that) for no d-mods<a name="line.672"></a>
-<span class="sourceLineNo">673</span>                }<a name="line.673"></a>
-<span class="sourceLineNo">674</span><a name="line.674"></a>
-<span class="sourceLineNo">675</span>                CampaignFleetAPI ships = Global.getFactory().createEmptyFleet(market.getFactionId(), "temp", true);<a name="line.675"></a>
-<span class="sourceLineNo">676</span>                ships.setCommander(Global.getSector().getPlayerPerson());<a name="line.676"></a>
-<span class="sourceLineNo">677</span>                ships.getFleetData().setShipNameRandom(genRandom);<a name="line.677"></a>
-<span class="sourceLineNo">678</span>                DefaultFleetInflaterParams p = new DefaultFleetInflaterParams();<a name="line.678"></a>
-<span class="sourceLineNo">679</span>                p.quality = quality;<a name="line.679"></a>
-<span class="sourceLineNo">680</span>                p.mode = ShipPickMode.PRIORITY_THEN_ALL;<a name="line.680"></a>
-<span class="sourceLineNo">681</span>                p.persistent = false;<a name="line.681"></a>
-<span class="sourceLineNo">682</span>                p.seed = genRandom.nextLong();<a name="line.682"></a>
-<span class="sourceLineNo">683</span>                p.timestamp = null;<a name="line.683"></a>
-<span class="sourceLineNo">684</span>                <a name="line.684"></a>
-<span class="sourceLineNo">685</span>                FleetInflater inflater = Misc.getInflater(ships, p);<a name="line.685"></a>
-<span class="sourceLineNo">686</span>                ships.setInflater(inflater);<a name="line.686"></a>
-<span class="sourceLineNo">687</span>                <a name="line.687"></a>
-<span class="sourceLineNo">688</span>                for (ItemInProductionAPI item : prod.getCurrent()) {<a name="line.688"></a>
-<span class="sourceLineNo">689</span>                        int count = item.getQuantity();<a name="line.689"></a>
-<span class="sourceLineNo">690</span>                                <a name="line.690"></a>
-<span class="sourceLineNo">691</span>                        if (item.getType() == ProductionItemType.SHIP) {<a name="line.691"></a>
-<span class="sourceLineNo">692</span>                                for (int i = 0; i &lt; count; i++) {<a name="line.692"></a>
-<span class="sourceLineNo">693</span>                                        ships.getFleetData().addFleetMember(item.getSpecId() + "_Hull");<a name="line.693"></a>
-<span class="sourceLineNo">694</span>                                }<a name="line.694"></a>
-<span class="sourceLineNo">695</span>                        } else if (item.getType() == ProductionItemType.FIGHTER) {<a name="line.695"></a>
-<span class="sourceLineNo">696</span>                                cargo.addFighters(item.getSpecId(), count);<a name="line.696"></a>
-<span class="sourceLineNo">697</span>                        } else if (item.getType() == ProductionItemType.WEAPON) {<a name="line.697"></a>
-<span class="sourceLineNo">698</span>                                cargo.addWeapons(item.getSpecId(), count);<a name="line.698"></a>
-<span class="sourceLineNo">699</span>                        }<a name="line.699"></a>
-<span class="sourceLineNo">700</span>                }<a name="line.700"></a>
-<span class="sourceLineNo">701</span>                <a name="line.701"></a>
-<span class="sourceLineNo">702</span>                // so that it adds d-mods<a name="line.702"></a>
-<span class="sourceLineNo">703</span>                ships.inflateIfNeeded();<a name="line.703"></a>
-<span class="sourceLineNo">704</span>                for (FleetMemberAPI member : ships.getFleetData().getMembersListCopy()) {<a name="line.704"></a>
-<span class="sourceLineNo">705</span>                        // it should be due to the inflateIfNeeded() call, this is just a safety check<a name="line.705"></a>
-<span class="sourceLineNo">706</span>                        if (member.getVariant().getSource() == VariantSource.REFIT) {<a name="line.706"></a>
-<span class="sourceLineNo">707</span>                                member.getVariant().clear();<a name="line.707"></a>
-<span class="sourceLineNo">708</span>                        }<a name="line.708"></a>
-<span class="sourceLineNo">709</span>                        cargo.getMothballedShips().addFleetMember(member);<a name="line.709"></a>
-<span class="sourceLineNo">710</span>                }<a name="line.710"></a>
-<span class="sourceLineNo">711</span>        }<a name="line.711"></a>
-<span class="sourceLineNo">712</span>        <a name="line.712"></a>
-<span class="sourceLineNo">713</span>        public void showCargoContents(TooltipMakerAPI info, float width, float height) {<a name="line.713"></a>
-<span class="sourceLineNo">714</span>                if (data == null) return;<a name="line.714"></a>
-<span class="sourceLineNo">715</span>                <a name="line.715"></a>
-<span class="sourceLineNo">716</span>                Color h = Misc.getHighlightColor();<a name="line.716"></a>
-<span class="sourceLineNo">717</span>                Color g = Misc.getGrayColor();<a name="line.717"></a>
-<span class="sourceLineNo">718</span>                Color tc = Misc.getTextColor();<a name="line.718"></a>
-<span class="sourceLineNo">719</span>                float pad = 3f;<a name="line.719"></a>
-<span class="sourceLineNo">720</span>                float small = 3f;<a name="line.720"></a>
-<span class="sourceLineNo">721</span>                float opad = 10f;<a name="line.721"></a>
-<span class="sourceLineNo">722</span><a name="line.722"></a>
-<span class="sourceLineNo">723</span>                List&lt;String&gt; keys = new ArrayList&lt;String&gt;(data.data.keySet());<a name="line.723"></a>
-<span class="sourceLineNo">724</span>                Collections.sort(keys, new Comparator&lt;String&gt;() {<a name="line.724"></a>
-<span class="sourceLineNo">725</span>                        public int compare(String o1, String o2) {<a name="line.725"></a>
-<span class="sourceLineNo">726</span>                                return o1.compareTo(o2);<a name="line.726"></a>
-<span class="sourceLineNo">727</span>                        }<a name="line.727"></a>
-<span class="sourceLineNo">728</span>                });<a name="line.728"></a>
-<span class="sourceLineNo">729</span>                <a name="line.729"></a>
-<span class="sourceLineNo">730</span>                for (String key : keys) {<a name="line.730"></a>
-<span class="sourceLineNo">731</span>                        CargoAPI cargo = data.data.get(key);<a name="line.731"></a>
-<span class="sourceLineNo">732</span>                        if (cargo.isEmpty() &amp;&amp; <a name="line.732"></a>
-<span class="sourceLineNo">733</span>                                        ((cargo.getMothballedShips() == null || <a name="line.733"></a>
-<span class="sourceLineNo">734</span>                                          cargo.getMothballedShips().getMembersListCopy().isEmpty()))) {<a name="line.734"></a>
-<span class="sourceLineNo">735</span>                                continue;<a name="line.735"></a>
-<span class="sourceLineNo">736</span>                        }<a name="line.736"></a>
-<span class="sourceLineNo">737</span>                <a name="line.737"></a>
-<span class="sourceLineNo">738</span>                        info.addSectionHeading(key, faction.getBaseUIColor(), faction.getDarkUIColor(), <a name="line.738"></a>
-<span class="sourceLineNo">739</span>                                                                   Alignment.MID, opad);<a name="line.739"></a>
-<span class="sourceLineNo">740</span>                        <a name="line.740"></a>
-<span class="sourceLineNo">741</span>                        if (!cargo.getStacksCopy().isEmpty()) {<a name="line.741"></a>
-<span class="sourceLineNo">742</span>                                info.addPara("Ship weapons and fighters:", opad);<a name="line.742"></a>
-<span class="sourceLineNo">743</span>                                info.showCargo(cargo, 20, true, opad);<a name="line.743"></a>
-<span class="sourceLineNo">744</span>                        }<a name="line.744"></a>
-<span class="sourceLineNo">745</span>                        <a name="line.745"></a>
-<span class="sourceLineNo">746</span>                        if (!cargo.getMothballedShips().getMembersListCopy().isEmpty()) {<a name="line.746"></a>
-<span class="sourceLineNo">747</span>                                CountingMap&lt;String&gt; counts = new CountingMap&lt;String&gt;();<a name="line.747"></a>
-<span class="sourceLineNo">748</span>                                for (FleetMemberAPI member : cargo.getMothballedShips().getMembersListCopy()) {<a name="line.748"></a>
-<span class="sourceLineNo">749</span>                                        counts.add(member.getVariant().getHullSpec().getHullName() + " " + member.getVariant().getDesignation());<a name="line.749"></a>
-<span class="sourceLineNo">750</span>                                }<a name="line.750"></a>
-<span class="sourceLineNo">751</span>                                <a name="line.751"></a>
-<span class="sourceLineNo">752</span>                                info.addPara("Ship hulls:", opad);<a name="line.752"></a>
-<span class="sourceLineNo">753</span>                                info.showShips(cargo.getMothballedShips().getMembersListCopy(), 20, true,<a name="line.753"></a>
-<span class="sourceLineNo">754</span>                                                           getCurrentStage() == Stage.WAITING, opad);<a name="line.754"></a>
-<span class="sourceLineNo">755</span>                        }<a name="line.755"></a>
-<span class="sourceLineNo">756</span>                }<a name="line.756"></a>
-<span class="sourceLineNo">757</span>        }<a name="line.757"></a>
-<span class="sourceLineNo">758</span>        <a name="line.758"></a>
-<span class="sourceLineNo">759</span>        public PersonImportance pickArmsDealerImportance() {<a name="line.759"></a>
-<span class="sourceLineNo">760</span>                WeightedRandomPicker&lt;PersonImportance&gt; picker = new WeightedRandomPicker&lt;PersonImportance&gt;(genRandom);<a name="line.760"></a>
-<span class="sourceLineNo">761</span>                <a name="line.761"></a>
-<span class="sourceLineNo">762</span>//              picker.add(PersonImportance.VERY_LOW, 10f);<a name="line.762"></a>
-<span class="sourceLineNo">763</span>//              picker.add(PersonImportance.LOW, 10f);<a name="line.763"></a>
-<span class="sourceLineNo">764</span>                picker.add(PersonImportance.MEDIUM, 10f);<a name="line.764"></a>
-<span class="sourceLineNo">765</span>                <a name="line.765"></a>
-<span class="sourceLineNo">766</span>//              int credits = (int) Global.getSector().getPlayerFleet().getCargo().getCredits().get();<a name="line.766"></a>
-<span class="sourceLineNo">767</span>//              if (credits &gt;= 200000) {<a name="line.767"></a>
-<span class="sourceLineNo">768</span>//                      picker.add(PersonImportance.MEDIUM, 10f);<a name="line.768"></a>
-<span class="sourceLineNo">769</span>//              }<a name="line.769"></a>
-<span class="sourceLineNo">770</span>//              if (credits &gt;= 1000000) {<a name="line.770"></a>
-<span class="sourceLineNo">771</span>//                      picker.add(PersonImportance.HIGH, 10f);<a name="line.771"></a>
-<span class="sourceLineNo">772</span>//              }<a name="line.772"></a>
-<span class="sourceLineNo">773</span>//              if (credits &gt;= 200000) {<a name="line.773"></a>
-<span class="sourceLineNo">774</span>//                      picker.add(PersonImportance.VERY_HIGH, 10f);<a name="line.774"></a>
-<span class="sourceLineNo">775</span>//              }<a name="line.775"></a>
-<span class="sourceLineNo">776</span>                <a name="line.776"></a>
-<span class="sourceLineNo">777</span>                float cycles = PirateBaseManager.getInstance().getDaysSinceStart() / 365f;<a name="line.777"></a>
-<span class="sourceLineNo">778</span>                if (cycles &gt; 1f) {<a name="line.778"></a>
-<span class="sourceLineNo">779</span>//                      picker.remove(PersonImportance.VERY_LOW);<a name="line.779"></a>
-<span class="sourceLineNo">780</span>//                      picker.add(PersonImportance.MEDIUM, 20f);<a name="line.780"></a>
-<span class="sourceLineNo">781</span>                        picker.add(PersonImportance.HIGH, 5f);<a name="line.781"></a>
-<span class="sourceLineNo">782</span>                }<a name="line.782"></a>
-<span class="sourceLineNo">783</span>                if (cycles &gt; 3f) {<a name="line.783"></a>
-<span class="sourceLineNo">784</span>//                      picker.remove(PersonImportance.LOW);<a name="line.784"></a>
-<span class="sourceLineNo">785</span>//                      picker.add(PersonImportance.HIGH, 10f);<a name="line.785"></a>
-<span class="sourceLineNo">786</span>                        picker.remove(PersonImportance.MEDIUM);<a name="line.786"></a>
-<span class="sourceLineNo">787</span>                        picker.add(PersonImportance.VERY_HIGH, 5f);<a name="line.787"></a>
-<span class="sourceLineNo">788</span>                }<a name="line.788"></a>
-<span class="sourceLineNo">789</span>                if (cycles &gt; 5f) {<a name="line.789"></a>
-<span class="sourceLineNo">790</span>                        //picker.add(PersonImportance.VERY_HIGH, 10f);<a name="line.790"></a>
-<span class="sourceLineNo">791</span>                        // always very high importance past a certain point, since the goal is to allow easier procurement<a name="line.791"></a>
-<span class="sourceLineNo">792</span>                        // of almost any "generally available" hull<a name="line.792"></a>
-<span class="sourceLineNo">793</span>                        return PersonImportance.VERY_HIGH;<a name="line.793"></a>
-<span class="sourceLineNo">794</span>                }<a name="line.794"></a>
-<span class="sourceLineNo">795</span>                <a name="line.795"></a>
-<span class="sourceLineNo">796</span>                return picker.pick();<a name="line.796"></a>
-<span class="sourceLineNo">797</span>        }<a name="line.797"></a>
-<span class="sourceLineNo">798</span>        <a name="line.798"></a>
-<span class="sourceLineNo">799</span>}<a name="line.799"></a>
-<span class="sourceLineNo">800</span><a name="line.800"></a>
+<span class="sourceLineNo">665</span>        <a name="line.665"></a>
+<span class="sourceLineNo">666</span>        protected void convertProdToCargo(FactionProductionAPI prod) {<a name="line.666"></a>
+<span class="sourceLineNo">667</span>                cost = prod.getTotalCurrentCost();<a name="line.667"></a>
+<span class="sourceLineNo">668</span>                data = new ProductionData();<a name="line.668"></a>
+<span class="sourceLineNo">669</span>                CargoAPI cargo = data.getCargo("Order manifest");<a name="line.669"></a>
+<span class="sourceLineNo">670</span>                <a name="line.670"></a>
+<span class="sourceLineNo">671</span>                float quality = ShipQuality.getShipQuality(market, market.getFactionId());<a name="line.671"></a>
+<span class="sourceLineNo">672</span>                if (armsDealer) {<a name="line.672"></a>
+<span class="sourceLineNo">673</span>                        quality = Math.max(quality, 1.5f); // high enough (with some margin, at that) for no d-mods<a name="line.673"></a>
+<span class="sourceLineNo">674</span>                }<a name="line.674"></a>
+<span class="sourceLineNo">675</span><a name="line.675"></a>
+<span class="sourceLineNo">676</span>                CampaignFleetAPI ships = Global.getFactory().createEmptyFleet(market.getFactionId(), "temp", true);<a name="line.676"></a>
+<span class="sourceLineNo">677</span>                ships.setCommander(Global.getSector().getPlayerPerson());<a name="line.677"></a>
+<span class="sourceLineNo">678</span>                ships.getFleetData().setShipNameRandom(genRandom);<a name="line.678"></a>
+<span class="sourceLineNo">679</span>                DefaultFleetInflaterParams p = new DefaultFleetInflaterParams();<a name="line.679"></a>
+<span class="sourceLineNo">680</span>                p.quality = quality;<a name="line.680"></a>
+<span class="sourceLineNo">681</span>                p.mode = ShipPickMode.PRIORITY_THEN_ALL;<a name="line.681"></a>
+<span class="sourceLineNo">682</span>                p.persistent = false;<a name="line.682"></a>
+<span class="sourceLineNo">683</span>                p.seed = genRandom.nextLong();<a name="line.683"></a>
+<span class="sourceLineNo">684</span>                p.timestamp = null;<a name="line.684"></a>
+<span class="sourceLineNo">685</span>                <a name="line.685"></a>
+<span class="sourceLineNo">686</span>                FleetInflater inflater = Misc.getInflater(ships, p);<a name="line.686"></a>
+<span class="sourceLineNo">687</span>                ships.setInflater(inflater);<a name="line.687"></a>
+<span class="sourceLineNo">688</span>                <a name="line.688"></a>
+<span class="sourceLineNo">689</span>                for (ItemInProductionAPI item : prod.getCurrent()) {<a name="line.689"></a>
+<span class="sourceLineNo">690</span>                        int count = item.getQuantity();<a name="line.690"></a>
+<span class="sourceLineNo">691</span>                                <a name="line.691"></a>
+<span class="sourceLineNo">692</span>                        if (item.getType() == ProductionItemType.SHIP) {<a name="line.692"></a>
+<span class="sourceLineNo">693</span>                                for (int i = 0; i &lt; count; i++) {<a name="line.693"></a>
+<span class="sourceLineNo">694</span>                                        ships.getFleetData().addFleetMember(item.getSpecId() + "_Hull");<a name="line.694"></a>
+<span class="sourceLineNo">695</span>                                }<a name="line.695"></a>
+<span class="sourceLineNo">696</span>                        } else if (item.getType() == ProductionItemType.FIGHTER) {<a name="line.696"></a>
+<span class="sourceLineNo">697</span>                                cargo.addFighters(item.getSpecId(), count);<a name="line.697"></a>
+<span class="sourceLineNo">698</span>                        } else if (item.getType() == ProductionItemType.WEAPON) {<a name="line.698"></a>
+<span class="sourceLineNo">699</span>                                cargo.addWeapons(item.getSpecId(), count);<a name="line.699"></a>
+<span class="sourceLineNo">700</span>                        }<a name="line.700"></a>
+<span class="sourceLineNo">701</span>                }<a name="line.701"></a>
+<span class="sourceLineNo">702</span>                <a name="line.702"></a>
+<span class="sourceLineNo">703</span>                // so that it adds d-mods<a name="line.703"></a>
+<span class="sourceLineNo">704</span>                ships.inflateIfNeeded();<a name="line.704"></a>
+<span class="sourceLineNo">705</span>                for (FleetMemberAPI member : ships.getFleetData().getMembersListCopy()) {<a name="line.705"></a>
+<span class="sourceLineNo">706</span>                        // it should be due to the inflateIfNeeded() call, this is just a safety check<a name="line.706"></a>
+<span class="sourceLineNo">707</span>                        if (member.getVariant().getSource() == VariantSource.REFIT) {<a name="line.707"></a>
+<span class="sourceLineNo">708</span>                                member.getVariant().clear();<a name="line.708"></a>
+<span class="sourceLineNo">709</span>                        }<a name="line.709"></a>
+<span class="sourceLineNo">710</span>                        cargo.getMothballedShips().addFleetMember(member);<a name="line.710"></a>
+<span class="sourceLineNo">711</span>                }<a name="line.711"></a>
+<span class="sourceLineNo">712</span>        }<a name="line.712"></a>
+<span class="sourceLineNo">713</span>        <a name="line.713"></a>
+<span class="sourceLineNo">714</span>        public void showCargoContents(TooltipMakerAPI info, float width, float height) {<a name="line.714"></a>
+<span class="sourceLineNo">715</span>                if (data == null) return;<a name="line.715"></a>
+<span class="sourceLineNo">716</span>                <a name="line.716"></a>
+<span class="sourceLineNo">717</span>                Color h = Misc.getHighlightColor();<a name="line.717"></a>
+<span class="sourceLineNo">718</span>                Color g = Misc.getGrayColor();<a name="line.718"></a>
+<span class="sourceLineNo">719</span>                Color tc = Misc.getTextColor();<a name="line.719"></a>
+<span class="sourceLineNo">720</span>                float pad = 3f;<a name="line.720"></a>
+<span class="sourceLineNo">721</span>                float small = 3f;<a name="line.721"></a>
+<span class="sourceLineNo">722</span>                float opad = 10f;<a name="line.722"></a>
+<span class="sourceLineNo">723</span><a name="line.723"></a>
+<span class="sourceLineNo">724</span>                List&lt;String&gt; keys = new ArrayList&lt;String&gt;(data.data.keySet());<a name="line.724"></a>
+<span class="sourceLineNo">725</span>                Collections.sort(keys, new Comparator&lt;String&gt;() {<a name="line.725"></a>
+<span class="sourceLineNo">726</span>                        public int compare(String o1, String o2) {<a name="line.726"></a>
+<span class="sourceLineNo">727</span>                                return o1.compareTo(o2);<a name="line.727"></a>
+<span class="sourceLineNo">728</span>                        }<a name="line.728"></a>
+<span class="sourceLineNo">729</span>                });<a name="line.729"></a>
+<span class="sourceLineNo">730</span>                <a name="line.730"></a>
+<span class="sourceLineNo">731</span>                for (String key : keys) {<a name="line.731"></a>
+<span class="sourceLineNo">732</span>                        CargoAPI cargo = data.data.get(key);<a name="line.732"></a>
+<span class="sourceLineNo">733</span>                        if (cargo.isEmpty() &amp;&amp; <a name="line.733"></a>
+<span class="sourceLineNo">734</span>                                        ((cargo.getMothballedShips() == null || <a name="line.734"></a>
+<span class="sourceLineNo">735</span>                                          cargo.getMothballedShips().getMembersListCopy().isEmpty()))) {<a name="line.735"></a>
+<span class="sourceLineNo">736</span>                                continue;<a name="line.736"></a>
+<span class="sourceLineNo">737</span>                        }<a name="line.737"></a>
+<span class="sourceLineNo">738</span>                <a name="line.738"></a>
+<span class="sourceLineNo">739</span>                        info.addSectionHeading(key, faction.getBaseUIColor(), faction.getDarkUIColor(), <a name="line.739"></a>
+<span class="sourceLineNo">740</span>                                                                   Alignment.MID, opad);<a name="line.740"></a>
+<span class="sourceLineNo">741</span>                        <a name="line.741"></a>
+<span class="sourceLineNo">742</span>                        if (!cargo.getStacksCopy().isEmpty()) {<a name="line.742"></a>
+<span class="sourceLineNo">743</span>                                info.addPara("Ship weapons and fighters:", opad);<a name="line.743"></a>
+<span class="sourceLineNo">744</span>                                info.showCargo(cargo, 20, true, opad);<a name="line.744"></a>
+<span class="sourceLineNo">745</span>                        }<a name="line.745"></a>
+<span class="sourceLineNo">746</span>                        <a name="line.746"></a>
+<span class="sourceLineNo">747</span>                        if (!cargo.getMothballedShips().getMembersListCopy().isEmpty()) {<a name="line.747"></a>
+<span class="sourceLineNo">748</span>                                CountingMap&lt;String&gt; counts = new CountingMap&lt;String&gt;();<a name="line.748"></a>
+<span class="sourceLineNo">749</span>                                for (FleetMemberAPI member : cargo.getMothballedShips().getMembersListCopy()) {<a name="line.749"></a>
+<span class="sourceLineNo">750</span>                                        counts.add(member.getVariant().getHullSpec().getHullName() + " " + member.getVariant().getDesignation());<a name="line.750"></a>
+<span class="sourceLineNo">751</span>                                }<a name="line.751"></a>
+<span class="sourceLineNo">752</span>                                <a name="line.752"></a>
+<span class="sourceLineNo">753</span>                                info.addPara("Ship hulls:", opad);<a name="line.753"></a>
+<span class="sourceLineNo">754</span>                                info.showShips(cargo.getMothballedShips().getMembersListCopy(), 20, true,<a name="line.754"></a>
+<span class="sourceLineNo">755</span>                                                           getCurrentStage() == Stage.WAITING, opad);<a name="line.755"></a>
+<span class="sourceLineNo">756</span>                        }<a name="line.756"></a>
+<span class="sourceLineNo">757</span>                }<a name="line.757"></a>
+<span class="sourceLineNo">758</span>        }<a name="line.758"></a>
+<span class="sourceLineNo">759</span>        <a name="line.759"></a>
+<span class="sourceLineNo">760</span>        public PersonImportance pickArmsDealerImportance() {<a name="line.760"></a>
+<span class="sourceLineNo">761</span>                WeightedRandomPicker&lt;PersonImportance&gt; picker = new WeightedRandomPicker&lt;PersonImportance&gt;(genRandom);<a name="line.761"></a>
+<span class="sourceLineNo">762</span>                <a name="line.762"></a>
+<span class="sourceLineNo">763</span>//              picker.add(PersonImportance.VERY_LOW, 10f);<a name="line.763"></a>
+<span class="sourceLineNo">764</span>//              picker.add(PersonImportance.LOW, 10f);<a name="line.764"></a>
+<span class="sourceLineNo">765</span>                picker.add(PersonImportance.MEDIUM, 10f);<a name="line.765"></a>
+<span class="sourceLineNo">766</span>                <a name="line.766"></a>
+<span class="sourceLineNo">767</span>//              int credits = (int) Global.getSector().getPlayerFleet().getCargo().getCredits().get();<a name="line.767"></a>
+<span class="sourceLineNo">768</span>//              if (credits &gt;= 200000) {<a name="line.768"></a>
+<span class="sourceLineNo">769</span>//                      picker.add(PersonImportance.MEDIUM, 10f);<a name="line.769"></a>
+<span class="sourceLineNo">770</span>//              }<a name="line.770"></a>
+<span class="sourceLineNo">771</span>//              if (credits &gt;= 1000000) {<a name="line.771"></a>
+<span class="sourceLineNo">772</span>//                      picker.add(PersonImportance.HIGH, 10f);<a name="line.772"></a>
+<span class="sourceLineNo">773</span>//              }<a name="line.773"></a>
+<span class="sourceLineNo">774</span>//              if (credits &gt;= 200000) {<a name="line.774"></a>
+<span class="sourceLineNo">775</span>//                      picker.add(PersonImportance.VERY_HIGH, 10f);<a name="line.775"></a>
+<span class="sourceLineNo">776</span>//              }<a name="line.776"></a>
+<span class="sourceLineNo">777</span>                <a name="line.777"></a>
+<span class="sourceLineNo">778</span>                float cycles = PirateBaseManager.getInstance().getDaysSinceStart() / 365f;<a name="line.778"></a>
+<span class="sourceLineNo">779</span>                if (cycles &gt; 1f) {<a name="line.779"></a>
+<span class="sourceLineNo">780</span>//                      picker.remove(PersonImportance.VERY_LOW);<a name="line.780"></a>
+<span class="sourceLineNo">781</span>//                      picker.add(PersonImportance.MEDIUM, 20f);<a name="line.781"></a>
+<span class="sourceLineNo">782</span>                        picker.add(PersonImportance.HIGH, 5f);<a name="line.782"></a>
+<span class="sourceLineNo">783</span>                }<a name="line.783"></a>
+<span class="sourceLineNo">784</span>                if (cycles &gt; 3f) {<a name="line.784"></a>
+<span class="sourceLineNo">785</span>//                      picker.remove(PersonImportance.LOW);<a name="line.785"></a>
+<span class="sourceLineNo">786</span>//                      picker.add(PersonImportance.HIGH, 10f);<a name="line.786"></a>
+<span class="sourceLineNo">787</span>                        picker.remove(PersonImportance.MEDIUM);<a name="line.787"></a>
+<span class="sourceLineNo">788</span>                        picker.add(PersonImportance.VERY_HIGH, 5f);<a name="line.788"></a>
+<span class="sourceLineNo">789</span>                }<a name="line.789"></a>
+<span class="sourceLineNo">790</span>                if (cycles &gt; 5f) {<a name="line.790"></a>
+<span class="sourceLineNo">791</span>                        //picker.add(PersonImportance.VERY_HIGH, 10f);<a name="line.791"></a>
+<span class="sourceLineNo">792</span>                        // always very high importance past a certain point, since the goal is to allow easier procurement<a name="line.792"></a>
+<span class="sourceLineNo">793</span>                        // of almost any "generally available" hull<a name="line.793"></a>
+<span class="sourceLineNo">794</span>                        return PersonImportance.VERY_HIGH;<a name="line.794"></a>
+<span class="sourceLineNo">795</span>                }<a name="line.795"></a>
+<span class="sourceLineNo">796</span>                <a name="line.796"></a>
+<span class="sourceLineNo">797</span>                return picker.pick();<a name="line.797"></a>
+<span class="sourceLineNo">798</span>        }<a name="line.798"></a>
+<span class="sourceLineNo">799</span>        <a name="line.799"></a>
+<span class="sourceLineNo">800</span>}<a name="line.800"></a>
 <span class="sourceLineNo">801</span><a name="line.801"></a>
 <span class="sourceLineNo">802</span><a name="line.802"></a>
 <span class="sourceLineNo">803</span><a name="line.803"></a>
@@ -816,6 +816,7 @@
 <span class="sourceLineNo">808</span><a name="line.808"></a>
 <span class="sourceLineNo">809</span><a name="line.809"></a>
 <span class="sourceLineNo">810</span><a name="line.810"></a>
+<span class="sourceLineNo">811</span><a name="line.811"></a>
 
 
 

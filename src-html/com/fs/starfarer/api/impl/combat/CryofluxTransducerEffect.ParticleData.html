@@ -8,337 +8,376 @@
 <div class="sourceContainer">
 <pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.combat;<a name="line.1"></a>
 <span class="sourceLineNo">002</span><a name="line.2"></a>
-<span class="sourceLineNo">003</span>import java.awt.Color;<a name="line.3"></a>
-<span class="sourceLineNo">004</span>import java.util.ArrayList;<a name="line.4"></a>
-<span class="sourceLineNo">005</span>import java.util.EnumSet;<a name="line.5"></a>
-<span class="sourceLineNo">006</span>import java.util.Iterator;<a name="line.6"></a>
-<span class="sourceLineNo">007</span>import java.util.List;<a name="line.7"></a>
-<span class="sourceLineNo">008</span><a name="line.8"></a>
-<span class="sourceLineNo">009</span>import org.lwjgl.util.vector.Vector2f;<a name="line.9"></a>
-<span class="sourceLineNo">010</span><a name="line.10"></a>
-<span class="sourceLineNo">011</span>import com.fs.starfarer.api.Global;<a name="line.11"></a>
-<span class="sourceLineNo">012</span>import com.fs.starfarer.api.combat.BaseCombatLayeredRenderingPlugin;<a name="line.12"></a>
-<span class="sourceLineNo">013</span>import com.fs.starfarer.api.combat.CombatEngineAPI;<a name="line.13"></a>
-<span class="sourceLineNo">014</span>import com.fs.starfarer.api.combat.CombatEngineLayers;<a name="line.14"></a>
-<span class="sourceLineNo">015</span>import com.fs.starfarer.api.combat.CombatEntityAPI;<a name="line.15"></a>
-<span class="sourceLineNo">016</span>import com.fs.starfarer.api.combat.DamagingProjectileAPI;<a name="line.16"></a>
-<span class="sourceLineNo">017</span>import com.fs.starfarer.api.combat.EveryFrameWeaponEffectPlugin;<a name="line.17"></a>
-<span class="sourceLineNo">018</span>import com.fs.starfarer.api.combat.OnFireEffectPlugin;<a name="line.18"></a>
-<span class="sourceLineNo">019</span>import com.fs.starfarer.api.combat.OnHitEffectPlugin;<a name="line.19"></a>
-<span class="sourceLineNo">020</span>import com.fs.starfarer.api.combat.ShipAPI;<a name="line.20"></a>
-<span class="sourceLineNo">021</span>import com.fs.starfarer.api.combat.ViewportAPI;<a name="line.21"></a>
-<span class="sourceLineNo">022</span>import com.fs.starfarer.api.combat.WeaponAPI;<a name="line.22"></a>
-<span class="sourceLineNo">023</span>import com.fs.starfarer.api.combat.listeners.ApplyDamageResultAPI;<a name="line.23"></a>
-<span class="sourceLineNo">024</span>import com.fs.starfarer.api.graphics.SpriteAPI;<a name="line.24"></a>
-<span class="sourceLineNo">025</span>import com.fs.starfarer.api.util.FaderUtil;<a name="line.25"></a>
-<span class="sourceLineNo">026</span>import com.fs.starfarer.api.util.Misc;<a name="line.26"></a>
-<span class="sourceLineNo">027</span><a name="line.27"></a>
-<span class="sourceLineNo">028</span>/**<a name="line.28"></a>
-<span class="sourceLineNo">029</span> * The effect for the Cryoflamer, which was at one point called "Cryoflux...".<a name="line.29"></a>
-<span class="sourceLineNo">030</span> * Not related to the Cryoflux Transducer ship system.<a name="line.30"></a>
-<span class="sourceLineNo">031</span> * <a name="line.31"></a>
-<span class="sourceLineNo">032</span> * IMPORTANT: will be multiple instances of this, as this doubles as the every frame effect and the on fire effect (same instance)<a name="line.32"></a>
-<span class="sourceLineNo">033</span> * But also as the visual for each individual shot (created via onFire, using the non-default constructor)<a name="line.33"></a>
-<span class="sourceLineNo">034</span> */<a name="line.34"></a>
-<span class="sourceLineNo">035</span>public class CryofluxTransducerEffect extends BaseCombatLayeredRenderingPlugin implements OnFireEffectPlugin,<a name="line.35"></a>
-<span class="sourceLineNo">036</span>                                                                                                                                                                        OnHitEffectPlugin,<a name="line.36"></a>
-<span class="sourceLineNo">037</span>                                                                                                                                                                        EveryFrameWeaponEffectPlugin {<a name="line.37"></a>
-<span class="sourceLineNo">038</span><a name="line.38"></a>
-<span class="sourceLineNo">039</span>        public CryofluxTransducerEffect() {<a name="line.39"></a>
-<span class="sourceLineNo">040</span>        }<a name="line.40"></a>
-<span class="sourceLineNo">041</span>        <a name="line.41"></a>
-<span class="sourceLineNo">042</span>        protected List&lt;CryofluxTransducerEffect&gt; trails;<a name="line.42"></a>
-<span class="sourceLineNo">043</span>        public void advance(float amount, CombatEngineAPI engine, WeaponAPI weapon) {<a name="line.43"></a>
-<span class="sourceLineNo">044</span>                if (trails == null) return;<a name="line.44"></a>
-<span class="sourceLineNo">045</span>                <a name="line.45"></a>
-<span class="sourceLineNo">046</span>                Iterator&lt;CryofluxTransducerEffect&gt; iter = trails.iterator();<a name="line.46"></a>
-<span class="sourceLineNo">047</span>                while (iter.hasNext()) {<a name="line.47"></a>
-<span class="sourceLineNo">048</span>                        if (iter.next().isExpired()) iter.remove();<a name="line.48"></a>
-<span class="sourceLineNo">049</span>                }<a name="line.49"></a>
-<span class="sourceLineNo">050</span>                <a name="line.50"></a>
-<span class="sourceLineNo">051</span>                // sound loop playback<a name="line.51"></a>
-<span class="sourceLineNo">052</span>                if (weapon.getShip() != null) {<a name="line.52"></a>
-<span class="sourceLineNo">053</span>                        float maxRange = weapon.getRange();<a name="line.53"></a>
-<span class="sourceLineNo">054</span>                        ShipAPI ship = weapon.getShip();<a name="line.54"></a>
-<span class="sourceLineNo">055</span>                        Vector2f com = new Vector2f();<a name="line.55"></a>
-<span class="sourceLineNo">056</span>                        float weight = 0f;<a name="line.56"></a>
-<span class="sourceLineNo">057</span>                        float totalDist = 0f;<a name="line.57"></a>
-<span class="sourceLineNo">058</span>                        Vector2f source = weapon.getLocation();<a name="line.58"></a>
-<span class="sourceLineNo">059</span>                        for (CryofluxTransducerEffect curr : trails) {<a name="line.59"></a>
-<span class="sourceLineNo">060</span>                                if (curr.proj != null) {<a name="line.60"></a>
-<span class="sourceLineNo">061</span>                                        Vector2f.add(com, curr.proj.getLocation(), com);<a name="line.61"></a>
-<span class="sourceLineNo">062</span>                                        weight += curr.proj.getBrightness();<a name="line.62"></a>
-<span class="sourceLineNo">063</span>                                        totalDist += Misc.getDistance(source, curr.proj.getLocation());<a name="line.63"></a>
-<span class="sourceLineNo">064</span>                                }<a name="line.64"></a>
-<span class="sourceLineNo">065</span>                        }<a name="line.65"></a>
-<span class="sourceLineNo">066</span>                        if (weight &gt; 0.1f) {<a name="line.66"></a>
-<span class="sourceLineNo">067</span>                                com.scale(1f / weight);<a name="line.67"></a>
-<span class="sourceLineNo">068</span>                                float volume = Math.min(weight, 1f);<a name="line.68"></a>
-<span class="sourceLineNo">069</span>                                if (trails.size() &gt; 0) {<a name="line.69"></a>
-<span class="sourceLineNo">070</span>                                        totalDist /= (float) trails.size();<a name="line.70"></a>
-<span class="sourceLineNo">071</span>                                        float mult = totalDist / Math.max(maxRange, 1f);<a name="line.71"></a>
-<span class="sourceLineNo">072</span>                                        mult = 1f - mult;<a name="line.72"></a>
-<span class="sourceLineNo">073</span>                                        if (mult &gt; 1f) mult = 1f;<a name="line.73"></a>
-<span class="sourceLineNo">074</span>                                        if (mult &lt; 0f) mult = 0f;<a name="line.74"></a>
-<span class="sourceLineNo">075</span>                                        mult = (float) Math.sqrt(mult);<a name="line.75"></a>
-<span class="sourceLineNo">076</span>                                        volume *= mult;<a name="line.76"></a>
-<span class="sourceLineNo">077</span>                                }<a name="line.77"></a>
-<span class="sourceLineNo">078</span>                                Global.getSoundPlayer().playLoop("cryoflamer_loop", ship, 1f, volume, com, ship.getVelocity());<a name="line.78"></a>
-<span class="sourceLineNo">079</span>                        }<a name="line.79"></a>
-<span class="sourceLineNo">080</span>                }<a name="line.80"></a>
-<span class="sourceLineNo">081</span>                <a name="line.81"></a>
-<span class="sourceLineNo">082</span>                <a name="line.82"></a>
-<span class="sourceLineNo">083</span>                //System.out.println("Trails: " + trails.size());<a name="line.83"></a>
-<span class="sourceLineNo">084</span>                float numIter = 1f; // more doesn't actually change anything<a name="line.84"></a>
-<span class="sourceLineNo">085</span>                amount /= numIter;<a name="line.85"></a>
-<span class="sourceLineNo">086</span>                // drag along the previous projectile, starting with the most recently launched; new ones are added at the start<a name="line.86"></a>
-<span class="sourceLineNo">087</span>                // note: prev is fired before and so is in front of proj<a name="line.87"></a>
-<span class="sourceLineNo">088</span>                for (int i = 0; i &lt; numIter; i++) { <a name="line.88"></a>
-<span class="sourceLineNo">089</span>                        for (CryofluxTransducerEffect trail : trails) {<a name="line.89"></a>
-<span class="sourceLineNo">090</span>                                //trail.proj.setFacing(trail.proj.getFacing() + 180f * amount);<a name="line.90"></a>
-<span class="sourceLineNo">091</span>                                if (trail.prev != null &amp;&amp; !trail.prev.isExpired() &amp;&amp; Global.getCombatEngine().isEntityInPlay(trail.prev)) {<a name="line.91"></a>
-<span class="sourceLineNo">092</span>                                        float dist1 = Misc.getDistance(trail.prev.getLocation(), trail.proj.getLocation());<a name="line.92"></a>
-<span class="sourceLineNo">093</span>                                        if (dist1 &lt; trail.proj.getProjectileSpec().getLength() * 1f) {<a name="line.93"></a>
-<span class="sourceLineNo">094</span>                                                float maxSpeed = trail.prev.getMoveSpeed() * 0.5f;// * Math.max(0.5f, 1f - trail.prev.getElapsed() * 0.5f);<a name="line.94"></a>
-<span class="sourceLineNo">095</span>                                                // goal here is to prevent longer shot series (e.g. from Paragon) from moving too unnaturally<a name="line.95"></a>
-<span class="sourceLineNo">096</span>                                                float e = trail.prev.getElapsed();<a name="line.96"></a>
-<span class="sourceLineNo">097</span>                                                float t = 0.5f;<a name="line.97"></a>
-<span class="sourceLineNo">098</span>                                                if (e &gt; t) {<a name="line.98"></a>
-<span class="sourceLineNo">099</span>                                                        maxSpeed *= Math.max(0.25f, 1f - (e - t) * 0.5f);<a name="line.99"></a>
-<span class="sourceLineNo">100</span>                                                }<a name="line.100"></a>
-<span class="sourceLineNo">101</span>                                                if (dist1 &lt; 20f &amp;&amp; e &gt; t) {<a name="line.101"></a>
-<span class="sourceLineNo">102</span>                                                        maxSpeed *= dist1 / 20f;<a name="line.102"></a>
-<span class="sourceLineNo">103</span>                                                }<a name="line.103"></a>
-<span class="sourceLineNo">104</span>                                                <a name="line.104"></a>
-<span class="sourceLineNo">105</span>                                                Vector2f driftTo = Misc.closestPointOnLineToPoint(trail.proj.getLocation(), trail.proj.getTailEnd(), trail.prev.getLocation());<a name="line.105"></a>
-<span class="sourceLineNo">106</span>                                                float dist = Misc.getDistance(driftTo, trail.prev.getLocation());<a name="line.106"></a>
-<span class="sourceLineNo">107</span>                                                Vector2f diff = Vector2f.sub(driftTo, trail.prev.getLocation(), new Vector2f());<a name="line.107"></a>
-<span class="sourceLineNo">108</span>                                                diff = Misc.normalise(diff);<a name="line.108"></a>
-<span class="sourceLineNo">109</span>                                                diff.scale(Math.min(dist, maxSpeed * amount));<a name="line.109"></a>
-<span class="sourceLineNo">110</span>                                                Vector2f.add(trail.prev.getLocation(), diff, trail.prev.getLocation());<a name="line.110"></a>
-<span class="sourceLineNo">111</span>                                                Vector2f.add(trail.prev.getTailEnd(), diff, trail.prev.getTailEnd());<a name="line.111"></a>
-<span class="sourceLineNo">112</span>                                        }<a name="line.112"></a>
-<span class="sourceLineNo">113</span>                                }<a name="line.113"></a>
-<span class="sourceLineNo">114</span>                        }<a name="line.114"></a>
-<span class="sourceLineNo">115</span>                }<a name="line.115"></a>
-<span class="sourceLineNo">116</span>        }<a name="line.116"></a>
-<span class="sourceLineNo">117</span>        <a name="line.117"></a>
-<span class="sourceLineNo">118</span>        <a name="line.118"></a>
-<span class="sourceLineNo">119</span>        public void onHit(DamagingProjectileAPI projectile, CombatEntityAPI target, Vector2f point, boolean shieldHit, ApplyDamageResultAPI damageResult, CombatEngineAPI engine) {<a name="line.119"></a>
-<span class="sourceLineNo">120</span>                Color color = projectile.getProjectileSpec().getFringeColor();<a name="line.120"></a>
-<span class="sourceLineNo">121</span>//              Color inverted = NSLanceEffect.getColorForDarkening(color);<a name="line.121"></a>
-<span class="sourceLineNo">122</span>//              inverted = Misc.setAlpha(inverted, 50);<a name="line.122"></a>
-<span class="sourceLineNo">123</span>//              Color inverted = new Color(255, 255, 100, 50);<a name="line.123"></a>
-<span class="sourceLineNo">124</span>                <a name="line.124"></a>
-<span class="sourceLineNo">125</span>                Vector2f vel = new Vector2f();<a name="line.125"></a>
-<span class="sourceLineNo">126</span>                if (target instanceof ShipAPI) {<a name="line.126"></a>
-<span class="sourceLineNo">127</span>                        vel.set(target.getVelocity());<a name="line.127"></a>
-<span class="sourceLineNo">128</span>                }<a name="line.128"></a>
-<span class="sourceLineNo">129</span>                <a name="line.129"></a>
-<span class="sourceLineNo">130</span>                float size = projectile.getProjectileSpec().getWidth() * 1f;<a name="line.130"></a>
-<span class="sourceLineNo">131</span>                //size = Misc.getHitGlowSize(size, projectile.getDamage().getBaseDamage(), damageResult);<a name="line.131"></a>
-<span class="sourceLineNo">132</span>                float sizeMult = Misc.getHitGlowSize(100f, projectile.getDamage().getBaseDamage(), damageResult) / 100f;<a name="line.132"></a>
-<span class="sourceLineNo">133</span>//              sizeMult = 1.5f;<a name="line.133"></a>
-<span class="sourceLineNo">134</span>//              System.out.println(sizeMult);<a name="line.134"></a>
-<span class="sourceLineNo">135</span>                float dur = 1f;<a name="line.135"></a>
-<span class="sourceLineNo">136</span>                float rampUp = 0f;<a name="line.136"></a>
-<span class="sourceLineNo">137</span>                Color c = Misc.scaleAlpha(color, projectile.getBrightness());<a name="line.137"></a>
-<span class="sourceLineNo">138</span>                engine.addNebulaParticle(point, vel, size, 5f + 3f * sizeMult,<a name="line.138"></a>
-<span class="sourceLineNo">139</span>                                                                                rampUp, 0f, dur, c);<a name="line.139"></a>
-<span class="sourceLineNo">140</span>//              engine.addNegativeNebulaParticle(point, vel, size, 2f,<a name="line.140"></a>
-<span class="sourceLineNo">141</span>//                                                                              rampUp, 0f, dur, inverted);<a name="line.141"></a>
-<span class="sourceLineNo">142</span>//              engine.addNegativeParticle(point, vel, size,<a name="line.142"></a>
-<span class="sourceLineNo">143</span>//                                                                 rampUp, dur, inverted);<a name="line.143"></a>
-<span class="sourceLineNo">144</span>                <a name="line.144"></a>
-<span class="sourceLineNo">145</span>                Misc.playSound(damageResult, point, vel,<a name="line.145"></a>
-<span class="sourceLineNo">146</span>                                "cryoflamer_hit_shield_light",<a name="line.146"></a>
-<span class="sourceLineNo">147</span>                                "cryoflamer_hit_shield_solid",<a name="line.147"></a>
-<span class="sourceLineNo">148</span>                                "cryoflamer_hit_shield_heavy",<a name="line.148"></a>
-<span class="sourceLineNo">149</span>                                "cryoflamer_hit_light",<a name="line.149"></a>
-<span class="sourceLineNo">150</span>                                "cryoflamer_hit_solid",<a name="line.150"></a>
-<span class="sourceLineNo">151</span>                                "cryoflamer_hit_heavy");<a name="line.151"></a>
-<span class="sourceLineNo">152</span>                <a name="line.152"></a>
-<span class="sourceLineNo">153</span>        }<a name="line.153"></a>
+<span class="sourceLineNo">003</span>import java.util.ArrayList;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import java.util.EnumSet;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import java.util.Iterator;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import java.util.List;<a name="line.6"></a>
+<span class="sourceLineNo">007</span><a name="line.7"></a>
+<span class="sourceLineNo">008</span>import java.awt.Color;<a name="line.8"></a>
+<span class="sourceLineNo">009</span><a name="line.9"></a>
+<span class="sourceLineNo">010</span>import org.lwjgl.util.vector.Vector2f;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.Global;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.combat.BaseCombatLayeredRenderingPlugin;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.combat.CombatEngineAPI;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.combat.CombatEngineLayers;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.combat.CombatEntityAPI;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.combat.DamagingProjectileAPI;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import com.fs.starfarer.api.combat.EveryFrameWeaponEffectPlugin;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import com.fs.starfarer.api.combat.OnFireEffectPlugin;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import com.fs.starfarer.api.combat.OnHitEffectPlugin;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import com.fs.starfarer.api.combat.ShipAPI;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import com.fs.starfarer.api.combat.ViewportAPI;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>import com.fs.starfarer.api.combat.WeaponAPI;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>import com.fs.starfarer.api.combat.listeners.ApplyDamageResultAPI;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>import com.fs.starfarer.api.graphics.SpriteAPI;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>import com.fs.starfarer.api.util.FaderUtil;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>import com.fs.starfarer.api.util.Misc;<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>/**<a name="line.29"></a>
+<span class="sourceLineNo">030</span> * The effect for the Cryoflamer, which was at one point called "Cryoflux...".<a name="line.30"></a>
+<span class="sourceLineNo">031</span> * Not related to the Cryoflux Transducer ship system.<a name="line.31"></a>
+<span class="sourceLineNo">032</span> * <a name="line.32"></a>
+<span class="sourceLineNo">033</span> * IMPORTANT: will be multiple instances of this, as this doubles as the every frame effect and the on fire effect (same instance)<a name="line.33"></a>
+<span class="sourceLineNo">034</span> * But also as the visual for each individual shot (created via onFire, using the non-default constructor)<a name="line.34"></a>
+<span class="sourceLineNo">035</span> */<a name="line.35"></a>
+<span class="sourceLineNo">036</span>public class CryofluxTransducerEffect extends BaseCombatLayeredRenderingPlugin implements OnFireEffectPlugin,<a name="line.36"></a>
+<span class="sourceLineNo">037</span>                                                                                                                                                                        OnHitEffectPlugin,<a name="line.37"></a>
+<span class="sourceLineNo">038</span>                                                                                                                                                                        EveryFrameWeaponEffectPlugin {<a name="line.38"></a>
+<span class="sourceLineNo">039</span><a name="line.39"></a>
+<span class="sourceLineNo">040</span>        public CryofluxTransducerEffect() {<a name="line.40"></a>
+<span class="sourceLineNo">041</span>        }<a name="line.41"></a>
+<span class="sourceLineNo">042</span>        <a name="line.42"></a>
+<span class="sourceLineNo">043</span>        protected String getLoopId() {<a name="line.43"></a>
+<span class="sourceLineNo">044</span>                return "cryoflamer_loop";<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        }<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        <a name="line.46"></a>
+<span class="sourceLineNo">047</span>        protected void playImpactSound(ApplyDamageResultAPI damageResult, Vector2f point, Vector2f vel) {<a name="line.47"></a>
+<span class="sourceLineNo">048</span>                Misc.playSound(damageResult, point, vel,<a name="line.48"></a>
+<span class="sourceLineNo">049</span>                                "cryoflamer_hit_shield_light",<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                                "cryoflamer_hit_shield_solid",<a name="line.50"></a>
+<span class="sourceLineNo">051</span>                                "cryoflamer_hit_shield_heavy",<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                                "cryoflamer_hit_light",<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                                "cryoflamer_hit_solid",<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                                "cryoflamer_hit_heavy");<a name="line.54"></a>
+<span class="sourceLineNo">055</span>        }<a name="line.55"></a>
+<span class="sourceLineNo">056</span>        <a name="line.56"></a>
+<span class="sourceLineNo">057</span>        protected String getParticleSpriteCat() {<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                return "misc";<a name="line.58"></a>
+<span class="sourceLineNo">059</span>        }<a name="line.59"></a>
+<span class="sourceLineNo">060</span>        protected String getParticleSpriteKey() {<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                return "nebula_particles";<a name="line.61"></a>
+<span class="sourceLineNo">062</span>        }<a name="line.62"></a>
+<span class="sourceLineNo">063</span>        protected float getParticleScale() {<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                return 1f;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        }<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        protected float getParticleScaleIncreaseRateMult() {<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                return 1f;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        }<a name="line.68"></a>
+<span class="sourceLineNo">069</span>        protected int getNumParticles() {<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                return 7;<a name="line.70"></a>
+<span class="sourceLineNo">071</span>        }<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        protected float getThresholdDist() {<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                return 20f;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>        }<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        <a name="line.75"></a>
+<span class="sourceLineNo">076</span>        protected List&lt;CryofluxTransducerEffect&gt; trails;<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        public void advance(float amount, CombatEngineAPI engine, WeaponAPI weapon) {<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                if (trails == null) return;<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                <a name="line.79"></a>
+<span class="sourceLineNo">080</span>                Iterator&lt;CryofluxTransducerEffect&gt; iter = trails.iterator();<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                while (iter.hasNext()) {<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                        if (iter.next().isExpired()) iter.remove();<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                }<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                <a name="line.84"></a>
+<span class="sourceLineNo">085</span>                // sound loop playback<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                if (weapon.getShip() != null) {<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                        float maxRange = weapon.getRange();<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                        ShipAPI ship = weapon.getShip();<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                        Vector2f com = new Vector2f();<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                        float weight = 0f;<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                        float totalDist = 0f;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                        Vector2f source = weapon.getLocation();<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                        for (CryofluxTransducerEffect curr : trails) {<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                                if (curr.proj != null) {<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                                        Vector2f.add(com, curr.proj.getLocation(), com);<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                                        weight += curr.proj.getBrightness();<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                                        totalDist += Misc.getDistance(source, curr.proj.getLocation());<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                                }<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                        }<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                        if (weight &gt; 0.1f) {<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                                com.scale(1f / weight);<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                                float volume = Math.min(weight, 1f);<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                                if (trails.size() &gt; 0) {<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                                        totalDist /= (float) trails.size();<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                                        float mult = totalDist / Math.max(maxRange, 1f);<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                                        mult = 1f - mult;<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                                        if (mult &gt; 1f) mult = 1f;<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                                        if (mult &lt; 0f) mult = 0f;<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                                        mult = (float) Math.sqrt(mult);<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                                        volume *= mult;<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                                }<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                                Global.getSoundPlayer().playLoop(getLoopId(), ship, 1f, volume, com, ship.getVelocity());<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                        }<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                }<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                <a name="line.115"></a>
+<span class="sourceLineNo">116</span>                <a name="line.116"></a>
+<span class="sourceLineNo">117</span>                //System.out.println("Trails: " + trails.size());<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                float numIter = 1f; // more doesn't actually change anything<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                amount /= numIter;<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                float thresholdDist = getThresholdDist();<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                //thresholdDist = 50f;<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                // drag along the previous projectile, starting with the most recently launched; new ones are added at the start<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                // note: prev is fired before and so is in front of proj<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                for (int i = 0; i &lt; numIter; i++) { <a name="line.124"></a>
+<span class="sourceLineNo">125</span>                        for (CryofluxTransducerEffect trail : trails) {<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                                //trail.proj.setFacing(trail.proj.getFacing() + 180f * amount);<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                                if (trail.prev != null &amp;&amp; !trail.prev.isExpired() &amp;&amp; Global.getCombatEngine().isEntityInPlay(trail.prev)) {<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                                        float dist1 = Misc.getDistance(trail.prev.getLocation(), trail.proj.getLocation());<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                                        if (dist1 &lt; trail.proj.getProjectileSpec().getLength() * 1f) {<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                                                float maxSpeed = trail.prev.getMoveSpeed() * 0.5f;// * Math.max(0.5f, 1f - trail.prev.getElapsed() * 0.5f);<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                                                // goal here is to prevent longer shot series (e.g. from Paragon) from moving too unnaturally<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                                                float e = trail.prev.getElapsed();<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                                                float t = 0.5f;<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                                                if (e &gt; t) {<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                                                        maxSpeed *= Math.max(0.25f, 1f - (e - t) * 0.5f);<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                                                }<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                                                if (dist1 &lt; thresholdDist &amp;&amp; e &gt; t) {<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                                                        maxSpeed *= dist1 / thresholdDist;<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                                                }<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                                                <a name="line.140"></a>
+<span class="sourceLineNo">141</span>                                                Vector2f driftTo = Misc.closestPointOnLineToPoint(trail.proj.getLocation(), trail.proj.getTailEnd(), trail.prev.getLocation());<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                                                float dist = Misc.getDistance(driftTo, trail.prev.getLocation());<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                                                Vector2f diff = Vector2f.sub(driftTo, trail.prev.getLocation(), new Vector2f());<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                                                diff = Misc.normalise(diff);<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                                                diff.scale(Math.min(dist, maxSpeed * amount));<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                                                Vector2f.add(trail.prev.getLocation(), diff, trail.prev.getLocation());<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                                                Vector2f.add(trail.prev.getTailEnd(), diff, trail.prev.getTailEnd());<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                                        }<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                                }<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                        }<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                }<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        }<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        <a name="line.153"></a>
 <span class="sourceLineNo">154</span>        <a name="line.154"></a>
-<span class="sourceLineNo">155</span>        public void onFire(DamagingProjectileAPI projectile, WeaponAPI weapon, CombatEngineAPI engine) {<a name="line.155"></a>
-<span class="sourceLineNo">156</span>                String prevKey = "cryo_prev_" + weapon.getShip().getId() + "_" + weapon.getSlot().getId();<a name="line.156"></a>
-<span class="sourceLineNo">157</span>                DamagingProjectileAPI prev = (DamagingProjectileAPI) engine.getCustomData().get(prevKey);<a name="line.157"></a>
-<span class="sourceLineNo">158</span>                <a name="line.158"></a>
-<span class="sourceLineNo">159</span>                CryofluxTransducerEffect trail = new CryofluxTransducerEffect(projectile, prev);<a name="line.159"></a>
-<span class="sourceLineNo">160</span>                CombatEntityAPI e = engine.addLayeredRenderingPlugin(trail);<a name="line.160"></a>
-<span class="sourceLineNo">161</span>                e.getLocation().set(projectile.getLocation());<a name="line.161"></a>
-<span class="sourceLineNo">162</span>                <a name="line.162"></a>
-<span class="sourceLineNo">163</span>                engine.getCustomData().put(prevKey, projectile);<a name="line.163"></a>
-<span class="sourceLineNo">164</span>                <a name="line.164"></a>
-<span class="sourceLineNo">165</span>                if (trails == null) {<a name="line.165"></a>
-<span class="sourceLineNo">166</span>                        trails = new ArrayList&lt;CryofluxTransducerEffect&gt;();<a name="line.166"></a>
-<span class="sourceLineNo">167</span>                }<a name="line.167"></a>
-<span class="sourceLineNo">168</span>                trails.add(0, trail);<a name="line.168"></a>
-<span class="sourceLineNo">169</span>        }<a name="line.169"></a>
-<span class="sourceLineNo">170</span>        <a name="line.170"></a>
-<span class="sourceLineNo">171</span>        <a name="line.171"></a>
-<span class="sourceLineNo">172</span>        <a name="line.172"></a>
-<span class="sourceLineNo">173</span>        public static class ParticleData {<a name="line.173"></a>
-<span class="sourceLineNo">174</span>                public SpriteAPI sprite;<a name="line.174"></a>
-<span class="sourceLineNo">175</span>                public Vector2f offset = new Vector2f();<a name="line.175"></a>
-<span class="sourceLineNo">176</span>                public Vector2f vel = new Vector2f();<a name="line.176"></a>
-<span class="sourceLineNo">177</span>                public float scale = 1f;<a name="line.177"></a>
-<span class="sourceLineNo">178</span>                public DamagingProjectileAPI proj;<a name="line.178"></a>
-<span class="sourceLineNo">179</span>                public float scaleIncreaseRate = 1f;<a name="line.179"></a>
-<span class="sourceLineNo">180</span>                public float turnDir = 1f;<a name="line.180"></a>
-<span class="sourceLineNo">181</span>                public float angle = 1f;<a name="line.181"></a>
-<span class="sourceLineNo">182</span>                public FaderUtil fader;<a name="line.182"></a>
-<span class="sourceLineNo">183</span>                <a name="line.183"></a>
-<span class="sourceLineNo">184</span>                public ParticleData(DamagingProjectileAPI proj) {<a name="line.184"></a>
-<span class="sourceLineNo">185</span>                        this.proj = proj;<a name="line.185"></a>
-<span class="sourceLineNo">186</span>                        sprite = Global.getSettings().getSprite("misc", "nebula_particles");<a name="line.186"></a>
-<span class="sourceLineNo">187</span>                        //sprite = Global.getSettings().getSprite("misc", "dust_particles");<a name="line.187"></a>
-<span class="sourceLineNo">188</span>                        float i = Misc.random.nextInt(4);<a name="line.188"></a>
-<span class="sourceLineNo">189</span>                        float j = Misc.random.nextInt(4);<a name="line.189"></a>
-<span class="sourceLineNo">190</span>                        sprite.setTexWidth(0.25f);<a name="line.190"></a>
-<span class="sourceLineNo">191</span>                        sprite.setTexHeight(0.25f);<a name="line.191"></a>
-<span class="sourceLineNo">192</span>                        sprite.setTexX(i * 0.25f);<a name="line.192"></a>
-<span class="sourceLineNo">193</span>                        sprite.setTexY(j * 0.25f);<a name="line.193"></a>
-<span class="sourceLineNo">194</span>                        sprite.setAdditiveBlend();<a name="line.194"></a>
-<span class="sourceLineNo">195</span>                        <a name="line.195"></a>
-<span class="sourceLineNo">196</span>                        angle = (float) Math.random() * 360f;<a name="line.196"></a>
-<span class="sourceLineNo">197</span>                        <a name="line.197"></a>
-<span class="sourceLineNo">198</span>                        float maxDur = proj.getWeapon().getRange() / proj.getWeapon().getProjectileSpeed();<a name="line.198"></a>
-<span class="sourceLineNo">199</span>                        scaleIncreaseRate = 2f / maxDur;<a name="line.199"></a>
-<span class="sourceLineNo">200</span>                        scale = 1f;<a name="line.200"></a>
-<span class="sourceLineNo">201</span>//                      scale = 0.1f;<a name="line.201"></a>
-<span class="sourceLineNo">202</span>//                      scaleIncreaseRate = 2.9f / maxDur;<a name="line.202"></a>
-<span class="sourceLineNo">203</span>//                      scale = 0.1f;<a name="line.203"></a>
-<span class="sourceLineNo">204</span>//                      scaleIncreaseRate = 2.5f / maxDur;<a name="line.204"></a>
-<span class="sourceLineNo">205</span>//                      scale = 0.5f;<a name="line.205"></a>
-<span class="sourceLineNo">206</span>                        <a name="line.206"></a>
-<span class="sourceLineNo">207</span>                        turnDir = Math.signum((float) Math.random() - 0.5f) * 60f * (float) Math.random();<a name="line.207"></a>
-<span class="sourceLineNo">208</span>                        //turnDir = 0f;<a name="line.208"></a>
-<span class="sourceLineNo">209</span>                        <a name="line.209"></a>
-<span class="sourceLineNo">210</span>                        float driftDir = (float) Math.random() * 360f;<a name="line.210"></a>
-<span class="sourceLineNo">211</span>                        vel = Misc.getUnitVectorAtDegreeAngle(driftDir);<a name="line.211"></a>
-<span class="sourceLineNo">212</span>                        vel.scale(proj.getProjectileSpec().getWidth() / maxDur * 0.33f);<a name="line.212"></a>
-<span class="sourceLineNo">213</span>                        <a name="line.213"></a>
-<span class="sourceLineNo">214</span>//                      offset.x += vel.x * 1f;<a name="line.214"></a>
-<span class="sourceLineNo">215</span>//                      offset.y += vel.y * 1f;<a name="line.215"></a>
-<span class="sourceLineNo">216</span>                        fader = new FaderUtil(0f, 0.25f, 0.5f);<a name="line.216"></a>
-<span class="sourceLineNo">217</span>                        fader.fadeIn();<a name="line.217"></a>
-<span class="sourceLineNo">218</span>                }<a name="line.218"></a>
-<span class="sourceLineNo">219</span>                <a name="line.219"></a>
-<span class="sourceLineNo">220</span>                public void advance(float amount) {<a name="line.220"></a>
-<span class="sourceLineNo">221</span>                        scale += scaleIncreaseRate * amount;<a name="line.221"></a>
-<span class="sourceLineNo">222</span>                        if (scale &lt; 1f) {<a name="line.222"></a>
-<span class="sourceLineNo">223</span>                                scale += scaleIncreaseRate * amount * 1f;<a name="line.223"></a>
-<span class="sourceLineNo">224</span>                        }<a name="line.224"></a>
-<span class="sourceLineNo">225</span>                        <a name="line.225"></a>
-<span class="sourceLineNo">226</span>                        offset.x += vel.x * amount;<a name="line.226"></a>
-<span class="sourceLineNo">227</span>                        offset.y += vel.y * amount;<a name="line.227"></a>
-<span class="sourceLineNo">228</span>                        <a name="line.228"></a>
-<span class="sourceLineNo">229</span>                        angle += turnDir * amount;<a name="line.229"></a>
-<span class="sourceLineNo">230</span>                        <a name="line.230"></a>
-<span class="sourceLineNo">231</span>                        fader.advance(amount);<a name="line.231"></a>
-<span class="sourceLineNo">232</span>                }<a name="line.232"></a>
-<span class="sourceLineNo">233</span>        }<a name="line.233"></a>
-<span class="sourceLineNo">234</span>        <a name="line.234"></a>
-<span class="sourceLineNo">235</span>        protected List&lt;ParticleData&gt; particles = new ArrayList&lt;ParticleData&gt;();<a name="line.235"></a>
-<span class="sourceLineNo">236</span>        <a name="line.236"></a>
-<span class="sourceLineNo">237</span>        protected DamagingProjectileAPI proj;<a name="line.237"></a>
-<span class="sourceLineNo">238</span>        protected DamagingProjectileAPI prev;<a name="line.238"></a>
-<span class="sourceLineNo">239</span>        protected float baseFacing = 0f;<a name="line.239"></a>
-<span class="sourceLineNo">240</span>        public CryofluxTransducerEffect(DamagingProjectileAPI proj, DamagingProjectileAPI prev) {<a name="line.240"></a>
-<span class="sourceLineNo">241</span>                this.proj = proj;<a name="line.241"></a>
-<span class="sourceLineNo">242</span>                this.prev = prev;<a name="line.242"></a>
-<span class="sourceLineNo">243</span>                <a name="line.243"></a>
-<span class="sourceLineNo">244</span>                baseFacing = proj.getFacing();<a name="line.244"></a>
-<span class="sourceLineNo">245</span>                <a name="line.245"></a>
-<span class="sourceLineNo">246</span>                int num = 7;<a name="line.246"></a>
-<span class="sourceLineNo">247</span>                for (int i = 0; i &lt; num; i++) {<a name="line.247"></a>
-<span class="sourceLineNo">248</span>                        particles.add(new ParticleData(proj));<a name="line.248"></a>
-<span class="sourceLineNo">249</span>                }<a name="line.249"></a>
-<span class="sourceLineNo">250</span>                <a name="line.250"></a>
-<span class="sourceLineNo">251</span>                float length = proj.getProjectileSpec().getLength();<a name="line.251"></a>
-<span class="sourceLineNo">252</span>                float width = proj.getProjectileSpec().getWidth();<a name="line.252"></a>
+<span class="sourceLineNo">155</span>        public void onHit(DamagingProjectileAPI projectile, CombatEntityAPI target, Vector2f point, boolean shieldHit, ApplyDamageResultAPI damageResult, CombatEngineAPI engine) {<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                Color color = projectile.getProjectileSpec().getFringeColor();<a name="line.156"></a>
+<span class="sourceLineNo">157</span>//              Color inverted = NSLanceEffect.getColorForDarkening(color);<a name="line.157"></a>
+<span class="sourceLineNo">158</span>//              inverted = Misc.setAlpha(inverted, 50);<a name="line.158"></a>
+<span class="sourceLineNo">159</span>//              Color inverted = new Color(255, 255, 100, 50);<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                <a name="line.160"></a>
+<span class="sourceLineNo">161</span>                Vector2f vel = new Vector2f();<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                if (target instanceof ShipAPI) {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                        vel.set(target.getVelocity());<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                }<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                <a name="line.165"></a>
+<span class="sourceLineNo">166</span>                float size = projectile.getProjectileSpec().getWidth() * 1f;<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                //size = Misc.getHitGlowSize(size, projectile.getDamage().getBaseDamage(), damageResult);<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                float sizeMult = Misc.getHitGlowSize(100f, projectile.getDamage().getBaseDamage(), damageResult) / 100f;<a name="line.168"></a>
+<span class="sourceLineNo">169</span>//              sizeMult = 1.5f;<a name="line.169"></a>
+<span class="sourceLineNo">170</span>//              System.out.println(sizeMult);<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                float dur = 1f;<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                float rampUp = 0f;<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                Color c = Misc.scaleAlpha(color, projectile.getBrightness());<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                engine.addNebulaParticle(point, vel, size, 5f + 3f * sizeMult,<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                                                                                rampUp, 0f, dur, c);<a name="line.175"></a>
+<span class="sourceLineNo">176</span>//              engine.addNegativeNebulaParticle(point, vel, size, 2f,<a name="line.176"></a>
+<span class="sourceLineNo">177</span>//                                                                              rampUp, 0f, dur, inverted);<a name="line.177"></a>
+<span class="sourceLineNo">178</span>//              engine.addNegativeParticle(point, vel, size,<a name="line.178"></a>
+<span class="sourceLineNo">179</span>//                                                                 rampUp, dur, inverted);<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                <a name="line.180"></a>
+<span class="sourceLineNo">181</span>                playImpactSound(damageResult, point, vel);<a name="line.181"></a>
+<span class="sourceLineNo">182</span>        }<a name="line.182"></a>
+<span class="sourceLineNo">183</span>        <a name="line.183"></a>
+<span class="sourceLineNo">184</span>        public void onFire(DamagingProjectileAPI projectile, WeaponAPI weapon, CombatEngineAPI engine) {<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                String prevKey = "cryo_prev_" + weapon.getShip().getId() + "_" + weapon.getSlot().getId();<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                DamagingProjectileAPI prev = (DamagingProjectileAPI) engine.getCustomData().get(prevKey);<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                <a name="line.187"></a>
+<span class="sourceLineNo">188</span>                CryofluxTransducerEffect trail = createTrail(projectile, prev);<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                CombatEntityAPI e = engine.addLayeredRenderingPlugin(trail);<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                e.getLocation().set(projectile.getLocation());<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                <a name="line.191"></a>
+<span class="sourceLineNo">192</span>                engine.getCustomData().put(prevKey, projectile);<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                <a name="line.193"></a>
+<span class="sourceLineNo">194</span>                if (trails == null) {<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                        trails = new ArrayList&lt;CryofluxTransducerEffect&gt;();<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                }<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                trails.add(0, trail);<a name="line.197"></a>
+<span class="sourceLineNo">198</span>        }<a name="line.198"></a>
+<span class="sourceLineNo">199</span>        <a name="line.199"></a>
+<span class="sourceLineNo">200</span>        protected CryofluxTransducerEffect createTrail(DamagingProjectileAPI projectile, DamagingProjectileAPI prev) {<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                return new CryofluxTransducerEffect(projectile, prev);<a name="line.201"></a>
+<span class="sourceLineNo">202</span>        }<a name="line.202"></a>
+<span class="sourceLineNo">203</span>        <a name="line.203"></a>
+<span class="sourceLineNo">204</span>        <a name="line.204"></a>
+<span class="sourceLineNo">205</span>        public static class ParticleData {<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                public SpriteAPI sprite;<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                public Vector2f offset = new Vector2f();<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                public Vector2f vel = new Vector2f();<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                public float scale = 1f;<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                public DamagingProjectileAPI proj;<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                public float scaleIncreaseRate = 1f;<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                public float turnDir = 1f;<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                public float angle = 1f;<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                public FaderUtil fader;<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                <a name="line.215"></a>
+<span class="sourceLineNo">216</span>                public ParticleData(DamagingProjectileAPI proj, CryofluxTransducerEffect effect) {<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                        this.proj = proj;<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                        sprite = Global.getSettings().getSprite(effect.getParticleSpriteCat(), effect.getParticleSpriteKey());<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                        //sprite = Global.getSettings().getSprite("misc", "dust_particles");<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                        float i = Misc.random.nextInt(4);<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                        float j = Misc.random.nextInt(4);<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                        sprite.setTexWidth(0.25f);<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                        sprite.setTexHeight(0.25f);<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                        sprite.setTexX(i * 0.25f);<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                        sprite.setTexY(j * 0.25f);<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                        sprite.setAdditiveBlend();<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                        <a name="line.227"></a>
+<span class="sourceLineNo">228</span>                        angle = (float) Math.random() * 360f;<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                        <a name="line.229"></a>
+<span class="sourceLineNo">230</span>                        float maxDur = proj.getWeapon().getRange() / proj.getWeapon().getProjectileSpeed();<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                        scaleIncreaseRate = 2f / maxDur;<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                        scaleIncreaseRate *= effect.getParticleScaleIncreaseRateMult();<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                        scale = effect.getParticleScale();<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                        //scale = 2f;<a name="line.234"></a>
+<span class="sourceLineNo">235</span>//                      scale = 0.1f;<a name="line.235"></a>
+<span class="sourceLineNo">236</span>//                      scaleIncreaseRate = 2.9f / maxDur;<a name="line.236"></a>
+<span class="sourceLineNo">237</span>//                      scale = 0.1f;<a name="line.237"></a>
+<span class="sourceLineNo">238</span>//                      scaleIncreaseRate = 2.5f / maxDur;<a name="line.238"></a>
+<span class="sourceLineNo">239</span>//                      scale = 0.5f;<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                        <a name="line.240"></a>
+<span class="sourceLineNo">241</span>                        turnDir = Math.signum((float) Math.random() - 0.5f) * 60f * (float) Math.random();<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                        //turnDir = 0f;<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                        <a name="line.243"></a>
+<span class="sourceLineNo">244</span>                        float driftDir = (float) Math.random() * 360f;<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                        vel = Misc.getUnitVectorAtDegreeAngle(driftDir);<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                        vel.scale(proj.getProjectileSpec().getWidth() / maxDur * 0.33f);<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                        <a name="line.247"></a>
+<span class="sourceLineNo">248</span>//                      offset.x += vel.x * 1f;<a name="line.248"></a>
+<span class="sourceLineNo">249</span>//                      offset.y += vel.y * 1f;<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                        fader = new FaderUtil(0f, 0.25f, 0.5f);<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                        fader.fadeIn();<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                }<a name="line.252"></a>
 <span class="sourceLineNo">253</span>                <a name="line.253"></a>
-<span class="sourceLineNo">254</span>                float index = 0;<a name="line.254"></a>
-<span class="sourceLineNo">255</span>                for (ParticleData p : particles) {<a name="line.255"></a>
-<span class="sourceLineNo">256</span>                        float f = index / (particles.size() - 1);<a name="line.256"></a>
-<span class="sourceLineNo">257</span>                        Vector2f dir = Misc.getUnitVectorAtDegreeAngle(proj.getFacing() + 180f);<a name="line.257"></a>
-<span class="sourceLineNo">258</span>                        dir.scale(length * f);<a name="line.258"></a>
-<span class="sourceLineNo">259</span>                        Vector2f.add(p.offset, dir, p.offset);<a name="line.259"></a>
-<span class="sourceLineNo">260</span>                        <a name="line.260"></a>
-<span class="sourceLineNo">261</span>                        p.offset = Misc.getPointWithinRadius(p.offset, width * 0.5f);<a name="line.261"></a>
-<span class="sourceLineNo">262</span>                        //p.scale = 0.25f + 0.75f * (1 - f);<a name="line.262"></a>
-<span class="sourceLineNo">263</span>                        <a name="line.263"></a>
-<span class="sourceLineNo">264</span>                        index++;<a name="line.264"></a>
-<span class="sourceLineNo">265</span>                }<a name="line.265"></a>
-<span class="sourceLineNo">266</span>        }<a name="line.266"></a>
-<span class="sourceLineNo">267</span>        <a name="line.267"></a>
-<span class="sourceLineNo">268</span>        public float getRenderRadius() {<a name="line.268"></a>
-<span class="sourceLineNo">269</span>                return 300f;<a name="line.269"></a>
-<span class="sourceLineNo">270</span>        }<a name="line.270"></a>
-<span class="sourceLineNo">271</span>        <a name="line.271"></a>
-<span class="sourceLineNo">272</span>        <a name="line.272"></a>
-<span class="sourceLineNo">273</span>        protected EnumSet&lt;CombatEngineLayers&gt; layers = EnumSet.of(CombatEngineLayers.ABOVE_SHIPS_AND_MISSILES_LAYER);<a name="line.273"></a>
-<span class="sourceLineNo">274</span>        @Override<a name="line.274"></a>
-<span class="sourceLineNo">275</span>        public EnumSet&lt;CombatEngineLayers&gt; getActiveLayers() {<a name="line.275"></a>
-<span class="sourceLineNo">276</span>                return layers;<a name="line.276"></a>
-<span class="sourceLineNo">277</span>        }<a name="line.277"></a>
-<span class="sourceLineNo">278</span><a name="line.278"></a>
-<span class="sourceLineNo">279</span><a name="line.279"></a>
-<span class="sourceLineNo">280</span>        public void init(CombatEntityAPI entity) {<a name="line.280"></a>
-<span class="sourceLineNo">281</span>                super.init(entity);<a name="line.281"></a>
-<span class="sourceLineNo">282</span>        }<a name="line.282"></a>
-<span class="sourceLineNo">283</span>        <a name="line.283"></a>
-<span class="sourceLineNo">284</span>        public void advance(float amount) {<a name="line.284"></a>
-<span class="sourceLineNo">285</span>                if (Global.getCombatEngine().isPaused()) return;<a name="line.285"></a>
-<span class="sourceLineNo">286</span>                <a name="line.286"></a>
-<span class="sourceLineNo">287</span>                entity.getLocation().set(proj.getLocation());<a name="line.287"></a>
-<span class="sourceLineNo">288</span>                <a name="line.288"></a>
+<span class="sourceLineNo">254</span>                public void advance(float amount) {<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                        scale += scaleIncreaseRate * amount;<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                        if (scale &lt; 1f) {<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                                scale += scaleIncreaseRate * amount * 1f;<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                        }<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                        <a name="line.259"></a>
+<span class="sourceLineNo">260</span>                        offset.x += vel.x * amount;<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                        offset.y += vel.y * amount;<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                        <a name="line.262"></a>
+<span class="sourceLineNo">263</span>                        angle += turnDir * amount;<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                        <a name="line.264"></a>
+<span class="sourceLineNo">265</span>                        fader.advance(amount);<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                }<a name="line.266"></a>
+<span class="sourceLineNo">267</span>        }<a name="line.267"></a>
+<span class="sourceLineNo">268</span>        <a name="line.268"></a>
+<span class="sourceLineNo">269</span>        protected List&lt;ParticleData&gt; particles = new ArrayList&lt;ParticleData&gt;();<a name="line.269"></a>
+<span class="sourceLineNo">270</span>        <a name="line.270"></a>
+<span class="sourceLineNo">271</span>        protected DamagingProjectileAPI proj;<a name="line.271"></a>
+<span class="sourceLineNo">272</span>        protected DamagingProjectileAPI prev;<a name="line.272"></a>
+<span class="sourceLineNo">273</span>        protected float baseFacing = 0f;<a name="line.273"></a>
+<span class="sourceLineNo">274</span>        public CryofluxTransducerEffect(DamagingProjectileAPI proj, DamagingProjectileAPI prev) {<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                this.proj = proj;<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                this.prev = prev;<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                <a name="line.277"></a>
+<span class="sourceLineNo">278</span>                baseFacing = proj.getFacing();<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                <a name="line.279"></a>
+<span class="sourceLineNo">280</span>                int num = getNumParticles();<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                for (int i = 0; i &lt; num; i++) {<a name="line.281"></a>
+<span class="sourceLineNo">282</span>                        particles.add(new ParticleData(proj, this));<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                }<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                <a name="line.284"></a>
+<span class="sourceLineNo">285</span>                float length = proj.getProjectileSpec().getLength();<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                float width = proj.getProjectileSpec().getWidth();<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                <a name="line.287"></a>
+<span class="sourceLineNo">288</span>                float index = 0;<a name="line.288"></a>
 <span class="sourceLineNo">289</span>                for (ParticleData p : particles) {<a name="line.289"></a>
-<span class="sourceLineNo">290</span>                        p.advance(amount);<a name="line.290"></a>
-<span class="sourceLineNo">291</span>                }<a name="line.291"></a>
-<span class="sourceLineNo">292</span>        }<a name="line.292"></a>
-<span class="sourceLineNo">293</span><a name="line.293"></a>
-<span class="sourceLineNo">294</span><a name="line.294"></a>
-<span class="sourceLineNo">295</span>        public boolean isExpired() {<a name="line.295"></a>
-<span class="sourceLineNo">296</span>                return proj.isExpired() || !Global.getCombatEngine().isEntityInPlay(proj);<a name="line.296"></a>
-<span class="sourceLineNo">297</span>        }<a name="line.297"></a>
-<span class="sourceLineNo">298</span><a name="line.298"></a>
-<span class="sourceLineNo">299</span>        public void render(CombatEngineLayers layer, ViewportAPI viewport) {<a name="line.299"></a>
-<span class="sourceLineNo">300</span>                float x = entity.getLocation().x;<a name="line.300"></a>
-<span class="sourceLineNo">301</span>                float y = entity.getLocation().y;<a name="line.301"></a>
-<span class="sourceLineNo">302</span>        <a name="line.302"></a>
-<span class="sourceLineNo">303</span>                //Color color = new Color(100,150,255,50);<a name="line.303"></a>
-<span class="sourceLineNo">304</span>                Color color = proj.getProjectileSpec().getFringeColor();<a name="line.304"></a>
-<span class="sourceLineNo">305</span>                color = Misc.setAlpha(color, 50);<a name="line.305"></a>
-<span class="sourceLineNo">306</span>                float b = proj.getBrightness();<a name="line.306"></a>
-<span class="sourceLineNo">307</span>                b *= viewport.getAlphaMult();<a name="line.307"></a>
-<span class="sourceLineNo">308</span>                <a name="line.308"></a>
-<span class="sourceLineNo">309</span>                for (ParticleData p : particles) {<a name="line.309"></a>
-<span class="sourceLineNo">310</span>                        float size = proj.getProjectileSpec().getWidth() * 0.6f;<a name="line.310"></a>
-<span class="sourceLineNo">311</span>                        size *= p.scale;<a name="line.311"></a>
-<span class="sourceLineNo">312</span>                        <a name="line.312"></a>
-<span class="sourceLineNo">313</span>                        float alphaMult = 1f;<a name="line.313"></a>
-<span class="sourceLineNo">314</span>                        Vector2f offset = p.offset;<a name="line.314"></a>
-<span class="sourceLineNo">315</span>                        float diff = Misc.getAngleDiff(baseFacing, proj.getFacing());<a name="line.315"></a>
-<span class="sourceLineNo">316</span>                        if (Math.abs(diff) &gt; 0.1f) {<a name="line.316"></a>
-<span class="sourceLineNo">317</span>                                offset = Misc.rotateAroundOrigin(offset, diff);<a name="line.317"></a>
-<span class="sourceLineNo">318</span>                        }<a name="line.318"></a>
-<span class="sourceLineNo">319</span>                        Vector2f loc = new Vector2f(x + offset.x, y + offset.y);<a name="line.319"></a>
-<span class="sourceLineNo">320</span>                        <a name="line.320"></a>
-<span class="sourceLineNo">321</span>                        p.sprite.setAngle(p.angle);<a name="line.321"></a>
-<span class="sourceLineNo">322</span>                        p.sprite.setSize(size, size);<a name="line.322"></a>
-<span class="sourceLineNo">323</span>                        p.sprite.setAlphaMult(b * alphaMult * p.fader.getBrightness());<a name="line.323"></a>
-<span class="sourceLineNo">324</span>                        p.sprite.setColor(color);<a name="line.324"></a>
-<span class="sourceLineNo">325</span>                        p.sprite.renderAtCenter(loc.x, loc.y);<a name="line.325"></a>
-<span class="sourceLineNo">326</span>                }<a name="line.326"></a>
-<span class="sourceLineNo">327</span>        }<a name="line.327"></a>
+<span class="sourceLineNo">290</span>                        float f = index / (particles.size() - 1);<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                        Vector2f dir = Misc.getUnitVectorAtDegreeAngle(proj.getFacing() + 180f);<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                        dir.scale(length * f);<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                        Vector2f.add(p.offset, dir, p.offset);<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                        <a name="line.294"></a>
+<span class="sourceLineNo">295</span>                        p.offset = Misc.getPointWithinRadius(p.offset, width * 0.5f);<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                        //p.scale = 0.25f + 0.75f * (1 - f);<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                        <a name="line.297"></a>
+<span class="sourceLineNo">298</span>                        index++;<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                }<a name="line.299"></a>
+<span class="sourceLineNo">300</span>        }<a name="line.300"></a>
+<span class="sourceLineNo">301</span>        <a name="line.301"></a>
+<span class="sourceLineNo">302</span>        public float getRenderRadius() {<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                return 300f;<a name="line.303"></a>
+<span class="sourceLineNo">304</span>        }<a name="line.304"></a>
+<span class="sourceLineNo">305</span>        <a name="line.305"></a>
+<span class="sourceLineNo">306</span>        <a name="line.306"></a>
+<span class="sourceLineNo">307</span>        protected EnumSet&lt;CombatEngineLayers&gt; layers = EnumSet.of(CombatEngineLayers.ABOVE_SHIPS_AND_MISSILES_LAYER);<a name="line.307"></a>
+<span class="sourceLineNo">308</span>        @Override<a name="line.308"></a>
+<span class="sourceLineNo">309</span>        public EnumSet&lt;CombatEngineLayers&gt; getActiveLayers() {<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                return layers;<a name="line.310"></a>
+<span class="sourceLineNo">311</span>        }<a name="line.311"></a>
+<span class="sourceLineNo">312</span><a name="line.312"></a>
+<span class="sourceLineNo">313</span><a name="line.313"></a>
+<span class="sourceLineNo">314</span>        public void init(CombatEntityAPI entity) {<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                super.init(entity);<a name="line.315"></a>
+<span class="sourceLineNo">316</span>        }<a name="line.316"></a>
+<span class="sourceLineNo">317</span>        <a name="line.317"></a>
+<span class="sourceLineNo">318</span>        public void advance(float amount) {<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                if (Global.getCombatEngine().isPaused()) return;<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                <a name="line.320"></a>
+<span class="sourceLineNo">321</span>                entity.getLocation().set(proj.getLocation());<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                <a name="line.322"></a>
+<span class="sourceLineNo">323</span>                for (ParticleData p : particles) {<a name="line.323"></a>
+<span class="sourceLineNo">324</span>                        p.advance(amount);<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                }<a name="line.325"></a>
+<span class="sourceLineNo">326</span>        }<a name="line.326"></a>
+<span class="sourceLineNo">327</span><a name="line.327"></a>
 <span class="sourceLineNo">328</span><a name="line.328"></a>
-<span class="sourceLineNo">329</span>}<a name="line.329"></a>
-<span class="sourceLineNo">330</span><a name="line.330"></a>
-<span class="sourceLineNo">331</span><a name="line.331"></a>
-<span class="sourceLineNo">332</span><a name="line.332"></a>
-<span class="sourceLineNo">333</span><a name="line.333"></a>
+<span class="sourceLineNo">329</span>        public boolean isExpired() {<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                return proj.isExpired() || !Global.getCombatEngine().isEntityInPlay(proj);<a name="line.330"></a>
+<span class="sourceLineNo">331</span>        }<a name="line.331"></a>
+<span class="sourceLineNo">332</span>        <a name="line.332"></a>
+<span class="sourceLineNo">333</span>        public Color getParticleColor() {<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                Color color = proj.getProjectileSpec().getFringeColor();<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                color = Misc.setAlpha(color, 50);<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                return color;<a name="line.336"></a>
+<span class="sourceLineNo">337</span>        }<a name="line.337"></a>
+<span class="sourceLineNo">338</span><a name="line.338"></a>
+<span class="sourceLineNo">339</span>        public void render(CombatEngineLayers layer, ViewportAPI viewport) {<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                float x = entity.getLocation().x;<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                float y = entity.getLocation().y;<a name="line.341"></a>
+<span class="sourceLineNo">342</span>        <a name="line.342"></a>
+<span class="sourceLineNo">343</span>                //Color color = new Color(100,150,255,50);<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                Color color = getParticleColor();<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                float b = proj.getBrightness();<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                b *= viewport.getAlphaMult();<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                <a name="line.347"></a>
+<span class="sourceLineNo">348</span>                for (ParticleData p : particles) {<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                        float size = proj.getProjectileSpec().getWidth() * 0.6f;<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                        size *= p.scale;<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                        <a name="line.351"></a>
+<span class="sourceLineNo">352</span>                        float alphaMult = 1f;<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                        Vector2f offset = p.offset;<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                        float diff = Misc.getAngleDiff(baseFacing, proj.getFacing());<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                        if (Math.abs(diff) &gt; 0.1f) {<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                                offset = Misc.rotateAroundOrigin(offset, diff);<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                        }<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                        Vector2f loc = new Vector2f(x + offset.x, y + offset.y);<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                        <a name="line.359"></a>
+<span class="sourceLineNo">360</span>                        p.sprite.setAngle(p.angle);<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                        p.sprite.setSize(size, size);<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                        p.sprite.setAlphaMult(b * alphaMult * p.fader.getBrightness());<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                        p.sprite.setColor(color);<a name="line.363"></a>
+<span class="sourceLineNo">364</span>                        p.sprite.renderAtCenter(loc.x, loc.y);<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                }<a name="line.365"></a>
+<span class="sourceLineNo">366</span>        }<a name="line.366"></a>
+<span class="sourceLineNo">367</span><a name="line.367"></a>
+<span class="sourceLineNo">368</span>}<a name="line.368"></a>
+<span class="sourceLineNo">369</span><a name="line.369"></a>
+<span class="sourceLineNo">370</span><a name="line.370"></a>
+<span class="sourceLineNo">371</span><a name="line.371"></a>
+<span class="sourceLineNo">372</span><a name="line.372"></a>
 
 
 

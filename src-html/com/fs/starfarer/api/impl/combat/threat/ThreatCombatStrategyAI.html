@@ -1,0 +1,584 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.combat.threat;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.util.ArrayList;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import java.util.LinkedHashSet;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import java.util.List;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import java.util.Set;<a name="line.6"></a>
+<span class="sourceLineNo">007</span><a name="line.7"></a>
+<span class="sourceLineNo">008</span>import org.lwjgl.util.vector.Vector2f;<a name="line.8"></a>
+<span class="sourceLineNo">009</span><a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.Global;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.combat.AssignmentTargetAPI;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.combat.BattleObjectiveAPI;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.combat.CombatAssignmentType;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.combat.CombatEngineAPI;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.combat.CombatFleetManagerAPI;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.combat.CombatFleetManagerAPI.AssignmentInfo;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.combat.CombatTaskManagerAPI;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import com.fs.starfarer.api.combat.DeployedFleetMemberAPI;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import com.fs.starfarer.api.combat.ShipAIPlugin;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import com.fs.starfarer.api.combat.ShipAPI;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import com.fs.starfarer.api.combat.ShipwideAIFlags.AIFlags;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import com.fs.starfarer.api.fleet.FleetGoal;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>import com.fs.starfarer.api.impl.campaign.ids.HullMods;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>import com.fs.starfarer.api.impl.campaign.ids.Tags;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>import com.fs.starfarer.api.util.IntervalUtil;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>import com.fs.starfarer.api.util.Misc;<a name="line.26"></a>
+<span class="sourceLineNo">027</span><a name="line.27"></a>
+<span class="sourceLineNo">028</span>/**<a name="line.28"></a>
+<span class="sourceLineNo">029</span> * Doesn't care about command points etc, just functions in a different way. May use command points/tasks/etc<a name="line.29"></a>
+<span class="sourceLineNo">030</span> * to accomplish its goals, just as an implementation detail, but conceptually it's fundamentally different from how<a name="line.30"></a>
+<span class="sourceLineNo">031</span> * human-type fleets work.<a name="line.31"></a>
+<span class="sourceLineNo">032</span> * <a name="line.32"></a>
+<span class="sourceLineNo">033</span> * @author Alex<a name="line.33"></a>
+<span class="sourceLineNo">034</span> *<a name="line.34"></a>
+<span class="sourceLineNo">035</span> */<a name="line.35"></a>
+<span class="sourceLineNo">036</span>public class ThreatCombatStrategyAI {<a name="line.36"></a>
+<span class="sourceLineNo">037</span>        <a name="line.37"></a>
+<span class="sourceLineNo">038</span>        public static float SND_BASE = 60f;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>        public static float SND_TIMER = 60f;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>        public static float SND_FRACTION = 0.5f;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>        <a name="line.41"></a>
+<span class="sourceLineNo">042</span>        protected boolean playerSide;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        protected CombatTaskManagerAPI taskManager;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        protected CombatFleetManagerAPI fleetManager;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        protected CombatFleetManagerAPI enemyFleetManager;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        protected int owner;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        protected boolean allyMode = false;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        <a name="line.48"></a>
+<span class="sourceLineNo">049</span>        protected IntervalUtil everySecond = new IntervalUtil(0.8f, 1.2f);<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        protected CombatEngineAPI engine;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        protected float mw, mh;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        <a name="line.52"></a>
+<span class="sourceLineNo">053</span>        protected boolean abort = false;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>        <a name="line.54"></a>
+<span class="sourceLineNo">055</span>        protected AssignmentInfo mainDefend1;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>        protected AssignmentInfo mainDefend2;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>        <a name="line.57"></a>
+<span class="sourceLineNo">058</span>        protected float captureAllTimeRemaining; <a name="line.58"></a>
+<span class="sourceLineNo">059</span>        protected boolean gaveInitialOrders = false;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>        <a name="line.60"></a>
+<span class="sourceLineNo">061</span>        protected float untilSNDOnSkirmishUnits; <a name="line.61"></a>
+<span class="sourceLineNo">062</span>        <a name="line.62"></a>
+<span class="sourceLineNo">063</span>        <a name="line.63"></a>
+<span class="sourceLineNo">064</span>        public ThreatCombatStrategyAI(int owner) {<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                engine = Global.getCombatEngine();<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                this.owner = owner;<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                playerSide = owner == 0;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                allyMode = playerSide;<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                //allyMode = false;<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                fleetManager = engine.getFleetManager(owner);<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                taskManager = fleetManager.getTaskManager(allyMode);<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                taskManager.getCommandPointsStat().modifyFlat("ThreatCombatStrategyAI", 1000000000);<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                <a name="line.73"></a>
+<span class="sourceLineNo">074</span>                enemyFleetManager = engine.getFleetManager(owner == 0 ? 1 : 0);<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                <a name="line.75"></a>
+<span class="sourceLineNo">076</span>                if (fleetManager.getGoal() == FleetGoal.ESCAPE || enemyFleetManager.getGoal() == FleetGoal.ESCAPE) {<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                        abort = true;<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                } else {<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                        if (fleetManager.getAdmiralAI() != null) {<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                                taskManager.clearTasks();<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                                fleetManager.getAdmiralAI().setNoOrders(true);<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                        }<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                }<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                <a name="line.84"></a>
+<span class="sourceLineNo">085</span>                mw = engine.getMapWidth();<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                mh = engine.getMapHeight();<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                <a name="line.87"></a>
+<span class="sourceLineNo">088</span>                resetSNDTimer();<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        }<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        <a name="line.90"></a>
+<span class="sourceLineNo">091</span>        protected void resetSNDTimer() {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                untilSNDOnSkirmishUnits = SND_TIMER * (0.75f + (float) Math.random() * 0.5f); <a name="line.92"></a>
+<span class="sourceLineNo">093</span>                untilSNDOnSkirmishUnits += SND_BASE; <a name="line.93"></a>
+<span class="sourceLineNo">094</span>        }<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        <a name="line.95"></a>
+<span class="sourceLineNo">096</span>        protected void manageSND(float amount) {<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                untilSNDOnSkirmishUnits -= amount;<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                if (captureAllTimeRemaining &gt; 0) return;<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                if (untilSNDOnSkirmishUnits &lt;= 0) {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                        for (DeployedFleetMemberAPI member : fleetManager.getDeployedCopyDFM()) {<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                                ShipAPI ship = member.getShip();<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                                if (ship == null || ship.getAI() == null) continue;<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                                if (ship.hasTag(ThreatShipConstructionScript.SHIP_UNDER_CONSTRUCTION)) continue;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                                <a name="line.104"></a>
+<span class="sourceLineNo">105</span>                                if (!ship.getHullSpec().hasTag(Tags.THREAT_SKIRMISH)) continue;<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                                if ((float) Math.random() &gt; SND_FRACTION) continue;<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                                <a name="line.107"></a>
+<span class="sourceLineNo">108</span>                                cancelOrders(member, false);<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                                ship.getAIFlags().setFlag(AIFlags.IGNORES_ORDERS, SND_BASE * (0.75f + (float) Math.random() * 0.5f));<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                        }<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                        resetSNDTimer();<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                }<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        }<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        <a name="line.114"></a>
+<span class="sourceLineNo">115</span>        protected void giveInitialOrders() {<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                captureAllTimeRemaining = 80f;<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                for (BattleObjectiveAPI curr : engine.getObjectives()) {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                        taskManager.createAssignment(CombatAssignmentType.CAPTURE, curr, false);<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                }               <a name="line.119"></a>
+<span class="sourceLineNo">120</span>        }<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        <a name="line.121"></a>
+<span class="sourceLineNo">122</span>        <a name="line.122"></a>
+<span class="sourceLineNo">123</span>        public void advance(float amount) {<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                //if (true) return;<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                if (abort) return;<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                if (engine.isPaused()) return;<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                <a name="line.127"></a>
+<span class="sourceLineNo">128</span>                captureAllTimeRemaining -= amount;<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                <a name="line.129"></a>
+<span class="sourceLineNo">130</span>                manageSND(amount);<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                <a name="line.131"></a>
+<span class="sourceLineNo">132</span>                everySecond.advance(amount);<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                if (everySecond.intervalElapsed()) {<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                        // if non-threat ships are deployed from this fleetManager, don't want to be doing any Threat things<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                        List&lt;DeployedFleetMemberAPI&gt; deployed = fleetManager.getDeployedCopyDFM();<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                        if (deployed.isEmpty()) return;<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                        <a name="line.137"></a>
+<span class="sourceLineNo">138</span>                        boolean someMatching = false;<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                        for (DeployedFleetMemberAPI member : deployed) {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                                if (!member.isFighterWing() &amp;&amp; member.getShip() != null &amp;&amp;<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                                                member.isAlly() == allyMode &amp;&amp;<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                                                !member.getShip().getVariant().hasHullMod(HullMods.THREAT_HULLMOD)) {<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                                        abort = true;<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                                        return;<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                                } else if (!member.isFighterWing() &amp;&amp; member.getShip() != null &amp;&amp;<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                                                member.isAlly() == allyMode) {<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                                        someMatching = true;<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                                }<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                        }<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                        <a name="line.150"></a>
+<span class="sourceLineNo">151</span>                        if (!someMatching) return;<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                        <a name="line.152"></a>
+<span class="sourceLineNo">153</span>                        if (!gaveInitialOrders) {<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                                giveInitialOrders();<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                                gaveInitialOrders = true;<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                        }<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                        <a name="line.157"></a>
+<span class="sourceLineNo">158</span>                        float sign = 1f;<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                        if (owner == 0) sign = -1;<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                        Vector2f enemyCom = getEnemyCenterOfMass();<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                        Vector2f fabricatorLoc = new Vector2f(0, 0 + mh * 0.33f * sign);<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                        Vector2f axis = Misc.getUnitVector(fabricatorLoc, enemyCom);<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                        Vector2f perp = new Vector2f(axis.y, -axis.x);<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                        float distToEnemyCom = Misc.getDistance(fabricatorLoc, enemyCom);<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                        <a name="line.165"></a>
+<span class="sourceLineNo">166</span>                        //float hiveOffset = 2000f;<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                        float hiveOffset = distToEnemyCom - 6000f;<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                        if (Math.abs(hiveOffset) &lt; 2000f) {<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                                hiveOffset = Math.signum(hiveOffset) * 2000f;<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                        }<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                        if (hiveOffset &gt; 2000) hiveOffset= 2000f;<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                        Vector2f hiveLoc = new Vector2f(axis);<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                        hiveLoc.scale(hiveOffset);<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                        Vector2f.add(hiveLoc, fabricatorLoc, hiveLoc);<a name="line.174"></a>
+<span class="sourceLineNo">175</span><a name="line.175"></a>
+<span class="sourceLineNo">176</span>                        float enemyWeightNearFabricatorLoc = Misc.countEnemyWeightInArcAroundLocation(<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                                        owner, fabricatorLoc, 0f, 360f, 3000f, null, true, true);<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                        <a name="line.178"></a>
+<span class="sourceLineNo">179</span>                        int fabricators = 0;<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                        int hives = 0;<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                        for (DeployedFleetMemberAPI member : fleetManager.getDeployedCopyDFM()) {<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                                ShipAPI ship = member.getShip();<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                                if (ship == null || ship.getAI() == null) continue;<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                                if (isFabricator(ship)) {<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                                        fabricators++;<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                                }<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                                if (isHive(ship)) {<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                                        hives++;<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                                }<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                        }<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                        <a name="line.191"></a>
+<span class="sourceLineNo">192</span>                        float defDist = distToEnemyCom - 2000f;<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                        if (enemyWeightNearFabricatorLoc &gt;= 3f) {<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                                defDist = Math.min(defDist, 3000f);<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                        }<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                        if (fabricators == 0 &amp;&amp; hives == 0) {<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                                if (mainDefend1 != null) {<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                                        taskManager.removeAssignment(mainDefend1);<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                                        mainDefend1 = null;<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                                }<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                                if (mainDefend2 != null) {<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                                        taskManager.removeAssignment(mainDefend2);<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                                        mainDefend2 = null;<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                                }<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                        } else if (defDist &lt; 2000f) {<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                                if (mainDefend1 != null) {<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                                        float dist = Misc.getDistance(mainDefend1.getTarget().getLocation(), fabricatorLoc);<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                                        if (dist &gt; 1000f) {<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                                                taskManager.removeAssignment(mainDefend1);<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                                                mainDefend1 = null;<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                                        }<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                                }<a name="line.212"></a>
+<span class="sourceLineNo">213</span><a name="line.213"></a>
+<span class="sourceLineNo">214</span>                                if (mainDefend2 != null) {<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                                        taskManager.removeAssignment(mainDefend2);<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                                        mainDefend2 = null;<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                                }<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                                <a name="line.218"></a>
+<span class="sourceLineNo">219</span>                                if (mainDefend1 == null) {<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                                        AssignmentTargetAPI wp = taskManager.createWaypoint2(fabricatorLoc, allyMode);<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                                        mainDefend1 = taskManager.createAssignment(CombatAssignmentType.DEFEND, wp, false);<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                                }<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                                <a name="line.223"></a>
+<span class="sourceLineNo">224</span>                                //Global.getCombatEngine().getCombatUI().addMessage(0, "Threat aggro mode engaged!");<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                                // enemies close to fabricators - attack! <a name="line.225"></a>
+<span class="sourceLineNo">226</span>                                for (DeployedFleetMemberAPI member : fleetManager.getDeployedCopyDFM()) {<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                                        ShipAPI ship = member.getShip();<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                                        if (ship == null || ship.getAI() == null) continue;<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                                        if (isCombatUnit(ship) &amp;&amp; ship.getAI() instanceof ShipAIPlugin) {<a name="line.229"></a>
+<span class="sourceLineNo">230</span>//                                              ShipAIPlugin ai = (ShipAIPlugin) ship.getAI();<a name="line.230"></a>
+<span class="sourceLineNo">231</span>//                                              ShipAIConfig config = ai.getConfig();<a name="line.231"></a>
+<span class="sourceLineNo">232</span>//                                              config.personalityOverride = Personalities.RECKLESS;<a name="line.232"></a>
+<span class="sourceLineNo">233</span>//                                              config.alwaysStrafeOffensively = true;<a name="line.233"></a>
+<span class="sourceLineNo">234</span>//                                              config.backingOffWhileNotVentingAllowed = false;<a name="line.234"></a>
+<span class="sourceLineNo">235</span>//                                              config.turnToFaceWithUndamagedArmor = false;<a name="line.235"></a>
+<span class="sourceLineNo">236</span>//                                              config.burnDriveIgnoreEnemies = true;<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                                                ship.getAIFlags().setFlag(AIFlags.DO_NOT_BACK_OFF, 2f);<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                                                ship.getAIFlags().setFlag(AIFlags.DO_NOT_VENT, 2f);<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                                                ship.getAIFlags().setFlag(AIFlags.IGNORES_ORDERS, 2f);<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                                        }<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                                }<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                        } else {<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                                Vector2f defLoc = new Vector2f(axis);<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                                defLoc.scale(defDist);<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                                Vector2f.add(defLoc, fabricatorLoc, defLoc);<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                                <a name="line.246"></a>
+<span class="sourceLineNo">247</span>                                Vector2f defLoc1 = new Vector2f(perp);<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                                defLoc1.scale(1000f);<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                                Vector2f.add(defLoc1, defLoc, defLoc1);<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                                <a name="line.250"></a>
+<span class="sourceLineNo">251</span>                                Vector2f defLoc2 = new Vector2f(perp);<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                                defLoc2.scale(-1000f);<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                                Vector2f.add(defLoc2, defLoc, defLoc2);<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                                <a name="line.254"></a>
+<span class="sourceLineNo">255</span>                                <a name="line.255"></a>
+<span class="sourceLineNo">256</span>                                if (mainDefend1 != null) {<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                                        float dist = Misc.getDistance(mainDefend1.getTarget().getLocation(), defLoc1);<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                                        if (dist &gt; 1000f) {<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                                                taskManager.removeAssignment(mainDefend1);<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                                                mainDefend1 = null;<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                                        }<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                                }<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                                if (mainDefend2 != null) {<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                                        float dist = Misc.getDistance(mainDefend2.getTarget().getLocation(), defLoc2);<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                                        if (dist &gt; 1000f) {<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                                                taskManager.removeAssignment(mainDefend2);<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                                                mainDefend2 = null;<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                                        }<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                                }<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                                <a name="line.270"></a>
+<span class="sourceLineNo">271</span>                                if (mainDefend1 == null) {<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                                        AssignmentTargetAPI wp = taskManager.createWaypoint2(defLoc1, allyMode);<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                                        mainDefend1 = taskManager.createAssignment(CombatAssignmentType.DEFEND, wp, false);<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                                }<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                                <a name="line.275"></a>
+<span class="sourceLineNo">276</span>                                if (mainDefend2 == null) {<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                                        AssignmentTargetAPI wp = taskManager.createWaypoint2(defLoc2, allyMode);<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                                        mainDefend2 = taskManager.createAssignment(CombatAssignmentType.DEFEND, wp, false);<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                                }<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                        }<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                        <a name="line.281"></a>
+<span class="sourceLineNo">282</span>                        if (captureAllTimeRemaining &lt;= 0f) {<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                                float axisAngle = Misc.getAngleInDegrees(axis);<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                                List&lt;AssignmentTargetAPI&gt; withCaptures = new ArrayList&lt;&gt;();<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                                for (AssignmentInfo info : taskManager.getAllAssignments()) {<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                                        if (info.getTarget() == null) continue;<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                                        if (info.getType() == CombatAssignmentType.CAPTURE || info.getType() == CombatAssignmentType.CONTROL) {<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                                                if ((fabricators == 0 &amp;&amp; hives == 0) ||<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                                                                !wantsToControl(fabricatorLoc, axisAngle, distToEnemyCom, info.getTarget().getLocation())) {<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                                                        taskManager.removeAssignment(info);<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                                                } else {<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                                                        withCaptures.add(info.getTarget());<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                                                }<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                                        }<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                                }<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                                <a name="line.296"></a>
+<span class="sourceLineNo">297</span>                                if (fabricators &gt; 0 || hives &gt; 0) {<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                                        for (BattleObjectiveAPI curr : engine.getObjectives()) {<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                                                if (withCaptures.contains(curr)) continue;<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                                                if (wantsToControl(fabricatorLoc, axisAngle, distToEnemyCom, curr.getLocation())) {<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                                                        taskManager.createAssignment(CombatAssignmentType.CAPTURE, curr, false);<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                                                }<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                                        }<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                                }<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                        }<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                        <a name="line.306"></a>
+<span class="sourceLineNo">307</span>                        Set&lt;DeployedFleetMemberAPI&gt; escorted = new LinkedHashSet&lt;&gt;();<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                        <a name="line.308"></a>
+<span class="sourceLineNo">309</span>                        for (DeployedFleetMemberAPI member : fleetManager.getDeployedCopyDFM()) {<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                                ShipAPI ship = member.getShip();<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                                if (ship == null || ship.getAI() == null) continue;<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                                if (ship.hasTag(ThreatShipConstructionScript.SHIP_UNDER_CONSTRUCTION)) continue;<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                                <a name="line.313"></a>
+<span class="sourceLineNo">314</span>                                float enemyCheckRange = 3000f;<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                                if (isHive(ship)) {<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                                        enemyCheckRange = 1000f;<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                                }<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                                <a name="line.318"></a>
+<span class="sourceLineNo">319</span>                                float enemyWeight = Misc.countEnemyWeightInArcAroundLocation(owner, ship.getLocation(), 0f, 360f, enemyCheckRange, null, true, true);<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                                float shipWeight = Misc.getShipWeight(ship, true);<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                                <a name="line.321"></a>
+<span class="sourceLineNo">322</span>                                boolean enemiesNear = enemyWeight &gt;= shipWeight * 0.5f;<a name="line.322"></a>
+<span class="sourceLineNo">323</span>                                <a name="line.323"></a>
+<span class="sourceLineNo">324</span>                                if (isFabricator(ship)) {<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                                        float min = 0f;<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                                        float max = 1000f;<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                                        if (enemiesNear) {<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                                                min = 1000f;<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                                                max = 2000f;<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                                        }<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                                        giveMovementOrder(member, fabricatorLoc, min, max);<a name="line.331"></a>
+<span class="sourceLineNo">332</span>                                } else if (isHive(ship)) {<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                                        if (enemiesNear) {<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                                                cancelOrders(member, true);<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                                        } else {<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                                                giveMovementOrder(member, hiveLoc, 1000f, 1500f);<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                                        }<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                                } else if (isOverseer(ship)) {<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                                        DeployedFleetMemberAPI closest = null;<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                                        float minDist = Float.MAX_VALUE;<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                                        for (DeployedFleetMemberAPI other : fleetManager.getDeployedCopyDFM()) {<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                                                if (other == member || other.getShip() == null || escorted.contains(other)) continue;<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                                                <a name="line.343"></a>
+<span class="sourceLineNo">344</span>                                                float extraDistScore = 0f;<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                                                if (other.getShip().isCruiser() &amp;&amp; isCombatUnit(other.getShip())) {<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                                                        extraDistScore = 0f;<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                                                } else if (other.getShip().isDestroyer() &amp;&amp; isCombatUnit(other.getShip())) {<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                                                        extraDistScore = 100000f;<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                                                } else if (other.getShip().isFrigate() &amp;&amp; isCombatUnit(other.getShip())) {<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                                                        if (enemiesNear) {<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                                                                extraDistScore = 500000f;<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                                                        } else {<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                                                                extraDistScore = 1000000f;<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                                                        }<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                                                } else if (isHive(other.getShip())) {<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                                                        if (enemiesNear) {<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                                                                extraDistScore = 100000f;<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                                                        } else {<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                                                                extraDistScore = 10000000f;<a name="line.359"></a>
+<span class="sourceLineNo">360</span>                                                        }<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                                                } else {<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                                                        continue;<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                                                }<a name="line.363"></a>
+<span class="sourceLineNo">364</span>                                                float dist = Misc.getDistance(member.getLocation(), other.getLocation()) + extraDistScore;<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                                                if (dist &lt; minDist) {<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                                                        closest = other;<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                                                        minDist = dist;<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                                                }<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                                        }<a name="line.369"></a>
+<span class="sourceLineNo">370</span>                                        if (closest != null) {<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                                                member.getShip().getAIFlags().setFlag(AIFlags.TIMID_ESCORT, 2f);<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                                                member.getShip().getAIFlags().setFlag(AIFlags.ESCORT_RANGE_MODIFIER, 2f, 300f);<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                                                escort(member, closest);<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                                        }<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                                }<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                                <a name="line.376"></a>
+<span class="sourceLineNo">377</span>                        }<a name="line.377"></a>
+<span class="sourceLineNo">378</span><a name="line.378"></a>
+<span class="sourceLineNo">379</span>                        cleanUpEmptyAssignments();<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                }<a name="line.380"></a>
+<span class="sourceLineNo">381</span>        }<a name="line.381"></a>
+<span class="sourceLineNo">382</span>        <a name="line.382"></a>
+<span class="sourceLineNo">383</span>        protected boolean wantsToControl(Vector2f fabricatorLoc, float axisAngle, float distToEnemyCom, Vector2f objectiveLoc) {<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                float dist = Misc.getDistance(fabricatorLoc, objectiveLoc);<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                float angle = Misc.getAngleInDegrees(fabricatorLoc, objectiveLoc);<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                float angleDiff = Misc.getAngleDiff(axisAngle, angle);<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                <a name="line.387"></a>
+<span class="sourceLineNo">388</span>                float enemyWeight = Misc.countEnemyWeightInArcAroundLocation(owner, objectiveLoc, 0f, 360f, 3000f, null, true, true);<a name="line.388"></a>
+<span class="sourceLineNo">389</span>                if (enemyWeight &lt;= 0f &amp;&amp; angleDiff &gt; 30f) return true;<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                //return !(dist &gt; 2000 &amp;&amp; (dist &gt; distToEnemyCom || angleDiff &gt; 45f));<a name="line.390"></a>
+<span class="sourceLineNo">391</span>                return dist &lt; 5000 || (dist &lt; distToEnemyCom &amp;&amp; angleDiff &lt; 45f);<a name="line.391"></a>
+<span class="sourceLineNo">392</span>        }<a name="line.392"></a>
+<span class="sourceLineNo">393</span>        <a name="line.393"></a>
+<span class="sourceLineNo">394</span>        <a name="line.394"></a>
+<span class="sourceLineNo">395</span>        protected void cancelOrders(DeployedFleetMemberAPI member, boolean withSearchAndDestroy) {<a name="line.395"></a>
+<span class="sourceLineNo">396</span>                AssignmentInfo curr = taskManager.getAssignmentFor(member.getShip());<a name="line.396"></a>
+<span class="sourceLineNo">397</span>                if (curr != null) {<a name="line.397"></a>
+<span class="sourceLineNo">398</span>                        taskManager.removeAssignment(curr);<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                }<a name="line.399"></a>
+<span class="sourceLineNo">400</span>                if (withSearchAndDestroy) {<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                        taskManager.orderSearchAndDestroy(member, false);<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                }<a name="line.402"></a>
+<span class="sourceLineNo">403</span>        }<a name="line.403"></a>
+<span class="sourceLineNo">404</span>        <a name="line.404"></a>
+<span class="sourceLineNo">405</span>        protected void escort(DeployedFleetMemberAPI member, DeployedFleetMemberAPI target) {<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                if (member.getShip() == null) return;<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                AssignmentInfo curr = taskManager.getAssignmentFor(member.getShip());<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                if (curr != null &amp;&amp; curr.getType() == CombatAssignmentType.LIGHT_ESCORT &amp;&amp; <a name="line.408"></a>
+<span class="sourceLineNo">409</span>                                taskManager.getAssignmentTargetFor(member.getShip()) == target) {<a name="line.409"></a>
+<span class="sourceLineNo">410</span>                        return;<a name="line.410"></a>
+<span class="sourceLineNo">411</span>                }<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                <a name="line.412"></a>
+<span class="sourceLineNo">413</span>                AssignmentInfo info = taskManager.createAssignment(CombatAssignmentType.LIGHT_ESCORT, target, false);<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                taskManager.setAssignmentWeight(info, 0f);<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                taskManager.giveAssignment(member, info, false);<a name="line.415"></a>
+<span class="sourceLineNo">416</span>        }<a name="line.416"></a>
+<span class="sourceLineNo">417</span>        <a name="line.417"></a>
+<span class="sourceLineNo">418</span>        protected void giveMovementOrder(DeployedFleetMemberAPI member, Vector2f loc, float minDist, float maxDist) {<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                AssignmentInfo curr = taskManager.getAssignmentFor(member.getShip());<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                boolean needToMakeAssignment = curr == null || curr.getTarget() == null || Misc.getDistance(curr.getTarget().getLocation(), loc) &gt; 100f;<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                <a name="line.421"></a>
+<span class="sourceLineNo">422</span>                float dist = Misc.getDistance(member.getLocation(), loc);<a name="line.422"></a>
+<span class="sourceLineNo">423</span>                if (dist &lt; minDist) {<a name="line.423"></a>
+<span class="sourceLineNo">424</span>                        if (curr != null &amp;&amp; (curr.getType() == CombatAssignmentType.RALLY_CIVILIAN)) {<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                                taskManager.removeAssignment(curr);<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                        }<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                }<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                <a name="line.428"></a>
+<span class="sourceLineNo">429</span>                boolean needToLeash = false;<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                needToLeash |= curr == null &amp;&amp; dist &gt; minDist;<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                needToLeash |= curr != null &amp;&amp; dist &gt; maxDist;<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                <a name="line.432"></a>
+<span class="sourceLineNo">433</span>                if (needToMakeAssignment &amp;&amp; needToLeash) {<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                        AssignmentTargetAPI wp = taskManager.createWaypoint2(loc, allyMode);<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                        AssignmentInfo task = taskManager.createAssignment(CombatAssignmentType.RALLY_CIVILIAN, wp, false);<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                        taskManager.giveAssignment(member, task, false);<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                }<a name="line.437"></a>
+<span class="sourceLineNo">438</span>        }<a name="line.438"></a>
+<span class="sourceLineNo">439</span>        <a name="line.439"></a>
+<span class="sourceLineNo">440</span>        public void cleanUpEmptyAssignments() {<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                taskManager.reassign(); // so assigned members isn't empty<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                List&lt;AssignmentInfo&gt; remove = new ArrayList&lt;&gt;();<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                for (AssignmentInfo curr : taskManager.getAllAssignments()) {<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                        if (curr.getType() == CombatAssignmentType.CONTROL) continue;<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                        if (curr.getType() == CombatAssignmentType.CAPTURE) continue;<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                        if (curr.getType() == CombatAssignmentType.DEFEND) continue;<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                        if (curr.getAssignedMembers().isEmpty()) {<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                                remove.add(curr);<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                        }<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                }<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                for (AssignmentInfo curr : remove) {<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                        taskManager.removeAssignment(curr);<a name="line.452"></a>
+<span class="sourceLineNo">453</span>                }<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                <a name="line.454"></a>
+<span class="sourceLineNo">455</span>                taskManager.clearEmptyWaypoints();<a name="line.455"></a>
+<span class="sourceLineNo">456</span>        }<a name="line.456"></a>
+<span class="sourceLineNo">457</span>        <a name="line.457"></a>
+<span class="sourceLineNo">458</span>        protected Vector2f getEnemyCenterOfMass() {<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                Vector2f com = new Vector2f();<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                float weight = 0;<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                for (DeployedFleetMemberAPI member : enemyFleetManager.getDeployedCopyDFM()) {<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                        if (member.isFighterWing()) continue;<a name="line.462"></a>
+<span class="sourceLineNo">463</span>                        if (member.getShip() == null) continue;<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                        if (!engine.isAwareOf(owner, member.getShip())) continue;<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                        <a name="line.465"></a>
+<span class="sourceLineNo">466</span>                        Vector2f.add(member.getLocation(), com, com);<a name="line.466"></a>
+<span class="sourceLineNo">467</span>                        weight++; // maybe feels better than scaling weight by ship size etc<a name="line.467"></a>
+<span class="sourceLineNo">468</span>                }<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                if (weight &gt; 0) {<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                        com.scale(1f / weight);<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                }<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                return com;<a name="line.472"></a>
+<span class="sourceLineNo">473</span>        }<a name="line.473"></a>
+<span class="sourceLineNo">474</span>        <a name="line.474"></a>
+<span class="sourceLineNo">475</span>        <a name="line.475"></a>
+<span class="sourceLineNo">476</span>        public static boolean isCombatUnit(ShipAPI ship) {<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                return ship.getHullSpec().hasTag(Tags.THREAT_COMBAT);<a name="line.477"></a>
+<span class="sourceLineNo">478</span>        }<a name="line.478"></a>
+<span class="sourceLineNo">479</span>        public static boolean isOverseer(ShipAPI ship) {<a name="line.479"></a>
+<span class="sourceLineNo">480</span>                return ship.getHullSpec().hasTag(Tags.THREAT_OVERSEER);<a name="line.480"></a>
+<span class="sourceLineNo">481</span>        }<a name="line.481"></a>
+<span class="sourceLineNo">482</span>        public static boolean isHive(ShipAPI ship) {<a name="line.482"></a>
+<span class="sourceLineNo">483</span>                return ship.getHullSpec().hasTag(Tags.THREAT_HIVE);<a name="line.483"></a>
+<span class="sourceLineNo">484</span>        }<a name="line.484"></a>
+<span class="sourceLineNo">485</span>        public static boolean isFabricator(ShipAPI ship) {<a name="line.485"></a>
+<span class="sourceLineNo">486</span>                return ship.getHullSpec().hasTag(Tags.THREAT_FABRICATOR);<a name="line.486"></a>
+<span class="sourceLineNo">487</span>                //return ship.getSystem() != null &amp;&amp; ship.getSystem().getId().equals(ShipSystems.CONSTRUCTION_SWARM);<a name="line.487"></a>
+<span class="sourceLineNo">488</span>        }<a name="line.488"></a>
+<span class="sourceLineNo">489</span>}<a name="line.489"></a>
+<span class="sourceLineNo">490</span><a name="line.490"></a>
+<span class="sourceLineNo">491</span><a name="line.491"></a>
+<span class="sourceLineNo">492</span><a name="line.492"></a>
+<span class="sourceLineNo">493</span><a name="line.493"></a>
+<span class="sourceLineNo">494</span><a name="line.494"></a>
+<span class="sourceLineNo">495</span><a name="line.495"></a>
+<span class="sourceLineNo">496</span><a name="line.496"></a>
+<span class="sourceLineNo">497</span><a name="line.497"></a>
+<span class="sourceLineNo">498</span><a name="line.498"></a>
+<span class="sourceLineNo">499</span><a name="line.499"></a>
+<span class="sourceLineNo">500</span><a name="line.500"></a>
+<span class="sourceLineNo">501</span><a name="line.501"></a>
+<span class="sourceLineNo">502</span><a name="line.502"></a>
+<span class="sourceLineNo">503</span><a name="line.503"></a>
+<span class="sourceLineNo">504</span><a name="line.504"></a>
+<span class="sourceLineNo">505</span><a name="line.505"></a>
+<span class="sourceLineNo">506</span><a name="line.506"></a>
+<span class="sourceLineNo">507</span><a name="line.507"></a>
+<span class="sourceLineNo">508</span><a name="line.508"></a>
+<span class="sourceLineNo">509</span><a name="line.509"></a>
+<span class="sourceLineNo">510</span><a name="line.510"></a>
+<span class="sourceLineNo">511</span><a name="line.511"></a>
+<span class="sourceLineNo">512</span><a name="line.512"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

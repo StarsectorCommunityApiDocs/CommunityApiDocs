@@ -21,48 +21,52 @@
 <span class="sourceLineNo">013</span>        public static float DAMAGE_MISSILES_PERCENT = 100f;<a name="line.13"></a>
 <span class="sourceLineNo">014</span>        public static float DAMAGE_FIGHTERS_PERCENT = 100f;<a name="line.14"></a>
 <span class="sourceLineNo">015</span>        <a name="line.15"></a>
-<span class="sourceLineNo">016</span>        public void applyEffectsBeforeShipCreation(HullSize hullSize, MutableShipStatsAPI stats, String id) {<a name="line.16"></a>
-<span class="sourceLineNo">017</span>                //stats.getEnergyAmmoBonus().modifyFlat(id, EXTRA_CHARGES);<a name="line.17"></a>
-<span class="sourceLineNo">018</span>                //stats.getEnergyRoFMult().modifyMult(id, ROF_MULT);<a name="line.18"></a>
-<span class="sourceLineNo">019</span>                <a name="line.19"></a>
-<span class="sourceLineNo">020</span>//              stats.getRecoilDecayMult().modifyMult(id, 2f);<a name="line.20"></a>
-<span class="sourceLineNo">021</span>//              stats.getRecoilPerShotMult().modifyMult(id, 0f);<a name="line.21"></a>
-<span class="sourceLineNo">022</span>                stats.getDamageToMissiles().modifyPercent(id, DAMAGE_MISSILES_PERCENT);<a name="line.22"></a>
-<span class="sourceLineNo">023</span>                stats.getDamageToFighters().modifyPercent(id, DAMAGE_FIGHTERS_PERCENT);<a name="line.23"></a>
-<span class="sourceLineNo">024</span>                //stats.getProjectileSpeedMult().modifyMult(id, 100f);<a name="line.24"></a>
-<span class="sourceLineNo">025</span>                stats.getBeamWeaponTurnRateBonus().modifyMult(id, 2f);<a name="line.25"></a>
-<span class="sourceLineNo">026</span>                stats.getBeamWeaponRangeBonus().modifyFlat(id, 300f);<a name="line.26"></a>
-<span class="sourceLineNo">027</span>                //stats.getBeamWeaponRangeBonus().modifyFlat(id, 300f);<a name="line.27"></a>
-<span class="sourceLineNo">028</span>                stats.getAutofireAimAccuracy().modifyFlat(id, 1f);<a name="line.28"></a>
-<span class="sourceLineNo">029</span>                <a name="line.29"></a>
-<span class="sourceLineNo">030</span>                stats.getEngineDamageTakenMult().modifyMult(id, 0f);<a name="line.30"></a>
+<span class="sourceLineNo">016</span>        public static float BEAM_RANGE_BONUS = 300f;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>        <a name="line.17"></a>
+<span class="sourceLineNo">018</span>        public void applyEffectsBeforeShipCreation(HullSize hullSize, MutableShipStatsAPI stats, String id) {<a name="line.18"></a>
+<span class="sourceLineNo">019</span>                //stats.getEnergyAmmoBonus().modifyFlat(id, EXTRA_CHARGES);<a name="line.19"></a>
+<span class="sourceLineNo">020</span>                //stats.getEnergyRoFMult().modifyMult(id, ROF_MULT);<a name="line.20"></a>
+<span class="sourceLineNo">021</span>                <a name="line.21"></a>
+<span class="sourceLineNo">022</span>//              stats.getRecoilDecayMult().modifyMult(id, 2f);<a name="line.22"></a>
+<span class="sourceLineNo">023</span>//              stats.getRecoilPerShotMult().modifyMult(id, 0f);<a name="line.23"></a>
+<span class="sourceLineNo">024</span>                stats.getDamageToMissiles().modifyPercent(id, DAMAGE_MISSILES_PERCENT);<a name="line.24"></a>
+<span class="sourceLineNo">025</span>                stats.getDamageToFighters().modifyPercent(id, DAMAGE_FIGHTERS_PERCENT);<a name="line.25"></a>
+<span class="sourceLineNo">026</span>                //stats.getProjectileSpeedMult().modifyMult(id, 100f);<a name="line.26"></a>
+<span class="sourceLineNo">027</span>                stats.getBeamWeaponTurnRateBonus().modifyMult(id, 2f);<a name="line.27"></a>
+<span class="sourceLineNo">028</span>                stats.getBeamWeaponRangeBonus().modifyFlat(id, BEAM_RANGE_BONUS);<a name="line.28"></a>
+<span class="sourceLineNo">029</span>                //stats.getBeamWeaponRangeBonus().modifyFlat(id, 300f);<a name="line.29"></a>
+<span class="sourceLineNo">030</span>                stats.getAutofireAimAccuracy().modifyFlat(id, 1f);<a name="line.30"></a>
 <span class="sourceLineNo">031</span>                <a name="line.31"></a>
-<span class="sourceLineNo">032</span>                stats.getDynamic().getMod(Stats.PD_IGNORES_FLARES).modifyFlat(id, 1f);<a name="line.32"></a>
-<span class="sourceLineNo">033</span>        }<a name="line.33"></a>
-<span class="sourceLineNo">034</span>        <a name="line.34"></a>
-<span class="sourceLineNo">035</span>        @Override<a name="line.35"></a>
-<span class="sourceLineNo">036</span>        public void applyEffectsAfterShipCreation(ShipAPI ship, String id) {<a name="line.36"></a>
-<span class="sourceLineNo">037</span>                super.applyEffectsAfterShipCreation(ship, id);<a name="line.37"></a>
-<span class="sourceLineNo">038</span>                <a name="line.38"></a>
-<span class="sourceLineNo">039</span>//              ship.getShield().setRingColor(new Color(255, 255, 255, 255));<a name="line.39"></a>
-<span class="sourceLineNo">040</span>//              ship.getShield().setInnerColor(new Color(255, 0, 0, 75));<a name="line.40"></a>
-<span class="sourceLineNo">041</span>                //ship.getEngineController().extendFlame(this, 0f, 0f, 1.5f);<a name="line.41"></a>
-<span class="sourceLineNo">042</span>        }<a name="line.42"></a>
-<span class="sourceLineNo">043</span><a name="line.43"></a>
-<span class="sourceLineNo">044</span><a name="line.44"></a>
+<span class="sourceLineNo">032</span>                stats.getEngineDamageTakenMult().modifyMult(id, 0f);<a name="line.32"></a>
+<span class="sourceLineNo">033</span>                <a name="line.33"></a>
+<span class="sourceLineNo">034</span>                stats.getDynamic().getMod(Stats.PD_IGNORES_FLARES).modifyFlat(id, 1f);<a name="line.34"></a>
+<span class="sourceLineNo">035</span>        }<a name="line.35"></a>
+<span class="sourceLineNo">036</span>        <a name="line.36"></a>
+<span class="sourceLineNo">037</span>        @Override<a name="line.37"></a>
+<span class="sourceLineNo">038</span>        public void applyEffectsAfterShipCreation(ShipAPI ship, String id) {<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                super.applyEffectsAfterShipCreation(ship, id);<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                <a name="line.40"></a>
+<span class="sourceLineNo">041</span>//              ship.getShield().setRingColor(new Color(255, 255, 255, 255));<a name="line.41"></a>
+<span class="sourceLineNo">042</span>//              ship.getShield().setInnerColor(new Color(255, 0, 0, 75));<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                //ship.getEngineController().extendFlame(this, 0f, 0f, 1.5f);<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        }<a name="line.44"></a>
 <span class="sourceLineNo">045</span><a name="line.45"></a>
-<span class="sourceLineNo">046</span>        public String getDescriptionParam(int index, HullSize hullSize) {<a name="line.46"></a>
-<span class="sourceLineNo">047</span>                return null;<a name="line.47"></a>
-<span class="sourceLineNo">048</span>        }<a name="line.48"></a>
-<span class="sourceLineNo">049</span><a name="line.49"></a>
-<span class="sourceLineNo">050</span>}<a name="line.50"></a>
-<span class="sourceLineNo">051</span><a name="line.51"></a>
-<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">046</span><a name="line.46"></a>
+<span class="sourceLineNo">047</span><a name="line.47"></a>
+<span class="sourceLineNo">048</span>        public String getDescriptionParam(int index, HullSize hullSize) {<a name="line.48"></a>
+<span class="sourceLineNo">049</span>                if (index == 0) return "" + (int) DAMAGE_MISSILES_PERCENT + "%";<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                if (index == 1) return "" + (int) BEAM_RANGE_BONUS;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>                return null;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        }<a name="line.52"></a>
 <span class="sourceLineNo">053</span><a name="line.53"></a>
-<span class="sourceLineNo">054</span><a name="line.54"></a>
+<span class="sourceLineNo">054</span>}<a name="line.54"></a>
 <span class="sourceLineNo">055</span><a name="line.55"></a>
 <span class="sourceLineNo">056</span><a name="line.56"></a>
 <span class="sourceLineNo">057</span><a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span><a name="line.59"></a>
+<span class="sourceLineNo">060</span><a name="line.60"></a>
+<span class="sourceLineNo">061</span><a name="line.61"></a>
 
 
 

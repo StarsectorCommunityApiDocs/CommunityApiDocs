@@ -1,0 +1,343 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../../dracula-javadoc8.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package com.fs.starfarer.api.impl.combat.dweller;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.util.List;<a name="line.3"></a>
+<span class="sourceLineNo">004</span><a name="line.4"></a>
+<span class="sourceLineNo">005</span>import java.awt.Color;<a name="line.5"></a>
+<span class="sourceLineNo">006</span><a name="line.6"></a>
+<span class="sourceLineNo">007</span>import org.lwjgl.util.vector.Vector2f;<a name="line.7"></a>
+<span class="sourceLineNo">008</span><a name="line.8"></a>
+<span class="sourceLineNo">009</span>import com.fs.starfarer.api.Global;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.fs.starfarer.api.combat.CombatEngineAPI;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import com.fs.starfarer.api.combat.CombatEngineLayers;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import com.fs.starfarer.api.combat.EmpArcEntityAPI;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import com.fs.starfarer.api.combat.EmpArcEntityAPI.EmpArcParams;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import com.fs.starfarer.api.combat.MutableShipStatsAPI;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import com.fs.starfarer.api.combat.ShipAPI;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import com.fs.starfarer.api.combat.ShipAPI.HullSize;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import com.fs.starfarer.api.combat.ViewportAPI;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import com.fs.starfarer.api.impl.combat.NegativeExplosionVisual;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import com.fs.starfarer.api.impl.combat.NegativeExplosionVisual.NEParams;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import com.fs.starfarer.api.impl.combat.dweller.DwellerCombatPlugin.WobblyPart;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import com.fs.starfarer.api.impl.combat.dweller.DwellerShroud.DwellerShroudParams;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import com.fs.starfarer.api.util.IntervalUtil;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>import com.fs.starfarer.api.util.Misc;<a name="line.23"></a>
+<span class="sourceLineNo">024</span><a name="line.24"></a>
+<span class="sourceLineNo">025</span>public class ShroudedEyeShipCreator extends BaseDwellerShipCreator {<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span>        public static class PlasmaEyePart extends BaseDwellerShipPart {<a name="line.27"></a>
+<span class="sourceLineNo">028</span>                public float radius;<a name="line.28"></a>
+<span class="sourceLineNo">029</span>                public IntervalUtil interval = new IntervalUtil(0.75f, 1.25f);<a name="line.29"></a>
+<span class="sourceLineNo">030</span>                public ShipAPI ship;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>                public NegativeExplosionVisual visual;<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span>                public PlasmaEyePart(Vector2f offset, float facingOffset, ShipAPI ship, float radius) {<a name="line.33"></a>
+<span class="sourceLineNo">034</span>                        super(offset, facingOffset);<a name="line.34"></a>
+<span class="sourceLineNo">035</span>                        this.ship = ship;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>                        this.radius = radius;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>                        <a name="line.37"></a>
+<span class="sourceLineNo">038</span>                        NEParams p = new NEParams();<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                        p.hitGlowSizeMult = 0.75f;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                        p.noiseMag = 1f;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>//                      p.radius = 35f;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>//                      p.noiseMult = 3f;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                        p.radius = 15f;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>                        p.noiseMult = 2f;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>                        p.color = new Color(255,55,255,155);<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                        p.blackColor = new Color(255,155,255,255);<a name="line.46"></a>
+<span class="sourceLineNo">047</span>                        p.color = new Color(255,55,55,155);<a name="line.47"></a>
+<span class="sourceLineNo">048</span>                        p.blackColor = new Color(255,155,155,255);<a name="line.48"></a>
+<span class="sourceLineNo">049</span><a name="line.49"></a>
+<span class="sourceLineNo">050</span>                        //p.thickness = 25f;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>                        p.underglow = null;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                        p.spawnHitGlowAt = 0f;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                        p.withHitGlow = false;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                        //p.additiveBlend = true;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                        <a name="line.55"></a>
+<span class="sourceLineNo">056</span>                        <a name="line.56"></a>
+<span class="sourceLineNo">057</span>                        visual = new NegativeExplosionVisual(p);<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                        visual.init(ship);<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                        visual.getFader().forceIn();<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                }<a name="line.60"></a>
+<span class="sourceLineNo">061</span><a name="line.61"></a>
+<span class="sourceLineNo">062</span>                @Override<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                public void advance(float amount) {<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                        super.advance(amount);<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                        <a name="line.65"></a>
+<span class="sourceLineNo">066</span>                        visual.getFader().fadeIn();<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                        visual.advance(amount * 0.5f);<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                        <a name="line.68"></a>
+<span class="sourceLineNo">069</span>                        interval.advance(amount * 30f);<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                        if (interval.intervalElapsed() &amp;&amp; !ship.getFluxTracker().isOverloadedOrVenting()) {<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                                EmpArcParams params = new EmpArcParams();<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                                params.segmentLengthMult = 4f;<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                                params.glowSizeMult = 2.5f;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                                <a name="line.74"></a>
+<span class="sourceLineNo">075</span>                                if ((float) Math.random() &lt; 0.1f) {<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                                        params.glowSizeMult = 7f;<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                                }<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                                //params.glowSizeMult = 1.5f;<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                                //params.zigZagReductionFactor = 0f;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                                //params.brightSpotFadeFraction = 0.33f;<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                                <a name="line.81"></a>
+<span class="sourceLineNo">082</span>                                //params.brightSpotFullFraction = 0.33f;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                                <a name="line.83"></a>
+<span class="sourceLineNo">084</span>                                params.flickerRateMult = 0.5f + (float) Math.random() * 0.5f;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                                <a name="line.85"></a>
+<span class="sourceLineNo">086</span>                                params.fadeOutDist = 30f;<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                                params.minFadeOutMult = 5f;<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                                params.flickerRateMult *= 0.3f;<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                                params.movementDurOverride = 0.3f;<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                                <a name="line.90"></a>
+<span class="sourceLineNo">091</span>                                Color fringe = DwellerShroud.SHROUD_OVERLOAD_FRINGE_COLOR;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                                fringe = new Color(150, 30, 40, 255);<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                                Color core = Color.white;<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                                fringe = new Color(150, 30, 40, 255);<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                                core = new Color(255, 150, 190, 255);<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                                <a name="line.96"></a>
+<span class="sourceLineNo">097</span>                                fringe = new Color(150, 30, 30, 255);<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                                core = new Color(255, 150, 150, 255);<a name="line.98"></a>
+<span class="sourceLineNo">099</span><a name="line.99"></a>
+<span class="sourceLineNo">100</span>                                float thickness = 80f;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                                thickness = 40f;<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                                <a name="line.102"></a>
+<span class="sourceLineNo">103</span>                                Vector2f loc = ship.getLocation();<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                                float r = radius * 1.1f;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                                r = r * 0.5f + r * 0.5f * (float) Math.random();<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                                Vector2f from = Misc.getPointAtRadius(loc, r);<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                                <a name="line.107"></a>
+<span class="sourceLineNo">108</span>                                Vector2f to = new Vector2f(loc);<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                                to = Misc.getPointWithinRadius(to, radius * 0.1f);<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                                <a name="line.110"></a>
+<span class="sourceLineNo">111</span>                                boolean goingOutside = false;<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                                if ((float) Math.random() &lt; 0.4f &amp;&amp; false) {<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                                        Vector2f temp = to;<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                                        to = from;<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                                        from = temp;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                                        goingOutside = true;<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                                }<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                                <a name="line.118"></a>
+<span class="sourceLineNo">119</span>                                CombatEngineAPI engine = Global.getCombatEngine();<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                                EmpArcEntityAPI arc = (EmpArcEntityAPI)engine.spawnEmpArcVisual(<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                                                from, ship, to, ship, thickness, fringe, core, params);<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                                <a name="line.122"></a>
+<span class="sourceLineNo">123</span>                                arc.setCoreWidthOverride(60f);<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                                arc.setCoreWidthOverride(20f);<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                                arc.setCoreWidthOverride(25f);<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                                <a name="line.126"></a>
+<span class="sourceLineNo">127</span>                                if (goingOutside) {<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                                        arc.setRenderGlowAtEnd(false);<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                                } else {<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                                        arc.setRenderGlowAtStart(false);<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                                        arc.setFadedOutAtStart(true);<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                                }<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                                <a name="line.133"></a>
+<span class="sourceLineNo">134</span>                                arc.setSingleFlickerMode(true);<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                                <a name="line.135"></a>
+<span class="sourceLineNo">136</span>//                              arc.setRenderGlowAtStart(false);<a name="line.136"></a>
+<span class="sourceLineNo">137</span>//                              arc.setFadedOutAtStart(true);<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                                <a name="line.138"></a>
+<span class="sourceLineNo">139</span>                                if (ship.getSystem() != null &amp;&amp; ship.getSystem().getEffectLevel() &gt; 0f) {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                                        float level = ship.getSystem().getEffectLevel();<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                                        Vector2f pt = Misc.getPointWithinRadius(loc, 20f * level);<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                                        //engine.addHitParticle(pt, ship.getVelocity(), 75f, 0.5f, core);<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                                        engine.addNebulaParticle(pt, ship.getVelocity(), 35f + 30f * level, 2f,<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                                                        0f, 0f, 1f, core);<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                                }<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                        }<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                        <a name="line.147"></a>
+<span class="sourceLineNo">148</span>                        if (!ship.getFluxTracker().isOverloadedOrVenting()) {<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                                Global.getSoundPlayer().playLoop("shrouded_eye_loop", <a name="line.149"></a>
+<span class="sourceLineNo">150</span>                                                ship, 1f, 0.5f + 0.5f * ship.getFluxLevel(),<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                                                ship.getLocation(), ship.getVelocity());<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                        }<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                }<a name="line.153"></a>
+<span class="sourceLineNo">154</span><a name="line.154"></a>
+<span class="sourceLineNo">155</span>                @Override<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                protected void renderImpl(float x, float y, float alphaMult, float angle, CombatEngineLayers layer) {<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                        super.renderImpl(x, y, alphaMult, angle, layer);<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                        <a name="line.158"></a>
+<span class="sourceLineNo">159</span>                        ViewportAPI viewport = Global.getCombatEngine().getViewport();<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                        float vAlpha = viewport.getAlphaMult();<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                        viewport.setAlphaMult(alphaMult);<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                        if (layer == CombatEngineLayers.BELOW_INDICATORS_LAYER) {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                                visual.render(CombatEngineLayers.ABOVE_PARTICLES_LOWER, viewport);<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                                visual.render(CombatEngineLayers.ABOVE_PARTICLES, viewport);<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                        }<a name="line.165"></a>
+<span class="sourceLineNo">166</span>//                      if (layer == CombatEngineLayers.ABOVE_PARTICLES_LOWER) {<a name="line.166"></a>
+<span class="sourceLineNo">167</span>//                              visual.render(CombatEngineLayers.ABOVE_PARTICLES_LOWER, viewport);<a name="line.167"></a>
+<span class="sourceLineNo">168</span>//                      }<a name="line.168"></a>
+<span class="sourceLineNo">169</span>//                      if (layer == CombatEngineLayers.ABOVE_PARTICLES) {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>//                              visual.render(CombatEngineLayers.ABOVE_PARTICLES, viewport);<a name="line.170"></a>
+<span class="sourceLineNo">171</span>//                      }<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                        viewport.setAlphaMult(vAlpha);<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                }<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                <a name="line.174"></a>
+<span class="sourceLineNo">175</span>        }<a name="line.175"></a>
+<span class="sourceLineNo">176</span>        <a name="line.176"></a>
+<span class="sourceLineNo">177</span>        <a name="line.177"></a>
+<span class="sourceLineNo">178</span>        public static float BEAM_RANGE_BONUS = 1200f;<a name="line.178"></a>
+<span class="sourceLineNo">179</span>        public static float HARD_FLUX_DISSIPATION_PERCENT = 100f;<a name="line.179"></a>
+<span class="sourceLineNo">180</span>        public static float DAMAGE_MULT = 0.75f;<a name="line.180"></a>
+<span class="sourceLineNo">181</span>        <a name="line.181"></a>
+<span class="sourceLineNo">182</span>        @Override<a name="line.182"></a>
+<span class="sourceLineNo">183</span>        public void initBeforeShipCreation(HullSize hullSize, MutableShipStatsAPI stats, String id) {<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                super.initBeforeShipCreation(hullSize, stats, id);<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                <a name="line.185"></a>
+<span class="sourceLineNo">186</span>                stats.getBallisticWeaponFluxCostMod().modifyMult(id, 0);<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                stats.getEnergyWeaponFluxCostMod().modifyMult(id, 0);<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                stats.getMissileWeaponFluxCostMod().modifyMult(id, 0);<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                <a name="line.189"></a>
+<span class="sourceLineNo">190</span>                stats.getBeamWeaponRangeBonus().modifyFlat(id, BEAM_RANGE_BONUS);<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                <a name="line.191"></a>
+<span class="sourceLineNo">192</span>                stats.getBeamWeaponDamageMult().modifyMult(id, DAMAGE_MULT);<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                <a name="line.193"></a>
+<span class="sourceLineNo">194</span>                // basically instant<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                stats.getShieldUnfoldRateMult().modifyPercent(id, 10000f);<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                // doesn't matter if unfold is instant<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                //stats.getShieldTurnRateMult().modifyPercent(id, SHIELD_BONUS_TURN);<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                <a name="line.198"></a>
+<span class="sourceLineNo">199</span>                stats.getHardFluxDissipationFraction().modifyFlat(id, (float)HARD_FLUX_DISSIPATION_PERCENT * 0.01f);<a name="line.199"></a>
+<span class="sourceLineNo">200</span>        }<a name="line.200"></a>
+<span class="sourceLineNo">201</span><a name="line.201"></a>
+<span class="sourceLineNo">202</span><a name="line.202"></a>
+<span class="sourceLineNo">203</span>        @Override<a name="line.203"></a>
+<span class="sourceLineNo">204</span>        protected DwellerCombatPlugin createPlugin(ShipAPI ship) {<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                DwellerCombatPlugin plugin = super.createPlugin(ship);<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                <a name="line.206"></a>
+<span class="sourceLineNo">207</span>                List&lt;DwellerShipPart&gt; parts = plugin.getParts();<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                parts.clear();<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                <a name="line.209"></a>
+<span class="sourceLineNo">210</span>                //WobblyPart part = new WobblyPart("shrouded_eye_base", 1f, 5, 5, 1f, new Vector2f(0, 0), 0f);<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                WobblyPart part = new WobblyPart("shrouded_eye_base_dark", 1f, 5, 5, 1f, new Vector2f(0, 0), 0f);<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                parts.add(part);<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                <a name="line.213"></a>
+<span class="sourceLineNo">214</span>                Color glow = DwellerCombatPlugin.STANDARD_PART_GLOW_COLOR;<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                //glow = new Color(150, 30, 80, 255);<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                <a name="line.216"></a>
+<span class="sourceLineNo">217</span>                part = new WobblyPart("shrouded_eye_iris", 0.6f, 3, 3, 1f, new Vector2f(0, 0), 0f);<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                part.color = glow;<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                part.additiveBlend = true;<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                part.alphaMult = 0.5f;<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                //part.setWeaponActivated();<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                parts.add(part);<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                <a name="line.223"></a>
+<span class="sourceLineNo">224</span>                PlasmaEyePart eyePart = new PlasmaEyePart(new Vector2f(0, 0), 0f, ship, 110f);<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                parts.add(eyePart);<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                <a name="line.226"></a>
+<span class="sourceLineNo">227</span>//              plugin.getActiveLayers().add(CombatEngineLayers.ABOVE_PARTICLES_LOWER);<a name="line.227"></a>
+<span class="sourceLineNo">228</span>//              plugin.getActiveLayers().add(CombatEngineLayers.ABOVE_PARTICLES);<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                <a name="line.229"></a>
+<span class="sourceLineNo">230</span>                return plugin;<a name="line.230"></a>
+<span class="sourceLineNo">231</span>        }<a name="line.231"></a>
+<span class="sourceLineNo">232</span><a name="line.232"></a>
+<span class="sourceLineNo">233</span>        @Override<a name="line.233"></a>
+<span class="sourceLineNo">234</span>        protected void modifyBaselineShroudParams(ShipAPI ship, DwellerShroudParams params) {<a name="line.234"></a>
+<span class="sourceLineNo">235</span>//              params.maxOffset = 50f;<a name="line.235"></a>
+<span class="sourceLineNo">236</span>//              params.initialMembers = 50;<a name="line.236"></a>
+<span class="sourceLineNo">237</span>//              params.negativeParticleAreaMult = 1.5f;<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                <a name="line.238"></a>
+<span class="sourceLineNo">239</span>                params.maxOffset = 130f;<a name="line.239"></a>
+<span class="sourceLineNo">240</span>//              params.initialMembers = 2000;<a name="line.240"></a>
+<span class="sourceLineNo">241</span>//              params.baseMembersToMaintain = params.initialMembers;<a name="line.241"></a>
+<span class="sourceLineNo">242</span>//              params.numToRespawn = 100;<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                <a name="line.243"></a>
+<span class="sourceLineNo">244</span>                //params.negativeParticleClearCenterAreaRadius = 150f;<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                params.negativeParticleClearCenterAreaRadius = 50f;<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                <a name="line.246"></a>
+<span class="sourceLineNo">247</span>//              public static Color SHROUD_COLOR = new Color(100, 0, 25, 255);<a name="line.247"></a>
+<span class="sourceLineNo">248</span>//              public static Color SHROUD_GLOW_COLOR = new Color(150, 0, 30, 255);<a name="line.248"></a>
+<span class="sourceLineNo">249</span>//              params.color = new Color(100, 10, 10, 255);<a name="line.249"></a>
+<span class="sourceLineNo">250</span>//              params.flashFringeColor = new Color(150, 12, 12, 255);<a name="line.250"></a>
+<span class="sourceLineNo">251</span>//              params.color = new Color(100, 0, 0, 255);<a name="line.251"></a>
+<span class="sourceLineNo">252</span>//              params.flashFringeColor = new Color(150, 0, 0, 255);<a name="line.252"></a>
+<span class="sourceLineNo">253</span>//              params.flashCoreColor = Misc.setBrightness(params.color, 255);<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                <a name="line.254"></a>
+<span class="sourceLineNo">255</span>                //params.negativeParticleHighContrastMode = true;<a name="line.255"></a>
+<span class="sourceLineNo">256</span>//              params.negativeParticleNumBase = 4;<a name="line.256"></a>
+<span class="sourceLineNo">257</span>//              params.negativeParticleNumOverloaded = 4;<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                //params.negativeParticleClearCenterAreaRadius = 200f;<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                //params.negativeParticleAreaMult = 0.75f;<a name="line.259"></a>
+<span class="sourceLineNo">260</span>        }<a name="line.260"></a>
+<span class="sourceLineNo">261</span>        <a name="line.261"></a>
+<span class="sourceLineNo">262</span>}<a name="line.262"></a>
+<span class="sourceLineNo">263</span><a name="line.263"></a>
+<span class="sourceLineNo">264</span><a name="line.264"></a>
+<span class="sourceLineNo">265</span><a name="line.265"></a>
+<span class="sourceLineNo">266</span><a name="line.266"></a>
+<span class="sourceLineNo">267</span><a name="line.267"></a>
+<span class="sourceLineNo">268</span><a name="line.268"></a>
+<span class="sourceLineNo">269</span><a name="line.269"></a>
+<span class="sourceLineNo">270</span><a name="line.270"></a>
+<span class="sourceLineNo">271</span><a name="line.271"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>
