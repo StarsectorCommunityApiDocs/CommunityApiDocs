@@ -93,6 +93,11 @@ public interface DamagingProjectileAPI extends CombatEntityAPI {
 	 * @param c
 	 */
 	void addDamagedAlready(CombatEntityAPI c);
+
+	/**
+	 * Projectile movement is entirely defined by moveSpeed and facing. The actual velocity is ignored by the engine.
+	 * @return
+	 */
 	float getMoveSpeed();
 	Vector2f getSpawnLocation();
 	ProjectileSpecAPI getProjectileSpec();

@@ -6,6 +6,11 @@ import org.lwjgl.util.vector.Vector2f;
 
 public interface CombatEntityAPI {
 	Vector2f getLocation();
+
+	/**
+	 * Note: For projectiles, do not use this! Projectile movement is defined by its moveSpeed and facing, not velocity!
+	 * @return
+	 */
 	Vector2f getVelocity();
 	float getFacing();
 	void setFacing(float facing);
