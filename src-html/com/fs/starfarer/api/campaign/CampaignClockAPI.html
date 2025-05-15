@@ -33,25 +33,30 @@
 <span class="sourceLineNo">025</span>        public int getHour();<a name="line.25"></a>
 <span class="sourceLineNo">026</span>        public float convertToDays(float realSeconds);<a name="line.26"></a>
 <span class="sourceLineNo">027</span>        public float convertToMonths(float realSeconds);<a name="line.27"></a>
-<span class="sourceLineNo">028</span>        public long getTimestamp();<a name="line.28"></a>
-<span class="sourceLineNo">029</span>        public float getElapsedDaysSince(long timestamp);<a name="line.29"></a>
-<span class="sourceLineNo">030</span>        <a name="line.30"></a>
-<span class="sourceLineNo">031</span>        public String getMonthString();<a name="line.31"></a>
-<span class="sourceLineNo">032</span>        public String getShortMonthString();<a name="line.32"></a>
-<span class="sourceLineNo">033</span>        public float getSecondsPerDay();<a name="line.33"></a>
-<span class="sourceLineNo">034</span>        <a name="line.34"></a>
-<span class="sourceLineNo">035</span>        /**<a name="line.35"></a>
-<span class="sourceLineNo">036</span>         * New clock based on the timestamp.<a name="line.36"></a>
-<span class="sourceLineNo">037</span>         * @param timestamp<a name="line.37"></a>
-<span class="sourceLineNo">038</span>         * @return<a name="line.38"></a>
-<span class="sourceLineNo">039</span>         */<a name="line.39"></a>
-<span class="sourceLineNo">040</span>        CampaignClockAPI createClock(long timestamp);<a name="line.40"></a>
-<span class="sourceLineNo">041</span>        String getDateString();<a name="line.41"></a>
-<span class="sourceLineNo">042</span>        float convertToSeconds(float days);<a name="line.42"></a>
-<span class="sourceLineNo">043</span>        String getShortDate();<a name="line.43"></a>
-<span class="sourceLineNo">044</span>        String getCycleString();<a name="line.44"></a>
-<span class="sourceLineNo">045</span>        GregorianCalendar getCal();<a name="line.45"></a>
-<span class="sourceLineNo">046</span>}<a name="line.46"></a>
+<span class="sourceLineNo">028</span>        /**<a name="line.28"></a>
+<span class="sourceLineNo">029</span>         * Gets the timestamp of the current date as a 14 digit, negative signed long number. March 2, c206 is -55661253120000.<a name="line.29"></a>
+<span class="sourceLineNo">030</span>         * Example: Global.getSector().getClock().getTimestamp()<a name="line.30"></a>
+<span class="sourceLineNo">031</span>         * @return long value<a name="line.31"></a>
+<span class="sourceLineNo">032</span>         */<a name="line.32"></a>
+<span class="sourceLineNo">033</span>        public long getTimestamp();<a name="line.33"></a>
+<span class="sourceLineNo">034</span>        public float getElapsedDaysSince(long timestamp);<a name="line.34"></a>
+<span class="sourceLineNo">035</span>        <a name="line.35"></a>
+<span class="sourceLineNo">036</span>        public String getMonthString();<a name="line.36"></a>
+<span class="sourceLineNo">037</span>        public String getShortMonthString();<a name="line.37"></a>
+<span class="sourceLineNo">038</span>        public float getSecondsPerDay();<a name="line.38"></a>
+<span class="sourceLineNo">039</span>        <a name="line.39"></a>
+<span class="sourceLineNo">040</span>        /**<a name="line.40"></a>
+<span class="sourceLineNo">041</span>         * New clock based on the timestamp.<a name="line.41"></a>
+<span class="sourceLineNo">042</span>         * @param timestamp<a name="line.42"></a>
+<span class="sourceLineNo">043</span>         * @return<a name="line.43"></a>
+<span class="sourceLineNo">044</span>         */<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        CampaignClockAPI createClock(long timestamp);<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        String getDateString();<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        float convertToSeconds(float days);<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        String getShortDate();<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        String getCycleString();<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        GregorianCalendar getCal();<a name="line.50"></a>
+<span class="sourceLineNo">051</span>}<a name="line.51"></a>
 
 
 
