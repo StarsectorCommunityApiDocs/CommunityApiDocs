@@ -15,6 +15,12 @@ public interface CampaignClockAPI {
 	 * @return
 	 */
 	public int getMonth();
+
+	/**
+	 * Get the day since game start. If game started 4 in-game days ago, it will return 4.0.
+	 * Example: Global.getSector().getClock().getDay()
+	 * @return int value
+	 */
 	public int getDay();
 	public int getHour();
 	public float convertToDays(float realSeconds);
