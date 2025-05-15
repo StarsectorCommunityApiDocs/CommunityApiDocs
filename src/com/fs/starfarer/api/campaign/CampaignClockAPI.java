@@ -31,6 +31,12 @@ public interface CampaignClockAPI {
 	 * @return long value
 	 */
 	public long getTimestamp();
+	/**
+	 * Gets the time elasped after the specified timestamp.
+	 * Example: Returns the time in float time. If partial day, it will return 0.5966898.
+	 * @params long timestamp
+	 * @return float value
+	 */
 	public float getElapsedDaysSince(long timestamp);
 	
 	public String getMonthString();
