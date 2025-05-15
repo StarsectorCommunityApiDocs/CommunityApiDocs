@@ -25,6 +25,11 @@ public interface CampaignClockAPI {
 	public int getHour();
 	public float convertToDays(float realSeconds);
 	public float convertToMonths(float realSeconds);
+	/**
+	 * Gets the timestamp of the current date as a 14 digit, negative signed long number. March 2, c206 is -55661253120000.
+	 * Example: Global.getSector().getClock().getTimestamp()
+	 * @return long value
+	 */
 	public long getTimestamp();
 	public float getElapsedDaysSince(long timestamp);
 	
