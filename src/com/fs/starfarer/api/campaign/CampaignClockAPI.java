@@ -51,6 +51,12 @@ public interface CampaignClockAPI {
 	CampaignClockAPI createClock(long timestamp);
 	String getDateString();
 	float convertToSeconds(float days);
+
+	/**
+	 * Gets the short date in the format of cYYY.MM.DD
+	 * Example: Returns the string 206.3.3
+	 * @returns string value
+	 */
 	String getShortDate();
 	String getCycleString();
 	GregorianCalendar getCal();
