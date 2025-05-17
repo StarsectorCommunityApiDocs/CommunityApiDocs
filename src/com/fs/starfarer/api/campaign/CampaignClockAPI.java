@@ -15,7 +15,6 @@ public interface CampaignClockAPI {
 	 * @return
 	 */
 	public int getMonth();
-
 	/**
 	 * Get the day since game start. If game started 4 in-game days ago, it will return 4.0.
 	 * Example: Global.getSector().getClock().getDay()
@@ -38,11 +37,9 @@ public interface CampaignClockAPI {
 	 * @return float value
 	 */
 	public float getElapsedDaysSince(long timestamp);
-	
 	public String getMonthString();
 	public String getShortMonthString();
 	public float getSecondsPerDay();
-	
 	/**
 	 * New clock based on the timestamp.
 	 * @param timestamp
@@ -51,13 +48,17 @@ public interface CampaignClockAPI {
 	CampaignClockAPI createClock(long timestamp);
 	String getDateString();
 	float convertToSeconds(float days);
-
 	/**
-	 * Gets the short date in the format of cYYY.MM.DD
-	 * Example: Returns the string 206.3.3
+	 * Gets the short date in the format of cYYY.MM.DD.
+	 * Example: Returns 206.3.3
 	 * @returns string value
 	 */
 	String getShortDate();
+	/**
+	 * Gets the cycle number in a string format
+	 * Example: Returns 206
+	 * @return string value
+	 */
 	String getCycleString();
 	GregorianCalendar getCal();
 }
