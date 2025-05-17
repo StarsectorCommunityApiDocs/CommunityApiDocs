@@ -12,7 +12,7 @@ public interface CampaignClockAPI {
 	public int getCycle();
 	/**
 	 * 1 = January, 12 = December.
-	 * @return
+	 * @return int value
 	 */
 	public int getMonth();
 	/**
@@ -51,7 +51,7 @@ public interface CampaignClockAPI {
 	/**
 	 * Gets the short date in the format of cYYY.MM.DD.
 	 * Example: Returns 206.3.3
-	 * @returns string value
+	 * @return string value
 	 */
 	String getShortDate();
 	/**
@@ -60,5 +60,10 @@ public interface CampaignClockAPI {
 	 * @return string value
 	 */
 	String getCycleString();
+
+	/**
+	 * Returns the game calender using the Java.util.GregorianCalendar
+	 * @return Java.util.GregorianCalendar[]
+	 */
 	GregorianCalendar getCal();
 }
