@@ -9,6 +9,11 @@ import java.util.GregorianCalendar;
  * Copyright 2012 Fractal Softworks, LLC
  */
 public interface CampaignClockAPI {
+	/**
+	 * Displays the current year cycle.
+	 * Example: outputs 206
+	 * @return int value
+	 */
 	public int getCycle();
 	/**
 	 * 1 = January, 12 = December.
