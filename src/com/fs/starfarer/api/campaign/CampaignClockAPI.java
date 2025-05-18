@@ -26,6 +26,12 @@ public interface CampaignClockAPI {
 	 * @return int value
 	 */
 	public int getDay();
+
+	/**
+	 * Gives the hour of the day.
+	 * Example: outputs 3 if 3rd hour of day.
+	 * @return int value
+	 */
 	public int getHour();
 	public float convertToDays(float realSeconds);
 	public float convertToMonths(float realSeconds);
