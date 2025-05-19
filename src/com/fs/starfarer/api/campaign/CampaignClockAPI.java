@@ -57,6 +57,11 @@ public interface CampaignClockAPI {
 	 * @return
 	 */
 	CampaignClockAPI createClock(long timestamp);
+	/**
+	 * Outputs the current date in a string format.
+	 * Example: output is Mar 2, c206.
+	 * @return String value
+	 */
 	String getDateString();
 	float convertToSeconds(float days);
 	/**
