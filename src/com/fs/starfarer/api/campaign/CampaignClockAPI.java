@@ -50,7 +50,6 @@ public interface CampaignClockAPI {
 	public float getElapsedDaysSince(long timestamp);
 	/**
 	 * Outputs the current in game month as a full string.
-	 * Example: current month will be outputted as March.
 	 * @return String value
 	 */
 	public String getMonthString();
