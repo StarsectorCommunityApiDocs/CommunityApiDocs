@@ -53,6 +53,12 @@ public interface CampaignClockAPI {
 	 * @return String value
 	 */
 	public String getMonthString();
+
+	/**
+	 * Returns short hand string of the in game month.
+	 * Example: Mar for March, Jun for June.
+	 * @return String value
+	 */
 	public String getShortMonthString();
 	public float getSecondsPerDay();
 	/**
