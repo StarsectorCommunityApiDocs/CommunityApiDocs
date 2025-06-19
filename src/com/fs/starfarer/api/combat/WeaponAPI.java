@@ -183,7 +183,13 @@ public interface WeaponAPI {
 	 * @return location, in absolute engine coordinates.
 	 */
 	Vector2f getLocation();
-	
+
+	/**
+	 * @return whether the weapon is trying to fire or firing. Might return true if the weapon is e.g. cooling down.
+	 * for weapons without cooldown/chargeup, this probably does what you think it does.
+	 * for weapons with cooldown/chargeup, checking chargeLevel and cooldownRemaining is probably more sensible:
+	 * if 0 < chargeLevel < 1 and cooldownRemaining <= 0, the weapon is charging up. When chargeLevel is 1, the weapon is firing
+	 */
 	boolean isFiring();
 	
 	boolean usesAmmo();
