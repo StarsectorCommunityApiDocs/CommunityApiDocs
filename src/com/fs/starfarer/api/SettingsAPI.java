@@ -221,7 +221,9 @@ public interface SettingsAPI {
 	
 	
 	
-	
+	/**
+	 * If no spec with the given ID exists, throw an exception.
+	 */
 	WeaponSpecAPI getWeaponSpec(String weaponId);
 
 	void loadTexture(String filename) throws IOException;
@@ -236,7 +238,20 @@ public interface SettingsAPI {
 	 */
 	float getTargetingRadius(Vector2f from, CombatEntityAPI target, boolean considerShield);
 	
-	
+	/**
+	 * Returns the base version of a variant by its ID.
+	 * <p>
+	 * If no variant with the given ID exists, returns null.
+	 * <p>
+	 * NOTE: The returned variant is the shared base instance. Modifying it will affect
+	 * all ships that use this variant.
+	 * <p>
+	 * If you intend to modify the returned variant, create a copy using ShipVariantAPI.clone() first.
+	 * <code>ShipVariantAPI copy = variant.clone();</code>
+	 * <p>
+	 * If you've made a modified copy and assigned it to a FleetMemberAPI, you may also want to set the source to REFIT otherwise the variant will be lost on load game.
+	 * <code>copy.setSource(VariantSource.REFIT);</code>
+	 */
 	ShipVariantAPI getVariant(String variantId);
 
 	/**
@@ -249,6 +264,9 @@ public interface SettingsAPI {
 
 	List<String> getSortedSkillIds();
 	
+	/**
+	 * If no spec with the given ID exists, returns null.
+	 */
 	SkillSpecAPI getSkillSpec(String skillId);
 
 	String getString(String key);
@@ -323,7 +341,13 @@ public interface SettingsAPI {
 	
 	ShipAIPlugin createDefaultShipAI(ShipAPI ship, ShipAIConfig config);
 
+	/**
+	 * If no spec with the given ID exists, returns null.
+	 */
 	HullModSpecAPI getHullModSpec(String modId);
+	/**
+	 * If no spec with the given ID exists, returns null.
+	 */
 	FighterWingSpecAPI getFighterWingSpec(String wingId);
 	List<HullModSpecAPI> getAllHullModSpecs();
 	List<FighterWingSpecAPI> getAllFighterWingSpecs();
@@ -346,6 +370,9 @@ public interface SettingsAPI {
 
 	CommoditySpecAPI getCommoditySpec(String commodityId);
 
+	/**
+	 * If no spec with the given ID exists, throw an exception.
+	 */
 	ShipHullSpecAPI getHullSpec(String hullId);
 	
 	FactionSpecAPI getFactionSpec(String id);
@@ -380,6 +407,9 @@ public interface SettingsAPI {
 
 	List<IndustrySpecAPI> getAllIndustrySpecs();
 
+	/**
+	 * If no spec with the given ID exists, returns null.
+	 */
 	SpecialItemSpecAPI getSpecialItemSpec(String itemId);
 
 	List<SpecialItemSpecAPI> getAllSpecialItemSpecs();
@@ -437,6 +467,9 @@ public interface SettingsAPI {
 
 	float getMaxArmorDamageReduction();
 
+	/**
+	 * If no spec with the given ID exists, returns null.
+	 */
 	ShipSystemSpecAPI getShipSystemSpec(String id);
 	List<ShipSystemSpecAPI> getAllShipSystemSpecs();
 
