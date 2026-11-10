@@ -137,7 +137,18 @@ public interface ShipHullSpecAPI extends WithSourceMod {
 	float getFuel();
 	float getFuelPerLY();
 
+	/**
+	 * Returns true if this hull has a d-mod, or isDefaultDHull would return true.
+	 */
 	boolean isDHull();
+
+	/**
+	 * Returns true if this is a default D-Hull.
+	 * <p>
+	 * Default D-Hulls are auto-generated per hull under a separate hull id with Misc.D_HULL_SUFFIX on the end, a lower base value, " (D)" in the display name, a damaged hull description, and all custom tags stripped.
+	 * <p>
+	 * Default D-Hulls are used in many places; most commonly in ships from post-combat recovery with new D-Mods, derelict recoveries, and sometimes when NPC fleets are inflated.
+	 */
 	boolean isDefaultDHull();
 
 	void setDParentHullId(String dParentHullId);
