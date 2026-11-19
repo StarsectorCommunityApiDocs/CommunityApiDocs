@@ -1,8 +1,11 @@
 package com.fs.starfarer.api.impl.campaign.rulecmd;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+
+import org.lwjgl.util.vector.Vector2f;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.Script;
@@ -14,7 +17,9 @@ import com.fs.starfarer.api.campaign.InteractionDialogAPI;
 import com.fs.starfarer.api.campaign.PersistentUIDataAPI.AbilitySlotAPI;
 import com.fs.starfarer.api.campaign.PersistentUIDataAPI.AbilitySlotsAPI;
 import com.fs.starfarer.api.campaign.PlanetAPI;
+import com.fs.starfarer.api.campaign.SectorAPI;
 import com.fs.starfarer.api.campaign.StarSystemAPI;
+import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.campaign.rules.MemKeys;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
 import com.fs.starfarer.api.characters.CharacterCreationData;
@@ -28,6 +33,9 @@ import com.fs.starfarer.api.impl.campaign.ids.HullMods;
 import com.fs.starfarer.api.impl.campaign.ids.Personalities;
 import com.fs.starfarer.api.impl.campaign.ids.Ranks;
 import com.fs.starfarer.api.impl.campaign.ids.Skills;
+import com.fs.starfarer.api.impl.campaign.ids.Tags;
+import com.fs.starfarer.api.impl.campaign.intel.SystemBountyManager;
+import com.fs.starfarer.api.impl.campaign.procgen.StarSystemGenerator;
 import com.fs.starfarer.api.impl.campaign.tutorial.CampaignTutorialScript;
 import com.fs.starfarer.api.impl.campaign.tutorial.SpacerObligation;
 import com.fs.starfarer.api.impl.campaign.tutorial.TutorialMissionIntel;
@@ -50,6 +58,11 @@ public class NGCAddStandardStartingScript extends BaseCommandPlugin {
 		final MemoryAPI memory = memoryMap.get(MemKeys.LOCAL);
 		data.addScriptBeforeTimePass(new Script() {
 			public void run() {
+				boolean extendedMode = data.isExtMode();
+				if (extendedMode) {
+					Global.getSector().getMemoryWithoutUpdate().set("$extendedMode", true);
+				}
+				
 				boolean explorer = memory.getBoolean("$ngcExplorerSelected");
 				boolean merc = memory.getBoolean("$ngcMercSelected");
 				boolean random = memory.getBoolean("$ngcRandomSelected");
@@ -97,12 +110,16 @@ public class NGCAddStandardStartingScript extends BaseCommandPlugin {
 				cargo.addCommodity(Commodities.HEAVY_MACHINERY, 10);
 				cargo.addFuel(cargo.getMaxFuel() * 0.5f);
 				
+				boolean extendedMode = data.isExtMode();
 				
 				boolean addOfficer = memory.getBoolean("$ngcAddOfficer");
 				boolean skipTutorial = memory.getBoolean("$ngcSkipTutorial");
 				boolean explorer = memory.getBoolean("$ngcExplorerSelected");
 				boolean merc = memory.getBoolean("$ngcMercSelected");
 				boolean random = memory.getBoolean("$ngcRandomSelected");
+				boolean ext1 = memory.getBoolean("$ngcRandomExt1");
+				boolean ext2 = memory.getBoolean("$ngcRandomExt2");
+				boolean ext3 = memory.getBoolean("$ngcRandomExt3");
 				boolean spacer = memory.getBoolean("$ngcSpacerSelected");
 				
 				if (explorer) {
@@ -118,8 +135,10 @@ public class NGCAddStandardStartingScript extends BaseCommandPlugin {
 					adjustStartingHulls(fleet);
 				} else if (random){
 					addOfficer = genRandomStart(fleet);
+				} else if (ext1 || ext2 || ext3) {
+					addOfficer = genRandomStartExt(fleet, ext1, ext2, ext3);
 				}
-
+				
 				fleet.getFleetData().ensureHasFlagship();
 				
 				if (addOfficer) {
@@ -154,7 +173,7 @@ public class NGCAddStandardStartingScript extends BaseCommandPlugin {
 					PersonAPI mainContact = TutorialMissionIntel.createMainContact(ancyra);
 					PersonAPI jangalaContact = TutorialMissionIntel.getJangalaContact();
 					
-					TutorialMissionIntel.endGalatiaPortionOfMission(!spacer, false);
+					TutorialMissionIntel.endGalatiaPortionOfMission(!spacer && !extendedMode, false);
 					
 					if (spacer) {
 						new SpacerObligation();
@@ -174,8 +193,10 @@ public class NGCAddStandardStartingScript extends BaseCommandPlugin {
 						float addMachinery = Math.min(freeCargo, 15);
 						if (random) {
 							float r = (float) Math.random();
+							if (extendedMode) r *= 0.25f;
 							addMachinery = Math.min(freeCargo, 5 + 20 * r);
 						}
+						if (ext3) addMachinery = 0;
 						if (addMachinery > 0) {
 							cargo.addCommodity(Commodities.HEAVY_MACHINERY, addMachinery);
 							freeCargo -= addMachinery;
@@ -204,12 +225,15 @@ public class NGCAddStandardStartingScript extends BaseCommandPlugin {
 							cargo.removeFuel(cargo.getFuel());
 							addFuel = Math.min(cargo.getFreeFuelSpace(), cargo.getMaxFuel() * (0.25f + 0.25f * r));
 						}
+						if (ext3) addFuel = cargo.getFreeFuelSpace();
 						if (addFuel > 0) {
 							cargo.addFuel(addFuel);
 						}
 						
 						
-						float addCrew = Math.min(cargo.getFreeCrewSpace() - 10f, 100f);
+						int maxAdd = cargo.getFreeCrewSpace() - 10;
+						if (extendedMode) maxAdd = Math.min(maxAdd, 15);
+						float addCrew = Math.min(maxAdd, 100f);
 //						addCrew = Math.max(addCrew, fleet.getFleetData().getMinCrew() - cargo.getCrew() + 10);
 //						float addCrew = Math.min(cargo.getFreeCrewSpace() - 10f,
 //											Math.max(0, (int)((fleet.getFleetData().getMinCrew() - cargo.getCrew()) * 1.25f)));
@@ -248,10 +272,89 @@ public class NGCAddStandardStartingScript extends BaseCommandPlugin {
 					StarSystemAPI system = Global.getSector().getStarSystem("galatia");
 					system.addScript(new CampaignTutorialScript(system));
 				}
+				
+				if (extendedMode) {
+					if (cargo.getMaxPersonnel() < fleet.getFleetData().getMinCrew()) {
+						fleet.getFleetData().addFleetMember("mercury_Standard");
+						
+						for (FleetMemberAPI member : fleet.getFleetData().getMembersListCopy()) {
+							String h = member.getHullId();
+							if (h.equals("mercury")) {
+								ShipVariantAPI v = member.getVariant().clone();
+								v.setSource(VariantSource.REFIT);
+								v.setHullVariantId(Misc.genUID());
+								v.clearWeapons();
+								//v.addPermaMod(HullMods.DEGRADED_ENGINES);
+								v.addPermaMod(HullMods.DEGRADED_DRIVE_FIELD);
+								v.addPermaMod(HullMods.COMP_STORAGE);
+								member.setVariant(v, false, false);
+								
+								float max = member.getRepairTracker().getMaxCR();
+								member.getRepairTracker().setCR(max);
+								
+								break;
+							}
+						}
+						fleet.getFleetData().setSyncNeeded();
+						fleet.forceSync();
+					}
+				}
+				
+				if (cargo.getCrew() > cargo.getMaxPersonnel()) {
+					cargo.removeCrew((int) (cargo.getCrew() - cargo.getMaxPersonnel()));
+				}
+				if (cargo.getFuel() > cargo.getMaxFuel()) {
+					cargo.removeFuel((int) (cargo.getFuel() - cargo.getMaxFuel()));
+				}
+				if (extendedMode && ext3) { // hyperion
+					cargo.removeSupplies(1000);
+					cargo.addSupplies(15);
+				}
+				
+				if (extendedMode && !spacer) {
+					fleet.getCargo().getCredits().set((int)(10000f + 5000f * (float) Math.random()));
+				}
+				
+				if (extendedMode) {
+					setRandomStartLocation(fleet, data);
+				}
 			}
 			
 		});
 		return true;
+	}
+	
+	public static void setRandomStartLocation(CampaignFleetAPI fleet, CharacterCreationData data) {
+		SectorAPI sector = Global.getSector();
+		
+		WeightedRandomPicker<MarketAPI> picker = new WeightedRandomPicker<>(StarSystemGenerator.random);
+		for (MarketAPI market : sector.getEconomy().getMarketsCopy()) {
+			if (market.isHidden()) continue;
+			if (market.getFaction().isHostileTo(Factions.PLAYER)) continue;
+			if (market.getStarSystem() == null) continue;
+			if (!market.getStarSystem().hasTag(Tags.THEME_CORE_POPULATED)) continue;
+			picker.add(market);
+		}
+		
+		MarketAPI pick = picker.pick();
+		if (pick != null) {
+			sector.setCurrentLocation(pick.getContainingLocation());
+			if (fleet.getContainingLocation() != null) {
+				fleet.getContainingLocation().removeEntity(fleet);
+			}
+			pick.getContainingLocation().addEntity(fleet);
+			Vector2f loc = Misc.getPointAtRadius(pick.getPrimaryEntity().getLocation(), 250f + (float) StarSystemGenerator.random.nextFloat() * 500f);
+			fleet.setLocation(loc.x, loc.y);
+		}
+		
+		if (SystemBountyManager.getInstance() != null) {
+			SystemBountyManager.getInstance().setAlwaysPickAMarketIfPossible(true);
+			int numBounties = 2 + StarSystemGenerator.random.nextInt(2);
+			for (int i = 0; i < numBounties; i++) {
+				SystemBountyManager.getInstance().addEvent();
+			}
+			SystemBountyManager.getInstance().setAlwaysPickAMarketIfPossible(false);
+		}
 	}
 	
 	public static boolean genRandomStart(CampaignFleetAPI fleet) {
@@ -344,6 +447,117 @@ public class NGCAddStandardStartingScript extends BaseCommandPlugin {
 		fleet.getFlagship().updateStats();
 		
 		return random.nextFloat() > 0.5f;
+	}
+	
+	public static boolean genRandomStartExt(CampaignFleetAPI fleet, boolean ext1, boolean ext2, boolean ext3) {
+		Random random = new Random();
+		
+		fleet.getFleetData().clear();
+		
+		boolean addOfficer = false;
+		float qMod = 0f;
+		
+		WeightedRandomPicker<String> picker = new WeightedRandomPicker<String>(random);
+		picker.add("shrike_Attack");
+		picker.add("scarab_Starting");
+		picker.add("tempest_Starting");
+		picker.add("shade_Assault");
+		
+		if (ext1) {
+			fleet.getFleetData().addFleetMember(picker.pickAndRemove());
+			qMod += 0.4f;
+		}
+		if (ext2) {
+			List<String> worseOptions = new ArrayList<>();
+			worseOptions.add("wayfarer_Starting");
+			worseOptions.add("vigilance_Starting");
+			worseOptions.add("vanguard_Attack");
+			
+			picker.clear();
+			picker.add("wolf_Starting");
+			picker.add("lasher_Starting");
+			picker.add("centurion_Starting");
+			picker.add("brawler_Starting");
+			picker.addAll(worseOptions);
+			
+			String pick = picker.pickAndRemove();
+			boolean worseFlagship = worseOptions.contains(pick);
+			fleet.getFleetData().addFleetMember(pick);
+			
+			addOfficer = random.nextFloat() < 0.5f;
+			
+			// either an officer with a ship from this 2nd set, or no officer but a ship from the original set
+			if (addOfficer) {
+				picker.clear();
+				picker.add("shepherd_Starting");
+				picker.add("gremlin_Strike");
+				picker.add("kite_Starting");
+				picker.add("hound_Starting");
+				picker.add("cerberus_Starting");
+			}
+			fleet.getFleetData().addFleetMember(picker.pickAndRemove());
+
+			if (worseFlagship) {
+				picker.clear();
+				picker.add("mudskipper_Standard");
+				picker.add("hermes_Standard");
+				picker.add("mercury_Standard");
+				picker.add("mudskipper2_Starting");
+				fleet.getFleetData().addFleetMember(picker.pickAndRemove());
+			}
+		}
+		
+		if (ext3) {
+			fleet.getFleetData().addFleetMember("hyperion_Starting");
+			
+			for (FleetMemberAPI member : fleet.getFleetData().getMembersListCopy()) {
+				ShipVariantAPI v = member.getVariant().clone();
+				v.setSource(VariantSource.REFIT);
+				v.setHullVariantId(Misc.genUID());
+				member.setVariant(v, false, false);
+				
+				v.addPermaMod(HullMods.COMP_HULL);
+				v.addPermaMod(HullMods.FAULTY_GRID);
+				v.addPermaMod(HullMods.FAULTY_AUTO);
+				v.addPermaMod(HullMods.DEGRADED_SHIELDS);
+				v.addPermaMod(HullMods.DEGRADED_ENGINES);
+				v.addPermaMod(HullMods.GLITCHED_SENSORS);
+				v.addPermaMod(HullMods.FRAGILE_SUBSYSTEMS);
+			}
+		}
+		
+		
+		if (!ext3) {
+			DefaultFleetInflaterParams p = new DefaultFleetInflaterParams();
+			p.quality = 0.2f + qMod;
+			p.mode = ShipPickMode.PRIORITY_THEN_ALL;
+			p.persistent = false;
+			p.seed = random.nextLong();
+			//p.rProb = 1f;
+			p.factionId = Factions.INDEPENDENT;
+			if (ext2) {
+				p.maxTier = 1;
+			}
+			p.blockHullmodsWithItemReqs = true;
+			p.timestamp = null;
+			
+			FleetInflater inflater = Misc.getInflater(fleet, p);
+			
+			fleet.setFaction(Factions.INDEPENDENT);
+			inflater.inflate(fleet);
+			fleet.setInflater(null);
+		}
+		
+		fleet.setFaction(Factions.PLAYER);
+		
+		fleet.getCargo().addCrew((int)fleet.getFleetData().getMinCrew() - fleet.getCargo().getCrew());
+		
+		fleet.getFleetData().syncIfNeeded();
+		fleet.getCargo().sort();
+		fleet.getFlagship().setCaptain(Global.getSector().getCharacterData().getPerson());
+		fleet.getFlagship().updateStats();
+		
+		return addOfficer;
 	}
 	
 	

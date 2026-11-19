@@ -6,6 +6,7 @@ import com.fs.starfarer.api.campaign.SectorAPI;
 import com.fs.starfarer.api.combat.CombatEngineAPI;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import com.fs.starfarer.api.ui.FocusManagerAPI;
 
  /**
  * The primary way to access most of the game's state (fleets, stars, ships, people, etc) and many useful classes for creating and modifying state.
@@ -21,6 +22,7 @@ public class Global {
 	public static boolean LOADING_SAVE = false;
 	
 	
+	private static FocusManagerAPI focusManagerAPI;
 	private static SettingsAPI settingsAPI;
 	private static SectorAPI sectorAPI;
 	private static FactoryAPI factory;
@@ -52,6 +54,15 @@ public class Global {
 	public static Logger getLogger(Class c) {
 		Logger log = Logger.getLogger(c);
 		return log;
+	}
+	
+	
+	public static FocusManagerAPI getFocusManager() {
+		return focusManagerAPI;
+	}
+
+	public static void setFocusManager(FocusManagerAPI focusManagerAPI) {
+		Global.focusManagerAPI = focusManagerAPI;
 	}
 
 	/**

@@ -224,6 +224,19 @@ public class AddRemoveCommodity extends BaseCommandPlugin {
 		text.setFontInsignia();
 	}
 	
+	public static void addCommodityStorageGainText(String commodityId, int quantity, TextPanelAPI text) {
+		CommoditySpecAPI spec = Global.getSettings().getCommoditySpec(commodityId);
+		text.setFontSmallInsignia();
+//		String units = quantity == 1 ? "unit" : "units";
+//		text.addParagraph("Gained " + (int) quantity + " " + units + " of " + spec.getName().toLowerCase() + "", Misc.getPositiveHighlightColor());
+		String name = spec.getLowerCaseName();
+		//boolean special = Commodities.SURVEY_DATA.equals(spec.getDemandClass());
+		//if (!special) name = name.toLowerCase();
+		text.addParagraph("Added " + Misc.getWithDGS(quantity) + Strings.X + " " + name + " to local storage", Misc.getPositiveHighlightColor());
+		text.highlightInLastPara(Misc.getHighlightColor(), Misc.getWithDGS(quantity) + Strings.X);
+		text.setFontInsignia();
+	}
+	
 	public static void addCommodityLossText(String commodityId, int quantity, TextPanelAPI text) {
 		CommoditySpecAPI spec = Global.getSettings().getCommoditySpec(commodityId);
 		text.setFontSmallInsignia();

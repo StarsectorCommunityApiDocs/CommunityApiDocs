@@ -1,9 +1,10 @@
 package com.fs.starfarer.api.impl.campaign.econ.impl;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CargoAPI;
@@ -231,6 +232,12 @@ public class TechMining extends BaseIndustry implements MarketImmigrationModifie
 		d = new DropData();
 		d.chances = 1;
 		d.group = "any_hullmod_low";
+		dropRandom.add(d);
+		
+		d = new DropData();
+		d.chances = 2;
+		d.group = "parts_33";
+		d.value = 100000;
 		dropRandom.add(d);
 		
 		d = new DropData();

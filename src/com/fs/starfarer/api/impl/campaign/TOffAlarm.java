@@ -39,6 +39,8 @@ public class TOffAlarm implements EveryFrameScript {
 		//if (playerVis == VisibilityLevel.NONE) return;
 		if (fleet.getContainingLocation() == null) return;
 		
+		if (fleet.getMemoryWithoutUpdate().getBoolean(MemFlags.MEMORY_KEY_NO_REP_IMPACT)) return;
+		
 		// don't spread "hostile" status if this fleet was the aggressor or if attacking it has a low
 		// reputation impact for some other reason
 		if (fleet.getMemoryWithoutUpdate().getBoolean(MemFlags.MEMORY_KEY_LOW_REP_IMPACT) &&

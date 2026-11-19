@@ -27,4 +27,5 @@ public interface BattleObjectiveAPI extends CombatEntityAPI, AssignmentTargetAPI
 	SpriteAPI getSprite();
 	void setSprite(SpriteAPI sprite);
 	float getBattleSizeFractionBonus();
+	String getIconSpriteName();
 }

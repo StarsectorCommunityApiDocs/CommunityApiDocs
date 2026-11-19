@@ -21,6 +21,7 @@ import com.fs.starfarer.api.combat.OnFireEffectPlugin;
 import com.fs.starfarer.api.combat.ShipAPI;
 import com.fs.starfarer.api.combat.WeaponAPI;
 import com.fs.starfarer.api.combat.WeaponAPI.AIHints;
+import com.fs.starfarer.api.impl.combat.dweller.DwellerShroud;
 import com.fs.starfarer.api.impl.combat.threat.RoilingSwarmEffect.RoilingSwarmParams;
 import com.fs.starfarer.api.impl.combat.threat.RoilingSwarmEffect.SwarmMember;
 import com.fs.starfarer.api.util.Misc;
@@ -51,6 +52,7 @@ public class BaseFragmentMissileEffect implements OnFireEffectPlugin, EveryFrame
 		if (ship == null) return;
 		
 		RoilingSwarmEffect swarm = RoilingSwarmEffect.getSwarmFor(ship);
+		if (swarm instanceof DwellerShroud) swarm = null;
 		int active = swarm == null ? 0 : swarm.getNumActiveMembers();
 		int required = getNumFragmentsToFire();
 		boolean disable = active < required;

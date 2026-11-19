@@ -1,11 +1,13 @@
 package com.fs.starfarer.api.campaign;
 
-import java.awt.Color;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+
+import java.awt.Color;
 
 import org.json.JSONObject;
 
@@ -379,6 +381,9 @@ public interface FactionAPI extends HasMemory {
 	void setSecondaryColorSegmentsOverride(int secondaryColorSegmentsOverride);
 	String pickRandomShipName(String prefix);
 	LinkedHashSet<String> getRestrictToVariants();
+	String getDescIdOverride();
+	void setDescIdOverride(String descIdOverride);
+	LinkedHashMap<String, Float> getModifiedWeaponSellFrequency();
 	
 	
 }

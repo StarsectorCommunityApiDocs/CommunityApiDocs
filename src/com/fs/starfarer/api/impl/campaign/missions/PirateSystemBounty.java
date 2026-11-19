@@ -1,7 +1,8 @@
 package com.fs.starfarer.api.impl.campaign.missions;
 
-import java.awt.Color;
 import java.util.Map;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.BattleAPI;
@@ -35,8 +36,8 @@ import com.fs.starfarer.api.util.Misc;
 
 public class PirateSystemBounty extends HubMissionWithBarEvent implements FleetEventListener {
 
-	public static float BOUNTY_DAYS = 120f;
-	public static float BASE_BOUNTY = 1000f;
+	public static float BOUNTY_DAYS = 180f;
+	public static float BASE_BOUNTY = 2500f;
 	//public static float VS_STATION_BONUS = 50000f;
 	
 	public static class BountyResult {

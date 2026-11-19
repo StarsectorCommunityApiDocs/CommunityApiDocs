@@ -1,8 +1,9 @@
 package com.fs.starfarer.api.impl.campaign;
 
-import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.GameState;
 import com.fs.starfarer.api.Global;
@@ -53,7 +54,6 @@ public class RepairGantry extends BaseHullMod {
 	public void advanceInCombat(ShipAPI ship, float amount) {
 		
 	}
-	
 	
 	@Override
 	public boolean shouldAddDescriptionToTooltip(HullSize hullSize, ShipAPI ship, boolean isForModSpec) {

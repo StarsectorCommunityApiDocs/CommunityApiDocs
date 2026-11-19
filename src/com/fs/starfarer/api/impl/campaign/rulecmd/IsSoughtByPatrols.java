@@ -34,6 +34,8 @@ public class IsSoughtByPatrols extends BaseCommandPlugin {
 			float dist = Misc.getDistance(fleet.getLocation(), playerFleet.getLocation());
 			if (dist > 1000f) continue;
 			
+			if (mem.getBoolean(MemFlags.FLEET_IGNORES_OTHER_FLEETS)) continue;
+			
 			if ((mem.contains(MemFlags.MEMORY_KEY_SAW_PLAYER_WITH_TRANSPONDER_OFF) && caresAboutTransponder) || 
 					mem.contains(MemFlags.MEMORY_KEY_PURSUE_PLAYER)) {
 				return true;

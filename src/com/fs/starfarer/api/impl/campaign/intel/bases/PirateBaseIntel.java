@@ -578,7 +578,7 @@ public class PirateBaseIntel extends BaseIntelPlugin implements EveryFrameScript
 				setBounty();
 			}
 			//if (target != null && (float) Math.random() < 0.2f && raidTimeoutMonths <= 0) {
-			boolean allowRandomRaids = PirateBaseManager.getInstance().getDaysSinceStart() > Tuning.NO_PIRATE_RAID_DAYS_FROM_GAME_START;
+			boolean allowRandomRaids = PirateBaseManager.getInstance().getDaysSinceStart() > Tuning.NO_PIRATE_RAID_DAYS_FROM_GAME_START * Tuning.getExtDelayFactor();
 //			if (target != null && !Misc.getMarketsInLocation(target).isEmpty() && 
 //					Misc.getMarketsInLocation(target).get(0).isPlayerOwned()) {
 //				System.out.println("wefwefew");

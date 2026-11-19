@@ -54,7 +54,7 @@ public class RiftBeamEffect implements EveryFrameWeaponEffectPlugin {
 			to.scale(Math.min(Misc.getDistance(from, loc), RIFT_RANGE));
 			Vector2f.add(from, to, to);
 			
-			spawnMine(beam.getSource(), to);
+			spawnMine(beam.getSource(), null, to);
 //			float thickness = beam.getWidth();
 //			EmpArcEntityAPI arc = engine.spawnEmpArcVisual(from, null, to, null, thickness, beam.getFringeColor(), Color.white);
 //			arc.setCoreWidthOverride(Math.max(20f, thickness * 0.67f));
@@ -62,12 +62,12 @@ public class RiftBeamEffect implements EveryFrameWeaponEffectPlugin {
 		}
 	}
 	
-	public void spawnMine(ShipAPI source, Vector2f mineLoc) {
+	public void spawnMine(ShipAPI source, WeaponAPI weapon, Vector2f mineLoc) {
 		CombatEngineAPI engine = Global.getCombatEngine();
 		
 		
 		//Vector2f currLoc = mineLoc;
-		MissileAPI mine = (MissileAPI) engine.spawnProjectile(source, null, 
+		MissileAPI mine = (MissileAPI) engine.spawnProjectile(source, weapon, 
 															  "riftbeam_minelayer", 
 															  mineLoc, 
 															  (float) Math.random() * 360f, null);

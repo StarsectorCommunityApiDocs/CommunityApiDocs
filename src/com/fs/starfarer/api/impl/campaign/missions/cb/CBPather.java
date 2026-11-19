@@ -42,6 +42,8 @@ public class CBPather extends BaseCustomBountyCreator {
 		if (difficulty >= 4 && mission.rollProbability(PROB_IN_SYSTEM_WITH_BASE)) {
 			mission.preferSystemHasBase(Factions.LUDDIC_PATH);
 		}
+		if (difficulty <= 3) mission.preferSystemInInnerSector();
+		
 		StarSystemAPI system = mission.pickSystem();
 		data.system = system;
 	

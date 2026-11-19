@@ -1,8 +1,9 @@
 package com.fs.starfarer.api.impl.campaign.rulecmd;
 
-import java.awt.Color;
 import java.util.List;
 import java.util.Map;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
@@ -49,6 +50,11 @@ public class CargoScanApplyResult extends BaseCommandPlugin {
 		for (FleetMemberAPI member : result.shipsToDamage) {
 			float crLost = Math.min(member.getRepairTracker().getBaseCR(), member.getDeployCost() * 0.5f);
 			crLost += 0.01f * (float)Misc.random.nextInt(10);
+			
+			if (Misc.isExtended()) {
+				crLost *= Global.getSettings().getFloat("ext_cargoScanShipDamageMult");
+			}
+			
 			if (crLost > 0) {
 				member.getRepairTracker().applyCREvent(-crLost, "Vindictive cargo inspection");
 				AddRemoveCommodity.addCRLossText(member, text, crLost);

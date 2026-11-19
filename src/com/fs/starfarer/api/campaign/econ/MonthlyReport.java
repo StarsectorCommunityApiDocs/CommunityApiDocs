@@ -16,7 +16,10 @@ import com.fs.starfarer.api.ui.TooltipMakerAPI.TooltipCreator;
 public class MonthlyReport {
 
 	public static String CREW = "node_id_crew";
+	public static String RESERVE_CREW = "node_id_reserve_crew";
 	public static String MARINES = "node_id_marines";
+	public static String SPACER_SHARE = "node_id_spacer_share";
+	public static String POSTPONE_RETIREMENT = "node_id_postpone_retirement";
 	public static String FLEET = "node_id_fleet";
 	public static String OUTPOSTS = "node_id_outposts";
 	public static String PRODUCTION = "node_id_prod";
@@ -29,6 +32,7 @@ public class MonthlyReport {
 	public static String INCENTIVES = "node_id_incentives";
 	public static String INDUSTRIES = "node_id_industries";
 	public static String EXPORTS = "node_id_exports";
+	public static String CORRUPTION = "node_id_corruption";
 	public static String STORAGE = "node_id_storage";
 	public static String ADMIN = "node_id_admin";
 	public static String STORAGE_CARGO = "node_id_storage_cargo";
@@ -38,6 +42,8 @@ public class MonthlyReport {
 	//public static String IMPORTS = "node_id_imports";
 	
 	public static String OFFICERS = "node_id_officers";
+	public static String COMBAT_PAY = "node_id_owed_combat_pay";
+	public static String JUMP_PAY = "node_id_owed_jump_pay";
 	
 	/**
 	 * Financial data node for a monthly income/expenses report.

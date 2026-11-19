@@ -224,6 +224,7 @@ public class CoreCampaignPluginImpl extends BaseCampaignPlugin {
 //		}
 		
 		memory.set("$name", entity.getName(), 0);
+		memory.set("$Name", entity.getName(), 0);
 		memory.set("$fullName", entity.getFullName(), 0);
 		
 		memory.set("$inHyperspace", entity.isInHyperspace(), 0);
@@ -415,7 +416,7 @@ public class CoreCampaignPluginImpl extends BaseCampaignPlugin {
 		float extra = market.getMemoryWithoutUpdate().getFloat(MemFlags.MARKET_EXTRA_SUSPICION);
 		suspicionLevel += extra;
 		suspicionLevel = Math.min(1f, suspicionLevel);
-		
+		//if (suspicionLevel < 0.01f) suspicionLevel = 0f;
 		return suspicionLevel;
 	}
 	

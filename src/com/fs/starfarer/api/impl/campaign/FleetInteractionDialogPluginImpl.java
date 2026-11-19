@@ -630,7 +630,7 @@ public class FleetInteractionDialogPluginImpl implements InteractionDialogPlugin
 			return;
 		}
 		
-		restoreOrigCaptains();
+		restoreOrigCaptains(null);
 		if (origFlagship != null) {
 			if (selectedFlagship != null) {
 				PersonAPI captain = origFlagship.getCaptain();
@@ -875,6 +875,9 @@ public class FleetInteractionDialogPluginImpl implements InteractionDialogPlugin
 		// might not be a string if it's the dev-mode "escape to leave" option
 		if (inConversation && optionData instanceof String) {
 			conversationDelegate.optionSelected(text, optionData);
+			if (dialog.isBeingDismissed2()) {
+				cleanUpBattle();
+			}
 			if (!inConversation) {
 				//optionSelected(null, OptionId.CUT_COMM);
 				//optionSelected(null, OptionId.INIT);
@@ -1605,12 +1608,18 @@ public class FleetInteractionDialogPluginImpl implements InteractionDialogPlugin
 							ListenerUtil.reportShipsRecovered(members, dialog);
 							
 							CampaignFleetAPI player = Global.getSector().getPlayerFleet();
-							restoreOrigCaptains();
+							restoreOrigCaptains(members);
 							player.getFleetData().sortToMatchOrder(membersInOrderPreEncounter);
 							
 							
 							showFleetInfo();
-							winningPath();
+							if (context.didPlayerWinMostRecentBattleOfEncounter() ||
+									(config.straightToEngage && 
+											context.getLastEngagementOutcome() == EngagementOutcome.BATTLE_PLAYER_WIN)) {
+								winningPath();
+							} else {
+								losingPath();
+							}
 						}
 					}
 					public void cancelledFleetMemberPicking() {
@@ -1695,7 +1704,7 @@ public class FleetInteractionDialogPluginImpl implements InteractionDialogPlugin
 //								}
 //							}
 							if (!members.get(0).isFlagship()) {
-								restoreOrigCaptains();
+								restoreOrigCaptains(null);
 								
 								selectedFlagship = members.get(0);
 								PersonAPI captain = selectedFlagship.getCaptain();
@@ -1771,9 +1780,10 @@ public class FleetInteractionDialogPluginImpl implements InteractionDialogPlugin
 		}
 	}
 	
-	protected void restoreOrigCaptains() {
+	protected void restoreOrigCaptains(List<FleetMemberAPI> members) {
 		if (origCaptains != null) {
 			for (FleetMemberAPI member : origCaptains.keySet()) {
+				if (members != null && !members.contains(member)) continue;
 				PersonAPI captain = origCaptains.get(member);
 				if (captain != null) {
 					member.setCaptain(captain);
@@ -1984,6 +1994,58 @@ public class FleetInteractionDialogPluginImpl implements InteractionDialogPlugin
 			showFleetInfo();
 		}
 		
+		if (didEnoughToDisengage(playerFleet)) {
+			if (!didRecoveryCheck) {
+				didRecoveryCheck = true;
+				
+				CampaignFleetAPI actualPlayer = Global.getSector().getPlayerFleet();
+				recoverableShips = context.getRecoverableShips(context.getBattle(), playerFleet, otherFleet, true);
+				storyRecoverableShips = context.getStoryRecoverableShips();
+				
+				if (recoverableShips == null) recoverableShips = new ArrayList<FleetMemberAPI>();
+				if (storyRecoverableShips == null) storyRecoverableShips = new ArrayList<FleetMemberAPI>();
+				
+				if (!recoverableShips.isEmpty() || !storyRecoverableShips.isEmpty()) {
+					int crew = actualPlayer.getCargo().getCrew();
+					int needed = (int)actualPlayer.getFleetData().getMinCrew();
+					
+					int num = recoverableShips.size() + storyRecoverableShips.size();
+					String numString = "several ships disabled or destroyed";
+					if (num == 1) numString = "a ship disabled";
+					String pre = "Tactical reports that " + numString + " during the battle " +
+								 "can be restored to basic functionalty.";
+					textPanel.addParagraph(pre);
+					
+					boolean playerShipsRecoverable = !recoverableShips.isEmpty() || !storyRecoverableShips.isEmpty();
+
+					boolean onlyDifficultRecovery = recoverableShips.isEmpty() && !storyRecoverableShips.isEmpty();
+					if (playerShipsRecoverable) {
+						textPanel.setFontSmallInsignia();
+						textPanel.addParagraph(	"Disabled ships from your fleet are available for recovery", Misc.getHighlightColor());
+						textPanel.setFontInsignia();
+						options.addOption("Consider ship recovery", OptionId.RECOVERY_SELECT, Misc.getHighlightColor(),
+								"Disabled ships from your fleet are available for recovery.");
+					} else {
+						Color color = Misc.getButtonTextColor();
+						if (onlyDifficultRecovery) {
+							color = Misc.getStoryOptionColor();
+						}
+						options.addOption("Consider ship recovery", OptionId.RECOVERY_SELECT, color, null);
+					}
+					
+					options.addOption("Continue", OptionId.RECOVERY_CONTINUE, null);
+					if (playerShipsRecoverable) {
+						options.addOptionConfirmation(OptionId.RECOVERY_CONTINUE, 
+								"Disabled ships from your fleet are available for recovery.\n\nIf you proceed without recovering them, "
+								+ "they will be lost permanently.", "Proceed", "Cancel");
+					}
+					
+					return;
+				}
+			}			
+		}
+		
+		
 		if (config.salvageRandom != null) {
 			context.setSalvageRandom(config.salvageRandom);
 		}
@@ -2185,10 +2247,10 @@ public class FleetInteractionDialogPluginImpl implements InteractionDialogPlugin
 //		"salvageReportPlayer":"Your $fleetOrShip is able to participate in salvage operations due to its contributions throughout the encounter.",
 		boolean validFleet = playerFleet.isValidPlayerFleet();
 		BattleAPI battle = context.getBattle();
-		boolean hasAllies = false;
+		//boolean hasAllies = false;
 		boolean startedWithAllies = false;
-		if (battle != null) {
-			hasAllies = context.getBattle().getPlayerSide().size() <= 1;
+		if (battle != null && battle.getPlayerSide() != null) {
+			//hasAllies = context.getBattle().getPlayerSide().size() <= 1;
 			startedWithAllies = context.getBattle().getPlayerSideSnapshot().size() > 1;
 		}
 		
@@ -2551,6 +2613,10 @@ public class FleetInteractionDialogPluginImpl implements InteractionDialogPlugin
 			}
 		}
 		
+		if (Global.getSettings().isDevMode()) {
+			DevMenuOptions.addOptions(dialog);
+		}
+		
 	}
 	
 	
@@ -2734,7 +2800,7 @@ public class FleetInteractionDialogPluginImpl implements InteractionDialogPlugin
 				if (context.isEngagedInHostilities() && context.isBattleOver()) {
 					goToEncounterEndPath();
 				} else {
-					if (context.isEngagedInHostilities()) {
+					if (context.isEngagedInHostilities() && context.isEngagedInActualBattle()) {
 						options.addOption("Perform a salvage operation, then leave", OptionId.LOOT_THEN_LEAVE, null);
 						options.setShortcut(OptionId.LOOT_THEN_LEAVE, Keyboard.KEY_ESCAPE, false, false, false, true);
 					} else {

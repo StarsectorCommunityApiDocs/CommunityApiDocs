@@ -106,6 +106,7 @@ public class GADetectHyperspaceOddity extends GABaseMission {
 		triggerPickLocationAtClosestToPlayerJumpPoint(array.getStarSystem());
 		triggerSpawnFleetAtPickedLocation("$gaDHO_arrayFleet", null);
 		triggerOrderFleetPatrol(false, array);
+		triggerMakeHostileAndAggressive();
 		//triggerOrderFleetInterceptPlayer();
 		endTrigger();
 
@@ -133,7 +134,12 @@ public class GADetectHyperspaceOddity extends GABaseMission {
 		//if(Global.getSector().getMemoryWithoutUpdate().contains("$gaDHO_foundArrayFirst")) { 
 		
 		if (currentStage == Stage.VISIT_ELEK) {
-			if(Global.getSector().getMemoryWithoutUpdate().contains("$gaDHO_foundArrayFirst")) { 
+			if(	Global.getSector().getMemoryWithoutUpdate().getBoolean("$gaDHO_playerMadeElekMad") || 
+				Global.getSector().getMemoryWithoutUpdate().getBoolean("$gaDHO_declinedTwice2")	) {
+				info.addPara("Go directly to the coordinates held in the array's data.", opad);
+				return;
+			}
+			else if(Global.getSector().getMemoryWithoutUpdate().getBoolean("$gaDHO_foundArrayFirst")) { 
 				info.addPara("Talk to Academician " + elek.getNameString() + " about the sensor array data.", opad);
 				info.addPara("Or go directly to the coordinates held in the array's data.", opad);
 				info.addImage(elek.getPortraitSprite(), width, 128, opad);
@@ -184,7 +190,12 @@ public class GADetectHyperspaceOddity extends GABaseMission {
 		Color h = Misc.getHighlightColor();
 			//
 		if (currentStage == Stage.VISIT_ELEK) {
-			if(Global.getSector().getMemoryWithoutUpdate().contains("$gaDHO_foundArrayFirst")) {  
+			if(	Global.getSector().getMemoryWithoutUpdate().getBoolean("$gaDHO_playerMadeElekMad") || 
+				Global.getSector().getMemoryWithoutUpdate().getBoolean("$gaDHO_declinedTwice2")	) {
+				info.addPara("Found mysterious coordinates", tc, pad);
+				return true;
+			}
+			else if(Global.getSector().getMemoryWithoutUpdate().getBoolean("$gaDHO_foundArrayFirst")) {  
 				info.addPara("Talk to Academician " + elek.getNameString() + " at the Galatia Academy about the sensor array data.", tc, pad);
 				info.addPara("Or go directly to the coordinates extracted from the array's data", tc, pad);
 			}
@@ -199,15 +210,15 @@ public class GADetectHyperspaceOddity extends GABaseMission {
 			return true;
 		}
 		else if (currentStage == Stage.GO_TO_LOCATION) { 
-			info.addPara("Go to the location deep in the Abyss and discover what the Sensor Array found.", tc, pad);
+			info.addPara("Go to the location deep in the Abyss to discover what the Sensor Array found.", tc, pad);
 			return true;
 		}
 		else if (currentStage == Stage.ARRAY_THEN_ABYSS) { 
-			info.addPara("Go to the location deep in the Abyss and discover what the Sensor Array found.", tc, pad);
+			info.addPara("Go to the location deep in the Abyss to discover what the Sensor Array found.", tc, pad);
 			return true;
 		}
 		else if (currentStage == Stage.ABYSS_NO_ELEK) { 
-			info.addPara("Go to the location deep in the Abyss and discover what the Sensor Array found.", tc, pad);
+			info.addPara("Go to the location deep in the Abyss to discover what the Sensor Array found.", tc, pad);
 			return true;
 		}
 		else if (currentStage == Stage.ARRAY_THEN_ELEK) { 

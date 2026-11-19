@@ -1,14 +1,16 @@
 package com.fs.starfarer.api.impl.campaign.missions;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.Ranks;
+import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.impl.campaign.ids.Voices;
 import com.fs.starfarer.api.impl.campaign.missions.academy.GACelestialObject.Variation;
 import com.fs.starfarer.api.impl.campaign.missions.hub.HubMissionWithBarEvent;
@@ -72,7 +74,7 @@ public class AngryVIPTransport extends HubMissionWithBarEvent {
 		
 		destinationId = pickOne(withoutSource);
 		if (destinationId == null) {
-			System.out.print("AVIPT failed on destinationId");
+			Global.getLogger(AngryVIPTransport.class).info("AVIPT failed on destinationId");
 			return false;
 		}
 		
@@ -80,6 +82,7 @@ public class AngryVIPTransport extends HubMissionWithBarEvent {
 		//PersonAPI person = sourceMarket.getFaction().createRandomPerson();
 		setGiverRank(Ranks.CITIZEN);
 		setGiverPost(Ranks.ARISTOCRAT);
+		setGiverVoice(Voices.ARISTO);
 		findOrCreateGiver(createdAt, false, false);
 		
 		
@@ -88,13 +91,13 @@ public class AngryVIPTransport extends HubMissionWithBarEvent {
 			return false;
 		}
 		
-		//person.setRankId(Ranks.CITIZEN);
-		person.setVoice(Voices.ARISTO);
-		//person.setPostId(Ranks.POST_ARISTOCRAT);
-		
-		//if (person == null) return false;
-		
-		//setPersonOverride(person);
+		// This is to stop Fortuna Kato from embarassing herself. -dgb
+		// And then added a special tag for this sort of thing. -dgb
+		if(	person.hasTag(Tags.NO_RANDOM_MISSIONS) ||
+			person.getRank().equals(Ranks.HOUSE_LEADER_FEMALE) || 
+			person.getRank().equals(Ranks.HOUSE_LEADER_MALE) || 
+			person.getRank().equals(Ranks.HOUSE_LEADER))
+			return false;
 		
 		if (!setPersonMissionRef(person, "$avipt_ref")) {
 			return false;

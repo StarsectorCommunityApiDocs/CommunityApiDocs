@@ -17,6 +17,7 @@ import com.fs.starfarer.api.campaign.SectorEntityToken;
 import com.fs.starfarer.api.campaign.StarSystemAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
+import com.fs.starfarer.api.impl.campaign.JumpPointInteractionDialogPluginImpl;
 import com.fs.starfarer.api.impl.campaign.ids.Pings;
 import com.fs.starfarer.api.impl.campaign.ids.Stats;
 import com.fs.starfarer.api.impl.campaign.intel.BaseIntelPlugin;
@@ -149,6 +150,10 @@ public class FractureJumpAbility extends BaseDurationAbility {
 				SectorEntityToken token = Global.getSector().getHyperspace().createToken(destOffset.x, destOffset.y);
 				
 				JumpDestination dest = new JumpDestination(token, null);
+				if (dest != null && dest.getDestination() != null && fleet.isPlayerFleet()) {
+					JumpPointInteractionDialogPluginImpl.computeAndApplyJumpPay(
+							fleet.getContainingLocation(), dest.getDestination().getContainingLocation());
+				}
 				Global.getSector().doHyperspaceTransition(fleet, fleet, dest);
 			}
 			
@@ -263,11 +268,23 @@ public class FractureJumpAbility extends BaseDurationAbility {
 			float supplyCost = computeSupplyCost();
 			
 			if (supplyCost > 0) {
-				tooltip.addPara("Jumping into hyperspace consumes %s fuel and slightly reduces the combat readiness" +
+				boolean highDamage = Misc.isExtended() && 
+									Global.getSettings().getFloat("ext_transverseJumpDamageMult") > 1f;
+				if (highDamage) {
+					LabelAPI label = tooltip.addPara("Jumping into hyperspace consumes %s fuel and %s" +
 							" of all ships, costing up to %s supplies to recover. Jumping into a star system is free.", pad, 
 							highlight,
 							Misc.getRoundedValueMaxOneAfterDecimal(fuelCost),
+							"greatly reduces the combat readiness",
 							Misc.getRoundedValueMaxOneAfterDecimal(supplyCost));
+					label.setHighlightColors(highlight, Misc.getNegativeHighlightColor(), highlight);
+				} else {
+					tooltip.addPara("Jumping into hyperspace consumes %s fuel and slightly reduces the combat readiness" +
+								" of all ships, costing up to %s supplies to recover. Jumping into a star system is free.", pad, 
+								highlight,
+								Misc.getRoundedValueMaxOneAfterDecimal(fuelCost),
+								Misc.getRoundedValueMaxOneAfterDecimal(supplyCost));
+				}
 			} else {
 				tooltip.addPara("Jumping into hyperspace consumes %s fuel. Jumping into a star system is free.", pad, 
 						highlight,
@@ -402,6 +419,11 @@ public class FractureJumpAbility extends BaseDurationAbility {
 		if (fleet.getMemoryWithoutUpdate().contains(key)) {
 			crCostFleetMult = 20f;
 		}
+		
+		if (Misc.isExtended()) {
+			crCostFleetMult *= Global.getSettings().getFloat("ext_transverseJumpDamageMult");
+		}
+		
 		return crCostFleetMult;
 	}
 	

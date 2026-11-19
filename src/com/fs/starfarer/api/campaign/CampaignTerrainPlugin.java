@@ -46,7 +46,7 @@ public interface CampaignTerrainPlugin {
 	 * @param factor conversion factor from world coordinates to map screen coordinates, including current zoom level.
 	 * @param alphaMult
 	 */
-	void renderOnMapAbove(float factor, float alphaMult);
+	void renderOnMapAbove(float factor, float alphaMult, boolean radarMode);
 	
 	
 	boolean containsEntity(SectorEntityToken other);

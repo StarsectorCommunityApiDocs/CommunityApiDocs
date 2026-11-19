@@ -1,6 +1,5 @@
 package com.fs.starfarer.api.impl.campaign.procgen;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -10,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+
+import java.awt.Color;
 
 import org.lwjgl.util.vector.Vector2f;
 
@@ -1002,7 +1003,8 @@ public class StarSystemGenerator {
 		
 		addStableLocations(system, num);
 	}
-	public static void addStableLocations(StarSystemAPI system, int num) {
+	public static List<AddedEntity> addStableLocations(StarSystemAPI system, int num) {
+		List<AddedEntity> result = new ArrayList<>();
 		for (int i = 0; i < num; i++) {
 			LinkedHashMap<LocationType, Float> weights = new LinkedHashMap<LocationType, Float>();
 			weights.put(LocationType.STAR_ORBIT, 10f);
@@ -1016,9 +1018,11 @@ public class StarSystemGenerator {
 			//if (DEBUG && added != null) System.out.println("    Added stable location");
 			
 			if (added != null) {
+				result.add(added);
 				BaseThemeGenerator.convertOrbitPointingDown(added.entity);
 			}
 		}
+		return result;
 	}
 	
 	

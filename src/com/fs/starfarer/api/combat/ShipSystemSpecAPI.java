@@ -13,6 +13,21 @@ import com.fs.starfarer.api.plugins.ShipSystemStatsScript;
 
 public interface ShipSystemSpecAPI extends WithSourceMod {
 
+	public interface ShipSystemAIHintsAPI {
+		float getThreatDamage();
+		float getThreatSpeed();
+		float getActiveSpeedIncrease();
+		float getBurstMovementPotential();
+		float getAverageSpeedMult();
+		float getAverageSpeedIncrease();
+		float getThreatRange();
+		float getThreatAmount();
+		float getThreatArc();
+		float getThreatAngle();
+		boolean isThreatOnlyWhenCloseToActive();
+		
+	}
+	
 	String getIconSpriteName();
 
 	boolean isCanUseWhileRightClickSystemOn();
@@ -287,5 +302,10 @@ public interface ShipSystemSpecAPI extends WithSourceMod {
 	void setReloadBaseAmmoAmountOnly(boolean reloadBaseAmmoAmountOnly);
 
 	boolean usesAmmo();
+
+	ShipSystemAIHintsAPI getAIHints2();
+
+	void setStatsScriptClassName(String statsScriptClassName);
+	void setAIScriptClassName(String aiScriptClassName);
 
 }

@@ -44,6 +44,9 @@ public class DisintegratorEffect extends BaseCombatLayeredRenderingPlugin implem
 		return NUM_TICKS;
 	}
 	protected boolean canDamageHull() {
+		if (target != null && target.isFighter()) {
+			return true;
+		}
 		return false;
 	}
 	
@@ -272,7 +275,7 @@ public class DisintegratorEffect extends BaseCombatLayeredRenderingPlugin implem
 			target.syncWithArmorGridState();
 		}
 		
-		if (hullDamage > 1f) {
+		if (hullDamage >= 1f) {
 			float showHullDamage = Math.min(hullDamage, target.getHitpoints());
 			if (showHullDamage >= 0) {
 				target.setHitpoints(target.getHitpoints() - hullDamage);

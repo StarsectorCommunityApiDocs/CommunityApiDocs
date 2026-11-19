@@ -11,13 +11,13 @@ import com.fs.starfarer.api.campaign.BaseOnMessageDeliveryScript;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.CargoAPI;
 import com.fs.starfarer.api.campaign.CommDirectoryEntryAPI;
+import com.fs.starfarer.api.campaign.CommDirectoryEntryAPI.EntryType;
 import com.fs.starfarer.api.campaign.FactionAPI;
 import com.fs.starfarer.api.campaign.InteractionDialogAPI;
 import com.fs.starfarer.api.campaign.OnMessageDeliveryScript;
 import com.fs.starfarer.api.campaign.PlanetAPI;
 import com.fs.starfarer.api.campaign.SectorEntityToken;
 import com.fs.starfarer.api.campaign.StarSystemAPI;
-import com.fs.starfarer.api.campaign.CommDirectoryEntryAPI.EntryType;
 import com.fs.starfarer.api.campaign.comm.CommMessageAPI;
 import com.fs.starfarer.api.campaign.comm.MessagePriority;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
@@ -136,7 +136,7 @@ public class TutorialMissionEvent extends BaseEventPlugin {
 	
 	public static PersonAPI createMainContact(PlanetAPI ancyra) {
 		PersonAPI mainContact = ancyra.getFaction().createRandomPerson(); 
-		mainContact.setRankId(Ranks.CITIZEN);
+		mainContact.setRankId(Ranks.SPACE_COMMANDER);
 		mainContact.setPostId(Ranks.POST_STATION_COMMANDER);
 		ancyra.getMarket().getCommDirectory().addPerson(mainContact);
 		

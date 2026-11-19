@@ -40,6 +40,9 @@ public class BattleCreationContext {
 	
 	public boolean fightToTheLast = false;
 	
+	public float extraMapHeight = 0f;
+	public float extraMapWidth = 0f;
+	
 	public BattleCreationContext(CampaignFleetAPI playerFleet,
 			FleetGoal playerGoal, CampaignFleetAPI otherFleet,
 			FleetGoal otherGoal) {

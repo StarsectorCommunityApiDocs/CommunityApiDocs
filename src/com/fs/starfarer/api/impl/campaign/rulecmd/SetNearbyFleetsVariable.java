@@ -13,6 +13,7 @@ import com.fs.starfarer.api.util.Misc.Token;
 
 
 /**
+ * If the variable is set and with a longer duration, does nothing.
  * SetNearbyFleetsVariable <range> <faction id> <variable name> <value> <duration>
  */
 public class SetNearbyFleetsVariable extends BaseCommandPlugin {
@@ -37,7 +38,11 @@ public class SetNearbyFleetsVariable extends BaseCommandPlugin {
 			if (fleet.getAI() instanceof CampaignFleetAIAPI) {
 				float dist = Misc.getDistance(target.getLocation(), fleet.getLocation());
 				if (dist <= range) {
-					fleet.getMemoryWithoutUpdate().set(varName, value, dur);
+					float expire = fleet.getMemoryWithoutUpdate().getExpire(varName);
+					boolean has = fleet.getMemoryWithoutUpdate().contains(varName);
+					if (!has || (expire != -1 && expire < dur)) {
+						fleet.getMemoryWithoutUpdate().set(varName, value, dur);
+					}
 				}
 			}
 		}

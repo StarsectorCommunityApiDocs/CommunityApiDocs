@@ -9,22 +9,15 @@ import com.fs.starfarer.api.campaign.InteractionDialogAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
-import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
-import com.fs.starfarer.api.fleet.FleetMemberType;
 import com.fs.starfarer.api.impl.PlayerFleetPersonnelTracker;
-import com.fs.starfarer.api.impl.campaign.DModManager;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
-import com.fs.starfarer.api.impl.campaign.ids.HullMods;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.ids.Ranks;
-import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.impl.campaign.ids.Voices;
-import com.fs.starfarer.api.impl.campaign.intel.bases.PirateBaseManager;
 import com.fs.starfarer.api.impl.campaign.missions.hub.HubMissionWithBarEvent;
 import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.api.util.Misc.Token;
-import com.fs.starfarer.api.util.WeightedRandomPicker;
 
 public class MercsOnTheRun extends HubMissionWithBarEvent {
 	public static float BASE_PRICE_MULT = 0.75f;
@@ -61,6 +54,12 @@ public class MercsOnTheRun extends HubMissionWithBarEvent {
 		commodity = "marines"; // kosher?
 	
 		quantity = 30 + genRandom.nextInt(21);
+		if (Misc.isExtended()) {
+			quantity /= Global.getSettings().getFloat("ext_marinesPriceMult");
+			quantity = (int) quantity;
+			if (quantity < 3) quantity = 3;
+			//quantity = 5 + genRandom.nextInt(6);
+		}
 		
 		float _price = market.getSupplyPrice(commodity, 1, true);
 		

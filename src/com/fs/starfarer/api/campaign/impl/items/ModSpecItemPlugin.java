@@ -292,7 +292,7 @@ public class ModSpecItemPlugin extends BaseSpecialItemPlugin {
 		while (iter.hasNext()) {
 			HullModSpecAPI curr = iter.next();
 			boolean known = Global.getSector().getPlayerFaction().knowsHullMod(curr.getId());
-			if (DebugFlags.ALLOW_KNOWN_HULLMOD_DROPS) known = false;
+			//if (DebugFlags.ALLOW_KNOWN_HULLMOD_DROPS) known = false;
 			if (known || curr.isHidden() || curr.isHiddenEverywhere() || curr.hasTag(Tags.HULLMOD_NO_DROP)) {
 				iter.remove();
 				continue;
@@ -327,6 +327,48 @@ public class ModSpecItemPlugin extends BaseSpecialItemPlugin {
 		for (HullModSpecAPI spec : specs) {
 			picker.add(spec, 1f * spec.getRarity());
 		}
+		
+		// just a giant copy-paste for now; don't want to make larger logic changes at this point (hotfix)
+		if (picker.isEmpty() && DebugFlags.ALLOW_KNOWN_HULLMOD_DROPS) {
+			specs = Global.getSettings().getAllHullModSpecs();
+			iter = specs.iterator();
+			while (iter.hasNext()) {
+				HullModSpecAPI curr = iter.next();
+				if (curr.isHidden() || curr.isHiddenEverywhere() || curr.hasTag(Tags.HULLMOD_NO_DROP)) {
+					iter.remove();
+					continue;
+				}
+			}
+			
+			if (tier >= 0) {
+				iter = specs.iterator();
+				while (iter.hasNext()) {
+					HullModSpecAPI curr = iter.next();
+					if (curr.getTier() != tier) iter.remove();
+				}
+			}
+			
+			if (!tags.isEmpty()) {
+				iter = specs.iterator();
+				while (iter.hasNext()) {
+					HullModSpecAPI curr = iter.next();
+					for (String tag : tags) {
+						boolean not = tag.startsWith("!");
+						tag = not ? tag.substring(1) : tag;
+						boolean has = curr.hasTag(tag);
+						if (not == has) {
+							iter.remove();
+							break;
+						}
+					}
+				}
+			}
+			for (HullModSpecAPI spec : specs) {
+				picker.add(spec, 1f * spec.getRarity());
+			}
+		}
+		
+		
 		HullModSpecAPI pick = picker.pick();
 		if (pick == null) {
 			return null;

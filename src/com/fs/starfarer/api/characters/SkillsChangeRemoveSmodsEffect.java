@@ -1,10 +1,13 @@
 package com.fs.starfarer.api.characters;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.combat.ShipVariantAPI;
@@ -156,8 +159,12 @@ public class SkillsChangeRemoveSmodsEffect extends BaseSkillsChangeEffect {
 				UIComponentAPI prev = null;
 				int minCost = 10000;
 				ButtonAPI minCostButton = null;
+				Set<String> seen = new LinkedHashSet<>();
 				for (SModRecord record : data.records) {
 					HullModSpecAPI mod = Global.getSettings().getHullModSpec(record.getSMods().get(0));
+					if (mod == null) continue;
+					if (seen.contains(mod.getId())) continue;
+					seen.add(mod.getId());
 					float p = opad;
 					if (prev != null) p = pad;
 					int cost = mod.getCostFor(member.getHullSpec().getHullSize());

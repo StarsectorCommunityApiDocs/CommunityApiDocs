@@ -60,10 +60,10 @@ public class Objectives extends BaseCommandPlugin {
 	public static int WORMHOLE_FUEL = 100;
 	public static String WORMHOLE_TYPE_STR = "wormhole";
 	
-	public static float BURST_RANGE_MAKESHIFT = 10;
-	public static float BURST_RANGE_DOMAIN = 15;
-	public static float BURST_RANGE_SCAVENGER_MIN = 5; // used by HT_CMD
-	public static float BURST_RANGE_SCAVENGER_MAX = 10; // used by HT_CMD
+	public static float BURST_RANGE_MAKESHIFT = 18;
+	public static float BURST_RANGE_DOMAIN = 25;
+	public static float BURST_RANGE_SCAVENGER_MIN = 12; // used by HT_CMD
+	public static float BURST_RANGE_SCAVENGER_MAX = 20; // used by HT_CMD
 	
 	public static float SALVAGE_FRACTION = 0.5f;
 	
@@ -367,9 +367,9 @@ public class Objectives extends BaseCommandPlugin {
 		return false;
 	}
 	
-	public void build(String type, String factionId) {
-		if (entity.hasTag(Tags.NON_CLICKABLE)) return;
-		if (entity.hasTag(Tags.FADING_OUT_AND_EXPIRING)) return;
+	public SectorEntityToken build(String type, String factionId) {
+		if (entity.hasTag(Tags.NON_CLICKABLE)) return null;
+		if (entity.hasTag(Tags.FADING_OUT_AND_EXPIRING)) return null;
 		
 		LocationAPI loc = entity.getContainingLocation();
 		SectorEntityToken built = loc.addCustomEntity(null,
@@ -390,6 +390,7 @@ public class Objectives extends BaseCommandPlugin {
 			removeBuildCosts();
 			Global.getSoundPlayer().playUISound("ui_objective_constructed", 1f, 1f);
 		}
+		return built;
 	}
 
 	
@@ -644,7 +645,7 @@ public class Objectives extends BaseCommandPlugin {
 		if (entity.hasTag(Tags.MAKESHIFT) || entity.hasTag(Tags.STABLE_LOCATION)) {
 			return new String[] {Commodities.HEAVY_MACHINERY, Commodities.METALS, Commodities.RARE_METALS};
 		}
-		return new String[] {Commodities.HEAVY_MACHINERY, Commodities.METALS, Commodities.RARE_METALS, Commodities.VOLATILES};
+		return new String[] {Commodities.HEAVY_MACHINERY, Commodities.METALS, Commodities.RARE_METALS, Commodities.VOLATILES, Commodities.PARTS};
 	}
 
 
@@ -661,7 +662,7 @@ public class Objectives extends BaseCommandPlugin {
 		if (entity.hasTag(Tags.MAKESHIFT) || entity.hasTag(Tags.STABLE_LOCATION)) {
 			return new int[] {15, 30, 5};
 		}
-		return new int[] {50, 200, 20, 20};
+		return new int[] {50, 200, 20, 20, 10};
 	}
 	
 	public String [] getRepairResources() {
@@ -738,10 +739,10 @@ public class Objectives extends BaseCommandPlugin {
 				
 				boolean makeUnstable = WormholeManager.willWormholeBecomeUnstable(entity);
 				if (makeUnstable) {
-					panel.addPara("Once the operation is completed, the wormhole will take about half a cycle to stablize,"
+					panel.addPara("Once the operation is completed, the wormhole will take about half a cycle to stabilize, "
 							+ "before it can be used.", 10f, Misc.getHighlightColor(), "half a cycle");
 				} else {
-					panel.addPara("Usually, the wormhole will take about a cycle to stablize, but you have "
+					panel.addPara("Usually, the wormhole will take about a cycle to stabilize, but you have "
 							+ "calibration data that will allow it to be used immediately.", 10f);
 				}
 			}

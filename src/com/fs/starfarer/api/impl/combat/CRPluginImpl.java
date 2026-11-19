@@ -44,6 +44,13 @@ public class CRPluginImpl implements CombatReadinessPlugin {
 	
 	public void applyMaxCRCrewModifiers(FleetMemberAPI member) {
 		if (member == null || member.getStats() == null) return;
+		
+//		if (member.getFleetData() != null && member.getFleetData().getFleet() != null &&
+//				//member.getFleetData().getFleet().getName().contains("Ryan") &&
+//				 member.getCrewFraction() < 1f) {
+//			System.out.println("efwefwefwefe");
+//		}
+		
 		//float maxCRBasedOnLevel = (40f + member.getCrewFraction() * 10f) / 100f;
 		float maxCRBasedOnLevel = 0.7f;
 		member.getStats().getMaxCombatReadiness().modifyFlat("crew skill bonus", maxCRBasedOnLevel, "Basic maintenance");
@@ -247,7 +254,7 @@ public class CRPluginImpl implements CombatReadinessPlugin {
 	 * @return
 	 */
 	private float getAimAccuracy(float cr) {
-		return cr * 1.5f - 0.5f;
+		return Math.max(0f, cr * 1.5f - 0.5f);
 	}
 	
 	public void applyCRToStats(float cr, MutableShipStatsAPI stats, HullSize hullSize) {
@@ -493,11 +500,13 @@ public class CRPluginImpl implements CombatReadinessPlugin {
 	
 	private String getMalfunctionString(MutableShipStatsAPI stats, float cr) {
 		String malfStr = "None";
-		if (cr < getCriticalMalfunctionThreshold(stats)) {
+		float min = getCriticalMalfunctionThreshold(stats);
+		float max = getMalfunctionThreshold(stats);
+		if (cr < min) {
 			malfStr = "Critical";
-		} else if (cr < 0.3f) {
+		} else if (cr < (min + max) / 2f) {
 			malfStr = "Serious";
-		} else if (cr < getMalfunctionThreshold(stats)) {
+		} else if (cr < max) {
 			malfStr = "Low";
 		}
 		return malfStr;
@@ -520,7 +529,7 @@ public class CRPluginImpl implements CombatReadinessPlugin {
 		
 		String accString;
 		CREffectDetailType accType;
-		if (acc < 0) {
+		if (acc <= 0) {
 			accString = "Very poor";
 			accType = CREffectDetailType.PENALTY;
 		} else if (acc < 0.25f) {

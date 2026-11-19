@@ -95,6 +95,7 @@ public interface CargoStackAPI {
 	boolean isInPlayerCargo();
 	boolean isPickedUp();
 	void setPickedUp(boolean isPickedUp);
+	boolean isBlueprintStack();
 
 
 }

@@ -19,6 +19,7 @@ public class Factions {
 	
 	public static final String LIONS_GUARD = "lions_guard";
 	public static final String DIKTAT = "sindrian_diktat";
+	public static final String DIKTAT_ACHILLES = "diktat_achilles";
 	
 	public static final String KOL = "knights_of_ludd"; 
 	public static final String LUDDIC_CHURCH = "luddic_church"; 
@@ -77,6 +78,8 @@ public class Factions {
 	
 	public static final String CUSTOM_NO_AI_CORES_FROM_AUTOMATED_DEFENSES = "noAICoresFromAutomatedDefenses";
 	public static final String CUSTOM_OFFICERS_ON_AUTOMATED_DEFENSES = "officersOnAutomatedDefenses";
+	
+	public static final String CUSTOM_NO_BOUNTY_FOR_DEFEATING = "noBountyForDefeating";
 	
 	
 	

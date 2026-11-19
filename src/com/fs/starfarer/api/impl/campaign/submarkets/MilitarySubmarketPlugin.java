@@ -1,7 +1,8 @@
 package com.fs.starfarer.api.impl.campaign.submarkets;
 
-import java.awt.Color;
 import java.util.Random;
+
+import java.awt.Color;
 
 import org.apache.log4j.Logger;
 
@@ -107,6 +108,9 @@ public class MilitarySubmarketPlugin extends BaseSubmarketPlugin {
 	protected boolean requiresCommission(RepLevel req) {
 		if (!submarket.getFaction().getCustomBoolean(Factions.CUSTOM_OFFERS_COMMISSIONS)) return false;
 		
+		if (Misc.isExtended() && Global.getSettings().getBoolean("ext_militaryMarketRequiresCommission")) {
+			if (req.isAtWorst(RepLevel.FAVORABLE)) return true;
+		}
 		if (req.isAtWorst(RepLevel.WELCOMING)) return true;
 		return false;
 	}
@@ -121,6 +125,15 @@ public class MilitarySubmarketPlugin extends BaseSubmarketPlugin {
 		return com.getCommodity().hasTag(Commodities.TAG_MILITARY);
 	}
 	
+	@Override
+	public float getTariff() {
+		if (Misc.isExtended()) {
+			return Global.getSettings().getFloat("ext_militaryMarketTariff") * getMarketTariffMult(market);
+		}
+		return super.getTariff() * getMarketTariffMult(market);
+	}
+	
+
 	@Override
 	public int getStockpileLimit(CommodityOnMarketAPI com) {
 //		int demand = com.getMaxDemand();
@@ -161,7 +174,9 @@ public class MilitarySubmarketPlugin extends BaseSubmarketPlugin {
 
 	public boolean isIllegalOnSubmarket(CargoStackAPI stack, TransferAction action) {
 		if (stack.isCommodityStack()) {
-			return isIllegalOnSubmarket((String) stack.getData(), action);
+			if (!Misc.isExtended() && Global.getSettings().getBoolean("ext_militaryMarketRequiresCommission")) {
+				return isIllegalOnSubmarket((String) stack.getData(), action);
+			}
 		}
 		
 		RepLevel req = getRequiredLevelAssumingLegal(stack, action);
@@ -212,6 +227,9 @@ public class MilitarySubmarketPlugin extends BaseSubmarketPlugin {
 	}
 	
 	private RepLevel getRequiredLevelAssumingLegal(CargoStackAPI stack, TransferAction action) {
+		if (Misc.isExtended() && stack.isCommodityStack() && Global.getSettings().getBoolean("ext_militaryMarketRequiresCommission")) {
+			return RepLevel.FAVORABLE;
+		}
 		int tier = -1;
 		if (stack.isWeaponStack()) {
 			WeaponSpecAPI spec = stack.getWeaponSpecIfWeapon();
@@ -343,6 +361,12 @@ public class MilitarySubmarketPlugin extends BaseSubmarketPlugin {
 		//if (mode == CoreUITradeMode.OPEN) return false;
 		if (ui.getTradeMode() == CoreUITradeMode.SNEAK) return false;
 		
+//		if (Misc.isExtended() && 
+//				Global.getSettings().getBoolean("ext_militaryMarketRequiresCommission") &&
+//				!hasCommission()) {
+//			return false;
+//		}
+		
 		RepLevel level = submarket.getFaction().getRelationshipLevel(Global.getSector().getFaction(Factions.PLAYER));
 		return level.isAtWorst(minStanding);
 	}
@@ -353,6 +377,12 @@ public class MilitarySubmarketPlugin extends BaseSubmarketPlugin {
 	
 	public String getTooltipAppendix(CoreUIAPI ui) {
 		if (!isEnabled(ui)) {
+//			if (Misc.isExtended() && 
+//					Global.getSettings().getBoolean("ext_militaryMarketRequiresCommission") &&
+//					!hasCommission()) {
+//				return "Requires: " + submarket.getFaction().getDisplayName() + " commission";
+//			}
+			
 			return "Requires: " + submarket.getFaction().getDisplayName() + " - " + minStanding.getDisplayName().toLowerCase();
 		}
 		if (ui.getTradeMode() == CoreUITradeMode.SNEAK) {

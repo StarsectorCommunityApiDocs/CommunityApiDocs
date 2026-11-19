@@ -89,6 +89,7 @@ public class AcausalDisruptorStats extends BaseShipSystemScript {
 		ShipAPI target = ship.getShipTarget();
 		if (ship.getShipAI() != null && ship.getAIFlags().hasFlag(AIFlags.TARGET_FOR_SHIP_SYSTEM)){
 			target = (ShipAPI) ship.getAIFlags().getCustom(AIFlags.TARGET_FOR_SHIP_SYSTEM);
+			if (target != null && target.getOriginalOwner() == ship.getOriginalOwner()) target = null;
 		}
 		
 		if (target != null) {
@@ -106,6 +107,7 @@ public class AcausalDisruptorStats extends BaseShipSystemScript {
 						float dist = Misc.getDistance(ship.getLocation(), target.getLocation());
 						float radSum = ship.getCollisionRadius() + target.getCollisionRadius();
 						if (dist > range + radSum || target.isFighter()) target = null;
+						if (target != null && target.getOriginalOwner() == ship.getOriginalOwner()) target = null;
 					}
 				}
 			}

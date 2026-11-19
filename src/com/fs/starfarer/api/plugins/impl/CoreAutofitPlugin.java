@@ -78,6 +78,7 @@ public class CoreAutofitPlugin extends BaseAutofitPlugin {
 	public static String MISSILE = "missile";
 	public static String UTILITY = "utility";
 	public static String ROCKET = "rocket";
+	public static String SWARM = "swarm";
 	
 	public static String INTERCEPTOR = "interceptor";
 	public static String BOMBER = "bomber";
@@ -199,6 +200,8 @@ public class CoreAutofitPlugin extends BaseAutofitPlugin {
 			new Category(MISSILE, categories).addFallback(MISSILE, STRIKE, ROCKET, HE, ENERGY, KINETIC, UTILITY, BEAM, PD);
 			new Category(UTILITY, categories).addFallback(UTILITY, MISSILE, ROCKET, STRIKE, HE, KINETIC, ENERGY, BEAM, PD);
 			new Category(ROCKET, categories).addFallback(ROCKET, UTILITY, MISSILE, STRIKE, HE, ENERGY, KINETIC, BEAM, PD);
+			
+			new Category(SWARM, categories).addFallback(UTILITY, MISSILE, ROCKET);
 			
 			new Category(INTERCEPTOR, categories).addFallback(INTERCEPTOR, FIGHTER, SUPPORT, BOMBER);
 			new Category(BOMBER, categories).addFallback(BOMBER, FIGHTER, INTERCEPTOR, SUPPORT);
@@ -861,6 +864,7 @@ public class CoreAutofitPlugin extends BaseAutofitPlugin {
 			if (!mod.hasTag(Tags.DO_NOT_APPLY_HULLMOD_DURING_AUTOFIT)) {
 				mod.getEffect().applyEffectsBeforeShipCreation(ship.getHullSize(), ship.getMutableStats(), mod.getId());
 				mod.getEffect().applyEffectsAfterShipCreation(ship, mod.getId());
+				mod.getEffect().applyEffectsAfterShipCreation2ndPass(ship, mod.getId());
 			}
 		}
 		return cost;
@@ -1848,14 +1852,15 @@ public class CoreAutofitPlugin extends BaseAutofitPlugin {
 		}
 		
 		List<OfficerDataAPI> officers = new ArrayList<OfficerDataAPI>();
-		int max = (int) fleet.getCommander().getStats().getOfficerNumber().getModifiedValue();
-		int count = 0;
+		//int max = (int) fleet.getCommander().getStats().getOfficerNumber().getModifiedValue();
+		//int count = 0;
 		for (OfficerDataAPI officer : fleet.getFleetData().getOfficersCopy()) {
-			boolean merc = Misc.isMercenary(officer.getPerson());
-			if (!merc) {
-				count++;
-			}
-			if (count > max && !merc) continue;
+//			boolean merc = Misc.isMercenary(officer.getPerson());
+//			if (!merc) {
+//				count++;
+//			}
+			if (!officer.isActivated()) continue;
+			//if (count > max && !merc) continue;
 			
 			boolean found = false;
 			for (FleetMemberAPI member : fleet.getFleetData().getMembersListCopy()) {

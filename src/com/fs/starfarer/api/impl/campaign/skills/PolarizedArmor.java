@@ -25,11 +25,16 @@ public class PolarizedArmor {
 	
 	public static float VENT_RATE_BONUS = 25f;
 	
+	public static float MAX_SPEED_BONUS = 20f;
+	
+	public static float OVERLOAD_REDUCTION = 25f;
+	
 	public static float NON_SHIELD_FLUX_LEVEL = 50f;
+	
 	
 	public static class Level0 implements DescriptionSkillEffect {
 		public String getString() {
-			return "\n\n*Ships without a shield or a phase cloak are treated as always having " + (int) NON_SHIELD_FLUX_LEVEL + "% hard flux.";
+			return "\n\n\n*Ships without a shield or a phase cloak are treated as always having " + (int) NON_SHIELD_FLUX_LEVEL + "% hard flux.";
 		}
 		public Color[] getHighlightColors() {
 			Color h = Misc.getHighlightColor();
@@ -63,12 +68,14 @@ public class PolarizedArmor {
 			}
 			
 			//float armorBonus = ship.getArmorGrid().getArmorRating() * ARMOR_FRACTION_BONUS * fluxLevel;
-			float armorBonus = EFFECTIVE_ARMOR_BONUS * fluxLevel;
+			//float armorBonus = EFFECTIVE_ARMOR_BONUS * fluxLevel;
+			float speedBonus = MAX_SPEED_BONUS * fluxLevel;
 			float empBonus = EMP_BONUS_PERCENT * fluxLevel;
 			//armorBonus = 1090000;
 			//wefwef we fe stats.getMaxArmorDamageReduction().modifyFlat(id, 0.1f);
 			//stats.getEffectiveArmorBonus().modifyFlat(id, armorBonus);
-			stats.getEffectiveArmorBonus().modifyPercent(id, armorBonus);
+			//stats.getEffectiveArmorBonus().modifyPercent(id, armorBonus);
+			stats.getMaxSpeed().modifyFlat(id, speedBonus);
 			stats.getEmpDamageTakenMult().modifyMult(id, 1f - empBonus * 0.01f);
 			
 			//Color c = new Color(255, 200, 100, 100);
@@ -142,6 +149,32 @@ public class PolarizedArmor {
 		}
 	}
 	
+	public static class Level2A implements AfterShipCreationSkillEffect {
+		public void applyEffectsAfterShipCreation(ShipAPI ship, String id) {
+			ship.addListener(new PolarizedArmorEffectMod(ship, id));
+		}
+		public void unapplyEffectsAfterShipCreation(ShipAPI ship, String id) {
+			MutableShipStatsAPI stats = ship.getMutableStats();
+			ship.removeListenerOfClass(PolarizedArmorEffectMod.class);
+			stats.getMaxSpeed().unmodify(id);
+			//stats.getEffectiveArmorBonus().unmodify(id);
+			stats.getEmpDamageTakenMult().unmodify(id);
+		}
+		
+		public void apply(MutableShipStatsAPI stats, HullSize hullSize, String id, float level) {}
+		public void unapply(MutableShipStatsAPI stats, HullSize hullSize, String id) {}
+		
+		public String getEffectDescription(float level) {
+			return "Up to +" + (int)(MAX_SPEED_BONUS) + " top speed, based on current hard flux level*";
+		}
+		public String getEffectPerLevelDescription() {
+			return null;
+		}
+		public ScopeDescription getScopeDescription() {
+			return ScopeDescription.PILOTED_SHIP;
+		}
+	}
+	
 	public static class Level3 implements ShipSkillEffect {
 		public void apply(MutableShipStatsAPI stats, HullSize hullSize, String id, float level) {}
 		public void unapply(MutableShipStatsAPI stats, HullSize hullSize, String id) {}
@@ -181,6 +214,29 @@ public class PolarizedArmor {
 		}
 	}
 	
+	
+	public static class Level5 implements ShipSkillEffect {
+		
+		public void apply(MutableShipStatsAPI stats, HullSize hullSize, String id, float level) {
+			stats.getOverloadTimeMod().modifyMult(id, 1f - OVERLOAD_REDUCTION / 100f);
+		}
+		
+		public void unapply(MutableShipStatsAPI stats, HullSize hullSize, String id) {
+			stats.getOverloadTimeMod().unmodify(id);
+		}	
+		
+		public String getEffectDescription(float level) {
+			return "-" + (int)(OVERLOAD_REDUCTION) + "% overload duration";
+		}
+		
+		public String getEffectPerLevelDescription() {
+			return null;
+		}
+		
+		public ScopeDescription getScopeDescription() {
+			return ScopeDescription.PILOTED_SHIP;
+		}
+	}	
 }
 
 

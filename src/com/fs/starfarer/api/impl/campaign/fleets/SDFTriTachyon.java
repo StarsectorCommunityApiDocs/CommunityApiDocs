@@ -72,6 +72,7 @@ public class SDFTriTachyon extends SDFBase {
 		m.triggerSetFleetMemoryValue(MemFlags.MEMORY_KEY_SOURCE_MARKET, culann);
 		//m.triggerFleetSetNoFactionInName();
 		m.triggerFleetSetName("Capital Assurance Reserve"); // Armada");
+		m.triggerFleetSetNoFactionInName();
 		m.triggerPatrolAllowTransponderOff();
 		//m.triggerFleetSetPatrolActionText("patrolling");
 		m.triggerOrderFleetPatrol(culann.getStarSystem());

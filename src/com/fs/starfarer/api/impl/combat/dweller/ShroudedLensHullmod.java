@@ -44,6 +44,8 @@ public class ShroudedLensHullmod extends HumanShipShroudedHullmod {
 	public static float MIN_ROF_MULT = 1f;
 	public static float MAX_ROF_MULT = 4f;
 	
+	public static float SMOD_ROF_MULT = 1.5f;
+	
 	public String getDescriptionParam(int index, HullSize hullSize) {
 		return null;
 	}
@@ -79,6 +81,11 @@ public class ShroudedLensHullmod extends HumanShipShroudedHullmod {
 		
 		if (!ship.isAlive()) return;
 		if (amount <= 0f) return;
+		
+		boolean sMod = isSMod(ship.getMutableStats());
+		if (sMod) {
+			amount *= SMOD_ROF_MULT;
+		}
 		
 		ShroudedLensHullmodData data = getData(ship);
 		data.untilAttack -= amount * getRoF(ship.getHullSize());
@@ -370,12 +377,11 @@ public class ShroudedLensHullmod extends HumanShipShroudedHullmod {
 	}	
 	
 
-//	@Override
-//	public String getSModDescriptionParam(int index, HullSize hullSize, ShipAPI ship) {
-//		if (index == 0) return "" + (int) Math.round(SMOD_CR_PENALTY * 100f) + "%";
-//		if (index == 1) return "" + (int) Math.round(SMOD_MAINTENANCE_PENALTY) + "%";
-//		return null;
-//	}
+	@Override
+	public String getSModDescriptionParam(int index, HullSize hullSize, ShipAPI ship) {
+		if (index == 0) return "" + (int) Math.round((SMOD_ROF_MULT - 1f) * 100f) + "%";
+		return null;
+	}
 //	
 //	@Override
 //	public boolean isSModEffectAPenalty() {

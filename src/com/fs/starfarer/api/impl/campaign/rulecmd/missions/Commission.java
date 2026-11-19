@@ -1,8 +1,9 @@
 package com.fs.starfarer.api.impl.campaign.rulecmd.missions;
 
-import java.awt.Color;
 import java.util.List;
 import java.util.Map;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
@@ -99,9 +100,9 @@ public class Commission extends BaseCommandPlugin {
 		} else if (command.equals("accept")) {
 			accept();
 		} else if (command.equals("resign")) {
-			resign(true);
+			resign(true, dialog);
 		} else if (command.equals("resignNoPenalty")) {
-			resign(false);
+			resign(false, dialog);
 		} else if (command.equals("personCanGiveCommission")) {
 			return personCanGiveCommission();
 		}
@@ -225,7 +226,7 @@ public class Commission extends BaseCommandPlugin {
 			   Ranks.POST_OUTPOST_COMMANDER.equals(person.getPostId());
 	}
 	
-	protected void resign(boolean withPenalty) {
+	public static void resign(boolean withPenalty, InteractionDialogAPI dialog) {
 		FactionCommissionIntel intel = Misc.getCommissionIntel();
 		if (intel != null) {
 			MissionResult result = intel.createResignedCommissionResult(withPenalty, true, dialog);

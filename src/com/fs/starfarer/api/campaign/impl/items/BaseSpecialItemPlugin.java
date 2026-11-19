@@ -88,6 +88,10 @@ public class BaseSpecialItemPlugin implements SpecialItemPlugin {
 			tooltip.addPara(spec.getDesc(), c, opad);
 		}
 		
+//		if (Misc.isExtended() && stack != null && stack.isBlueprintStack()) {
+//			tooltip.addPara("Can be sold for substantially more credits on the black market.", opad);
+//		}
+		
 		if (getClass() == BaseSpecialItemPlugin.class) {
 			addCostLabel(tooltip, opad, transferHandler, stackSource);
 		}
@@ -122,6 +126,13 @@ public class BaseSpecialItemPlugin implements SpecialItemPlugin {
 	
 	protected void addCostLabel(TooltipMakerAPI tooltip, float pad, CargoTransferHandlerAPI transferHandler, Object stackSource) {
 		if (stack == null) return;
+		
+		if (Misc.isExtended() && stack != null && stack.isBlueprintStack()) {
+			if (Global.CODEX_TOOLTIP_MODE) {
+				tooltip.setParaSmallInsignia();
+			}
+			tooltip.addPara("Can be sold for substantially more credits on the black market.", pad);
+		}
 		
 		//if (Global.CODEX_TOOLTIP_MODE) return;
 		if (Global.CODEX_TOOLTIP_MODE) {

@@ -24,16 +24,21 @@ import com.fs.starfarer.api.campaign.econ.Industry;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.campaign.listeners.ColonyInteractionListener;
 import com.fs.starfarer.api.campaign.listeners.ColonyPlayerHostileActListener;
+import com.fs.starfarer.api.campaign.listeners.DModRepairListener;
 import com.fs.starfarer.api.campaign.listeners.EconomyTickListener;
 import com.fs.starfarer.api.campaign.listeners.PlayerColonizationListener;
 import com.fs.starfarer.api.combat.ShipAPI.HullSize;
+import com.fs.starfarer.api.combat.ShipVariantAPI;
+import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.rulecmd.salvage.MarketCMD.TempData;
 import com.fs.starfarer.api.impl.campaign.terrain.BaseTiledTerrain;
 import com.fs.starfarer.api.plugins.SurveyPlugin;
+import com.fs.starfarer.api.util.CountingMap;
 
 public class PlaythroughLog implements EconomyTickListener,
 									   ColonyInteractionListener,
 									   //EconomyUpdateListener,
+									   DModRepairListener,
 									   PlayerColonizationListener,
 									   ColonyPlayerHostileActListener {
 
@@ -61,15 +66,18 @@ public class PlaythroughLog implements EconomyTickListener,
 	
 	protected List<SModRecord> smodsInstalled = new ArrayList<SModRecord>();
 	protected List<OfficerSkillGainRecord> officerSkillsLearned = new ArrayList<OfficerSkillGainRecord>();
+	protected CountingMap<String> partsUsed = new CountingMap<>();
 	
 	public PlaythroughLog() {
 		//Global.getSector().getEconomy().addUpdateListener(this);
 		initStats();
 	}
 	
-	
-	
-//	// called from the UI when the player visits a colony etc
+	public CountingMap<String> getPartsUsed() {
+		return partsUsed;
+	}
+
+	//	// called from the UI when the player visits a colony etc
 //	// take some samples here so that we have a better chance of catching changes in credits/fleet size/etc.
 	public void reportPlayerClosedMarket(MarketAPI market) {
 		reportEconomyTick(-1);
@@ -106,7 +114,7 @@ public class PlaythroughLog implements EconomyTickListener,
 			HullSize size = info.getMember().getHullSpec().getHullSize();
 			if (size.ordinal() > biggestBought.ordinal()) {
 				biggestBought = size;
-				addEntry("Bought " + info.getMember().getVariant().getHullSpec().getNameWithDesignationWithDashClass());
+				addEntry("Acquired " + info.getMember().getVariant().getHullSpec().getNameWithDesignationWithDashClass());
 			}
 		}
 	}
@@ -189,6 +197,11 @@ public class PlaythroughLog implements EconomyTickListener,
 			stats = new LinkedHashMap<String, PLStat>();
 			initStats();
 		}
+		
+		if (partsUsed == null) {
+			partsUsed = new CountingMap<>();
+		}
+		
 		if (data == null) {
 			data = new ArrayList<PLSnapshot>();
 		}
@@ -327,6 +340,11 @@ public class PlaythroughLog implements EconomyTickListener,
 	}
 
 	public void reportPlayerOpenedMarketAndCargoUpdated(MarketAPI market) {
+	}
+
+	@Override
+	public void reportDModsRepaired(FleetMemberAPI member, ShipVariantAPI variant, int parts) {
+		partsUsed.add(member.getId(), parts);
 	}
 }
 

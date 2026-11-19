@@ -54,4 +54,6 @@ public interface CharacterCreationData {
 	List<Script> getScriptsBeforeTimePass();
 	boolean isCampaignHelpEnabled();
 	void setCampaignHelpEnabled(boolean campaignHelp);
+	boolean isExtMode();
+	void setExtMode(boolean extMode);
 }

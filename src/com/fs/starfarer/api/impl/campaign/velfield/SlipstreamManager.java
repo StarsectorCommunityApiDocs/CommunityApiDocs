@@ -37,6 +37,8 @@ import com.fs.starfarer.api.util.WeightedRandomPicker;
 
 public class SlipstreamManager implements EveryFrameScript {
 	
+	public static boolean CHANGE_ONCE_PER_CYCLE = true;
+	
 	public static int WIDTH = 21;
 	public static int HEIGHT = 11;
 	public static float MAP_WIDTH_PADDING = 8000;
@@ -482,8 +484,11 @@ public class SlipstreamManager implements EveryFrameScript {
 			}
 			
 			int month = Global.getSector().getClock().getMonth();
-			//month = 6;
-			if (month == 6 || month == 12) {
+			int cycle = Global.getSector().getClock().getCycle();
+			boolean isChangeMonth = month == 6 || month == 12;
+			if (CHANGE_ONCE_PER_CYCLE) isChangeMonth = month == 12;
+			
+			if (isChangeMonth) {
 				for (AddedStream curr : active) {
 					if (curr.plugin.isDespawning()) continue;
 					float despawnDelay = 0f + random.nextFloat() * 20f;
@@ -495,7 +500,7 @@ public class SlipstreamManager implements EveryFrameScript {
 					prevConfig = config.data;
 				}
 				config = null;
-			} else if (month != 6 && month != 12) {
+			} else if (!isChangeMonth) {
 				if (config == null) {
 					if (DebugFlags.SLIPSTREAM_DEBUG) {
 						STREAM_CONFIGS.clear();
@@ -518,7 +523,7 @@ public class SlipstreamManager implements EveryFrameScript {
 						config = new StreamConfig(data, random);
 					}
 				}
-				addStream(month);
+				addStream(month, cycle);
 			}
 			
 			
@@ -528,7 +533,7 @@ public class SlipstreamManager implements EveryFrameScript {
 	}
 	
 	
-	public void addStream(int month) {
+	public void addStream(int month, int cycle) {
 		if (config == null) return;
 		
 		//random = new Random();
@@ -568,8 +573,13 @@ public class SlipstreamManager implements EveryFrameScript {
 
 		// default direction is east in first half of the cycle, west in the second half
 		// months 6 and 12 don't really matter since the slipstreams despawn during those
-		if (month == 12 || month < 6) {
-		//if (!(month == 12 || month < 6)) {
+		
+		boolean earlyCycle = month == 12 || month < 6;
+		if (CHANGE_ONCE_PER_CYCLE) {
+			earlyCycle = (month == 12 && cycle % 2 == 0) || (month != 12 && cycle % 2 == 1);
+		}
+		
+		if (earlyCycle) {
 			if ((!data.reverse && from.x > to.x) || (data.reverse && from.x < to.x)) {
 				Vector2f temp = to;
 				to = from;

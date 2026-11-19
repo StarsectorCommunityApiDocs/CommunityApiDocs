@@ -2,13 +2,17 @@ package com.fs.starfarer.api.impl.campaign.abilities.ai;
 
 import org.lwjgl.util.vector.Vector2f;
 
+import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.ai.FleetAIFlags;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
+import com.fs.starfarer.api.characters.AbilityPlugin;
 import com.fs.starfarer.api.impl.campaign.abilities.GoDarkAbility;
 import com.fs.starfarer.api.impl.campaign.events.BaseEventPlugin.MarketFilter;
+import com.fs.starfarer.api.impl.campaign.ids.Abilities;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
+import com.fs.starfarer.api.impl.campaign.intel.misc.SupportFleetIntel;
 import com.fs.starfarer.api.util.IntervalUtil;
 import com.fs.starfarer.api.util.Misc;
 
@@ -31,6 +35,22 @@ public class GoDarkAbilityAI extends BaseAbilityAI {
 		if (ability.isActiveOrInProgress()) {
 			mem.set(FleetAIFlags.HAS_SPEED_PENALTY, true, 0.2f);
 			mem.set(FleetAIFlags.HAS_LOWER_DETECTABILITY, true, 0.2f);
+		}
+		
+		boolean playerSupportFleet = Misc.isPlayerSupportFleet(fleet) && 
+				fleet.getMemoryWithoutUpdate().getBoolean(SupportFleetIntel.SUPPORT_FLEET_FOLLOW);
+		if (playerSupportFleet && fleet.isInCurrentLocation()) {
+			CampaignFleetAPI player = Global.getSector().getPlayerFleet();
+			//float dist = Misc.getDistance(player, fleet);
+			AbilityPlugin sb = player.getAbility(Abilities.GO_DARK);
+			if (sb != null) {
+				if (sb.isActive()) {
+					if (!ability.isActive()) ability.activate();
+				} else if (!sb.isActive()) {
+					if (ability.isActive()) ability.deactivate();
+				}
+			}
+			return;
 		}
 		
 		CampaignFleetAPI pursueTarget = mem.getFleet(FleetAIFlags.PURSUIT_TARGET);

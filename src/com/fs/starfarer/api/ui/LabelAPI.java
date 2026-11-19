@@ -7,7 +7,7 @@ import java.awt.Color;
  *
  * Copyright 2015 Fractal Softworks, LLC
  */
-public interface LabelAPI {
+public interface LabelAPI extends UIComponentAPI {
 	void setHighlight(int start, int end);
 	void highlightFirst(String substring);
 	void highlightLast(String substring);
@@ -38,4 +38,11 @@ public interface LabelAPI {
 	void setHighlightOnMouseover(boolean highlightOnMouseover);
 	void setColor(Color color);
 	Color getColor();
+	Color getBackgroundColor();
+	void setBackgroundColor(Color backgroundColor);
+	Color getAdditiveColor();
+	void setAdditiveColor(Color additiveColor);
+	boolean isBlinking();
+	void stopBlinking();
+	void blink(float frequency, float duration);
 }

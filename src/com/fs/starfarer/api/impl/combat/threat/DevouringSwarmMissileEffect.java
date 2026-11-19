@@ -30,14 +30,15 @@ public class DevouringSwarmMissileEffect extends BaseFragmentMissileEffect imple
 		@Override
 		public String modifyDamageDealt(Object param, CombatEntityAPI target, DamageAPI damage, Vector2f point,
 				boolean shieldHit) {
-			if (shieldHit) {
-				return null;
-			}
+//			if (shieldHit) {
+//				return null;
+//			}
 			if (param instanceof MissileAPI) {
 				MissileAPI missile = (MissileAPI) param;
 				RoilingSwarmEffect swarm = RoilingSwarmEffect.getSwarmFor(missile);
 				if (swarm != null && swarm.params.tags.contains(DISMANTLING_SWARM)) {
-					damage.getModifier().modifyMult(DISMANTLING_SWARM, 0f);
+					// need a small number so still registers as a "hit" on shields, 0 damage does not
+					damage.getModifier().modifyMult(DISMANTLING_SWARM, 0.001f);
 					return DISMANTLING_SWARM;
 				}
 			}
@@ -156,7 +157,7 @@ public class DevouringSwarmMissileEffect extends BaseFragmentMissileEffect imple
 			protected void damageDealt(Vector2f loc, float hullDamage, float armorDamage) {
 				if (sourceSwarm == null || source == null || !source.isAlive()) return;
 				if (source.isFighter()) return;
-				
+				if (target.isHulk()) return;
 				if ((float) Math.random() < 0.25f) return;
 				if (hullDamage > 0 || armorDamage > 0) {
 					SwarmMember p = sourceSwarm.addMember();

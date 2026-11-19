@@ -2,6 +2,7 @@ package com.fs.starfarer.api.impl.campaign.intel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -94,6 +95,7 @@ public class FactionHostilityManager extends BaseEventManager {
 			if (!faction.getCustom().optBoolean(Factions.CUSTOM_ENGAGES_IN_HOSTILITIES)) {
 				continue;
 			}
+			if (isExcluded(faction.getId())) continue;
 			
 			if (faction.isPlayerFaction()) continue;
 			
@@ -147,6 +149,28 @@ public class FactionHostilityManager extends BaseEventManager {
 		return recentlyEnded;
 	}
 
+	public boolean isExcluded(String factionId) {
+		return exclude != null && exclude.contains(factionId);
+	}
+	
+	public void setExcluded(String factionId, boolean excluded) {
+		if (excluded) {
+			if (exclude == null) {
+				exclude = new LinkedHashSet<>();
+			}
+			exclude.add(factionId);
+		} else {
+			if (exclude != null) {
+				exclude.remove(factionId);
+				if (exclude.isEmpty()) {
+					exclude = null;
+				}
+			}
+		}
+	}
+	
+	
+	protected LinkedHashSet<String> exclude;
 	protected TimeoutTracker<String> recentlyEnded = new TimeoutTracker<String>();
 	@Override
 	public void advance(float amount) {

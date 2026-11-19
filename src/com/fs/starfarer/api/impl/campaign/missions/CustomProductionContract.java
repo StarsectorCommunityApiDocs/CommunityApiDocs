@@ -229,6 +229,9 @@ public class CustomProductionContract extends HubMissionWithBarEvent {
 						(DEALER_MIN_CAPACITY + (DEALER_MAX_CAPACITY - DEALER_MIN_CAPACITY) * getQuality()));
 		}
 		
+		float extendedMult = Misc.isExtended() ? Global.getSettings().getFloat("ext_barCustomProductionMaxValueMult") : 1f;
+		maxCapacity *= extendedMult;
+		
 		if (armsDealer && allowArmsDealer) {
 			costMult = 1f + DEALER_FIXED_COST_INCREASE + DEALER_VARIABLE_COST_INCREASE * (1f - getRewardMultFraction());
 			addArmsDealerBlueprints();
@@ -682,6 +685,7 @@ public class CustomProductionContract extends HubMissionWithBarEvent {
 		p.persistent = false;
 		p.seed = genRandom.nextLong();
 		p.timestamp = null;
+		p.blockHullmodsWithItemReqs = true;
 		
 		FleetInflater inflater = Misc.getInflater(ships, p);
 		ships.setInflater(inflater);

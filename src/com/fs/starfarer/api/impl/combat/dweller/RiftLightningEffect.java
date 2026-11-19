@@ -35,8 +35,6 @@ import com.fs.starfarer.api.util.Misc;
  */
 public class RiftLightningEffect implements OnHitEffectPlugin, OnFireEffectPlugin, EveryFrameWeaponEffectPlugin {
 	
-
-	
 	
 	public static Color RIFT_LIGHTNING_COLOR = new Color(255,50,50,255);
 	public static float RIFT_LIGHTNING_SPEED = 10000f;
@@ -78,6 +76,10 @@ public class RiftLightningEffect implements OnHitEffectPlugin, OnFireEffectPlugi
 //		if (!fired.isEmpty()) {
 //			System.out.println("FIRED");
 //		}
+		if (engine != null && engine.isInFastTimeAdvance()) {
+			return;
+		}
+		
 		List<FiredLightningProjectile> remove = new ArrayList<>();
 		
 		float maxRange = weapon.getRange();
@@ -186,7 +188,7 @@ public class RiftLightningEffect implements OnHitEffectPlugin, OnFireEffectPlugi
 		arc.setFadedOutAtStart(true);
 		arc.setSingleFlickerMode(true);
 	
-		spawnMine(ship, point, params.movementDurOverride * 0.8f); // - 0.05f);
+		spawnMine(ship, weapon, point, params.movementDurOverride * 0.8f); // - 0.05f);
 		
 		
 		if (shroud != null) {
@@ -225,12 +227,12 @@ public class RiftLightningEffect implements OnHitEffectPlugin, OnFireEffectPlugi
 		
 	}
 	
-	public static void spawnMine(ShipAPI source, Vector2f mineLoc, float delay) {
+	public static void spawnMine(ShipAPI source, WeaponAPI weapon, Vector2f mineLoc, float delay) {
 		CombatEngineAPI engine = Global.getCombatEngine();
 		
 		
 		//Vector2f currLoc = mineLoc;
-		MissileAPI mine = (MissileAPI) engine.spawnProjectile(source, null, 
+		MissileAPI mine = (MissileAPI) engine.spawnProjectile(source, weapon, 
 															  "rift_lightning_minelayer", 
 															  mineLoc, 
 															  (float) Math.random() * 360f, null);
@@ -249,7 +251,8 @@ public class RiftLightningEffect implements OnHitEffectPlugin, OnFireEffectPlugi
 		mine.addDamagedAlready(source);
 		mine.setNoMineFFConcerns(true);
 		if (liveTime <= 0.016f) {
-			mine.explode();
+			DamagingProjectileAPI e = mine.explode();
+			if (e != null) e.setWeapon(weapon);
 		}
 	}
 

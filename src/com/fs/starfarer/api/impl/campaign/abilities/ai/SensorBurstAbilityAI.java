@@ -28,6 +28,7 @@ public class SensorBurstAbilityAI extends BaseAbilityAI {
 //		}
 		
 		MemoryAPI mem = fleet.getMemoryWithoutUpdate();
+		//if (mem.getBoolean(MemFlags.FLEET_IGNORES_OTHER_FLEETS)) return;
 		
 		if (ability.isActiveOrInProgress()) {
 			mem.set(FleetAIFlags.HAS_SPEED_PENALTY, true, 0.2f);

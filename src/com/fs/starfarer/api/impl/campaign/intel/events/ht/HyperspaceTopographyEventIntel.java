@@ -68,13 +68,13 @@ public class HyperspaceTopographyEventIntel extends BaseEventIntel implements Fl
 	
 	public static float BASE_DETECTION_RANGE_LY = 3f;
 	public static float RANGE_WITHIN_WHICH_SENSOR_ARRAYS_HELP_LY = 5f;
-	public static float RANGE_PER_DOMAIN_SENSOR_ARRAY = 2f;
-	public static float RANGE_PER_MAKESHIFT_SENSOR_ARRAY = 1f;
+	public static float RANGE_PER_DOMAIN_SENSOR_ARRAY = 4f;
+	public static float RANGE_PER_MAKESHIFT_SENSOR_ARRAY = 2f;
 	public static int MAX_SENSOR_ARRAYS = 3;
-	public static float WAYSTATION_BONUS = 2f;
+	public static float WAYSTATION_BONUS = 5f;
 	
 	
-	public static float SLIPSTREAM_FUEL_MULT = 0.25f;
+	public static float SLIPSTREAM_FUEL_MULT = 0.1f;
 	public static float HYPER_BURN_BONUS = 3f;
 	
 	public static String KEY = "$hte_ref";

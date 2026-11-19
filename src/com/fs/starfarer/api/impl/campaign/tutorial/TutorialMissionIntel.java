@@ -1,10 +1,11 @@
 package com.fs.starfarer.api.impl.campaign.tutorial;
 
-import java.awt.Color;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.EveryFrameScript;
 import com.fs.starfarer.api.Global;
@@ -140,7 +141,8 @@ public class TutorialMissionIntel extends BaseIntelPlugin implements EveryFrameS
 	
 	public static PersonAPI createMainContact(PlanetAPI ancyra) {
 		PersonAPI mainContact = ancyra.getFaction().createRandomPerson(); 
-		mainContact.setRankId(Ranks.CITIZEN);
+		//mainContact.setRankId(Ranks.CITIZEN);
+		mainContact.setRankId(Ranks.SPACE_COMMANDER);
 		mainContact.setPostId(Ranks.POST_STATION_COMMANDER);
 		ancyra.getMarket().getCommDirectory().addPerson(mainContact);
 		ancyra.getMarket().addPerson(mainContact);
@@ -461,8 +463,10 @@ public class TutorialMissionIntel extends BaseIntelPlugin implements EveryFrameS
 			hints.clearHints(false);
 		}
 		
-		if (!SystemBountyManager.getInstance().isActive(ancyra.getMarket())) {
-			SystemBountyManager.getInstance().addActive(new SystemBountyIntel(ancyra.getMarket()));
+		if (!Misc.isExtended()) {
+			if (!SystemBountyManager.getInstance().isActive(ancyra.getMarket())) {
+				SystemBountyManager.getInstance().addActive(new SystemBountyIntel(ancyra.getMarket()));
+			}
 		}
 //		CampaignEventManagerAPI eventManager = Global.getSector().getEventManager();
 //		eventManager.startEvent(new CampaignEventTarget(ancyra.getMarket()), Events.SYSTEM_BOUNTY, null);

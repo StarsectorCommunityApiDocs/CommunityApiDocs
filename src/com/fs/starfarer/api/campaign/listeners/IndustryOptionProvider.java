@@ -1,7 +1,8 @@
 package com.fs.starfarer.api.campaign.listeners;
 
-import java.awt.Color;
 import java.util.List;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.campaign.econ.Industry;
 import com.fs.starfarer.api.campaign.econ.Industry.IndustryTooltipMode;
@@ -38,6 +39,7 @@ public interface IndustryOptionProvider {
 	
 	public void optionSelected(IndustryOptionData opt, DialogCreatorUI ui);
 	public void addToIndustryTooltip(Industry ind, IndustryTooltipMode mode, TooltipMakerAPI tooltip, float width, boolean expanded);
+	default public void addToIndustryTooltipIfIndustryNotPresent(Industry ind, IndustryTooltipMode mode, TooltipMakerAPI tooltip, float width, boolean expanded) {};
 }
 
 

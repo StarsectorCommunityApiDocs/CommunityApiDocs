@@ -22,6 +22,7 @@ import com.fs.starfarer.api.impl.campaign.intel.events.BaseEventIntel.EventStage
 import com.fs.starfarer.api.impl.campaign.intel.events.HostileActivityEventIntel.HAERandomEventData;
 import com.fs.starfarer.api.impl.campaign.intel.events.HostileActivityEventIntel.Stage;
 import com.fs.starfarer.api.impl.campaign.intel.events.TriTachyonStandardActivityCause.CompetitorData;
+import com.fs.starfarer.api.impl.campaign.intel.events.sd.SDResolution;
 import com.fs.starfarer.api.impl.campaign.intel.group.FGRaidAction.FGRaidType;
 import com.fs.starfarer.api.impl.campaign.intel.group.FleetGroupIntel;
 import com.fs.starfarer.api.impl.campaign.intel.group.FleetGroupIntel.FGIEventListener;
@@ -113,6 +114,10 @@ public class SindrianDiktatHostileActivityFactor extends BaseHostileActivityFact
 		if (!checkFactionExists(Factions.DIKTAT, true)) {
 			return 0;
 		}
+		if (SDResolution.isAskoniaStandoffCompleted() || SDResolution.isAskoniaStandoffInProgress()) {
+			return 0;
+		}
+		
 		return super.getProgress(intel);
 	}
 	

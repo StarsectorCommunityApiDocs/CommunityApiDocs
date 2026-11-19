@@ -2,9 +2,17 @@ package com.fs.starfarer.api.impl.campaign;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.impl.campaign.intel.bases.PirateBaseManager;
+import com.fs.starfarer.api.util.Misc;
 
 public class Tuning {
 
+	public static float EXT_DELAY_FACTOR = Global.getSettings().getFloat("ext_timeBasedThingsDelayFactor");
+	
+	public static float getExtDelayFactor() {
+		if (Misc.isExtended()) return EXT_DELAY_FACTOR;
+		return 1f;
+	}
+	
 	public static float NO_PIRATE_RAID_DAYS_FROM_GAME_START = Global.getSettings().getFloat("noPirateRaidDays");
 	
 	public static float FAST_START_EXTRA_DAYS = Global.getSettings().getFloat("fastStartBaseExtraDays");

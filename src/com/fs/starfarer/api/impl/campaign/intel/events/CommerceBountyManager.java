@@ -1,5 +1,8 @@
 package com.fs.starfarer.api.impl.campaign.intel.events;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import com.fs.starfarer.api.EveryFrameScript;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.StarSystemAPI;
@@ -33,7 +36,9 @@ public class CommerceBountyManager implements EveryFrameScript {
 			//boolean haLevelSufficient = ha.isStageActive(Stage.HA_1);
 			boolean haLevelSufficient = true;
 			
+			Set<StarSystemAPI> seen = new LinkedHashSet<>();
 			for (StarSystemAPI system : Misc.getPlayerSystems(false)) {
+				seen.add(system);
 				SystemBountyIntel bounty = getCommerceBounty(system);
 				if (bounty != null && bounty.isEnding()) continue;
 				
@@ -52,6 +57,15 @@ public class CommerceBountyManager implements EveryFrameScript {
 					float reward = Global.getSettings().getFloat("baseCommerceSystemBounty");
 					new SystemBountyIntel(market, (int) reward, true);
 				} 
+			}
+
+			// cancel commerce bounties where a market is no longer present
+			for (IntelInfoPlugin curr : Global.getSector().getIntelManager().getIntel(SystemBountyIntel.class)) {
+				SystemBountyIntel intel = (SystemBountyIntel) curr;
+				if (!intel.isCommerceMode()) continue;
+				if (intel.isEnding() || intel.isEnded()) continue;
+				if (seen.contains(intel.getLocation())) continue;
+				intel.endAfterDelay();
 			}
 		}
 	}

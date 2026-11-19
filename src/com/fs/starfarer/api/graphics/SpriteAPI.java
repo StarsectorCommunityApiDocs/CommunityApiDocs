@@ -68,4 +68,8 @@ public interface SpriteAPI {
 	float getTexY();
 	float getTexWidth();
 	float getTexHeight();
+	void setTexture(String textureName);
+	
+	boolean isTexClamp();
+	void setTexClamp(boolean texClamp);
 }

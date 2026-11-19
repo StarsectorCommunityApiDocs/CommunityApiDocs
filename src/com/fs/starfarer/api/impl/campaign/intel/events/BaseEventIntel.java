@@ -75,6 +75,8 @@ public class BaseEventIntel extends BaseIntelPlugin implements EconomyTickListen
 		public boolean hideIconWhenPastStageUnlessLastActive = false;
 		public boolean keepIconBrightWhenLaterStageReached = false;
 		public StageIconSize iconSize = StageIconSize.MEDIUM;
+		public boolean showIconIfFirstStage = false;
+		public boolean alwaysShowIconAtFullBrightness = false;
 		
 		public boolean randomized = false;
 		public RandomizedStageType randomType = RandomizedStageType.NEUTRAL;
@@ -243,14 +245,19 @@ public class BaseEventIntel extends BaseIntelPlugin implements EconomyTickListen
 		main.setTitleOrbitronVeryLarge();
 		main.addTitle(getName(), Misc.getBasePlayerColor());
 		
+		float extraXOff = getBarXOffset();
 		EventProgressBarAPI bar = main.addEventProgressBar(this, 100f);
+		if (extraXOff != 0) {
+			bar.getPosition().setXAlignOffset(extraXOff);
+			main.addSpacer(0f).getPosition().setXAlignOffset( - extraXOff);
+		}
 		TooltipCreator barTC = getBarTooltip();
 		if (barTC != null) {
 			main.addTooltipToPrevious(barTC, TooltipLocation.BELOW, false);
 		}
 		
 		for (EventStageData curr : stages) {
-			if (curr.progress <= 0) continue; // no icon for "starting" stage
+			if (curr.progress <= 0 && !curr.showIconIfFirstStage) continue; // no icon for "starting" stage
 			//if (curr.rollData == null || curr.rollData.equals(RANDOM_EVENT_NONE)) continue;
 			if (RANDOM_EVENT_NONE.equals(curr.rollData)) continue;
 			if (curr.wasEverReached && curr.isOneOffEvent && !curr.isRepeatable) continue;
@@ -264,6 +271,7 @@ public class BaseEventIntel extends BaseIntelPlugin implements EconomyTickListen
 			EventStageDisplayData data = createDisplayData(curr.id);
 			UIComponentAPI marker = main.addEventStageMarker(data);
 			float xOff = bar.getXCoordinateForProgress(curr.progress) - bar.getPosition().getX();
+			xOff += extraXOff;
 			marker.getPosition().aboveLeft(bar, data.downLineLength).setXAlignOffset(xOff - data.size / 2f - 1);
 			
 			TooltipCreator tc = getStageTooltip(curr.id);
@@ -367,6 +375,8 @@ public class BaseEventIntel extends BaseIntelPlugin implements EconomyTickListen
 		
 		
 		float factorHeight = Math.max(mFac.getHeightSoFar(), oFac.getHeightSoFar());
+		mFac.getPosition().setHeight(factorHeight);
+		oFac.getPosition().setHeight(factorHeight);
 		mFac.setHeightSoFar(factorHeight);
 		oFac.setHeightSoFar(factorHeight);
 		
@@ -454,6 +464,11 @@ public class BaseEventIntel extends BaseIntelPlugin implements EconomyTickListen
 	public void afterStageDescriptions(TooltipMakerAPI main) {
 		
 	}
+	
+	public String getImageOverrideForStage(Object stageId) {
+		return null;
+	}
+	
 	public void addStageDescriptionWithImage(TooltipMakerAPI main, Object stageId) {
 		EventStageDisplayData data = createDisplayData(stageId);
 		String icon;
@@ -462,6 +477,9 @@ public class BaseEventIntel extends BaseIntelPlugin implements EconomyTickListen
 		} else {
 			icon = getIcon();
 		}
+		String override = getImageOverrideForStage(stageId);
+		if (override != null) icon = override;
+		
 		float imageSize = getImageSizeForStageDesc(stageId);
 		float opad = 10f;
 		float indent = 0;
@@ -532,6 +550,9 @@ public class BaseEventIntel extends BaseIntelPlugin implements EconomyTickListen
 	}
 	
 
+	public float getBarXOffset() {
+		return 0f;
+	}
 	public float getBarWidth() {
 		//return uiWidth - 200f;
 		return 750f;
@@ -592,6 +613,10 @@ public class BaseEventIntel extends BaseIntelPlugin implements EconomyTickListen
 			return getBaseStageColor(stageId);
 		}
 		
+		if (esd != null && esd.alwaysShowIconAtFullBrightness) {
+			return getBaseStageColor(stageId);
+		}
+		
 		if (req > progress || grayItOut) {
 			return getDarkStageColor(stageId);
 		}
@@ -610,6 +635,10 @@ public class BaseEventIntel extends BaseIntelPlugin implements EconomyTickListen
 		}
 		
 		if (esd != null && esd.randomized && esd.rollData != null) {
+			return Color.white;
+		}
+		
+		if (esd != null && esd.alwaysShowIconAtFullBrightness) {
 			return Color.white;
 		}
 		
@@ -780,6 +809,11 @@ public class BaseEventIntel extends BaseIntelPlugin implements EconomyTickListen
 		}
 	}
 
+	public void addOrReplaceFactor(EventFactor factor, InteractionDialogAPI dialog) {
+		removeFactorOfClass(factor.getClass());
+		addFactor(factor, dialog);
+	}
+	
 	public void addFactor(EventFactor factor) {
 		addFactor(factor, null);
 	}
@@ -825,7 +859,7 @@ public class BaseEventIntel extends BaseIntelPlugin implements EconomyTickListen
 		factor.notifyFactorRemoved();
 	}
 	
-	public void removeFactorOfClass(Class<EventFactor> c) {
+	public void removeFactorOfClass(Class c) {
 		List<EventFactor> remove = new ArrayList<EventFactor>();
 		for (EventFactor curr : factors) {
 			if (c.isInstance(curr)) {

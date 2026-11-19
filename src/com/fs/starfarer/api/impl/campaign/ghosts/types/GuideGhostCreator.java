@@ -41,12 +41,15 @@ public class GuideGhostCreator extends BaseSensorGhostCreator {
 			float distLY = Misc.getDistanceLY(system.getLocation(), pf.getLocationInHyperspace());
 			if (distLY > GUIDE_GHOST_RADIUS_LY) continue;
 			
+			if (system.getDaysSinceLastPlayerVisit() < 90f) continue;
+			
 			float score = 0f;
 			for (SectorEntityToken curr : system.getEntitiesWithTag(Tags.NEUTRINO_HIGH)) {
 				if (curr.hasTag(Tags.OBJECTIVE)) continue;
 				if (score == 0) score = 1f;
 				score += score;
 			}
+			
 			
 			if (score > 0 && system.getHyperspaceAnchor() != null) {
 				picker.add(system.getHyperspaceAnchor(), score);

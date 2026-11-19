@@ -65,7 +65,7 @@ public class HostileActivityEventIntel extends BaseEventIntel implements Economy
 	public static float FP_PER_POINT = Global.getSettings().getFloat("HA_fleetPointsPerPoint");
 	
 	public static int MAX_PROGRESS = 600;
-	public static int ESCALATE_PROGRESS = 550;
+	public static int ESCALATE_PROGRESS = 595;
 	
 	public static int RESET_MIN = 0;
 	public static int RESET_MAX = 400;
@@ -752,6 +752,7 @@ public class HostileActivityEventIntel extends BaseEventIntel implements Economy
 	protected void advanceImpl(float amount) {
 		super.advanceImpl(amount);
 		//blowback = 55;
+		//progress = 590;
 		if (systemSpawnMults != null) {
 			float days = Misc.getDays(amount);
 			for (MutableStatWithTempMods stat : systemSpawnMults.values()) {

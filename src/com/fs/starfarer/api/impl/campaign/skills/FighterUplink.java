@@ -25,6 +25,7 @@ public class FighterUplink {
 	public static float DAMAGE_BONUS_PERCENT = 10;
 	
 	public static float TARGET_LEADING_BONUS = 50f;
+	public static float MISSILE_HP_BONUS = 50f;
 	
 	public static float OFFICER_MULT = 1.5f;
 	public static boolean isOfficer(MutableShipStatsAPI stats) {
@@ -34,6 +35,7 @@ public class FighterUplink {
 			if (ship.isFighter() && ship.getWing() != null && ship.getWing().getSourceShip() != null) {
 				ship = ship.getWing().getSourceShip();
 			}
+			if (ship == null) return false;
 			return ship.getCaptain() != null && !ship.getCaptain().isDefault();
 		} else {
 			FleetMemberAPI member = stats.getFleetMember();
@@ -101,6 +103,10 @@ public class FighterUplink {
 			if (isOfficer(stats)) aimBonus *= OFFICER_MULT;
 			stats.getAutofireAimAccuracy().modifyFlat(id, aimBonus * 0.01f);
 			
+			float hpBonus = getMissileHPBonus(stats);
+			if (isOfficer(stats)) hpBonus *= OFFICER_MULT;
+			stats.getMissileHealthBonus().modifyPercent(id, hpBonus);
+			
 			float damBonus = getDamageBonus(stats);
 			if (isOfficer(stats)) damBonus *= OFFICER_MULT;
 			stats.getBallisticWeaponDamageMult().modifyPercent(id, damBonus);
@@ -118,6 +124,8 @@ public class FighterUplink {
 			stats.getDeceleration().unmodifyPercent(id);
 			
 			stats.getAutofireAimAccuracy().unmodifyFlat(id);
+			
+			stats.getMissileHealthBonus().unmodifyPercent(id);
 			
 			stats.getBallisticWeaponDamageMult().unmodifyPercent(id);
 			stats.getEnergyWeaponDamageMult().unmodifyPercent(id);
@@ -180,6 +188,24 @@ public class FighterUplink {
 			return bonus;
 		}
 		
+		protected float getMissileHPBonus(MutableShipStatsAPI stats) {
+			FleetDataAPI data = getFleetData(stats);
+			return getMissileHPBonus(data);
+		}
+		
+		protected float getMissileHPBonus(FleetDataAPI data) {
+			if (data == null) return MISSILE_HP_BONUS;
+			String key = "fighter_uplink_hp";
+			Float bonus = (Float) data.getCacheClearedOnSync().get(key);
+			if (bonus != null) return bonus;
+			
+			float bays = getNumFighterBays(data);
+			bonus = getThresholdBasedRoundedBonus(MISSILE_HP_BONUS, bays, FIGHTER_BAYS_THRESHOLD);
+			
+			data.getCacheClearedOnSync().put(key, bonus);
+			return bonus;
+		}
+		
 		protected float getDamageBonus(MutableShipStatsAPI stats) {
 			FleetDataAPI data = getFleetData(stats);
 			return getDamageBonus(data);
@@ -211,6 +237,7 @@ public class FighterUplink {
 			//float damBonus = getDamageBonus(data);
 			float speedBonus = getMaxSpeedBonus(data);
 			float aimBonus = getAimBonus(data);
+			float hpBonus = getMissileHPBonus(data);
 			float damBonus = getDamageBonus(data);
 			//float bays = getNumFighterBays(data);
 			
@@ -227,6 +254,9 @@ public class FighterUplink {
 			info.addPara("+%s target leading accuracy (maximum: %s)", 0f, hc, hc,
 					"" + (int) aimBonus + "%",
 					"" + (int) TARGET_LEADING_BONUS + "%");
+			info.addPara("+%s missile hitpoints (maximum: %s)", 0f, hc, hc,
+					"" + (int) hpBonus + "%",
+					"" + (int) MISSILE_HP_BONUS + "%");
 			info.addPara("+%s damage dealt (maximum: %s)", 0f, hc, hc,
 					"" + (int) damBonus + "%",
 					"" + (int) DAMAGE_BONUS_PERCENT + "%");			

@@ -11,9 +11,11 @@ import com.fs.starfarer.api.campaign.TextPanelAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.campaign.rules.MemKeys;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
+import com.fs.starfarer.api.impl.campaign.RetirementScript;
 import com.fs.starfarer.api.impl.campaign.intel.bar.events.BarEventManager;
 import com.fs.starfarer.api.impl.campaign.intel.bar.events.BaseBarEvent;
 import com.fs.starfarer.api.impl.campaign.intel.bar.events.historian.HistorianData.HistorianOffer;
+import com.fs.starfarer.api.impl.campaign.intel.bases.PirateBaseManager;
 import com.fs.starfarer.api.impl.campaign.plog.PLIntel;
 import com.fs.starfarer.api.impl.campaign.plog.PlaythroughLog;
 import com.fs.starfarer.api.impl.campaign.rulecmd.FireBest;
@@ -27,9 +29,9 @@ public class HistorianBarEvent extends BaseBarEvent {
 		GREETNG_CONTINUE_1,
 		GREETNG_ALREADY_INTRODUCED,
 		GREETNG_PLOG,
-		//GREETNG_PLOG_CONTINUE,
 		WHAT_DO_YOU_HAVE,
 		BACKSTORY_BIT,
+		RETIREMENT,
 		END_CONVERSATION,
 	}
 	
@@ -40,6 +42,7 @@ public class HistorianBarEvent extends BaseBarEvent {
 	
 	protected long seed;
 	protected MarketAPI market = null;
+	protected boolean mentionedRetirement = false;
 	
 	protected transient Random random;
 	protected transient List<HistorianOffer> offers = null;
@@ -155,7 +158,7 @@ public class HistorianBarEvent extends BaseBarEvent {
 		
 		if (optionData == OptionId.GREETING) {
 			text.addPara("\"Welcome, welcome, please sit! I'm sure you're wondering why I called you over.\"\n\n" +
-					hd.getUCHeOrShe() + " leans in as if conspiring, \"" +
+					hd.getUCHeOrShe() + " leans in, as if conspiring, \"" +
 						 "I think we can help each other, you and I. See, I have the information,\" " +
 							hd.getHeOrShe() + " taps the book, "+"\"And you have the means.\"");
 			text.addPara("\"I am what you might call a historian-adventurer; a rogue archaelogist uncovering the " +
@@ -221,8 +224,28 @@ public class HistorianBarEvent extends BaseBarEvent {
 					offer.addPromptAndOption(dialog);
 				}
 			}
+			
 			//options.addOption("... an interesting bit of Sector history, but nothing that's immediately actionable", OptionId.END_CONVERSATION);
 			options.addOption("... something interesting, but not of immediate import", OptionId.BACKSTORY_BIT);
+			if (!mentionedRetirement) {// && RetirementScript.isEnabled()) {
+				if (PirateBaseManager.getStandardTimeFactor() >= 1f || Global.getSettings().isDevMode()) {
+					options.addOption("\"I've been thinking about retiring...\"", OptionId.RETIREMENT);
+				}
+			}
+			return;
+		}
+		
+		if (optionData == OptionId.RETIREMENT) {
+			mentionedRetirement = true;
+			text.addPara("The historian deliberately closes the paper book and brings " + hd.getHisOrHer() + " hands together.\n\n"
+					+ "\"Are you? It is a big step. Not quite the end of your story, but your life will become... different. You may find time to "
+					+ "pursue old interests you never quite found the time for... not so unlike myself in this,\" " + hd.getHeOrShe() + 
+					" waves a hand around, \"Situation. If you'll allow me to be so brave as to make the comparison.\"\n\n"
+					+ "\"I recommend you think about what you might do, where you might go.\"\n\n" + hd.getUCHeOrShe() + " smiles. \"You have time, after all.\"");
+			if (RetirementScript.get() != null) {
+				RetirementScript.get().showAfterDelay(0.5f + 0.5f * random.nextFloat());
+			}
+			options.setEnabled(OptionId.RETIREMENT, false);
 			return;
 		}
 		
@@ -251,7 +274,7 @@ public class HistorianBarEvent extends BaseBarEvent {
 		
 		
 		if (optionData == OptionId.END_CONVERSATION || forceEnd) {
-			text.addPara("You thank " + hd.getHimOrHer() + " for " + hd.getHisOrHer() + " the information and get up to leave.");
+			text.addPara("You thank " + hd.getHimOrHer() + " for the  information and get up to leave.");
 			text.addPara("\"See you again soon, somewhere!\" " + hd.getHeOrShe() + " says. \"In my line of work, even I don't " +
 						 "know for sure where I'll end up in a couple of months.\"");
 			done = true;

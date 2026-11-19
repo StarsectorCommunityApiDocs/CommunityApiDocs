@@ -11,6 +11,8 @@ public class Stats {
 	public static final String BUILD_IN_BONUS_XP_MOD = "build_in_bonus_xp_mod";
 	public static final String CUSTOM_PRODUCTION_MOD = "custom_production_mod";
 	
+	public static final String ALLOW_RESTORE_ANYWHERE = "allow_restore_anywhere";
+	
 	public static final String DEPLOYMENT_POINTS_FRACTION_OF_BATTLE_SIZE_BONUS_MOD = "deployment_points_fraction_of_battle_size_bonus_mod";
 	public static final String DEPLOYMENT_POINTS_MIN_FRACTION_OF_BATTLE_SIZE_BONUS_MOD = "deployment_points_min_fraction_of_battle_size_bonus_mod";
 	
@@ -61,6 +63,8 @@ public class Stats {
 	
 	// fleets
 	public static final String FUEL_USE_NOT_SHOWN_ON_MAP_MULT = "fuel_use_not_shown_on_map_mult";
+	
+	public static final String DOMAIN_GRADE_PARTS_DROP_RATE_MULT = "domain_grade_parts_drop_rate_mult";
 	
 	public static final String PLANETARY_OPERATIONS_MOD = "ground_attack_mod";
 	public static final String PLANETARY_OPERATIONS_CASUALTIES_MULT = "ground_attack_casualties_mult";
@@ -131,6 +135,8 @@ public class Stats {
 	 */
 	public static final String SALVAGE_VALUE_MULT_MOD = "salvage_value_bonus_ship";
 	
+	public static final String FIGHTER_PILOTS_RECOVERED_MOD = "fighter_pilots_recovered_mod";
+	
 	public static final String PHASE_FIELD_SENSOR_PROFILE_MOD  = "phase_field_sensor_profile_mod";
 	public static final String HRS_SENSOR_RANGE_MOD  = "hrs_sensor_range_mod";
 	
@@ -143,6 +149,8 @@ public class Stats {
 	}
 	
 	// ships
+	public static final String SAFETY_OVERRIDES_CREW_LOSS_MOD = "so_crew_loss_mod";
+	
 	public static final String ACT_AS_COMBAT_SHIP = "act_as_combat_ship";
 	
 	public static final String CAN_REPAIR_MODULES_UNDER_FIRE = "can_repair_modules_under_fire";
@@ -209,6 +217,8 @@ public class Stats {
 	public static final String DMOD_EFFECT_MULT = "dmod_effect_mult";
 	public static final String DMOD_AVOID_PROB_MOD = "dmod_avoid_prob_mod";
 	
+	public static final String SHIP_CREW_SALARY_MULT = "ship_crew_salary_mult";
+	
 	/**
 	 * Base value is 1.
 	 */
@@ -244,6 +254,8 @@ public class Stats {
 	public static final String MEDIUM_BEAM_MOD = "medium_beam_mod";
 	public static final String LARGE_BEAM_MOD = "large_beam_mod";
 		
+	public static final String TEMPORAL_SHELL_MODIFIER = "temporal_shell_modifier";
+	
 	public static final String FORCE_ALLOW_CONVERTED_HANGAR = "force_allow_converted_hangar";
 	public static final String CONVERTED_HANGAR_MOD = "converted_hangar_mod";
 	public static final String CONVERTED_HANGAR_NO_CREW_INCREASE = "converted_hangar_no_crew_increase";

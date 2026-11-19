@@ -21,7 +21,7 @@ import com.fs.starfarer.api.util.Misc;
 
 public class PhaseAnchor extends BaseHullMod {
 
-	public static float PHASE_DISSIPATION_MULT = 2f;
+	public static float PHASE_DISSIPATION_MULT = 1.5f;
 	public static float ACTIVATION_COST_MULT = 0f;
 	
 	public static float CR_LOSS_MULT_FOR_EMERGENCY_DIVE = 1f;
@@ -161,7 +161,13 @@ public class PhaseAnchor extends BaseHullMod {
 	
 	public String getDescriptionParam(int index, HullSize hullSize) {
 		if (index == 0) return "zero";
-		if (index == 1) return "" + (int)PHASE_DISSIPATION_MULT + Strings.X;
+		if (index == 1) {
+			if (PHASE_DISSIPATION_MULT == (int) PHASE_DISSIPATION_MULT) {
+				return "" + (int)PHASE_DISSIPATION_MULT + Strings.X;
+			} else {
+				return "" + Misc.getRoundedValueFloat(PHASE_DISSIPATION_MULT) + Strings.X;
+			}
+		}
 		if (index == 2) return "" + (int)CR_LOSS_MULT_FOR_EMERGENCY_DIVE + Strings.X;
 		
 		//		if (index == 1) return "" + (int) Math.round(PHASE_TIME_BONUS) + "%";

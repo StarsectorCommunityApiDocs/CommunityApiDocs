@@ -1543,6 +1543,11 @@ public abstract class HubMissionWithSearch extends HubMissionWithTriggers {
 		return pickSystem(true);
 	}
 	public StarSystemAPI pickSystem(boolean resetSearch) {
+		
+//		if (getGenRandom().nextFloat() > PirateBaseManager.getStandardTimeFactor() + 0.25f) { 
+//			preferSystemInInnerSector();
+//		}
+		
 		findMatchingSystems();
 		StarSystemAPI system = (StarSystemAPI) pickFromMatching(search.matchingSystems, search.preferredSystems);
 		if (resetSearch) resetSearch();

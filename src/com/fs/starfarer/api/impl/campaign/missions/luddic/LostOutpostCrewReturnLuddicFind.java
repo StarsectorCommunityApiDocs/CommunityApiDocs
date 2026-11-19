@@ -10,6 +10,7 @@ import com.fs.starfarer.api.campaign.SectorEntityToken;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
+import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.Ranks;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.impl.campaign.missions.hub.HubMissionWithBarEvent;
@@ -44,21 +45,20 @@ public class LostOutpostCrewReturnLuddicFind extends HubMissionWithBarEvent {
 	
 	@Override
 	protected boolean create(MarketAPI createdAt, boolean barEvent) {
+		System.out.println("Attempting LostOutpostCrewReturnLuddicFind");
+		
 		if (!setGlobalReference("$locrlf_ref", "$locrlf_inProgress")) {
             return false;
         }
 		
-		person = getPerson();
-		if (person == null) { 
-			return false;
+		if(!barEvent) {
+			person = getPerson();
+			if (person == null) { 
+				return false;
+			}
 		}
 		
-		// If they're not Luddic, they're not giving this mission!!!
-		if (person.getFaction().getId() != "luddic_church" ) return false;
-		
 		//genRandom = Misc.random;
-		
-		//System.out.print("Attempting LostOutpostCrewReturnLuddicFind");
 		
 		// If player has already found the Luddics, no mission.
 		//if (Global.getSector().getMemoryWithoutUpdate().contains(LOCRL_LUDDIC_DISCOVERED)) {
@@ -69,7 +69,6 @@ public class LostOutpostCrewReturnLuddicFind extends HubMissionWithBarEvent {
 		// No planet means no mission.
 		target = Global.getSector().getMemoryWithoutUpdate().getEntity(LOCR_LUDDIC_PLANET_KEY);
 		if (target == null) { 
-			//System.out.print("... but no Luddic Outpost exists.");
 			return false;
 		}
 		
@@ -113,8 +112,17 @@ public class LostOutpostCrewReturnLuddicFind extends HubMissionWithBarEvent {
 			} else {
 				setGiverImportance(pickImportance());
 			}
+			person = getPerson();
+			if (person == null) { 
+					return false;
+			}
+
 		}
 		
+		// If they're not Luddic, they're not giving this mission!!!
+		if ( !person.getFaction().getId().equals(Factions.LUDDIC_CHURCH)) {
+			return false;
+		}
 
 		
 		if (!setPersonMissionRef(person, "$locrlf_ref")) {
@@ -143,8 +151,8 @@ public class LostOutpostCrewReturnLuddicFind extends HubMissionWithBarEvent {
 		
 		//setTimeLimit(Stage.FAILED, MISSION_DAYS, null);
 
-		rewardAmount = 24000;
-		rewardAmountHigher = 36000;
+		rewardAmount = 36000;
+		rewardAmountHigher = 48000;
 		
 		return true;
 	}

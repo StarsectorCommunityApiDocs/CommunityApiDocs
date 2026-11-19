@@ -1,11 +1,12 @@
 package com.fs.starfarer.api.impl.campaign.rulecmd.salvage;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+
+import java.awt.Color;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.vector.Vector2f;
@@ -148,6 +149,8 @@ public class SalvageEntity extends BaseCommandPlugin {
 			demolish();
 		} else if (command.equals("canBeMadeRecoverable")) {
 			return canBeMadeRecoverable();
+		} else if (command.equals("blockRecoveryIfExtendedMode")) {
+			return blockRecoveryIfExtendedMode();
 		} else if (command.equals("showRecoverable")) {
 			showRecoverable();
 		}
@@ -652,6 +655,7 @@ public class SalvageEntity extends BaseCommandPlugin {
 	public void performSalvage() {
 		long seed = memory.getLong(MemFlags.SALVAGE_SEED);
 		Random random = Misc.getRandom(seed, 100);
+		//random = new Random();
 		
 		Misc.stopPlayerFleet();
 		
@@ -685,8 +689,14 @@ public class SalvageEntity extends BaseCommandPlugin {
 			BaseCommandPlugin.getEntityMemory(memoryMap).unset(MemFlags.SALVAGE_SPECIAL_DATA);
 		}
 		
+		boolean full = entity != null && entity.hasTag(Tags.SALVAGE_ENTITY_FULL_DROP_IN_EXT_MODE);
+		// making existing saves work; not needed in the general case 
+		if (entity != null && Entities.ALPHA_SITE_WEAPONS_CACHE.equals(entity.getCustomEntityType())) full = true;
+		
 		float fuelMult = playerFleet.getStats().getDynamic().getValue(Stats.FUEL_SALVAGE_VALUE_MULT_FLEET);
+		if (full) Misc.FORCE_NOT_EXT_MODE = true;
 		CargoAPI salvage = generateSalvage(random, valueMultFleet, rareItemSkillMult, overallMult, fuelMult, dropValue, dropRandom);
+		Misc.FORCE_NOT_EXT_MODE = false;
 		
 		//ExtraSalvage extra = BaseSalvageSpecial.getExtraSalvage(memoryMap);
 		CargoAPI extra = BaseSalvageSpecial.getCombinedExtraSalvage(memoryMap);
@@ -1003,12 +1013,25 @@ public class SalvageEntity extends BaseCommandPlugin {
 					
 					
 					if (row.isWeapon()) {
+						float p = Misc.isExtended() ? Global.getSettings().getFloat("ext_weaponSalvageDropFraction") : 1f;
+						if (data.unaffectedByExtMode) p = 1f;
+						if (random.nextFloat() >= p) continue;
 						result.addWeapons(row.getWeaponId(), (int) qty);
-//					} else if (row.isHullMod()) {
-//						result.addItems(CargoItemType.MOD_SPEC, row.getHullModId(), (int) qty);
 					} else if (row.isFighterWing()) {
+						float p = Misc.isExtended() ? Global.getSettings().getFloat("ext_fighterSalvageDropFraction") : 1f;
+						if (data.unaffectedByExtMode) p = 1f;
+						if (random.nextFloat() >= p) continue;
 						result.addItems(CargoItemType.FIGHTER_CHIP, row.getFighterWingId(), (int) qty);
 					} else if (row.isSpecialItem()) { 
+						if (Items.TAG_MODSPEC.equals(row.getSpecialItemId())) {
+							float p = Misc.isExtended() ? Global.getSettings().getFloat("ext_hullmodSalvageDropFraction") : 1f;
+							if (data.unaffectedByExtMode) p = 1f;
+							if (random.nextFloat() >= p) continue;
+						} else {
+							float p = Misc.isExtended() ? Global.getSettings().getFloat("ext_specialItemSalvageDropFraction") : 1f;
+							if (data.unaffectedByExtMode) p = 1f;
+							if (random.nextFloat() >= p) continue;
+						}
 						if (Items.TAG_MODSPEC.equals(row.getSpecialItemId()) && 
 								result.getQuantity(CargoItemType.SPECIAL, 
 										new SpecialItemData(row.getSpecialItemId(), row.getSpecialItemData())) > 0) {
@@ -1017,6 +1040,21 @@ public class SalvageEntity extends BaseCommandPlugin {
 						result.addItems(CargoItemType.SPECIAL, 
 								new SpecialItemData(row.getSpecialItemId(), row.getSpecialItemData()), (int) qty);
 					} else {
+						if (Misc.isExtended()) {
+							if (!data.unaffectedByExtMode) {
+								if (!Commodities.PARTS.equals(row.getCommodity())) {
+									float f = Global.getSettings().getFloat("ext_commoditySalvageDropFraction");
+									qty *= f;
+								} else {
+									float f = Global.getSettings().getFloat("ext_partsSpecialSalvageDropFraction");
+									qty *= f;
+								}
+								if (qty < 1f) {
+									if (random.nextFloat() < qty) qty = 1f;
+								}
+								qty = (int) qty;
+							}
+						}
 						result.addCommodity(row.getCommodity(), qty);
 					}
 				}
@@ -1113,6 +1151,18 @@ public class SalvageEntity extends BaseCommandPlugin {
 	}
 	
 	
+	public boolean blockRecoveryIfExtendedMode() {
+		if (entity.getCustomPlugin() instanceof DerelictShipEntityPlugin) {
+			if (Misc.isExtended()) {
+				long seed = Misc.getSalvageSeed(entity);
+				Random random = Misc.getRandom(seed, 11);
+				float prob = Global.getSettings().getFloat("ext_shipRecoveryWithStoryPointsFraction");
+				if (random.nextFloat() >= prob) return true;
+			}
+		}
+		return false;
+	}
+	
 	public boolean canBeMadeRecoverable() {
 		if (entity.getCustomPlugin() instanceof DerelictShipEntityPlugin) {
 			
@@ -1124,6 +1174,13 @@ public class SalvageEntity extends BaseCommandPlugin {
 			if (entity.hasTag(Tags.UNRECOVERABLE)) {
 				return false;
 			}
+
+//			if (Misc.isExtended()) {
+//				long seed = Misc.getSalvageSeed(entity);
+//				Random random = Misc.getRandom(seed, 11);
+//				float prob = Global.getSettings().getFloat("ext_shipRecoveryWithStoryPointsFraction");
+//				if (random.nextFloat() >= prob) return false;
+//			}
 			
 //			int room = Global.getSettings().getMaxShipsInFleet() - 
 //			   		   Global.getSector().getPlayerFleet().getFleetData().getMembersListCopy().size();

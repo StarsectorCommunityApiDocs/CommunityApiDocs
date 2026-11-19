@@ -64,6 +64,7 @@ public class AsteroidImpact implements EveryFrameScript {
 				if (member != null) {
 					float damageMult = fleet.getCurrBurnLevel() - Misc.getGoSlowBurnLevel(fleet);
 					if (damageMult < 1) damageMult = 1;
+					if (Misc.isExtended()) damageMult *= Global.getSettings().getFloat("ext_environmentalDamageMult");
 					Misc.applyDamage(member, null, damageMult, true, "asteroid_impact", "Asteroid impact",
 									 true, null, member.getShipName() + " suffers damage from an asteroid impact");
 				} else {

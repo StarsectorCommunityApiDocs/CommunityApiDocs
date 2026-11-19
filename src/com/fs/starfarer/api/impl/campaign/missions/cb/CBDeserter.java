@@ -34,6 +34,7 @@ public class CBDeserter extends BaseCustomBountyCreator {
 //								  Tags.THEME_DERELICT, Tags.THEME_REMNANT_DESTROYED);
 		mission.requireSystemInterestingAndNotUnsafeOrCore();
 		mission.requireSystemNotHasPulsar();
+		if (difficulty <= 3) mission.preferSystemInInnerSector();
 		StarSystemAPI system = mission.pickSystem();
 		data.system = system;
 	

@@ -1,7 +1,8 @@
 package com.fs.starfarer.api.impl.campaign.graid;
 
-import java.awt.Color;
 import java.util.Random;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CargoAPI;
@@ -297,6 +298,9 @@ public class ShipWeaponsGroundRaidObjectivePluginImpl extends BaseGroundRaidObje
 		
 		looted.clear();
 		
+		//float wepMult = Misc.isExtended() ? Global.getSettings().getFloat("ext_weaponSellPriceMult") : 1f;
+		float wepMult = 1f; // baked into base price already
+		
 		int tries = 0;
 		while (weaponValue > 0 && tries < 100) {
 			tries++;
@@ -309,7 +313,7 @@ public class ShipWeaponsGroundRaidObjectivePluginImpl extends BaseGroundRaidObje
 //				case MEDIUM: min = 1; max = 4; break;
 //				case SMALL: min = 2; max = 6; break;
 //				}
-				float val = weapon.getBaseValue() * SELL_MULT;
+				float val = weapon.getBaseValue() * SELL_MULT * wepMult;
 				int num = min + random.nextInt(max - min + 1);
 				num = (int) Math.min(num, weaponValue / val);
 				if (num == 0) {
@@ -348,7 +352,7 @@ public class ShipWeaponsGroundRaidObjectivePluginImpl extends BaseGroundRaidObje
 					min = 1; max = 4;
 					break;
 				}
-				float val = fighter.getBaseValue() * SELL_MULT;
+				float val = fighter.getBaseValue() * SELL_MULT * wepMult;
 				int num = min + random.nextInt(max - min + 1);
 				num = (int) Math.min(num, fighterValue / val);
 				if (num == 0) {

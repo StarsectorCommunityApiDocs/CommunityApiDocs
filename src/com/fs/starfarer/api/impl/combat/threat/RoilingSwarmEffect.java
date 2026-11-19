@@ -574,6 +574,11 @@ public class RoilingSwarmEffect extends BaseCombatLayeredRenderingPlugin {
 			spawnedInitial = true;
 		}
 		
+		if (attachedTo instanceof ShipAPI) {
+			ShipAPI ship = (ShipAPI) attachedTo;
+			amount *= ship.getMutableStats().getTimeMult().getModifiedValue();
+		}
+		
 //		attachedTo.setCollisionClass(CollisionClass.SHIP);
 //		((ShipAPI)attachedTo).getMutableStats().getHullDamageTakenMult().modifyMult("efwefwefwe", 0f);
 		

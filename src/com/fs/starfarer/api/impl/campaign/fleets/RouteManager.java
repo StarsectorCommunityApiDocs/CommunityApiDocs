@@ -227,8 +227,18 @@ public class RouteManager implements FleetEventListener {
 			if (id == null) return 0;
 			return id;
 		}
-		
-		
+		public float getElapsed() {
+			return elapsed;
+		}
+		public float getDaysMax() {
+			return daysMax;
+		}
+		public void setElapsed(float elapsed) {
+			this.elapsed = elapsed;
+		}
+		public void setDaysMax(float daysMax) {
+			this.daysMax = daysMax;
+		}
 	}
 	
 	
@@ -767,8 +777,11 @@ public class RouteManager implements FleetEventListener {
 		}
 	}
 	
-	
-	
+	public List<RouteData> getRoutes() {
+		return routes;
+	}
+
+
 	public void reportFleetDespawnedToListener(CampaignFleetAPI fleet, FleetDespawnReason reason, Object param) {
 		if (reason == FleetDespawnReason.PLAYER_FAR_AWAY) {
 			return;

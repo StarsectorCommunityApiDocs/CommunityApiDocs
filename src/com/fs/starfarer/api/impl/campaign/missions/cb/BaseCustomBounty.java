@@ -1,11 +1,12 @@
 package com.fs.starfarer.api.impl.campaign.missions.cb;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.BattleAPI;
@@ -335,6 +336,7 @@ public class BaseCustomBounty extends HubMissionWithBarEvent implements FleetEve
 			}
 			
 			setCreditRewardApplyRelMult(showData.baseReward);
+			creditReward = Misc.getModifiedMissionReward(showData.fleet, creditReward);
 			
 			updateInteractionData(dialog, memoryMap);
 			String trigger = showCreator.getId() + "OfferDesc";
@@ -434,6 +436,8 @@ public class BaseCustomBounty extends HubMissionWithBarEvent implements FleetEve
 		}
 		//setTimeLimit(Stage.FAILED, 3, creator.getSystemWithNoTimeLimit(data));
 		setCreditRewardApplyRelMult(data.baseReward);
+		creditReward = Misc.getModifiedMissionReward(data.fleet, creditReward);
+		
 		setRepRewardPerson(data.repPerson);
 		setRepRewardFaction(data.repFaction);
 		

@@ -19,7 +19,7 @@ import com.fs.starfarer.api.util.Misc.Token;
  *  
  * Method *should* handle the case when the person is a player contact.
  *  
- * MovePersonToMarket <person id> <optional market id>
+ * MovePersonToMarket <person id> <optional market id> <optional: force add to comms directory>
  */
 public class MovePersonToMarket extends BaseCommandPlugin {
 
@@ -53,7 +53,12 @@ public class MovePersonToMarket extends BaseCommandPlugin {
 		}
 		if (person == null) return false;
 		
-		Misc.moveToMarket(person, market, false);
+		boolean forceAddToComms = false;
+		if (params.size() > 2) {
+			forceAddToComms = params.get(2).getBoolean(memoryMap);
+		}
+		
+		Misc.moveToMarket(person, market, forceAddToComms);
 		return true;
 	}
 

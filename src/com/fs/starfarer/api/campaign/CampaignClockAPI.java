@@ -92,4 +92,5 @@ public interface CampaignClockAPI {
 	 * @return Java.util.GregorianCalendar[]
 	 */
 	GregorianCalendar getCal();
+	void set(int cycle, int month, int day);
 }

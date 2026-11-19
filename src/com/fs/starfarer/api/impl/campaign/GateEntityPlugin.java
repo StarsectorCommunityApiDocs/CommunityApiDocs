@@ -1,7 +1,8 @@
 package com.fs.starfarer.api.impl.campaign;
 
-import java.awt.Color;
 import java.util.LinkedHashSet;
+
+import java.awt.Color;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector2f;
@@ -218,10 +219,12 @@ public class GateEntityPlugin extends BaseCustomEntityPlugin {
 		
 		Global.getSector().getCampaignUI().suppressMusic(1f * suppressionMult);
 		
-		float dirToEntity = Misc.getAngleInDegrees(entity.getLocation(), this.entity.getLocation());
-		Vector2f playbackLoc = Misc.getUnitVectorAtDegreeAngle(dirToEntity);
-		playbackLoc.scale(500f);
-		Vector2f.add(entity.getLocation(), playbackLoc, playbackLoc);
+//		float dirToEntity = Misc.getAngleInDegrees(Global.getSector().getPlayerFleet().getLocation(), this.entity.getLocation());
+//		Vector2f playbackLoc = Misc.getUnitVectorAtDegreeAngle(dirToEntity);
+//		playbackLoc.scale(500f);
+//		Vector2f.add(entity.getLocation(), playbackLoc, playbackLoc);
+		
+		Vector2f playbackLoc = this.entity.getLocation();
 		
 		Global.getSoundPlayer().playLoop("active_gate_loop", entity, 
 				//volume * 0.25f + 0.75f, volume * volumeMult,

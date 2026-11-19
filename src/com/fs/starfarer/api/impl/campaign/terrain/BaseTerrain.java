@@ -209,7 +209,7 @@ public class BaseTerrain implements CampaignTerrainPlugin {
 
 	}
 
-	public void renderOnMapAbove(float factor, float alphaMult) {
+	public void renderOnMapAbove(float factor, float alphaMult, boolean radarMode) {
 
 	}
 

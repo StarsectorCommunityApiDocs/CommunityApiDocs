@@ -81,6 +81,9 @@ public class MilitaryResponseScript implements EveryFrameScript {
 //		if (params.faction.getId().equals(Factions.PIRATES) && params.target.isInCurrentLocation()) {
 //			System.out.println("wefwefwe");
 //		}
+		if (params.target.getContainingLocation().getMemoryWithoutUpdate().getBoolean(MemFlags.SYSTEM_SUSPEND_MILITARY_RESPONSE_SCRIPT)) {
+			return;
+		}
 		List<CampaignFleetAPI> fleets = params.target.getContainingLocation().getFleets();
 		for (CampaignFleetAPI fleet : fleets) {
 			seeIfFleetShouldRespond(fleet);

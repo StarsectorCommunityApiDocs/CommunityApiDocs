@@ -13,12 +13,16 @@ package com.fs.starfarer.api.impl.campaign.ids;
  */
 public class MemFlags {
 
+	public static final String FLEET_RESOURCE_SALVAGE_MULT = "$resourceSalvageMult";
+	
 	/**
 	 * About what is on a case-by-case basis determined by rules and other flags on the fleet.
 	 * This will just make a fleet with this flag periodically pursue the player and try to interact with them.
 	 */
 	public static final String WILL_HASSLE_PLAYER = "$willHasslePlayer";
 	public static final String HASSLE_TYPE = "$hassleType";
+	
+	public static final String SYSTEM_SUSPEND_MILITARY_RESPONSE_SCRIPT = "$suspendMilitaryResponse";
 	
 	public static final String NON_HOSTILE_OVERRIDES_MAKE_HOSTILE = "$makeNonHostileTakesPriority";
 	
@@ -42,6 +46,9 @@ public class MemFlags {
 	public static final String OFFICER_MAX_LEVEL = "$officerMaxLevel";
 	public static final String OFFICER_MAX_ELITE_SKILLS = "$officerMaxEliteSkills";
 	
+//	public static final String OFFICER_DEACTIVATED_TIMESTAMP = "$deactivatedTS";
+//	public static final String OFFICER_DEACTIVATED_TIMESTAMP_ORIG = "$deactivatedTSOrig";
+	
 	public static final String KANTA_BLUFFS = "$kantaBluffs";
 	public static final String PLAYER_UNTRUSTWORTHY = "$untrustworthy";
 	
@@ -57,6 +64,7 @@ public class MemFlags {
 	public static final String SENSOR_INDICATORS_OVERRIDE = "$sensorIndicatorsOverride";
 	
 	public static final String EXCEPTIONAL_SLEEPER_POD_OFFICER = "$exceptionalSleeperPodOfficer";
+	public static final String EXCEPTIONAL_SLEEPER_POD_OFFICER_MADE_ON_SECTOR_GEN = "$exceptionalSleeperPodOfficerOnSectorGen";
 	
 	public static final String SUSPECTED_AI = "$suspectedAI";
 	
@@ -139,8 +147,13 @@ public class MemFlags {
 	public static final String OBJECTIVE_NON_FUNCTIONAL = "$objectiveNonFunctional";
 	public static final String MEMORY_KEY_NO_SHIP_RECOVERY = "$noShipRecovery";
 	
+	public static final String MEMORY_KEY_NO_SHIP_DERELICTS_IN_POST_BATTLE_DEBRIS = "$noShipDerelictsPostBattle";
+	
 	public static final String MARKET_MILITARY = "$military";
 	public static final String MARKET_PATROL = "$patrol";
+	
+	public static final String MEMORY_KEY_FLEET_BUYS_STUFF = "$fleetBuysStuff";
+	public static final String MEMORY_KEY_FLEET_BUYS_STUFF_RATE = "$fleetBuysStuffRate";
 	
 	public static final String MEMORY_KEY_SOURCE_MARKET = "$sourceMarket";
 	public static final String MEMORY_KEY_PATROL_FLEET = "$isPatrol";
@@ -174,6 +187,7 @@ public class MemFlags {
 	public static final String MEMORY_KEY_MAKE_PREVENT_DISENGAGE = "$cfai_makePreventDisengage";
 	public static final String MEMORY_KEY_MAKE_ALLOW_DISENGAGE = "$cfai_makeAllowDisengage";
 	public static final String MEMORY_KEY_MAKE_AGGRESSIVE = "$cfai_makeAggressive";
+	public static final String MEMORY_KEY_MAKE_FLEE_PLAYER = "$cfai_makeFleePlayer";
 	public static final String MEMORY_KEY_MAKE_HOLD_VS_STRONGER = "$cfai_holdVsStronger";
 	public static final String MEMORY_KEY_MAKE_AGGRESSIVE_ONE_BATTLE_ONLY = "$cfai_makeAggressiveLastsOneBattle";
 	public static final String MEMORY_KEY_MAKE_NON_AGGRESSIVE = "$cfai_makeNonAggressive";

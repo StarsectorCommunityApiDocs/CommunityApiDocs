@@ -138,6 +138,7 @@ public class TTMercenaryReversedAttack extends GenericRaidFGI  {
 							reasonTTMA, false, -1f);
 			Misc.setFlagWithReason(mem, MemFlags.MEMORY_KEY_MAKE_NON_HOSTILE,
 							reasonTTMAR, true, -1f);
+			mem.removeAllRequired(MemFlags.MEMORY_KEY_MAKE_HOSTILE);
 		}
 		
 

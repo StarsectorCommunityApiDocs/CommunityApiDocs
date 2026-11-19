@@ -54,6 +54,7 @@ public class HullMods {
 	public static final String SHIELDED_CARGO_HOLDS = "shielded_holds";
 	
 	
+	public static final String FAULTY_AUTO = "faulty_auto";
 	public static final String COMP_ARMOR = "comp_armor";
 	public static final String COMP_HULL = "comp_hull";
 	public static final String DEGRADED_ENGINES = "degraded_engines";
@@ -65,6 +66,7 @@ public class HullMods {
 	public static final String DAMAGED_DECK = "damaged_deck";
 	public static final String FRAGILE_SUBSYSTEMS = "fragile_subsystems";
 	public static final String DESTROYED_MOUNTS = "destroyed_mounts";
+	public static final String DAMAGED_MOUNTS = "damaged_mounts";
 	public static final String ILL_ADVISED = "ill_advised";
 	
 	public static final String DEFECTIVE_MANUFACTORY = "defective_manufactory";
@@ -72,6 +74,8 @@ public class HullMods {
 	public static final String MALFUNCTIONING_COMMS = "malfunctioning_comms";
 	public static final String INCREASED_MAINTENANCE = "increased_maintenance";
 	public static final String ERRATIC_INJECTOR = "erratic_injector";
+	public static final String DEGRADED_LIFE_SUPPORT = "degraded_life_support";
+	public static final String DEGRADED_SHIELDS = "degraded_shields";
 	
 	
 	
@@ -122,11 +126,12 @@ public class HullMods {
 	public static final String AUXILIARY_FUEL_TANKS = "auxiliary_fuel_tanks";
 	public static final String EXPANDED_CARGO_HOLDS = "expanded_cargo_holds";
 	public static final String MILITARIZED_SUBSYSTEMS = "militarized_subsystems";
-//	public static final String ESCORT_PACKAGE = "escort_package";
+	public static final String ESCORT_PACKAGE = "escort_package";
 //	public static final String ASSAULT_PACKAGE = "assault_package";
 	public static final String EFFICIENCY_OVERHAUL = "efficiency_overhaul";
 	
 	public static final String HIGH_FREQUENCY_ATTRACTOR = "high_frequency_attractor";
+	public static final String HIRESSENSORS = "hiressensors";
 	
 	public static final String FLUX_SHUNT = "fluxshunt";
 	
@@ -135,8 +140,7 @@ public class HullMods {
 	public static final String FRAGMENT_COORDINATOR = "fragment_coordinator";
 	
 	
-	
-	
+
 	public static final String TAG_UI_LOGISTICS = "Logistics";
 	public static final String TAG_REQ_SPACEPORT = "req_spaceport";
 	public static final String TAG_NON_PHASE = "non_phase";

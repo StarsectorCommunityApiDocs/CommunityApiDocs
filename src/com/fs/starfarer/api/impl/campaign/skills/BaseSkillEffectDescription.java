@@ -1,12 +1,13 @@
 package com.fs.starfarer.api.impl.campaign.skills;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.GameState;
 import com.fs.starfarer.api.Global;

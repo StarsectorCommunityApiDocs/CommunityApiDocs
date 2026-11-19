@@ -68,4 +68,5 @@ public interface CombatTaskManagerAPI {
 	AssignmentTargetAPI getAssignmentTargetFor(ShipAPI ship);
 	void clearTasks();
 	AssignmentInfo getAssignmentInfoForTarget(AssignmentTargetAPI target);
+	void cancelDirectOrdersForMember2(DeployedFleetMemberAPI member);
 }

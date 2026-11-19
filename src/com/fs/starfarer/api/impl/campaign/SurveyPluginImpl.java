@@ -88,12 +88,23 @@ public class SurveyPluginImpl implements SurveyPlugin {
 		
 		float mult = getCostMult().getModifiedValue();
 		
-		int machinery = (int)Math.round(BASE_MACHINERY * mult);
+		float crewMult = 1f;
+		float machineryMult = 1f;
+		if (Misc.isExtended()) {
+			crewMult = Global.getSettings().getFloat("ext_surveyCrewMult");
+			machineryMult = Global.getSettings().getFloat("ext_surveyMachineryMult");
+		}
+		
+		int machinery = (int)Math.round(BASE_MACHINERY * mult * machineryMult);
 		machinery -= (int) Misc.getFleetwideTotalMod(fleet, Stats.getSurveyCostReductionId(Commodities.HEAVY_MACHINERY), 0);
 		machinery = Math.round(machinery / 10f) * 10;
 		if (machinery < MIN_SUPPLIES_OR_MACHINERY) machinery = MIN_SUPPLIES_OR_MACHINERY;
 		
-		result.put(Commodities.CREW, (int)Math.round((int)(BASE_CREW * mult) / 10f) * 10);
+		int crew = (int)Math.round((int)(BASE_CREW * mult * crewMult) / 10f) * 10;
+		
+		
+		
+		result.put(Commodities.CREW, crew);
 		result.put(Commodities.HEAVY_MACHINERY, machinery);
 		
 		return result;
@@ -102,8 +113,13 @@ public class SurveyPluginImpl implements SurveyPlugin {
 	public Map<String, Integer> getConsumed() {
 		Map<String, Integer> result = new LinkedHashMap<String, Integer>();
 		
+		float suppliesMult = 1f;
+		if (Misc.isExtended()) {
+			suppliesMult = Global.getSettings().getFloat("ext_surveySuppliesMult");
+		}
+		
 		float mult = getCostMult().getModifiedValue();
-		int supplies = (int)Math.round(BASE_SUPPLIES * mult);
+		int supplies = (int)Math.round(BASE_SUPPLIES * mult * suppliesMult);
 		supplies += FLAT_SUPPLIES;
 		supplies = Math.round((int) supplies / 10f) * 10;
 		supplies -= (int) Misc.getFleetwideTotalMod(fleet, Stats.getSurveyCostReductionId(Commodities.SUPPLIES), 0);
@@ -200,9 +216,16 @@ public class SurveyPluginImpl implements SurveyPlugin {
 	public Map<String, Integer> getOutpostConsumed() {
 		Map<String, Integer> result = new LinkedHashMap<String, Integer>();
 		
-		result.put(Commodities.CREW, 1000);
-		result.put(Commodities.HEAVY_MACHINERY, 100);
-		result.put(Commodities.SUPPLIES, 200);
+		if (Misc.isExtended()) {
+			result.put(Commodities.CREW, Global.getSettings().getInt("ext_establishColonyCrew"));
+			result.put(Commodities.HEAVY_MACHINERY, Global.getSettings().getInt("ext_establishColonyMachinery"));
+			result.put(Commodities.SUPPLIES, Global.getSettings().getInt("ext_establishColonySupplies"));
+		} else {
+			result.put(Commodities.CREW, 1000);
+			result.put(Commodities.HEAVY_MACHINERY, 100);
+			result.put(Commodities.SUPPLIES, 200);
+		}
+		
 		
 		return result;
 	}

@@ -128,6 +128,7 @@ public interface MutableCharacterStatsAPI {
 	void refreshCharacterStatsEffects(boolean withColonyEffects);
 	void setBonusXPGainReason(String bonusXPGainReason);
 	void setXP(long xp);
+	void resetSkills();
 	
 
 }

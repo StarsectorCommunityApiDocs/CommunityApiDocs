@@ -387,9 +387,9 @@ public class PhaseCloakStats extends BaseShipSystemScript {
 		
 		float speedMultMod = stats.getDynamic().getMod(Stats.PHASE_CLOAK_SPEED_MOD).getMult();
 		float accelMultMod = stats.getDynamic().getMod(Stats.PHASE_CLOAK_ACCEL_MOD).getMult();
-		stats.getMaxSpeed().modifyMult(id, speedMultMod * effectLevel);
-		stats.getAcceleration().modifyMult(id, accelMultMod * effectLevel);
-		stats.getDeceleration().modifyMult(id, accelMultMod * effectLevel);
+		stats.getMaxSpeed().modifyMult(id, 1f + (speedMultMod - 1f) * effectLevel);
+		stats.getAcceleration().modifyMult(id, 1f + (accelMultMod - 1f) * effectLevel);
+		stats.getDeceleration().modifyMult(id, 1f + (accelMultMod - 1f) * effectLevel);
 		
 		float level = effectLevel;
 		//float f = VULNERABLE_FRACTION;

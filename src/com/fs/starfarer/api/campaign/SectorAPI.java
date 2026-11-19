@@ -367,6 +367,9 @@ public interface SectorAPI {
 	boolean isInSectorGen();
 	void setInSectorGen(boolean isInSectorGen);
 
+	
+	boolean isExtMode();
+	void setExtMode(boolean extMode);
 }
 
 

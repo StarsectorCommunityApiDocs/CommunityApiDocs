@@ -98,7 +98,12 @@ public class SurveyDataSpecial extends BaseSalvageSpecial {
 	}
 
 	public void initNothing() {
-		addText("The $shortName's memory banks have been scrubbed clean by hard radiation, and the systems are largely inert and non-functional.");
+		boolean debris = entity != null && Entities.DEBRIS_FIELD_SHARED.equals(entity.getCustomEntityType());
+		if (debris) {
+			addText("An array of memory banks is found in the debris field, but it's been scrubbed clean by hard radiation, and no data can be retrieved.");
+		} else {
+			addText("The $shortName's memory banks have been scrubbed clean by hard radiation, and the systems are largely inert and non-functional.");
+		}
 		setDone(true);
 	}
 	
@@ -124,12 +129,17 @@ public class SurveyDataSpecial extends BaseSalvageSpecial {
 		
 		String text1 = "The $shortName's memory banks are partially accessible, " +
 					   "and contain full survey data for " + name + ", " + world + " located " + loc + ".";
+		boolean debris = entity != null && Entities.DEBRIS_FIELD_SHARED.equals(entity.getCustomEntityType());
+		if (debris) {
+			text1 = "An array of memory banks found in the debris field is partially accessible, " +
+					   "and contains full survey data for " + name + ", " + world + " located " + loc + ".";
+		}
 		
 		String text1ForIntel = "While exploring $aOrAn $nameInText, your crews found " +
 		   					   "partially accessible memory banks that contain full survey data for " +
 		   					   name + ", " + world + " located " + loc + ".";
 		
-		boolean debris = Entities.DEBRIS_FIELD_SHARED.equals(entity.getCustomEntityType());
+		//boolean debris = Entities.DEBRIS_FIELD_SHARED.equals(entity.getCustomEntityType());
 		if (debris) {
 			text1 = "Your salvage crews find a functional memory bank in the debris. " +
 					"It contains full survey data for " + name + ", " + world + " located " + loc + ".";

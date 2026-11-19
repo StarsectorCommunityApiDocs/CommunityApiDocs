@@ -3,6 +3,7 @@ package com.fs.starfarer.api.impl.campaign.econ;
 import java.awt.Color;
 
 import com.fs.starfarer.api.impl.campaign.intel.events.PiracyRespiteScript;
+import com.fs.starfarer.api.impl.campaign.intel.events.PirateHostileActivityFactor;
 import com.fs.starfarer.api.impl.campaign.rulecmd.KantaCMD;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
@@ -55,7 +56,7 @@ public class PiracyRespite extends BaseMarketConditionPlugin {
 						+ "attacking trade fleets serving them lest they attract her wrath. "
 						+ "Shipping disruptions from piracy are virtually eliminated.", opad, Misc.getPositiveHighlightColor(),
 						"Kanta's Protection");
-			} else {
+			} else if (PirateHostileActivityFactor.isDefeatedLargePirateRaid()) {
 				tooltip.addPara("You've defeated a large armada sent against your colonies, and pirates are wary of "
 						+ "attacking trade fleets serving them, "
 						+ "resulting in a greatly reduced number of shipping disruptions.", opad);

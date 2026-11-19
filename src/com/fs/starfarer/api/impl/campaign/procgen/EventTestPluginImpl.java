@@ -35,6 +35,8 @@ import com.fs.starfarer.api.combat.ShipHullSpecAPI;
 import com.fs.starfarer.api.combat.WeaponAPI.AIHints;
 import com.fs.starfarer.api.impl.campaign.AbyssalLightEntityPlugin.AbyssalLightParams;
 import com.fs.starfarer.api.impl.campaign.DebugFlags;
+import com.fs.starfarer.api.impl.campaign.ExampleCustomUIPanel;
+import com.fs.starfarer.api.impl.campaign.PlanetExplosionScript;
 import com.fs.starfarer.api.impl.campaign.eventide.DuelDialogDelegate;
 import com.fs.starfarer.api.impl.campaign.eventide.DuelPanel;
 import com.fs.starfarer.api.impl.campaign.ids.Entities;
@@ -46,6 +48,7 @@ import com.fs.starfarer.api.impl.campaign.intel.bases.PirateBaseIntel;
 import com.fs.starfarer.api.impl.campaign.intel.events.HostileActivityEventIntel;
 import com.fs.starfarer.api.impl.campaign.intel.events.ht.HTScanFactor;
 import com.fs.starfarer.api.impl.campaign.intel.events.ht.HyperspaceTopographyEventIntel;
+import com.fs.starfarer.api.impl.campaign.intel.events.sd.SDResolution;
 import com.fs.starfarer.api.impl.campaign.intel.inspection.HegemonyInspectionManager;
 import com.fs.starfarer.api.impl.campaign.intel.misc.LuddicShrineIntel;
 import com.fs.starfarer.api.impl.campaign.intel.punitive.PunitiveExpeditionManager;
@@ -56,6 +59,8 @@ import com.fs.starfarer.api.impl.campaign.plog.PlaythroughLog;
 import com.fs.starfarer.api.impl.campaign.population.CoreImmigrationPluginImpl;
 import com.fs.starfarer.api.loading.FighterWingSpecAPI;
 import com.fs.starfarer.api.loading.WeaponSpecAPI;
+import com.fs.starfarer.api.ui.CustomPanelAPI;
+import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 
 public class EventTestPluginImpl implements InteractionDialogPlugin {
@@ -162,10 +167,19 @@ public class EventTestPluginImpl implements InteractionDialogPlugin {
 		case TUTORIAL:
 			final DuelPanel duelPanel = DuelPanel.createTutorial(true, "soe_ambience");
 			dialog.showCustomVisualDialog(1024, 700, new DuelDialogDelegate(null, duelPanel, dialog, null, true));
+			
 			break;
 		case FIGHT:
-			final DuelPanel duelPanel2 = DuelPanel.createDefault(true, true, "soe_ambience");
-			dialog.showCustomVisualDialog(1024, 700, new DuelDialogDelegate("music_soe_fight", duelPanel2, dialog, null, true));
+			//final DuelPanel duelPanel2 = DuelPanel.createDefault(true, true, "soe_ambience");
+			//dialog.showCustomVisualDialog(1024, 700, new DuelDialogDelegate("music_soe_fight", duelPanel2, dialog, null, true));
+
+			dialog.showCryosanctumGameEndDialog();
+			dialog.hideTextPanel();
+			dialog.hideVisualPanel();
+			dialog.getOptionPanel().clearOptions();
+			dialog.getOptionPanel().addOption("", new Object());
+			dialog.getOptionPanel().clearOptions();
+			dialog.setPromptText("");
 			
 			//Global.getSector().getIntelManager().addIntel(new TestFleetGroupIntel());
 			
@@ -192,6 +206,25 @@ public class EventTestPluginImpl implements InteractionDialogPlugin {
 			//dialog.hideTextPanel();
 			break;
 		case PIRATE_RAID:
+			
+			PlanetAPI sindria = Global.getSector().getEconomy().getMarket("sindria").getPlanetEntity();
+			new PlanetExplosionScript(sindria);
+			if (true) return;
+			//SDResolution.sendCompetingTTExecutive();
+			//SDResolution.sendDiktatSuppliedMerc();
+			SDResolution.sendLGKillFleet();
+			
+			if (false) {
+				TooltipMakerAPI t = dialog.getTextPanel().beginTooltip();
+				CustomPanelAPI custom = Global.getSettings().createCustom(200f, 300f, new ExampleCustomUIPanel());
+				t.addCustom(custom, 0f);
+				t.setHeightSoFar(200f);
+				dialog.getTextPanel().addTooltip();
+				//visual.showCustomPanel(810, 400, new ExampleCustomUIPanel());
+				//dialog.hideTextPanel();
+				return;
+			}
+			
 			MarketAPI market = getNearestMarket(false);
 			PirateBaseIntel base = findPirateBase();
 			if (base != null && market != null && market.getStarSystem() != null) {
@@ -249,6 +282,8 @@ public class EventTestPluginImpl implements InteractionDialogPlugin {
 			options.addOption("Leave", OptionId.LEAVE, null);
 			break;
 		case TOPOGRAPHY_POINTS:
+			//SDResolution.beginStandoffInAskonia(textPanel, true);
+			
 			HyperspaceTopographyEventIntel.addFactorCreateIfNecessary(
 					new HTScanFactor("Dev mode point increase", 50), dialog);
 			break;

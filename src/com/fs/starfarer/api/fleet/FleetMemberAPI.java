@@ -192,6 +192,10 @@ public interface FleetMemberAPI extends WithSourceMod {
 	void setPersonalityOverride(String personalityOverride);
 
 
+	String getIdOfOfficerAssignedBeforeShipStored();
+	void setIdOfOfficerAssignedBeforeShipStored(String idOfOfficerAssignedBeforeShipStored);
+
+
 }
 
 

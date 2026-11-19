@@ -1093,9 +1093,12 @@ public abstract class BaseHubMission extends BaseIntelPlugin implements HubMissi
 		}
 		
 		mem.set("$PersonName", person.getName().getFullName(), 0);
+		mem.set("$PersonFirstName", person.getName().getFirst(), 0);
+		mem.set("$PersonLastName", person.getName().getLast(), 0);
 		mem.set("$personName", person.getName().getFullName(), 0);
 		mem.set("$personFirstName", person.getName().getFirst(), 0);
 		mem.set("$personLastName", person.getName().getLast(), 0);
+		
 		
 		if (person.getVoice() != null) {
 			mem.set("$voice", person.getVoice());
@@ -3586,9 +3589,13 @@ public abstract class BaseHubMission extends BaseIntelPlugin implements HubMissi
 	
 	
 	public static void addStandardMarketDesc(String prefix, MarketAPI market, TooltipMakerAPI info, float pad) {
+		addStandardMarketDesc(prefix, null, market, info, pad);
+	}
+	public static void addStandardMarketDesc(String prefix, Color tc, MarketAPI market, TooltipMakerAPI info, float pad) {
 		Color h = Misc.getHighlightColor();
 		FactionAPI f = market.getFaction();
 		
+		info.setBulletColor(tc);
 		if (Misc.isHiddenBase(market)) {
 			String a = f.getPersonNamePrefixAOrAn();
 			if (prefix == null || prefix.isEmpty()) {
@@ -3596,12 +3603,18 @@ public abstract class BaseHubMission extends BaseIntelPlugin implements HubMissi
 					LabelAPI label = info.addPara(market.getName() + "is " + a + " " + f.getPersonNamePrefix() + 
 							" base located in hyperspace.",
 							pad);
+					if (tc != null) {
+						label.setColor(tc);
+					}
 					label.setHighlight(market.getName(), f.getPersonNamePrefix());
 					label.setHighlightColors(f.getBaseUIColor(), f.getBaseUIColor());
 				} else {
 					LabelAPI label = info.addPara(market.getName() + "is " + a + " " + f.getPersonNamePrefix() + 
 							" base in the " + market.getStarSystem().getNameWithLowercaseTypeShort() + ".",
 							pad);
+					if (tc != null) {
+						label.setColor(tc);
+					}
 					label.setHighlight(market.getName(), f.getPersonNamePrefix());
 					label.setHighlightColors(f.getBaseUIColor(), f.getBaseUIColor());
 				}
@@ -3610,12 +3623,18 @@ public abstract class BaseHubMission extends BaseIntelPlugin implements HubMissi
 					LabelAPI label = info.addPara(prefix + " " + market.getName() + ", " + a + " " + f.getPersonNamePrefix() + 
 							" base located in hyperspace.",
 							pad);
+					if (tc != null) {
+						label.setColor(tc);
+					}
 					label.setHighlight(market.getName(), f.getDisplayNameWithArticleWithoutArticle());
 					label.setHighlightColors(f.getBaseUIColor(), f.getBaseUIColor());
 				} else {
 					LabelAPI label = info.addPara(prefix + " " + market.getName() + ", " + a + " " + f.getPersonNamePrefix() + 
 							" base in the " + market.getStarSystem().getNameWithLowercaseTypeShort() + ".",
 							pad);
+					if (tc != null) {
+						label.setColor(tc);
+					}
 					label.setHighlight(market.getName(), f.getPersonNamePrefix());
 					label.setHighlightColors(f.getBaseUIColor(), f.getBaseUIColor());
 				}
@@ -3631,6 +3650,9 @@ public abstract class BaseHubMission extends BaseIntelPlugin implements HubMissi
 						"colony in hyperspace controlled by " + f.getDisplayNameWithArticle() + ".",
 						pad, f.getBaseUIColor(),
 						"" + market.getSize(), f.getDisplayNameWithArticleWithoutArticle());
+				if (tc != null) {
+					label.setColor(tc);
+				}
 				label.setHighlight(market.getName(), "" + market.getSize(), f.getDisplayNameWithArticleWithoutArticle());
 				label.setHighlightColors(f.getBaseUIColor(), h, f.getBaseUIColor());
 			} else {
@@ -3638,6 +3660,9 @@ public abstract class BaseHubMission extends BaseIntelPlugin implements HubMissi
 						"colony in the " + market.getStarSystem().getNameWithLowercaseTypeShort() + " controlled by " + f.getDisplayNameWithArticle() + ".",
 						pad, f.getBaseUIColor(),
 						"" + market.getSize(), f.getDisplayNameWithArticleWithoutArticle());
+				if (tc != null) {
+					label.setColor(tc);
+				}
 				label.setHighlight(market.getName(), "" + market.getSize(), f.getDisplayNameWithArticleWithoutArticle());
 				label.setHighlightColors(f.getBaseUIColor(), h, f.getBaseUIColor());
 			}
@@ -3647,6 +3672,9 @@ public abstract class BaseHubMission extends BaseIntelPlugin implements HubMissi
 						"colony in hyperspace controlled by " + f.getDisplayNameWithArticle() + ".",
 						pad, f.getBaseUIColor(),
 						"" + market.getSize(), f.getDisplayNameWithArticleWithoutArticle());
+				if (tc != null) {
+					label.setColor(tc);
+				}
 				label.setHighlight(market.getName(), "" + market.getSize(), f.getDisplayNameWithArticleWithoutArticle());
 				label.setHighlightColors(f.getBaseUIColor(), h, f.getBaseUIColor());
 			} else {
@@ -3654,6 +3682,9 @@ public abstract class BaseHubMission extends BaseIntelPlugin implements HubMissi
 						"colony in the " + market.getStarSystem().getNameWithLowercaseTypeShort() + " controlled by " + f.getDisplayNameWithArticle() + ".",
 						pad, f.getBaseUIColor(),
 						"" + market.getSize(), f.getDisplayNameWithArticleWithoutArticle());
+				if (tc != null) {
+					label.setColor(tc);
+				}
 				label.setHighlight(market.getName(), "" + market.getSize(), f.getDisplayNameWithArticleWithoutArticle());
 				label.setHighlightColors(f.getBaseUIColor(), h, f.getBaseUIColor());
 			}
@@ -3685,6 +3716,7 @@ public abstract class BaseHubMission extends BaseIntelPlugin implements HubMissi
 	
 	
 	public PersonAPI getImportantPerson(String id) {
+		if (Global.getSector().getImportantPeople().getData(id) == null) return null;
 		return Global.getSector().getImportantPeople().getData(id).getPerson();
 	}
 	public PersonDataAPI getImportantPersonData(String id) {

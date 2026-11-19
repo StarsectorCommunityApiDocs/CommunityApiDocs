@@ -439,6 +439,9 @@ public class FleetFactoryV3 {
 			} else if (params.flagshipVariant != null) {
 				fleet.getFlagship().setVariant(params.flagshipVariant, false, true);
 			}
+			if (fleet.getFlagship() != null && fleet.getFlagship().getStatus() != null) {
+				fleet.getFlagship().getStatus().updateNumStatusesFromMember();
+			}
 		}
 		
 		if (params.onlyRetainFlagship != null && params.onlyRetainFlagship) {

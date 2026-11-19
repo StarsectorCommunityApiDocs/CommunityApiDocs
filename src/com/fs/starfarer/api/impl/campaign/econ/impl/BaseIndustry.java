@@ -56,6 +56,8 @@ import com.fs.starfarer.api.util.Pair;
 
 public abstract class BaseIndustry implements Industry, Cloneable {
 	
+	public static int HIGH_AVAILABLE_VALUE = 100;
+	
 	public static int SIZE_FOR_SMALL_IMAGE = 3;
 	public static int SIZE_FOR_LARGE_IMAGE = 6;
 	
@@ -116,6 +118,9 @@ public abstract class BaseIndustry implements Industry, Cloneable {
 	
 	protected transient MutableStat demandReductionFromOther = new MutableStat(0);
 	protected transient MutableStat supplyBonusFromOther = new MutableStat(0);
+	
+	protected String imageOverride = null;
+	protected String nameOverride = null;
 	
 	
 	public BaseIndustry() {
@@ -595,7 +600,9 @@ public abstract class BaseIndustry implements Industry, Cloneable {
 	
 	public void reapply() {
 		unapply();
+		ListenerUtil.reportIndustryAboutToBeApplied(this);
 		apply();
+		ListenerUtil.reportIndustryApplied(this);
 	}
 	
 	protected void buildingFinished() {
@@ -733,6 +740,11 @@ public abstract class BaseIndustry implements Industry, Cloneable {
 		return result;
 	}
 	
+	public Map<String, MutableCommodityQuantity> getSupply() {
+		return supply;
+	}
+	
+
 	public List<MutableCommodityQuantity> getAllSupply() {
 		List<MutableCommodityQuantity> result = new ArrayList<MutableCommodityQuantity>();
 		for (MutableCommodityQuantity q : supply.values()) {
@@ -818,6 +830,7 @@ public abstract class BaseIndustry implements Industry, Cloneable {
 				result.two = deficit;
 			}
 		}
+		ListenerUtil.modifyIndustryMaxDeficit(this, result, commodityIds);
 		return result;
 	}
 	
@@ -898,13 +911,31 @@ public abstract class BaseIndustry implements Industry, Cloneable {
 
 
 	public String getCurrentImage() {
+		if (imageOverride != null) return imageOverride;
 		return getSpec().getImageName();
 	}
 
 	public String getCurrentName() {
+		if (nameOverride != null) return nameOverride;
 		return getSpec().getName();
 	}
 	
+	public String getImageOverride() {
+		return imageOverride;
+	}
+
+	public void setImageOverride(String imageOverride) {
+		this.imageOverride = imageOverride;
+	}
+
+	public String getNameOverride() {
+		return nameOverride;
+	}
+
+	public void setNameOverride(String nameOverride) {
+		this.nameOverride = nameOverride;
+	}
+
 	public boolean isAvailableToBuild() {
 		if (market.hasTag(Tags.MARKET_NO_INDUSTRIES_ALLOWED)) return false; 
 		return market.hasIndustry(Industries.POPULATION) && !getId().equals(Industries.POPULATION);
@@ -970,7 +1001,7 @@ public abstract class BaseIndustry implements Industry, Cloneable {
 		if (mode != IndustryTooltipMode.NORMAL) {
 			market.clearCommodities();
 			for (CommodityOnMarketAPI curr : market.getAllCommodities()) {
-				curr.getAvailableStat().setBaseValue(100);
+				curr.getAvailableStat().setBaseValue(HIGH_AVAILABLE_VALUE);
 			}
 		}
 		
@@ -1284,9 +1315,11 @@ public abstract class BaseIndustry implements Industry, Cloneable {
 				addImprovedSection(mode, tooltip, expanded);
 				
 				ListenerUtil.addToIndustryTooltip(this, mode, tooltip, getTooltipWidth(), expanded);
+			} else {
+				ListenerUtil.addToIndustryTooltipIfIndustryNotPresent(this, mode, tooltip, getTooltipWidth(), expanded);
 			}
 			
-			tooltip.addPara("*Shown production and demand values are already adjusted based on current market size and local conditions.", gray, opad);
+			tooltip.addPara("*Shown production and demand values are already adjusted based on current market size and conditions, but not items.", gray, opad);
 		}
 		
 		if (needToAddIndustry) {

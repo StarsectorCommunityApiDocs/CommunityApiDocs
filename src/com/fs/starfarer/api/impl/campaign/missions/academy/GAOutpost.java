@@ -1,8 +1,9 @@
 package com.fs.starfarer.api.impl.campaign.missions.academy;
 
-import java.awt.Color;
 import java.util.List;
 import java.util.Map;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.InteractionDialogAPI;
@@ -15,6 +16,8 @@ import com.fs.starfarer.api.impl.campaign.ids.Commodities;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.FleetTypes;
 import com.fs.starfarer.api.impl.campaign.ids.Ranks;
+import com.fs.starfarer.api.impl.campaign.ids.Tags;
+import com.fs.starfarer.api.impl.campaign.missions.hub.ReqMode;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.api.util.Misc.Token;
@@ -94,6 +97,7 @@ public class GAOutpost extends GABaseMission {
 		//genRandom = new Random();
 //		requireSystemTags(ReqMode.ANY, Tags.THEME_REMNANT, Tags.THEME_DERELICT, 
 //						  Tags.THEME_MISC, Tags.THEME_MISC_SKIP, Tags.THEME_RUINS);
+		requireSystemTags(ReqMode.NOT_ANY, Tags.SYSTEM_ALREADY_USED_FOR_STORY);
 		preferSystemInteresting();
 		preferSystemOnFringeOfSector();
 		preferSystemUnexplored();

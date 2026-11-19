@@ -1,7 +1,8 @@
 package com.fs.starfarer.api.campaign;
 
-import java.awt.Color;
 import java.util.List;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.campaign.CampaignUIAPI.CoreUITradeMode;
 import com.fs.starfarer.api.campaign.econ.Industry;
@@ -106,6 +107,10 @@ public interface InteractionDialogAPI {
 	void showCustomVisualDialog(float customPanelWidth, float customPanelHeight, CustomVisualDialogDelegate delegate);
 	void showCargoPickerDialog(String title, String okText, String cancelText, boolean small, float textPanelWidth,
 			float width, float height, CargoAPI cargo, CargoPickerListener listener);
+	void showSkillPickerDialog(SkillSelectorDialogDelegate delegate);
+	void showCryosanctumGameEndDialog();
+	void showRetirementGameEndDialog();
+	boolean isBeingDismissed2();
 
 }
 

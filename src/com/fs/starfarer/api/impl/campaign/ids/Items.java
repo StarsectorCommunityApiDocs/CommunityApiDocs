@@ -60,6 +60,7 @@ public class Items {
 	public static final String WEAPON_BP = "weapon_bp";
 	public static final String FIGHTER_BP = "fighter_bp";
 	public static final String INDUSTRY_BP = "industry_bp";
+	public static final String MODSPEC = "modspec";
 	
 	public static final String JANUS = "janus";
 	

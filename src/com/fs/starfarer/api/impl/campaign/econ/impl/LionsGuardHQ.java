@@ -41,11 +41,19 @@ public class LionsGuardHQ extends BaseIndustry implements RouteFleetSpawner, Fle
 	
 	@Override
 	public boolean isHidden() {
+		// Remnants of the LG are integrated into the Diktat military
+		if (Global.getSector().getMemoryWithoutUpdate().getBoolean("$sdse_achillesWon")) {
+			return true;
+		}
 		return !market.getFactionId().equals(Factions.DIKTAT);
 	}
 	
 	@Override
 	public boolean isFunctional() {
+		// Remnants of the LG are integrated into the Diktat military
+		if (Global.getSector().getMemoryWithoutUpdate().getBoolean("$sdse_achillesWon")) {
+			return false;
+		}
 		return super.isFunctional() && market.getFactionId().equals(Factions.DIKTAT);
 	}
 

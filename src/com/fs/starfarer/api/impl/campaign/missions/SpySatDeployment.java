@@ -16,7 +16,7 @@ import com.fs.starfarer.api.util.Misc;
 public class SpySatDeployment extends HubMissionWithBarEvent {
 
 	public static float PROB_BAR_UNDERWORLD = 0.25f;
-	public static float PROB_PATROL_AROUND_TARGET = 0.5f;
+	public static float PROB_PATROL_AROUND_TARGET = 0.2f;
 	
 	public static float MISSION_DAYS = 120f;
 	

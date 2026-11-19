@@ -17,6 +17,7 @@ import com.fs.starfarer.api.campaign.rules.MemoryAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.FleetTypes;
+import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.ids.People;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.impl.campaign.intel.bases.LuddicPathBaseIntel;
@@ -290,10 +291,13 @@ public class BornanewFilesFalseIdols extends HubMissionWithSearch {
 			Global.getSector().addScript(patherStation);
 			
 			CampaignFleetAPI patherStationFleet = Misc.getStationFleet(patherStation.getMarket());
+			patherStationFleet.getMemoryWithoutUpdate().set(MemFlags.FLEET_IGNORED_BY_OTHER_FLEETS, true);
+			patherStationFleet.getMemoryWithoutUpdate().set(MemFlags.FLEET_IGNORES_OTHER_FLEETS, true);
 			
 			//makeImportant(patherStation, , Stage.INVESTIGATE_PATHER_STATION);
 			Misc.makeImportant(patherStation.getEntity(), "$bffi_investigatePatherStation");
 			Misc.addDefeatTrigger(patherStationFleet, "BFFIpatherStationDefeated");
+			
 			
 			/*patherStationFleet.addEventListener(new BaseFleetEventListener() {
 				@Override
@@ -309,8 +313,15 @@ public class BornanewFilesFalseIdols extends HubMissionWithSearch {
 		}
 		else if ("cleanUpPatherBase".equals(action)) {
 		
-			Misc.makeUnimportant(patherStation.getEntity(), "$bffi_investigatePatherStation"); 
-			// Is this implicit?
+			if(patherStation != null) {
+				Misc.makeUnimportant(patherStation.getEntity(), "$bffi_investigatePatherStation"); 
+				// Is this implicit? probably. But also...
+				
+				CampaignFleetAPI patherStationFleet = Misc.getStationFleet(patherStation.getMarket());
+				patherStationFleet.getMemoryWithoutUpdate().unset(MemFlags.FLEET_IGNORED_BY_OTHER_FLEETS);
+			}
+			
+			
 			return true;
 		}
 		else if ("patherBaseLosses".equals(action))
@@ -332,17 +343,9 @@ public class BornanewFilesFalseIdols extends HubMissionWithSearch {
 			Global.getSector().layInCourseFor(chalcedon.getPlanetEntity());
 			return true;
 		}
-		/*else if ("transponderOff".equals(action)) {
-			Global.getSector().getPlayerFleet().getAbility(Abilities.TRANSPONDER).deactivate();
-			return true;
-		}
-		else if ("transponderOn".equals(action)) {
-			Global.getSector().getPlayerFleet().getAbility(Abilities.TRANSPONDER).activate();
-			return true;
-		}*/
 		else if ("doCleanup".equals(action))
 		{
-			Global.getSector().getMemoryWithoutUpdate().unset("$bffi_jethroCalledOutPond");
+			//Global.getSector().getMemoryWithoutUpdate().unset("$bffi_jethroCalledOutPond");
 			//Global.getSector().getMemoryWithoutUpdate().unset("$bffi_intendToTalkHorus");		
 			// Jeez, anything else?
 			return true;
@@ -350,44 +353,6 @@ public class BornanewFilesFalseIdols extends HubMissionWithSearch {
 		
 		return super.callAction(action, ruleId, dialog, params, memoryMap);
 	}
-	
-//		if ("THEDUEL".equals(action)) {
-//			TextPanelAPI text = dialog.getTextPanel();
-//			text.setFontOrbitronUnnecessarilyLarge();
-//			Color color = Misc.getBasePlayerColor();
-//			color = Global.getSector().getFaction(Factions.HEGEMONY).getBaseUIColor();
-//			text.addPara("THE DUEL", color);
-//			text.setFontInsignia();
-//			text.addImage("misc", "THEDUEL");
-//			return true;
-//		}
-/*
-
-		else if ("didMazalotRaid".equals(action))
-		{
-			RecentUnrest.get(mazalot).add(10, "Raided Mazalot and caused a Luddic uprising");
-			return true;
-		}*/
-		
-	
-	/*
-	@Override
-	public void createSmallDescription(TooltipMakerAPI info, float width, float height) {
-		Color h = Misc.getHighlightColor();
-		Color g = Misc.getGrayColor();
-		float pad = 3f;
-		float opad = 10f;
-		
-		FactionAPI faction = getFactionForUIColors();
-		PersonAPI person = getPerson();
-		
-		//info.addImage(Global.getSettings().getSpriteName("illustrations", "luddic_shrine"), width, opad);
-		
-		addDescriptionForCurrentStage(info, width, height);
-		
-		addBulletPoints(info, ListInfoMode.IN_DESC);
-	}
-	*/
 
 	@Override
 	public void addDescriptionForNonEndStage(TooltipMakerAPI info, float width, float height) {
@@ -401,42 +366,42 @@ public class BornanewFilesFalseIdols extends HubMissionWithSearch {
 
 		if (currentStage == Stage.PICK_UP_BORNANEW) {
 			info.addPara("Pick up Jethro Bornanew from Gilead.", opad);
-			addStandardMarketDesc("Go to " + gilead.getOnOrAt(), gilead, info, opad);
+			addStandardMarketDesc("Go to ", gilead, info, opad);
 		}
 		else if (currentStage == Stage.MEET_MENES_YARIBAY) {
 			info.addPara("Go to Olinadu and contact Menes Yaribay, the planetary administrator.", opad);
-			addStandardMarketDesc("Go to " + olinadu.getOnOrAt(), olinadu, info, opad);
+			addStandardMarketDesc("Go to ", olinadu, info, opad);
 		}
 		else if (currentStage == Stage.TALK_TO_HORUS) {
 			info.addPara("Go to Kazeron and talk to Horus Yaribay about his cousin Menes.", opad);
-			addStandardMarketDesc("Go to " + kazeron.getOnOrAt(), kazeron, info, opad);
+			addStandardMarketDesc("Go to ", kazeron, info, opad);
 		}
 		else if (currentStage == Stage.ATTEND_A_PARTY) {
 			
 			if(Global.getSector().getMemoryWithoutUpdate().contains("$bffi_intendToSteal")) {
 				info.addPara("Attend Menes Yaribay's 'gathering' on Olinadu and find a way to steal the false relic.", opad);
-				addStandardMarketDesc("Go to " + olinadu.getOnOrAt(), olinadu, info, opad);
+				addStandardMarketDesc("Go to ", olinadu, info, opad);
 			}
 			else if(Global.getSector().getMemoryWithoutUpdate().contains("$bffi_horusToParty")) {
 				info.addPara("Attend Menes Yaribay's 'gathering' on Olinadu with Horus Yaribay, the patriarch of Gens Yaribay.", opad);
-				addStandardMarketDesc("Go to " + olinadu.getOnOrAt(), olinadu, info, opad);
+				addStandardMarketDesc("Go to ", olinadu, info, opad);
 			}
 			else {
 				info.addPara("Attend Menes Yaribay's 'gathering' on Olinadu and acquire the false relic.", opad);
-				addStandardMarketDesc("Go to " + olinadu.getOnOrAt(), olinadu, info, opad);
+				addStandardMarketDesc("Go to ", olinadu, info, opad);
 			}
 		}
 		else if (currentStage == Stage.TALK_TO_ENGINEER) {
 			info.addPara("Bring the false relic to Asher so that a nanoforge engineer in the employ of the Church can examine it.", opad);
-			addStandardMarketDesc("Go to " + asher.getOnOrAt(), asher, info, opad);
+			addStandardMarketDesc("Go to ", asher, info, opad);
 		}
 		else if (currentStage == Stage.TALK_TO_ULMUS_POND) {
 			info.addPara("Go to Olinadu and confront Ulmus Pond to get a confession.", opad);
-			addStandardMarketDesc("Go to " + asher.getOnOrAt(), asher, info, opad);
+			addStandardMarketDesc("Go to ", asher, info, opad);
 		}
 		else if (currentStage == Stage.GO_TO_CHALCEDON) {
 			info.addPara("Go to Chalcedon and use Bornanew's intel to track down where Ulmus Pond is hiding.", opad);
-			addStandardMarketDesc("Go to " + chalcedon.getOnOrAt(), chalcedon, info, opad);
+			addStandardMarketDesc("Go to ", chalcedon, info, opad);
 		}
 		else if (currentStage == Stage.INVESTIGATE_PATHER_STATION) {
 			//info.addPara("Investigate the Pather Station in the " + patherStation.getSystem().getName() + " system and try to find out where their scan of the relic came from.", opad);
@@ -445,51 +410,26 @@ public class BornanewFilesFalseIdols extends HubMissionWithSearch {
 		}
 		else if (currentStage == Stage.ARREST_THE_CURATE) {
 			info.addPara("Go to the Cathedral of Holy Exodus, on Tartessus, and arrest Subcurate Cedra Keepfaith.", opad);
-			addStandardMarketDesc("Go to " + tartessus.getOnOrAt(), tartessus, info, opad);
+			addStandardMarketDesc("Go to ", tartessus, info, opad);
 		}
 		else if (currentStage == Stage.DELIVER_KEEPFAITH) {
 			info.addPara("Deliver Cedra Keepfaith to the Knights of Ludd on Hesperus to face their justice.", opad);
-			addStandardMarketDesc("Go to " + hesperus.getOnOrAt(), hesperus, info, opad);
+			addStandardMarketDesc("Go to ", hesperus, info, opad);
 		}
 		else if (currentStage == Stage.GO_TO_HESPERUS) {
 			if(Global.getSector().getMemoryWithoutUpdate().contains("$bffi_keepfaithEscapedTartessus")){
 				info.addPara("Report back to Excubitor Orbis Gideon Oak on Hesperus with news of Bornanew's quest.", opad);
-				addStandardMarketDesc("Go to " + hesperus.getOnOrAt(), hesperus, info, opad);
+				addStandardMarketDesc("Go to ", hesperus, info, opad);
 			}
 			else { //Global.getSector().getMemoryWithoutUpdate().contains("$bffi_returnBornanewBody"))
 				info.addPara("Return Jethro Bornanew's body to the Knights of Ludd on Hesperus so he may rest with his fellow Knights.", opad);
-				addStandardMarketDesc("Go to " + hesperus.getOnOrAt(), hesperus, info, opad);
+				addStandardMarketDesc("Go to ", hesperus, info, opad);
 			}
 		}
 		else if (currentStage == Stage.RETURN_TO_HESPERUS_EARLY) {
 			info.addPara("Report back to Excubitor Orbis Gideon Oak on Hesperus with news of Bornanew's quest.", opad);
-			addStandardMarketDesc("Go to " + hesperus.getOnOrAt(), hesperus, info, opad);
+			addStandardMarketDesc("Go to ", hesperus, info, opad);
 		}
-		
-		/*else if (currentStage == Stage.GO_TO_MAZALOT) {
-			info.addPara("A Pather, Sedge, claims that Jethro Bornanew travelled to Mazalot. Find him, or find where he has gone from there.", opad);
-			addStandardMarketDesc("Go to " + mazalot.getOnOrAt(), mazalot, info, opad);
-		}
-		else if (currentStage == Stage.CONTACT_VIRENS) {
-			info.addPara("Nile Virens runs the Luddic Path on Mazalot. If anyone knows where Bornanew is, it would be him or his organization. He might be persuaded to help by force or diplomacy.", opad);
-			addStandardMarketDesc("Contact Nile Virens " + mazalot.getOnOrAt(), mazalot, info, opad);
-			info.addImage(nile_virens.getPortraitSprite(), width, 128, opad);
-			info.addImage(nile_virens.getFaction().getCrest(), width, 128, opad);
-		}
-		else if (currentStage == Stage.CONTACT_BORNANEW) {
-			info.addPara("Nile Virens has provided you with the location of Jethro Bornanew, or so he claims. This consists of coordinates for a location on the surface of Mazalot, outside of a Luddic-majority settlement.", opad);
-			addStandardMarketDesc("Contact Jethro Bornanew " + mazalot.getOnOrAt(), mazalot, info, opad);
-			//info.addImage(bornanew.getPortraitSprite(), width, 128, opad);
-		}
-		else if (currentStage == Stage.RETURN_TO_GILEAD) {
-			info.addPara("Return with Jethro Bornanew to the office of Archcurate Jaspis.", opad);
-			addStandardMarketDesc("Go to " + gilead.getOnOrAt(), gilead, info, opad);
-		}
-		else if (currentStage == Stage.RETURN_TO_GILEAD2) {
-			info.addPara("Return to the office of Archcurate Jaspis with news of Jethro Bornanew's 'death'.", opad);
-			addStandardMarketDesc("Go to " + gilead.getOnOrAt(), gilead, info, opad);
-		}*/
-		
 	}
 
 	@Override
@@ -543,7 +483,7 @@ public class BornanewFilesFalseIdols extends HubMissionWithSearch {
 			return true;
 		}
 		else if (currentStage == Stage.GO_TO_HESPERUS) {
-			if(Global.getSector().getMemoryWithoutUpdate().contains("$global.bffi_keepfaithEscapedTartessus"))
+			if(Global.getSector().getMemoryWithoutUpdate().contains("$bffi_keepfaithEscapedTartessus"))
 			{
 				info.addPara("Report back to Excubitor Orbis Gideon Oak on Hesperus", tc, pad);
 			}

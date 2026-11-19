@@ -29,8 +29,11 @@ import com.fs.starfarer.api.impl.campaign.DModManager;
 import com.fs.starfarer.api.impl.campaign.fleets.DefaultFleetInflater;
 import com.fs.starfarer.api.impl.campaign.fleets.FleetFactoryV3;
 import com.fs.starfarer.api.impl.campaign.fleets.FleetParamsV3;
+import com.fs.starfarer.api.impl.campaign.ids.Commodities;
+import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.FleetTypes;
 import com.fs.starfarer.api.impl.campaign.ids.Items;
+import com.fs.starfarer.api.impl.campaign.ids.Stats;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.impl.campaign.shared.SharedData;
 import com.fs.starfarer.api.loading.FighterWingSpecAPI;
@@ -45,8 +48,16 @@ import com.fs.starfarer.api.util.WeightedRandomPicker;
 
 public class BaseSubmarketPlugin implements SubmarketPlugin {
 
+	public static String MARKET_TARIFF_MULT = "market_tariff_mult";
+	public static float GLOBAL_TARIFF_MULT = 1f;
+	
+	public static float getMarketTariffMult(MarketAPI market) {
+		if (market == null) return GLOBAL_TARIFF_MULT;
+		return market.getStats().getDynamic().getValue(MARKET_TARIFF_MULT) * GLOBAL_TARIFF_MULT;
+	}
+	
 	//public static float TRADE_IMPACT_DAYS = 30f;
-	public static float TRADE_IMPACT_DAYS = 120f;
+	public static float TRADE_IMPACT_DAYS = 180f;
 	
 	public static class ShipSalesData {
 		private String variantId;
@@ -183,6 +194,10 @@ public class BaseSubmarketPlugin implements SubmarketPlugin {
 		return 1f;
 	}
 	
+	public float getTradeSellRemoveMult() {
+		return 0.5f;
+	}
+	
 	public void reportPlayerMarketTransaction(PlayerMarketTransaction transaction) {
 		if (!isParticipatesInEconomy()) return;
 		
@@ -207,6 +222,22 @@ public class BaseSubmarketPlugin implements SubmarketPlugin {
 				} else if (mode == PlayerEconomyImpactMode.PLAYER_BUY_ONLY || mode == PlayerEconomyImpactMode.NONE) {
 					com.addTradeModMinus("sell_" + Misc.genUID(), qty, TRADE_IMPACT_DAYS);
 				}
+				
+				float currQty = com.getCombinedTradeModQuantity();
+				float origQty = Math.max(0f, currQty - qty);
+				int origMod = (int) com.getModValueForQuantity(origQty);
+				int currMod = (int) com.getModValueForQuantity(Math.min(origQty + com.getDeficitQuantity(), currQty));
+				
+				int modDiff = currMod - origMod;
+				float remove = stack.getSize() * getTradeSellRemoveMult();
+				if (modDiff > 0) {
+					float modVal = com.getQuantityForModValue(modDiff);
+					remove = modVal + Math.max(0f, (stack.getSize() - modVal) * getTradeSellRemoveMult());
+				}
+				if (remove > 0) {
+					getCargo().removeCommodity(com.getId(), remove);
+				}
+				
 			}
 		}
 		for (CargoStackAPI stack : transaction.getBought().getStacksCopy()) {
@@ -330,6 +361,7 @@ public class BaseSubmarketPlugin implements SubmarketPlugin {
 				if (spec.getTier() > maxTier) continue;
 				if (spec.getAIHints().contains(AIHints.SYSTEM)) continue;
 				if (spec.hasTag(Tags.WEAPON_NO_SELL)) continue;
+				if (isBlackMarket() && spec.hasTag(Tags.NO_SELL_BLACK_MARKET)) continue;
 				
 				float p = DefaultFleetInflater.getTierProbability(spec.getTier(), quality);
 				p = 1f; // 
@@ -357,6 +389,7 @@ public class BaseSubmarketPlugin implements SubmarketPlugin {
 		}
 		
 		int num = min + itemGenRandom.nextInt(max - min + 1);
+		num = getModifiedNum(num, true, "ext_weaponForSaleFraction");
 		
 		if (withCategories) {
 			if (num > 0 && !pd.isEmpty()) {
@@ -387,6 +420,28 @@ public class BaseSubmarketPlugin implements SubmarketPlugin {
 		}
 	}
 	
+	protected int getModifiedNum(int num, boolean sqrt, String keepFractonSettingsId) {
+		float keepFraction = Misc.isExtended() ? Global.getSettings().getFloat(keepFractonSettingsId) : 1f;
+		if (keepFraction >= 1f) return num;
+		if (sqrt) keepFraction = (float) Math.sqrt(keepFraction);
+		if (keepFraction <= 0f) return 0;
+		
+		if (keepFraction < 1f) {
+			float plusMinus = Math.max(1f, num * keepFraction * 0.25f);
+			float modified = (num * keepFraction) + itemGenRandom.nextFloat() * plusMinus * 2f - plusMinus;
+			if (modified < 1f) {
+				if (itemGenRandom.nextFloat() < modified) {
+					modified = 1f;
+				} else {
+					modified = 0f;
+				}
+			}
+			//num = (int) Math.round(modified);
+			num = (int) modified;
+		}
+		return num;
+	}
+	
 	protected void pickAndAddWeapons(WeightedRandomPicker<WeaponSpecAPI> picker) {
 		WeaponSpecAPI spec = picker.pick();
 		if (spec == null) return;
@@ -407,7 +462,11 @@ public class BaseSubmarketPlugin implements SubmarketPlugin {
 		}
 		count = count + itemGenRandom.nextInt(count + 2) - itemGenRandom.nextInt(count + 1);
 		if (count < 1) count = 1;
-		cargo.addWeapons(spec.getWeaponId(), count);
+		
+		count = getModifiedNum(count, true, "ext_weaponForSaleFraction");
+		if (count > 0) {
+			cargo.addWeapons(spec.getWeaponId(), count);
+		}
 	}
 	
 	
@@ -415,6 +474,8 @@ public class BaseSubmarketPlugin implements SubmarketPlugin {
 		if (factionId == null) factionId = market.getFactionId();
 		
 		int num = min + itemGenRandom.nextInt(max - min + 1);
+		num = getModifiedNum(num, true, "ext_fighterForSaleFraction");
+		
 		float quality = Misc.getShipQuality(market, factionId);
 		
 		FactionAPI faction = Global.getSector().getFaction(factionId);
@@ -449,8 +510,10 @@ public class BaseSubmarketPlugin implements SubmarketPlugin {
 			}
 			
 			count = count + itemGenRandom.nextInt(count + 1) - count/2;
-			
-			cargo.addItems(CargoItemType.FIGHTER_CHIP, spec.getId(), count);
+			count = getModifiedNum(count, true, "ext_fighterForSaleFraction");
+			if (count > 0) {
+				cargo.addItems(CargoItemType.FIGHTER_CHIP, spec.getId(), count);
+			}
 		}
 	}
 	protected void pruneWeapons(float keepFraction) {
@@ -484,6 +547,22 @@ public class BaseSubmarketPlugin implements SubmarketPlugin {
 		
 	}
 	public void addShips(String factionId, 
+			float combat,
+			float freighter,
+			float tanker,
+			float transport, 
+			float liner, 
+			float utility,
+			Float qualityOverride,
+			float qualityMod,
+			ShipPickMode modeOverride,
+			FactionDoctrineAPI doctrineOverride,
+			int maxShipSize) {
+		addShips(factionId, combat, freighter, tanker, transport, liner, utility, 
+				qualityOverride, qualityMod, modeOverride, doctrineOverride, 0, maxShipSize);
+	}
+	
+	public void addShips(String factionId, 
 						float combat,
 						float freighter,
 						float tanker,
@@ -494,6 +573,7 @@ public class BaseSubmarketPlugin implements SubmarketPlugin {
 						float qualityMod,
 						ShipPickMode modeOverride,
 						FactionDoctrineAPI doctrineOverride,
+						int minShipSize,
 						int maxShipSize) {
 		FleetParamsV3 params = new FleetParamsV3(
 				market,
@@ -509,8 +589,14 @@ public class BaseSubmarketPlugin implements SubmarketPlugin {
 				utility, // utilityPts
 				0f // qualityMod
 				);
+		params.minShipSize = minShipSize;
 		params.maxShipSize = maxShipSize;
 		params.random = new Random(itemGenRandom.nextLong());
+		
+		if (Misc.isExtended()) {
+			qualityMod += Global.getSettings().getFloat("ext_shipForSaleQualityMod");
+		}
+		
 		params.qualityOverride = Misc.getShipQuality(market, factionId) + qualityMod;
 		if (qualityOverride != null) {
 			params.qualityOverride = qualityOverride + qualityMod;
@@ -534,6 +620,7 @@ public class BaseSubmarketPlugin implements SubmarketPlugin {
 			//float p = 0.5f;
 			//p = 1f;
 			
+			float p = Misc.isExtended() ? Global.getSettings().getFloat("ext_shipForSaleFraction") : 1f;
 			WeightedRandomPicker<FleetMemberAPI> picker = new WeightedRandomPicker<>(itemGenRandom);
 			FactionAPI faction = Global.getSector().getFaction(factionId);
 			for (FleetMemberAPI member : fleet.getFleetData().getMembersListCopy()) {
@@ -545,6 +632,7 @@ public class BaseSubmarketPlugin implements SubmarketPlugin {
 					}
 				}
 				if (itemGenRandom.nextFloat() > f * 0.5f) continue;
+				if (itemGenRandom.nextFloat() > p) continue;
 				if (member.getHullSpec().hasTag(Tags.NO_SELL)) continue;
 				if (!isMilitaryMarket() && member.getHullSpec().hasTag(Tags.MILITARY_MARKET_ONLY)) continue;
 				
@@ -613,6 +701,8 @@ public class BaseSubmarketPlugin implements SubmarketPlugin {
 	}
 	protected void addHullMods(int maxTier, int num, String factionId) {
 		//float p = Global.getSettings().getFloat("sellHullmodProb");
+		
+		num = getModifiedNum(num, false, "ext_hullmodForSaleFraction");
 		
 		CargoAPI cargo = getCargo();
 		for (CargoStackAPI stack : cargo.getStacksCopy()) {
@@ -817,6 +907,56 @@ public class BaseSubmarketPlugin implements SubmarketPlugin {
 		return false;
 	}
 	
+	public static float getCommodityAvailabilityMult(MarketAPI market, SubmarketAPI submarket, String cid) {
+		
+//		if (cid.equals("supplies") && market.isPlayerOwned()) {
+//			System.out.println("fwewfwefwefwe");
+//		}
+		
+		if (Misc.isExtended()) {
+			String modId = "ext_" + cid + "ForSaleFraction";
+			
+			float mult = 1f;
+			if (submarket != null && submarket.getPlugin() instanceof LocalResourcesSubmarketPlugin) {
+				mult *= Global.getSettings().getFloat("ext_localResourcesStockpileAndRateMult");
+			}
+			
+			String modId3 = "ext_" + cid + "ForSaleMilitaryMult";
+			if (Global.getSettings().hasKey(modId3) && submarket != null && submarket.getPlugin().isMilitaryMarket()) {
+				mult *= Global.getSettings().optFloat(modId3, 1f);
+			}
+			
+			if (market.isPlayerOwned()) {
+				String modId2 = "ext_" + cid + "ForSaleFractionPlayerColony";
+				if (Global.getSettings().hasKey(modId2)) {
+					return Global.getSettings().optFloat(modId2, 1f) * mult;
+				}
+			} else if (market.isFreePort() || 
+					(market.getFaction() != null && market.getFaction().getCustomBoolean(Factions.CUSTOM_ALLOWS_TRANSPONDER_OFF_TRADE))) {
+				String modId2 = "ext_" + cid + "ForSaleFractionFreePort";
+				if (Global.getSettings().hasKey(modId2)) {
+					return Global.getSettings().optFloat(modId2, 1f) * mult;
+				}
+			}
+			
+			if (submarket != null) {
+				CommodityOnMarketAPI com = market.getCommodityData(cid);
+				if (com.isPersonnel()) {
+					float rel = submarket.getFaction().getRelToPlayer().getRel();
+					if (rel < 0) {
+						mult *= 1f + (1f - Global.getSettings().getFloat("ext_personnelForSaleMinMultBadRep")) * rel;
+					} else {
+						mult *= 1f + (Global.getSettings().getFloat("ext_personnelForSaleMaxMultGoodRep") - 1f) * rel;
+					}
+					
+				}
+			}
+			
+			return Global.getSettings().optFloat(modId, 1f) * mult;
+		}
+		return 1f;
+	}
+	
 	public void addAndRemoveStockpiledResources(CommodityOnMarketAPI com, float amount,
 												boolean withShortageCountering,
 												boolean withDecreaseToLimit,
@@ -852,14 +992,16 @@ public class BaseSubmarketPlugin implements SubmarketPlugin {
 			return;
 		}
 		
+		float mult = getCommodityAvailabilityMult(market, submarket, com.getId());
+		//days *= mult;
+		
 		if (!shouldHaveCommodity(com)) {
 			if (withDecreaseToLimit) {
-				//float days = Global.getSector().getClock().convertToDays(amount);
-				float limit = getStockpileLimit(com);
+				float limit = getStockpileLimit(com) * mult;
 				float curr = cargo.getCommodityQuantity(com.getId());
 				if (curr > limit && withDecreaseToLimit) {
 					float removeRate = (curr - limit) * 2f / 30f;
-					float removeAmount = removeRate * days;
+					float removeAmount = removeRate * days * mult;
 					
 					if (curr - removeAmount < limit) {
 						removeAmount = curr - limit;
@@ -870,6 +1012,10 @@ public class BaseSubmarketPlugin implements SubmarketPlugin {
 					
 					if (removeAmount > 0) {
 						cargo.removeCommodity(com.getId(), removeAmount);
+						if (Commodities.SUPPLIES.equals(com.getId())) {
+							float partsFraction = getPartsGeneratedAsFractionOfSupplies();
+							cargo.removeCommodity(Commodities.PARTS, Math.max(1f, removeAmount * partsFraction));
+						}
 					}
 				}
 			}
@@ -877,8 +1023,70 @@ public class BaseSubmarketPlugin implements SubmarketPlugin {
 		}
 
 		// add stockpile, up to limit
-		float limit = getStockpileLimit(com);
+		float limit = getStockpileLimit(com) * mult;
 		float curr = cargo.getCommodityQuantity(com.getId());
+		
+//		if (this instanceof LocalResourcesSubmarketPlugin) {
+//			cargo.removeCommodity(com.getId(), cargo.getCommodityQuantity(com.getId()));
+//			cargo.addCommodity(com.getId(), limit);
+//			return;
+//		}
+		
+//		if (com.getId().equals(Commodities.SUPPLIES) && market.getId().equals("chicomoztoc")) {
+//			System.out.println("efkjwefew");
+//		}
+//		if (com.getId().equals(Commodities.SUPPLIES) && market.isPlayerOwned() && this instanceof LocalResourcesSubmarketPlugin) {
+//			System.out.println("efkjwefew");
+//		}
+		
+		// deal with Domain-grade Parts
+		if (Commodities.SUPPLIES.equals(com.getId())) {
+//			if (com.getMarket().isPlayerOwned() && this instanceof LocalResourcesSubmarketPlugin) {
+//				System.out.println("wefwefew");
+//			}
+			
+//			if (com.getMarket().isPlayerOwned() && this instanceof LocalResourcesSubmarketPlugin && 
+//					com.getMarket().getName().equals("Ghant")) {
+//				System.out.println("wefwefew");
+//			}			
+			
+			float partsFraction = getPartsGeneratedAsFractionOfSupplies();
+			if (partsFraction > 0) {
+				float partsLimit = limit * partsFraction;
+				float currParts = cargo.getCommodityQuantity(Commodities.PARTS);
+				
+				if (currParts < partsLimit && withCargoUpdate) {
+					float addRate = limit / 30f * getStockpilingAddRateMult(com);
+					float addAmount = addRate * days * partsFraction;
+					if (currParts + addAmount > partsLimit) {
+						addAmount = partsLimit - currParts;
+					}
+					if (addAmount > 0) {
+						float q = cargo.getCommodityQuantity(Commodities.PARTS) + addAmount;
+						if (q < 1) {
+							addAmount = 1f; // add at least 1 unit or it won't do anything
+						}
+						cargo.addCommodity(Commodities.PARTS, addAmount);
+					}
+				}
+				if (currParts > partsLimit && withDecreaseToLimit) {
+					float removeRate = (currParts - partsLimit) * 2f / 30f;
+					float removeAmount = removeRate * days * mult;
+						
+					if (currParts - removeAmount < partsLimit) {
+						removeAmount = currParts - partsLimit;
+					}
+					if (removeAmount > 0 && currParts <= 1) {
+						removeAmount = 1f;
+					}
+					if (removeAmount > 0) {
+						cargo.removeCommodity(Commodities.PARTS, removeAmount);
+					}
+				}
+			}
+		}
+		
+		
 		
 		if (curr < limit && withCargoUpdate) {
 			if (limit <= 0) return;
@@ -895,6 +1103,12 @@ public class BaseSubmarketPlugin implements SubmarketPlugin {
 				return;
 			}
 			
+//			if (Commodities.SUPPLIES.equals(com.getId())) {
+//				if (com.getMarket().isPlayerOwned() && this instanceof LocalResourcesSubmarketPlugin) {
+//					System.out.println("wefwefew123");
+//				}
+//			}
+			
 			float addAmount = addRate * days;
 				
 			
@@ -905,53 +1119,27 @@ public class BaseSubmarketPlugin implements SubmarketPlugin {
 			if (addAmount > 0) {
 				float q = cargo.getCommodityQuantity(com.getId()) + addAmount;
 				if (q < 1) {
-					addAmount = 1f; // add at least 1 unit or it won't do anything
+					if (Misc.isExtended() && com.isPersonnel()) {
+						if (itemGenRandom.nextFloat() < q) {
+							addAmount = 1f;
+						} else {
+							addAmount = 0f;
+						}
+					} else {
+						addAmount = 1f; // add at least 1 unit or it won't do anything
+					}
 				}
 				
 				cargo.addCommodity(com.getId(), addAmount);
-	
-//				if (market.isPlayerOwned()) {
-//					MonthlyReport report = SharedData.getData().getCurrentReport();
-//					FDNode node = report.getStockpilingNode(market);
-//					
-//					CargoAPI tooltipCargo = (CargoAPI) node.custom2;
-//					float addToTooltipCargo = addAmount;
-//					q = tooltipCargo.getCommodityQuantity(com.getId()) + addToTooltipCargo;
-//					if (q < 1) {
-//						addToTooltipCargo = 1f; // add at least 1 unit or it won't do anything
-//					}
-//					tooltipCargo.addCommodity(com.getId(), addToTooltipCargo);
-//					
-//					float unitPrice = (int) getStockpilingUnitPrice(com);
-//					//node.upkeep += unitPrice * addAmount;
-//					
-//					FDNode comNode = report.getNode(node, com.getId());
-//						
-//					CommoditySpecAPI spec = com.getCommodity();
-//					comNode.icon = spec.getIconName();
-//					comNode.upkeep += unitPrice * addAmount;
-//					comNode.custom = com;
-//					
-//					if (comNode.custom2 == null) {
-//						comNode.custom2 = 0f;
-//					}
-//					comNode.custom2 = (Float)comNode.custom2 + addAmount;
-//					
-//					int qty = (int) Math.max(1, (Float) comNode.custom2); 
-//					comNode.name = spec.getName() + " " + Strings.X + Misc.getWithDGS(qty);
-//					comNode.tooltipCreator = report.getMonthlyReportTooltip();
-//					
-//					// use price market buys at, i.e. without a markup
-//				}
 			}
 			
 			return;
 		}
 		
+		//withDecreaseToLimit = true;
 		if (curr > limit && withDecreaseToLimit) {
 			float removeRate = (curr - limit) * 2f / 30f;
-			float removeAmount = removeRate * days;
-				
+			float removeAmount = removeRate * days * mult;
 			
 			if (curr - removeAmount < limit) {
 				removeAmount = curr - limit;
@@ -960,11 +1148,33 @@ public class BaseSubmarketPlugin implements SubmarketPlugin {
 				removeAmount = 1f;
 			}
 			
+//			if (true) {
+//				removeAmount = curr - limit;
+//			}
+			
 			if (removeAmount > 0) {
 				cargo.removeCommodity(com.getId(), removeAmount);
 			}
 			return;
 		}
+	}
+
+	
+	protected float getPartsGeneratedAsFractionOfSupplies() {
+		if (!Misc.usePartsBasedDModRepairs()) return 0f;
+		
+		float quality = market.getStats().getDynamic().getMod(Stats.PRODUCTION_QUALITY_MOD).computeEffective(0f);
+		quality += 0.3f;
+		float prod = 0f;
+		CommodityOnMarketAPI com = market.getCommodityData(Commodities.SUPPLIES);
+		if (com != null) prod = com.getMaxSupply();
+		
+		float mult = Misc.isExtended() ? Global.getSettings().getFloat("ext_partsForSaleFraction") : 1f;
+		
+		float fBase = Global.getSettings().getFloat("partsForSaleBaseSuppliesFraction");
+		float fProd = Global.getSettings().getFloat("partsForSaleBaseProductionFraction");
+		
+		return (fBase + quality * fProd * Math.min(1.5f, prod/10f)) * mult;
 	}
 	
 	public String getTariffTextOverride() {

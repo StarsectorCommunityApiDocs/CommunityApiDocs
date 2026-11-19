@@ -20,6 +20,7 @@ import com.fs.starfarer.api.impl.campaign.CoreReputationPlugin.RepRewards;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.FleetTypes;
 import com.fs.starfarer.api.impl.campaign.ids.Ranks;
+import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.impl.campaign.missions.DelayedFleetEncounter;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
@@ -225,8 +226,8 @@ public class GADeliverVIP extends GABaseMission {
 		if (variation == Variation.BASIC) {
 			target = findOrCreatePerson(faction.getId(), destination, true, Ranks.CITIZEN, 
 							Ranks.POST_ADMINISTRATOR, Ranks.POST_BASE_COMMANDER, Ranks.POST_STATION_COMMANDER,
-							Ranks.POST_OUTPOST_COMMANDER, Ranks.POST_PORTMASTER, Ranks.POST_FACTION_LEADER
-							);
+							Ranks.POST_OUTPOST_COMMANDER, Ranks.POST_PORTMASTER );
+			//Ranks.POST_FACTION_LEADER removed
 //			target.addTag(Tags.CONTACT_TRADE);
 //			setPersonIsPotentialContactOnSuccess(target);
 		} else if (variation == Variation.KANTA) {
@@ -235,7 +236,7 @@ public class GADeliverVIP extends GABaseMission {
 			if (pd != null) target = pd.getPerson();
 		}
 		if (target == null) return false;
-		
+		if (target.hasTag(Tags.NO_RANDOM_MISSIONS)) return false;	
 		
 		system = destination.getStarSystem();
 		

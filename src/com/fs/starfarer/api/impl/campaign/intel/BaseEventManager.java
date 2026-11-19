@@ -142,11 +142,17 @@ public abstract class BaseEventManager implements EveryFrameScript {
 //		}
 		
 		int count = getActiveCount();
-		
 		if (count < currMax) {
 			EveryFrameScript event = createEvent();
 			addActive(event);
 		}
+		
+	}
+	
+	public void addEvent() {
+		EveryFrameScript event = createEvent();
+		addActive(event);
+		
 	}
 	
 	public int getActiveCount() {

@@ -11,6 +11,13 @@ public class Tags {
 	 */
 	public static final String TAG_NO_AUTOFIT = "no_autofit";
 	public static final String TAG_AUTOMATED_NO_PENALTY = "no_auto_penalty";
+	
+	/**
+	 * Human NPC fleets need to have this on their automated ships to make the Automated Ships skill
+	 * work properly, otherwise the CR penalty only applies to the player fleet.
+	 * 
+	 */
+	public static final String TAG_AUTOMATED_PENALTY = "auto_penalty";
 	public static final String TAG_RETAIN_SMODS_ON_RECOVERY = "retain_smods_on_recovery";
 	//public static final String NO_RESTORATION = "no_restoration";
 	
@@ -39,6 +46,14 @@ public class Tags {
 	 */
 	public static final String NO_STANDARD_DATA = "no_standard_data";
 	
+	/**
+	 * Just for the tooltip description. 
+	 */
+	public static final String EXT_BLOCK_PHASE = "ext_block_phase";
+	
+	
+	public static final String ANTI_LUDDIC_ADMIN = "anti_luddic_admin";
+	
 	
 	/**
 	 * On hull specs and variants. Not required - just an extra way to signal the ship is automated.
@@ -48,7 +63,7 @@ public class Tags {
 	/**
 	 * Does not generate supplies/machinery/fuel/weapons/hullmods/etc - anything at all - when destroyed in battle.
 	 */
-	public static final String NO_BATTLE_SALVAGE= "no_battle_salvage";
+	public static final String NO_BATTLE_SALVAGE = "no_battle_salvage";
 	
 	/**
 	 * On ship hulls.
@@ -88,6 +103,8 @@ public class Tags {
 	public static final String HULL_UNRESTORABLE = "unrestorable";
 	public static final String VARIANT_UNRESTORABLE = "unrestorable";
 	
+	public static final String NO_CHANGING_SMODS = "no_changing_smods";
+	
 	
 	/**
 	 * Faster spawning for a not-a-real-ship just used to fire beams (and generate threat for the AI to respond to them).
@@ -110,6 +127,8 @@ public class Tags {
 	
 	public static final String MARKET_NO_OFFICER_SPAWN = "market_no_officer_spawn";
 	
+	public static final String PLANET_NO_COLONIZATION = "noColonization";
+	
 	
 	public static final String AUTOMATED_RECOVERABLE = "auto_rec";
 	
@@ -130,10 +149,13 @@ public class Tags {
 	public static final String NO_TOPOGRAPHY_SCANS = "no_topography_scans";
 	
 	public static final String PK_SYSTEM = "pk_system";
+	public static final String GADHO_ARRAY_SYSTEM = "gaDHO_array_system";
 	public static final String SYSTEM_CUT_OFF_FROM_HYPER = "system_cut_off_from_hyper";
 	public static final String SYSTEM_ABYSSAL = "system_abyssal";
 	
 	public static final String SYSTEM_CAN_SPAWN_THREAT = "system_can_spawn_threat";
+	public static final String SYSTEM_NOT_SUPPORT_FLEET_TARGET = "system_not_support_fleet_target";
+	
 	
 	public static final String THEME_HIDDEN = "theme_hidden";
 	
@@ -190,6 +212,7 @@ public class Tags {
 	public static final String SALVAGE_ENTITY_NO_REMOVE = "no_remove";
 	public static final String SALVAGE_ENTITY_NO_DEBRIS = "no_debris";
 	public static final String SALVAGE_ENTITY_NON_CUSTOM = "not_a_custom_entity";
+	public static final String SALVAGE_ENTITY_FULL_DROP_IN_EXT_MODE = "full_drop_in_ext_mode";
 	//public static final String SALVAGE_ENTITY_NO_SALVAGE = "no_salvage";
 	
 	public static final String WEAPON_REMNANTS = "remnant";
@@ -197,6 +220,11 @@ public class Tags {
 	
 	public static final String SHIP_CAN_NOT_SCUTTLE = "ship_can_not_scuttle";
 	public static final String SHIP_UNIQUE_SIGNATURE = "ship_unique_signature";
+	
+	/**
+	 * Ship hull, no derelict in post-battle debris fields.
+	 */
+	public static final String NO_DERELICT = "no_derelict";
 	
 	public static final String SHIP_RECOVERABLE = "ship_recoverable";
 	public static final String SHIP_LIMITED_TOOLTIP = "ship_limited_tooltip";
@@ -234,6 +262,8 @@ public class Tags {
 	public static final String HULLMOD_PEAK_TIME = "peak_time";
 	public static final String HULLMOD_NOT_PHASE = "notPhase";
 	public static final String HULLMOD_NOT_AUTO = "notAuto";
+	public static final String HULLMOD_DO_CAN_NOT_ADD = "DO_can_not_add";
+	public static final String HULLMOD_DO_CAN_NOT_REMOVE = "DO_can_not_remove";
 	
 	public static final String HULLMOD_NO_BUILD_IN = "no_build_in";
 	
@@ -312,6 +342,7 @@ public class Tags {
 	public static final String NO_DROP = "no_drop"; // general-purpose
 	public static final String NO_BP_DROP = "no_bp_drop"; // no blueprints dropped during raid
 	public static final String WEAPON_NO_SELL = "no_sell"; // not for sale at markets
+	public static final String NO_SELL_BLACK_MARKET = "no_sell_black_market"; // not for sale at markets
 	public static final String NO_SELL = "no_sell"; // not for sale at markets
 	
 	public static final String MISSION_ITEM = "mission_item";
@@ -442,6 +473,7 @@ public class Tags {
 	public static final String INTEL_BEACON = "Warning beacons";
 	public static final String INTEL_GATES = "Gates";
 	public static final String INTEL_SHRINES = "Luddic shrines";
+	public static final String INTEL_SEVEN_SONS = "Sons of Andrada";
 	public static final String INTEL_COLONIES = "Colony threats";
 	public static final String INTEL_COMM_SNIFFERS = "Comm sniffers";
 	
@@ -483,6 +515,8 @@ public class Tags {
 	
 	public static final String TEMPORARY_LOCATION = "temporary_location";
 	public static final String STAR_HIDDEN_ON_MAP = "star_hidden_on_map";
+	
+	public static final String STAR_HIDDEN_IN_PLANET_LIST = "star_hidden_in_planet_list";
 	
 	// MissileAutoloader
 	public static final String RELOAD_1PT = "reload_1pt";
@@ -527,7 +561,16 @@ public class Tags {
 	public static final String GENS_HANNAN = "gens_hannan";
 	public static final String GENS_KATO = "gens_kato";
 	
+	// Is a relatively close relative of Kanta
+	public static final String KANTA_FAMILY = "kanta_family"; 
 	
+	// Don't accept AI core turn-ins
+	public static final String DONT_TAKE_AI_CORES = "dont_take_ai_cores";
+	
+	// Don't use this character for random missions ie. Galatia transport, VIP transport
+	public static final String NO_RANDOM_MISSIONS = "no_random_missions";
+	
+	public static final String LG_BP = "LG_bp";
 }
 
 

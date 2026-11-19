@@ -35,6 +35,8 @@ import com.fs.starfarer.api.util.Misc;
  */
 public class ThreatCombatStrategyAI {
 	
+	public static int MAX_FABRICATORS = 2;
+	
 	public static float SND_BASE = 60f;
 	public static float SND_TIMER = 60f;
 	public static float SND_FRACTION = 0.5f;
@@ -57,6 +59,7 @@ public class ThreatCombatStrategyAI {
 	
 	protected float captureAllTimeRemaining; 
 	protected boolean gaveInitialOrders = false;
+	protected boolean everHadFabricatorDeployed = false;
 	
 	protected float untilSNDOnSkirmishUnits; 
 	
@@ -75,11 +78,6 @@ public class ThreatCombatStrategyAI {
 		
 		if (fleetManager.getGoal() == FleetGoal.ESCAPE || enemyFleetManager.getGoal() == FleetGoal.ESCAPE) {
 			abort = true;
-		} else {
-			if (fleetManager.getAdmiralAI() != null) {
-				taskManager.clearTasks();
-				fleetManager.getAdmiralAI().setNoOrders(true);
-			}
 		}
 		
 		mw = engine.getMapWidth();
@@ -113,6 +111,11 @@ public class ThreatCombatStrategyAI {
 	}
 	
 	protected void giveInitialOrders() {
+		if (fleetManager.getAdmiralAI() != null) {
+			taskManager.clearTasks();
+			fleetManager.getAdmiralAI().setNoOrders(true);
+		}
+		
 		captureAllTimeRemaining = 80f;
 		for (BattleObjectiveAPI curr : engine.getObjectives()) {
 			taskManager.createAssignment(CombatAssignmentType.CAPTURE, curr, false);
@@ -158,7 +161,8 @@ public class ThreatCombatStrategyAI {
 			float sign = 1f;
 			if (owner == 0) sign = -1;
 			Vector2f enemyCom = getEnemyCenterOfMass();
-			Vector2f fabricatorLoc = new Vector2f(0, 0 + mh * 0.33f * sign);
+			//Vector2f fabricatorLoc = new Vector2f(0, 0 + mh * 0.33f * sign);
+			Vector2f fabricatorLoc = new Vector2f(0, 0 + mh * 0.3f * sign);
 			Vector2f axis = Misc.getUnitVector(fabricatorLoc, enemyCom);
 			Vector2f perp = new Vector2f(axis.y, -axis.x);
 			float distToEnemyCom = Misc.getDistance(fabricatorLoc, enemyCom);
@@ -178,6 +182,7 @@ public class ThreatCombatStrategyAI {
 			
 			int fabricators = 0;
 			int hives = 0;
+			int combat = 0;
 			for (DeployedFleetMemberAPI member : fleetManager.getDeployedCopyDFM()) {
 				ShipAPI ship = member.getShip();
 				if (ship == null || ship.getAI() == null) continue;
@@ -187,6 +192,13 @@ public class ThreatCombatStrategyAI {
 				if (isHive(ship)) {
 					hives++;
 				}
+				if (isCombatUnit(ship)) {
+					combat++;
+				}
+			}
+			
+			if (fabricators > 0) {
+				everHadFabricatorDeployed = true;
 			}
 			
 			float defDist = distToEnemyCom - 2000f;
@@ -373,7 +385,21 @@ public class ThreatCombatStrategyAI {
 						escort(member, closest);
 					}
 				}
-				
+			}
+			
+			
+			if (everHadFabricatorDeployed && fabricators <= 0) {
+				for (DeployedFleetMemberAPI member : fleetManager.getDeployedCopyDFM()) {
+					ShipAPI ship = member.getShip();
+					if (ship == null || ship.getAI() == null) continue;
+					if (isCombatUnit(ship) || hives <= 0) {
+						if (ship.getAI() instanceof ShipAIPlugin) {
+							ship.getAIFlags().setFlag(AIFlags.DO_NOT_BACK_OFF, 2f);
+							ship.getAIFlags().setFlag(AIFlags.DO_NOT_VENT, 2f);
+							ship.getAIFlags().setFlag(AIFlags.IGNORES_ORDERS, 2f);
+						}
+					}
+				}
 			}
 
 			cleanUpEmptyAssignments();

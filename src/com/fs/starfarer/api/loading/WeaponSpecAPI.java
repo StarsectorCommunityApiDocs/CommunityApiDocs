@@ -140,4 +140,8 @@ public interface WeaponSpecAPI extends WithSourceMod {
 	float getFadePreviousFireSound();
 	void setFadePreviousFireSound(float fadePreviousFireSound);
 	void setDamageType(DamageType damageType);
+	String getEveryFrameClassName();
+	void setEveryFrameClassName(String everyFrameClassName);
+	String getFireSoundOne();
+	String getFireSoundTwo();
 }

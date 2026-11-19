@@ -4,6 +4,7 @@ import com.fs.starfarer.api.GameState;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.combat.ShipAPI;
 import com.fs.starfarer.api.combat.WeaponAPI;
+import com.fs.starfarer.api.impl.combat.dweller.DwellerShroud;
 
 public interface FragmentWeapon {
 	public int getNumFragmentsToFire();
@@ -15,6 +16,7 @@ public interface FragmentWeapon {
 		
 		if (playerShip) {
 			RoilingSwarmEffect swarm = RoilingSwarmEffect.getSwarmFor(ship);
+			if (swarm instanceof DwellerShroud) swarm = null;
 			if (swarm == null && ship.getFullTimeDeployed() > 0.1f) {
 				Global.getCombatEngine().maintainStatusForPlayerShip(w.getSpec(),
 						Global.getSettings().getSpriteName("ui", "icon_tactical_fragment_swarm"),

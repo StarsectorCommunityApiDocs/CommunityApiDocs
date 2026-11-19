@@ -50,4 +50,5 @@ public interface ButtonAPI extends UIComponentAPI {
 	boolean isSkipPlayingPressedSoundOnce();
 	Object getCustomData();
 	void setCustomData(Object customData);
+	void setShortcutNoHighlight(int key);
 }

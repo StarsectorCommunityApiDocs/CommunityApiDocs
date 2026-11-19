@@ -36,6 +36,23 @@ public abstract class PersonalFleetScript implements EveryFrameScript, FleetEven
 		Global.getSector().addScript(this);
 	}
 	
+	public static<T> T getScript(Class<T> scriptClass) {
+		for (EveryFrameScript curr : Global.getSector().getScripts()) {
+			if (scriptClass.isInstance(curr)) {
+				return (T)curr;
+			}
+		}
+		return null;
+	}
+	public static CampaignFleetAPI getFleet(Class<?> scriptClass) {
+		for (EveryFrameScript curr : Global.getSector().getScripts()) {
+			if (scriptClass.isInstance(curr)) {
+				return ((PersonalFleetScript)curr).getFleet();
+			}
+		}
+		return null;
+	}
+	
 	public PersonAPI getPerson() {
 		return People.getPerson(personId);
 	}
@@ -77,23 +94,27 @@ public abstract class PersonalFleetScript implements EveryFrameScript, FleetEven
 				}
 				
 				if (canSpawnFleetNow()) {
-					fleet = spawnFleet();
-					if (fleet != null) {
-						origFP = fleet.getFleetPoints();
-						MarketAPI source = getSourceMarket();
-						if (source != null) {
-							fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_SOURCE_MARKET, source.getId());
-						}
-						fleet.addEventListener(this);
-						if (defeatTrigger != null) {
-							Misc.addDefeatTrigger(fleet, defeatTrigger);
-						}
-					}
+					spawnFleetAndDoRelatedHousekeeping();
 				}
 				if (fleet == null) {
 					currDelay = minFailedSpawnRespawnDelayDays + 
 							   (maxFailedSpawnRespawnDelayDays - minFailedSpawnRespawnDelayDays) * random.nextFloat();
 				}
+			}
+		}
+	}
+	
+	public void spawnFleetAndDoRelatedHousekeeping() {
+		fleet = spawnFleet();
+		if (fleet != null) {
+			origFP = fleet.getFleetPoints();
+			MarketAPI source = getSourceMarket();
+			if (source != null) {
+				fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_SOURCE_MARKET, source.getId());
+			}
+			fleet.addEventListener(this);
+			if (defeatTrigger != null) {
+				Misc.addDefeatTrigger(fleet, defeatTrigger);
 			}
 		}
 	}
@@ -180,6 +201,10 @@ public abstract class PersonalFleetScript implements EveryFrameScript, FleetEven
 
 	public void setRandom(Random random) {
 		this.random = random;
+	}
+
+	public float getOrigFP() {
+		return origFP;
 	}
 	
 	

@@ -25,6 +25,10 @@ public class GalatianAcademyStipend implements EconomyTickListener, TooltipCreat
 	public void reportEconomyTick(int iterIndex) {
 		if (!Global.getSettings().getBoolean("enableStipend")) return;
 		
+//		Global.getSector().getListenerManager().removeListener(this);
+//		Global.getSector().getMemoryWithoutUpdate().unset("$playerReceivingGAStipend");
+		
+		
 		int lastIterInMonth = (int) Global.getSettings().getFloat("economyIterPerMonth") - 1;
 		if (iterIndex != lastIterInMonth) return;
 		

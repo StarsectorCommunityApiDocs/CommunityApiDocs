@@ -43,6 +43,7 @@ public class CBPirate extends BaseCustomBountyCreator {
 		if (difficulty >= 4 && mission.rollProbability(PROB_IN_SYSTEM_WITH_BASE)) {
 			mission.preferSystemHasBase(Factions.PIRATES);
 		}
+		if (difficulty <= 3) mission.preferSystemInInnerSector();
 		StarSystemAPI system = mission.pickSystem();
 		data.system = system;
 	

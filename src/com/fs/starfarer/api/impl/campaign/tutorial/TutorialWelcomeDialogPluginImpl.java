@@ -7,9 +7,9 @@ import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.InteractionDialogAPI;
 import com.fs.starfarer.api.campaign.InteractionDialogPlugin;
 import com.fs.starfarer.api.campaign.OptionPanelAPI;
+import com.fs.starfarer.api.campaign.PersistentUIDataAPI.AbilitySlotsAPI;
 import com.fs.starfarer.api.campaign.TextPanelAPI;
 import com.fs.starfarer.api.campaign.VisualPanelAPI;
-import com.fs.starfarer.api.campaign.PersistentUIDataAPI.AbilitySlotsAPI;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
 import com.fs.starfarer.api.combat.EngagementResultAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Abilities;
@@ -99,7 +99,8 @@ public class TutorialWelcomeDialogPluginImpl implements InteractionDialogPlugin 
 			AddRemoveCommodity.addAbilityGainText(ability.getId(), textPanel);
 			
 			textPanel.addParagraph("Make sure to take all of the supplies and any other valuable cargo, but feel free to leave the cheap and bulky metals behind.");
-			textPanel.addParagraph("To get your fleet moving, click on empty space in the direction you want to move.");
+			textPanel.addPara("To get your fleet moving, click on empty space in the direction you want to move.",
+					Misc.getHighlightColor(), "click on empty space");
 			
 			options.clearOptions();
 			options.addOption("Finish", OptionId.CONT2, null);

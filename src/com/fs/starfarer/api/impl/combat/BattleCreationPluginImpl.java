@@ -172,6 +172,9 @@ public class BattleCreationPluginImpl implements BattleCreationPlugin {
 			}
 		}
 		
+		width += context.extraMapWidth;
+		height += context.extraMapHeight;
+		
 		createMap(random);
 		
 		context.setInitialDeploymentBurnDuration(1.5f);

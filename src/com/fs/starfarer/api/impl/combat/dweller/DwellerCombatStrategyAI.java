@@ -11,6 +11,7 @@ import com.fs.starfarer.api.combat.CombatFleetManagerAPI.AssignmentInfo;
 import com.fs.starfarer.api.combat.CombatTaskManagerAPI;
 import com.fs.starfarer.api.combat.DeployedFleetMemberAPI;
 import com.fs.starfarer.api.combat.ShipAPI;
+import com.fs.starfarer.api.combat.ShipwideAIFlags.AIFlags;
 import com.fs.starfarer.api.fleet.FleetGoal;
 import com.fs.starfarer.api.impl.campaign.ids.HullMods;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
@@ -26,10 +27,6 @@ import com.fs.starfarer.api.util.IntervalUtil;
  *
  */
 public class DwellerCombatStrategyAI {
-	
-	public static float SND_BASE = 60f;
-	public static float SND_TIMER = 60f;
-	public static float SND_FRACTION = 0.5f;
 	
 	protected boolean playerSide;
 	protected CombatTaskManagerAPI taskManager;
@@ -64,11 +61,6 @@ public class DwellerCombatStrategyAI {
 		
 		if (fleetManager.getGoal() == FleetGoal.ESCAPE || enemyFleetManager.getGoal() == FleetGoal.ESCAPE) {
 			abort = true;
-		} else {
-			if (fleetManager.getAdmiralAI() != null) {
-				taskManager.clearTasks();
-				fleetManager.getAdmiralAI().setNoOrders(true);
-			}
 		}
 		
 		mw = engine.getMapWidth();
@@ -76,7 +68,10 @@ public class DwellerCombatStrategyAI {
 	}
 	
 	protected void giveInitialOrders() {
-				
+		if (fleetManager.getAdmiralAI() != null) {
+			taskManager.clearTasks();
+			fleetManager.getAdmiralAI().setNoOrders(true);
+		}	
 	}
 	
 	
@@ -111,11 +106,13 @@ public class DwellerCombatStrategyAI {
 				gaveInitialOrders = true;
 			}
 			
+			boolean hasMaw = false;
 			for (DeployedFleetMemberAPI member : fleetManager.getDeployedCopyDFM()) {
 				ShipAPI ship = member.getShip();
 				if (ship == null || ship.getAI() == null) continue;
 				
 				if (isMaw(ship)) {
+					hasMaw = true;
 					AssignmentInfo curr = taskManager.getAssignmentInfoForTarget(member);
 					if (curr == null) {
 						taskManager.createAssignment(CombatAssignmentType.DEFEND, member, false);
@@ -133,6 +130,16 @@ public class DwellerCombatStrategyAI {
 //						taskManager.createAssignment(CombatAssignmentType.HEAVY_ESCORT, member, false);
 //						taskManager.orderSearchAndDestroy(member, false);
 //					}
+				}
+			}
+			
+			if (!hasMaw) {
+				taskManager.orderSearchAndDestroy();
+				for (DeployedFleetMemberAPI member : fleetManager.getDeployedCopyDFM()) {
+					ShipAPI ship = member.getShip();
+					if (ship == null || ship.getAI() == null || ship.getAIFlags() == null) continue;
+					ship.getAIFlags().setFlag(AIFlags.DO_NOT_BACK_OFF, 2f);
+					ship.getAIFlags().setFlag(AIFlags.DO_NOT_BACK_OFF_EVEN_WHILE_VENTING, 2f);
 				}
 			}
 			

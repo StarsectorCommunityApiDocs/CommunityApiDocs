@@ -67,6 +67,7 @@ public class Entities {
 	public static final String WEAPONS_CACHE_SMALL_REMNANT = "weapons_cache_small_remnant";
 	
 	public static final String HIDDEN_CACHE = "hidden_cache";
+	public static final String ASTEROID_BASE = "asteroid_base";
 	public static final String ALPHA_SITE_WEAPONS_CACHE = "alpha_site_weapons_cache";
 	
 	

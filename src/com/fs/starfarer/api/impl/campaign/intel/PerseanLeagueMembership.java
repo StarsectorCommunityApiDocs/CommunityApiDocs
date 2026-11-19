@@ -1,8 +1,7 @@
 package com.fs.starfarer.api.impl.campaign.intel;
 
-import java.util.Set;
-
 import java.awt.Color;
+import java.util.Set;
 
 import org.lwjgl.input.Keyboard;
 
@@ -155,7 +154,7 @@ public class PerseanLeagueMembership extends BaseIntelPlugin implements EconomyT
 		setLeagueMember(false);
 		setLeftLeagueWhenGoodDeal(isGoodDeal());
 		//setPayingHouseHannan(false);
-		stopPayingHouseHannan(false, null);
+		stopPayingHouseHannan(false, false, null);
 		
 		Global.getSector().getMemoryWithoutUpdate().unset(KEY);
 		
@@ -451,12 +450,15 @@ public class PerseanLeagueMembership extends BaseIntelPlugin implements EconomyT
 	}
 	
 	
-	public static void stopPayingHouseHannan(boolean trustBroken, InteractionDialogAPI dialog) {
+	public static void stopPayingHouseHannan(boolean trustBroken, boolean noReynardRepLoss, InteractionDialogAPI dialog) {
 		if (isPayingHouseHannan()) {
 			TextPanelAPI text = null;
 			if (dialog != null) text = dialog.getTextPanel();
 			PersonAPI reynard = People.getPerson(People.REYNARD_HANNAN);
-			if (reynard != null) {
+			
+			// only make Reynard mad if it's the "trustBroken" case.
+			// other uses imply a level of politicking where he has to pretend to be fine with stopping payment. -dgb 
+			if (reynard != null && !noReynardRepLoss) {
 				Misc.adjustRep(reynard, -0.5f, text);
 				ContactIntel.removeContact(reynard, dialog);
 			}
@@ -474,7 +476,7 @@ public class PerseanLeagueMembership extends BaseIntelPlugin implements EconomyT
 		if (buttonId == BUTTON_END) {
 			endMembership(AgreementEndingType.ENDED, null);
 		} else if (buttonId == BUTTON_RENEGE_HANNAN) {
-			stopPayingHouseHannan(true, null);
+			stopPayingHouseHannan(true, false, null);
 		}
 		super.buttonPressConfirmed(buttonId, ui);
 	}

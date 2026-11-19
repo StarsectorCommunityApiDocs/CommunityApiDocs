@@ -20,6 +20,9 @@ import com.fs.starfarer.api.util.WeightedRandomPicker;
 
 public class OfficerLevelupPluginImpl implements OfficerLevelupPlugin {
 
+	public static int OFFICER_SKILL_CHOICES_BASE = Global.getSettings().getInt("officerSkillChoicesBase");
+	public static int OFFICER_SKILL_CHOICES_MENTORED = Global.getSettings().getInt("officerSkillChoicesMentored");
+	
 	//public static float XP_MULT = 5f;
 	public static float XP_MULT = Global.getSettings().getFloat("officerXPRequiredMult");
 	
@@ -133,9 +136,9 @@ public class OfficerLevelupPluginImpl implements OfficerLevelupPlugin {
 			}
 		}
 		
-		int max = 4;
+		int max = OFFICER_SKILL_CHOICES_BASE;
 		if (Misc.isMentored(person)) {
-			max = 6;
+			max = OFFICER_SKILL_CHOICES_MENTORED;
 		}
 		List<String> result = new ArrayList<String>();
 		
@@ -196,9 +199,9 @@ public class OfficerLevelupPluginImpl implements OfficerLevelupPlugin {
 			}
 		}
 		
-		int max = 4;
+		int max = OFFICER_SKILL_CHOICES_BASE;
 		if (Misc.isMentored(person)) {
-			max = 6;
+			max = OFFICER_SKILL_CHOICES_MENTORED;
 		}
 		if (person.getMemoryWithoutUpdate().contains(MemFlags.OFFICER_SKILL_PICKS_PER_LEVEL)) {
 			max = person.getMemoryWithoutUpdate().getInt(MemFlags.OFFICER_SKILL_PICKS_PER_LEVEL);

@@ -1,8 +1,9 @@
 package com.fs.starfarer.api.impl.campaign.missions.askonia;
 
-import java.awt.Color;
 import java.util.List;
 import java.util.Map;
+
+import java.awt.Color;
 
 import org.lwjgl.util.vector.Vector2f;
 
@@ -11,7 +12,6 @@ import com.fs.starfarer.api.campaign.BattleAPI;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.CargoAPI;
 import com.fs.starfarer.api.campaign.CargoAPI.CargoItemType;
-import com.fs.starfarer.api.campaign.ai.ModularFleetAIAPI;
 import com.fs.starfarer.api.campaign.CargoStackAPI;
 import com.fs.starfarer.api.campaign.FleetAssignment;
 import com.fs.starfarer.api.campaign.InteractionDialogAPI;
@@ -31,18 +31,14 @@ import com.fs.starfarer.api.impl.campaign.ids.FleetTypes;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.ids.People;
 import com.fs.starfarer.api.impl.campaign.ids.Ranks;
-import com.fs.starfarer.api.impl.campaign.missions.academy.GATransverseJump.Stage;
 import com.fs.starfarer.api.impl.campaign.missions.hub.HubMissionWithSearch;
-import com.fs.starfarer.api.impl.campaign.missions.hub.HubMissionWithTriggers.FleetQuality;
-import com.fs.starfarer.api.impl.campaign.missions.hub.HubMissionWithTriggers.FleetSize;
-import com.fs.starfarer.api.impl.campaign.missions.hub.HubMissionWithTriggers.OfficerNum;
-import com.fs.starfarer.api.impl.campaign.missions.hub.HubMissionWithTriggers.OfficerQuality;
 import com.fs.starfarer.api.impl.campaign.procgen.StarSystemGenerator;
 import com.fs.starfarer.api.impl.campaign.procgen.themes.SalvageSpecialAssigner;
 import com.fs.starfarer.api.impl.campaign.rulecmd.AddRemoveCommodity;
 import com.fs.starfarer.api.impl.campaign.rulecmd.AddShip;
 import com.fs.starfarer.api.impl.campaign.terrain.DebrisFieldTerrainPlugin.DebrisFieldParams;
 import com.fs.starfarer.api.impl.campaign.terrain.DebrisFieldTerrainPlugin.DebrisFieldSource;
+import com.fs.starfarer.api.loading.VariantSource;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.api.util.Misc.Token;
@@ -343,9 +339,19 @@ public class TheUsurpers extends HubMissionWithSearch {
 			AddRemoveCommodity.addStackGainText(stack, dialog.getTextPanel());
 			return true;
 		}
-		else if ("giveExecutor".equals(action)){
+		else if ("giveLesserLGCraft".equals(action)) {
+			String variantId = "falcon_LG_Hull";
+			ShipVariantAPI variant = Global.getSettings().getVariant(variantId).clone();
+			variant.setSource(VariantSource.REFIT);
+			FleetMemberAPI member = Global.getFactory().createFleetMember(FleetMemberType.SHIP, variant);
+			Global.getSector().getPlayerFleet().getFleetData().addFleetMember(member);
+			AddShip.addShipGainText(member, dialog.getTextPanel()); 
+			return true;
+		}
+		else if ("giveExecutor".equals(action)) {
 		    String variantId = "executor_Hull";
 			ShipVariantAPI variant = Global.getSettings().getVariant(variantId).clone();
+			variant.setSource(VariantSource.REFIT);
 			FleetMemberAPI member = Global.getFactory().createFleetMember(FleetMemberType.SHIP, variant);
 			Global.getSector().getPlayerFleet().getFleetData().addFleetMember(member);
 			AddShip.addShipGainText(member, dialog.getTextPanel()); 
@@ -418,7 +424,11 @@ public class TheUsurpers extends HubMissionWithSearch {
 				}
 			}
 			return true;
-			
+		}
+		else if ("saveTheDate".equals(action)) {
+			Global.getSector().getMemoryWithoutUpdate().set("$sd7s_cydoniaDate", Global.getSector().getClock().getDateString());  //getShortDate());
+			Global.getSector().getMemoryWithoutUpdate().set("$sd7s_cydoniaDate2", Global.getSector().getClock().getShortDate());
+			return true;
 		}
 		
 		

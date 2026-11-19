@@ -1,9 +1,10 @@
 package com.fs.starfarer.api.impl.campaign.rulecmd;
 
-import java.awt.Color;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+
+import java.awt.Color;
 
 import org.lwjgl.util.vector.Vector2f;
 
@@ -178,6 +179,8 @@ public class KantaCMD extends BaseCommandPlugin {
 			e.triggerFleetMakeImportantPermanent(null);
 			e.triggerFleetMakeFaster(true, 0, true);
 			e.triggerOrderFleetInterceptPlayer();
+			e.triggerMakeFleetIgnoredByOtherFleets();
+			e.triggerMakeFleetIgnoreOtherFleetsExceptPlayer();
 			e.triggerOrderFleetEBurn(1f);
 			e.triggerSetFleetGenericHailPermanent("KantaFavorCourierHail");
 			e.endCreate();

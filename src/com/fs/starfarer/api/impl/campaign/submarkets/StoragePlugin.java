@@ -90,6 +90,10 @@ public class StoragePlugin extends BaseSubmarketPlugin {
 	public void setPlayerPaidToUnlock(boolean playerPaidToUnlock) {
 		this.playerPaidToUnlock = playerPaidToUnlock;
 	}
+	
+	public boolean isPlayerPaidToUnlock() {
+		return playerPaidToUnlock;
+	}
 
 	public OnClickAction getOnClickAction(CoreUIAPI ui) {
 		if (playerPaidToUnlock) return OnClickAction.OPEN_SUBMARKET;

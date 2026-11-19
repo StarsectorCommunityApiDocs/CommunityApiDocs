@@ -1,8 +1,9 @@
 package com.fs.starfarer.api.impl.campaign.missions;
 
-import java.awt.Color;
 import java.util.List;
 import java.util.Map;
+
+import java.awt.Color;
 
 import org.lwjgl.util.vector.Vector2f;
 
@@ -42,8 +43,8 @@ public class SecurityCodes extends HubMissionWithBarEvent implements ColonyPlaye
 	public static float PROB_COMPLICATIONS = 0.5f;
 	public static float PROB_PATROL_ENCOUNTER_AFTER = 0.5f;
 	
-	public static float MIN_DAYS = 30f;
-	public static float MAX_DAYS = 90f;
+	public static float MIN_DAYS = 120f;
+	public static float MAX_DAYS = 180f;
 	
 	public static float BASE_PRICE = 30000;
 	
@@ -188,7 +189,7 @@ public class SecurityCodes extends HubMissionWithBarEvent implements ColonyPlaye
 	
 	
 	protected void checkCodesUsed(MarketAPI market) {
-		if (market.getFaction() == faction) {
+		if (market != null && market.getFaction() == faction) {
 			if (!isEnded() || isEnding()) {
 				if (rollProbability(PROB_PATROL_ENCOUNTER_AFTER)) {
 					DelayedFleetEncounter e = new DelayedFleetEncounter(genRandom, getMissionId());
@@ -228,7 +229,7 @@ public class SecurityCodes extends HubMissionWithBarEvent implements ColonyPlaye
 	}
 
 	public void modifyMarineLossesStatPreRaid(MarketAPI market, List<GroundRaidObjectivePlugin> objectives, MutableStat stat) {
-		if (market.getFaction() == faction) {
+		if (market != null && market.getFaction() == faction) {
 			stat.modifyMult("seco_mult", MARINE_LOSSES_MULT, "Security codes");
 		}
 	}

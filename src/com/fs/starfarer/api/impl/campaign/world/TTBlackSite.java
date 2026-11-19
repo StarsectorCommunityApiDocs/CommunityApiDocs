@@ -15,6 +15,7 @@ import com.fs.starfarer.api.campaign.PlanetAPI;
 import com.fs.starfarer.api.campaign.SectorAPI;
 import com.fs.starfarer.api.campaign.SectorEntityToken;
 import com.fs.starfarer.api.campaign.StarSystemAPI;
+import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.characters.FullName;
 import com.fs.starfarer.api.characters.FullName.Gender;
 import com.fs.starfarer.api.characters.PersonAPI;
@@ -35,13 +36,17 @@ import com.fs.starfarer.api.impl.campaign.ids.Conditions;
 import com.fs.starfarer.api.impl.campaign.ids.Entities;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.FleetTypes;
+import com.fs.starfarer.api.impl.campaign.ids.HullMods;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
+import com.fs.starfarer.api.impl.campaign.ids.Missions;
+import com.fs.starfarer.api.impl.campaign.ids.People;
 import com.fs.starfarer.api.impl.campaign.ids.Personalities;
 import com.fs.starfarer.api.impl.campaign.ids.Pings;
 import com.fs.starfarer.api.impl.campaign.ids.Ranks;
 import com.fs.starfarer.api.impl.campaign.ids.Skills;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.impl.campaign.ids.Terrain;
+import com.fs.starfarer.api.impl.campaign.procgen.DefenderDataOverride;
 import com.fs.starfarer.api.impl.campaign.procgen.NebulaEditor;
 import com.fs.starfarer.api.impl.campaign.procgen.StarSystemGenerator.StarSystemType;
 import com.fs.starfarer.api.impl.campaign.procgen.themes.BaseThemeGenerator;
@@ -103,6 +108,30 @@ public class TTBlackSite {
 					
 					Global.getSector().getMemoryWithoutUpdate().set(DEFEATED_ZIGGURAT_KEY, true);
 					
+					PersonAPI callisto = Global.getSector().getImportantPeople().getData(People.IBRAHIM).getPerson();
+					PersonAPI gargoyle = Global.getSector().getImportantPeople().getData(People.GARGOYLE).getPerson();
+					MarketAPI culann = Global.getSector().getEconomy().getMarket("culann");
+					MarketAPI donn = Global.getSector().getEconomy().getMarket("donn");
+					PersonAPI arroyo = Global.getSector().getImportantPeople().getData(People.ARROYO).getPerson();
+					
+					if (culann != null && culann.getMemoryWithoutUpdate() != null) {
+						Misc.makeNonStoryCritical(culann.getMemoryWithoutUpdate(), Missions.ZIGGURAT);
+					}
+					if (donn != null && donn.getMemoryWithoutUpdate() != null) {
+						Misc.makeNonStoryCritical(donn.getMemoryWithoutUpdate(), Missions.ZIGGURAT);
+					}
+					if (callisto != null && callisto.getMarket() != null && callisto.getMarket().getMemoryWithoutUpdate() != null) {
+						Misc.makeNonStoryCritical(callisto.getMarket().getMemoryWithoutUpdate(), Missions.ZIGGURAT);
+					}
+					if (arroyo != null && arroyo.getMarket() != null && arroyo.getMarket().getMemoryWithoutUpdate() != null) {
+						Misc.makeNonStoryCritical(arroyo.getMarket().getMemoryWithoutUpdate(), Missions.ZIGGURAT);
+					}
+					if (gargoyle != null && gargoyle.getMarket() != null && gargoyle.getMarket().getMemoryWithoutUpdate() != null) {
+						Misc.makeNonStoryCritical(gargoyle.getMarket().getMemoryWithoutUpdate(), Missions.ZIGGURAT);
+					}
+					
+					
+					
 					PerShipData ship = new PerShipData("ziggurat_Hull", ShipCondition.WRECKED, 0f);
 					ship.shipName = "TTS Xenorphica";
 					DerelictShipData params = new DerelictShipData(ship, false);
@@ -124,6 +153,21 @@ public class TTBlackSite {
 					copy.variantId = null;
 					copy.variant.addTag(Tags.SHIP_CAN_NOT_SCUTTLE);
 					copy.variant.addTag(Tags.SHIP_UNIQUE_SIGNATURE);
+					
+					if (Misc.isExtended()) {
+						copy.condition = ShipCondition.PRISTINE; // so it doesn't get any random d-mods
+						copy.variant.addPermaMod(HullMods.UNSTABLE_COILS);
+						copy.variant.addPermaMod(HullMods.GLITCHED_SENSORS);
+						copy.variant.addPermaMod(HullMods.DEGRADED_ENGINES);
+						copy.variant.addPermaMod(HullMods.DEGRADED_DRIVE_FIELD);
+						copy.variant.addPermaMod(HullMods.FAULTY_GRID);
+						copy.variant.addPermaMod(HullMods.COMP_STRUCTURE);
+						copy.variant.addPermaMod(HullMods.ERRATIC_INJECTOR);
+						copy.variant.addPermaMod(HullMods.INCREASED_MAINTENANCE);
+						copy.variant.addPermaMod(HullMods.COMP_ARMOR);
+						copy.variant.addPermaMod(HullMods.FAULTY_AUTO);
+					}
+					
 					data.addShip(copy);
 					
 					Misc.setSalvageSpecial(entity, data);
@@ -225,7 +269,12 @@ public class TTBlackSite {
 		
 		SectorEntityToken cache = BaseThemeGenerator.addSalvageEntity(system, Entities.ALPHA_SITE_WEAPONS_CACHE, Factions.NEUTRAL);
 		cache.getMemoryWithoutUpdate().set("$ttWeaponsCache", true);
+		cache.addTag(Tags.SALVAGE_ENTITY_FULL_DROP_IN_EXT_MODE);
 		cache.getLocation().set(11111, 11111);
+		
+		if (Misc.isExtended() && Global.getSettings().getBoolean("ext_strongerAlphaSiteDefenders")) {
+			Misc.setDefenderOverride(cache, new DefenderDataOverride(Factions.REMNANTS, 1f, 90, 110, 3));
+		}
 		
 //		JumpPointAPI jumpPoint = Global.getFactory().createJumpPoint("rock_jump_point", "Unstable Jump-point");
 //		OrbitAPI orbit = Global.getFactory().createCircularOrbit(rock, 0, 2500, 90);

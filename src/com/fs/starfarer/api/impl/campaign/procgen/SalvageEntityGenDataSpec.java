@@ -20,6 +20,8 @@ public class SalvageEntityGenDataSpec {
 	}
 	
 	public static class DropData implements Cloneable {
+		transient public boolean unaffectedByExtMode = false;
+		
 		transient public String group;
 		transient public int chances = -1;
 		transient public int maxChances = -1;
@@ -56,6 +58,11 @@ public class SalvageEntityGenDataSpec {
 					} else {
 						valueMult = 1f;
 					}
+					if (json.has("uBEM")) {
+						unaffectedByExtMode = json.getBoolean("uBEM");
+					} else {
+						unaffectedByExtMode = false;
+					}
 				} catch (JSONException e) {
 					throw new RuntimeException(e);
 				}
@@ -71,6 +78,7 @@ public class SalvageEntityGenDataSpec {
 				if (maxChances > 0) json.put("mC", maxChances);
 				if (value > 0) json.put("v", value);
 				if (valueMult != 1) json.put("vM", valueMult);
+				if (unaffectedByExtMode) json.put("uBEM", unaffectedByExtMode);
 				j = json.toString();
 			} catch (JSONException e) {
 				throw new RuntimeException(e);

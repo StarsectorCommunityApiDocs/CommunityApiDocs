@@ -1,8 +1,9 @@
 package com.fs.starfarer.api.impl.campaign;
 
-import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
+
+import java.awt.Color;
 
 import org.lwjgl.input.Keyboard;
 
@@ -44,7 +45,7 @@ public class PlanetInteractionDialogPluginImpl implements InteractionDialogPlugi
 	//public static String BLACK_HOLE_SCANNED = "$blackHoleScanned";
 	public static String ADDED_KEY = "$core_starAddedStable";
 	
-	private static enum OptionId {
+	public static enum OptionId {
 		INIT,
 		ADD_STABLE_CONFIRM,
 		ADD_STABLE_DESCRIBE,

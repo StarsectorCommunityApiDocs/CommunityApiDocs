@@ -504,6 +504,9 @@ public interface CombatEngineAPI {
 	void playShipExplosionSound(ShipAPI ship);
 
 	CombatEntityAPI spawnAsteroid(String spriteName, float x, float y, float dx, float dy, boolean fromRing);
+
+	List<EveryFrameCombatPlugin> getPlugins();
+	EveryFrameCombatPlugin getPluginOfClass(Class c);
 	
 	//float getElapsedInCurrentFrame();
 

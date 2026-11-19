@@ -111,6 +111,7 @@ public interface DamagingProjectileAPI extends CombatEntityAPI {
 	List<CombatEntityAPI> getDamagedAlready();
 
 	default DamagingExplosionSpec getExplosionSpecIfExplosion() { return null; }
+	void setWeapon(WeaponAPI weapon);
 }
 
 

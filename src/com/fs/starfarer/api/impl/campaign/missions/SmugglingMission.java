@@ -8,6 +8,7 @@ import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.Ranks;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
+import com.fs.starfarer.api.impl.campaign.intel.bar.events.DeliveryBarEvent;
 import com.fs.starfarer.api.impl.campaign.missions.hub.HubMissionWithBarEvent;
 import com.fs.starfarer.api.impl.campaign.missions.hub.ReqMode;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
@@ -96,7 +97,7 @@ public class SmugglingMission extends HubMissionWithBarEvent {
 		
 		
 		//setCreditReward((int)(value * 0.5f), (int)(value * 0.7f));
-		setCreditRewardWithBonus(CreditReward.LOW, (int) (value * 0.5f));
+		setCreditRewardWithBonus(CreditReward.LOW, (int) Math.max(DeliveryBarEvent.BASE_REWARD, (value * 0.5f)));
 		
 		triggerCreateMediumPatrolAroundMarket(market, Stage.SMUGGLE, 1f);
 		

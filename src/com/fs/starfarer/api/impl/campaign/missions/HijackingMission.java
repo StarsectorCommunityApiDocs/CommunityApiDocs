@@ -84,6 +84,9 @@ public class HijackingMission extends HubMissionWithBarEvent {
 		assignShipName(member, Factions.INDEPENDENT);
 		
 		float quality = ShipQuality.getShipQuality(market, market.getFaction().getId());
+		if (Misc.isExtended()) {
+			quality += Global.getSettings().getFloat("ext_shipForSaleQualityMod");
+		}
 		float averageDmods = DefaultFleetInflater.getAverageDmodsForQuality(quality);
 		int addDmods = DefaultFleetInflater.getNumDModsToAdd(variant, averageDmods, genRandom);
 		if (addDmods > 0) {
@@ -91,7 +94,9 @@ public class HijackingMission extends HubMissionWithBarEvent {
 			DModManager.addDMods(member, true, addDmods, genRandom);
 		}
 		
-		price = getRoundNumber(variant.getHullSpec().getBaseValue() * BASE_PRICE_MULT);
+		float extMult = Misc.isExtended() ? Global.getSettings().optFloatFromArray("ext_shipBuyPriceMult", variant.getHullSpec().getHullSize().ordinal() - 2, 1f) : 1f;
+		if (Misc.isExtended()) extMult *= Global.getSettings().getFloat("ext_hijackedShipCostMult");
+		price = getRoundNumber(variant.getHullSpec().getBaseValue() * BASE_PRICE_MULT * extMult);
 		
 		
 		setRepFactionChangesTiny();

@@ -1,10 +1,11 @@
 package com.fs.starfarer.api.impl.campaign.intel;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+
+import java.awt.Color;
 
 import org.apache.log4j.Logger;
 
@@ -48,6 +49,7 @@ import com.fs.starfarer.api.impl.campaign.shared.PersonBountyEventData;
 import com.fs.starfarer.api.impl.campaign.shared.SharedData;
 import com.fs.starfarer.api.ui.SectorMapAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
+import com.fs.starfarer.api.util.CountingMap;
 import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.api.util.WeightedRandomPicker;
 
@@ -114,6 +116,8 @@ public class PersonBountyIntel extends BaseIntelPlugin implements EveryFrameScri
 		spawnFleet();
 		if (isDone()) return;
 		
+		bountyCredits = Misc.getModifiedMissionReward(fleet, (int)bountyCredits);
+		
 		log.info(String.format("Starting person bounty by faction [%s] for person %s", faction.getDisplayName(), person.getName().getFullName()));
 		
 		Global.getSector().getIntelManager().queueIntel(this);
@@ -140,7 +144,8 @@ public class PersonBountyIntel extends BaseIntelPlugin implements EveryFrameScri
 			if (timeFactor > 1) timeFactor = 1;
 			
 			int add = (int) Math.round(MAX_TIME_BASED_ADDED_LEVEL * timeFactor);
-			base += add;
+			//base += add;
+			base = Math.max(base, add);
 			//base += FAST_START_LEVEL_INCREASE;
 //		}
 		
@@ -151,23 +156,40 @@ public class PersonBountyIntel extends BaseIntelPlugin implements EveryFrameScri
 		
 		if (base > 10) base = 10;
 		
-		boolean hasLow = false;
-		boolean hasHigh = false;
+//		base = 5;
+		
+		CountingMap<Integer> existing = new CountingMap<>();
 		for (EveryFrameScript s : PersonBountyManager.getInstance().getActive()) {
 			PersonBountyIntel bounty = (PersonBountyIntel) s;
 			
 			int curr = bounty.getLevel();
+//			if (curr < base || curr == 0) hasLow = true;
+//			if (curr > base) hasHigh = true;
 			
-			if (curr < base || curr == 0) hasLow = true;
-			if (curr > base) hasHigh = true;
+			existing.add(curr);
 		}
 		
-		level = base;
-		if (!hasLow) {
-			//level -= new Random().nextInt(2) + 1;
-			level = 0;
-		} else if (!hasHigh) {
-			level += new Random().nextInt(3) + 2;
+		boolean hasVeryLow = existing.containsKey(base - 2);
+		boolean hasVeryHigh = existing.containsKey(base + 2);;
+		
+		
+		if (!hasVeryLow && base >= 2) {
+			level = base - 2;
+		} else if (!hasVeryHigh) {
+			level = base + 2;
+		} else {
+			int numLow = existing.getCount(base - 1) + Misc.random.nextInt(2);
+			//int numLow = existing.getCount(base - 1);
+			int numNormal = existing.getCount(base) + Misc.random.nextInt(2);
+			int numHigh = existing.getCount(base + 1) + Misc.random.nextInt(2);
+			
+			if (numNormal < numLow || numNormal < numHigh) {
+				level = base;
+			} else if (numLow < (numNormal + numHigh) * 0.5f && base >= 1) {
+				level = base - 1;
+			} else  {
+				level = base + 1;
+			}
 		}
 		
 		if (level < 0) level = 0;
@@ -531,6 +553,7 @@ public class PersonBountyIntel extends BaseIntelPlugin implements EveryFrameScri
 					new RepActionEnvelope(RepActions.PERSON_BOUNTY_REWARD, null, null, null, true, false), 
 					faction.getId());
 			result = new BountyResult(BountyResultType.END_PLAYER_BOUNTY, payment, rep);
+			Global.getSector().getIntelManager().addIntel(this, true);
 			sendUpdateIfPlayerHasIntel(result, false);
 		} else if (willRepIncrease()) {
 			log.info(String.format("Not paying bounty, but improving rep with faction [%s]", faction.getDisplayName()));
@@ -538,15 +561,17 @@ public class PersonBountyIntel extends BaseIntelPlugin implements EveryFrameScri
 								new RepActionEnvelope(RepActions.PERSON_BOUNTY_REWARD, null, null, null, true, false), 
 								faction.getId());
 			result = new BountyResult(BountyResultType.END_PLAYER_NO_BOUNTY, payment, rep);
+			Global.getSector().getIntelManager().addIntel(this, true);
 			sendUpdateIfPlayerHasIntel(result, false);
 		} else {
 			log.info(String.format("Not paying bounty or improving rep with faction [%s]", faction.getDisplayName()));
 			result = new BountyResult(BountyResultType.END_PLAYER_NO_REWARD, 0, null);
+			Global.getSector().getIntelManager().addIntel(this, true);
 			sendUpdateIfPlayerHasIntel(result, false);
 		}
 		
 		
-		getSharedData().reportSuccess();
+		getSharedData().reportSuccess(level);
 		//removeBounty();
 		
 		cleanUpFleetAndEndIfNecessary();
@@ -886,8 +911,9 @@ public class PersonBountyIntel extends BaseIntelPlugin implements EveryFrameScri
 			int cols = 7;
 			float iconSize = width / cols;
 			
+			PersonBountyEventData sd = getSharedData();
 			
-			if (DebugFlags.PERSON_BOUNTY_DEBUG_INFO) {
+			if (DebugFlags.PERSON_BOUNTY_DEBUG_INFO) {// || Global.getSettings().isDevMode()) {
 				boolean deflate = false;
 				if (!fleet.isInflated()) {
 					fleet.setFaction(Factions.PIRATES, true);
@@ -900,7 +926,10 @@ public class PersonBountyIntel extends BaseIntelPlugin implements EveryFrameScri
 				info.addPara("The bounty posting also contains partial intel on the ships under " + her + " command. (DEBUG: full info)", opad);
 				info.addShipList(cols, 3, iconSize, getFactionForUIColors().getBaseUIColor(), fleet.getMembersWithFightersCopy(), opad);
 				
-				info.addPara("level: " + level, 3f);
+				info.addPara("Bounty level: %s", opad, h, "" + level);
+				info.addPara("Level: %s, successes: %s / %s, buffer: %s", 3f, h, 
+						"" + sd.getLevel(), "" + sd.getSuccessesThisLevel(),
+						"" + sd.getThresholdForLevel(sd.getLevel()), "" + sd.getBuffer());
 				info.addPara("type: " + bountyType.name(), 3f);
 				
 				if (deflate) {
@@ -967,6 +996,13 @@ public class PersonBountyIntel extends BaseIntelPlugin implements EveryFrameScri
 				
 				if (deflate) {
 					fleet.deflate();
+				}
+				
+				if (Global.getSettings().isDevMode()) {
+					info.addPara("Bounty level: %s", opad, h, "" + level);
+					info.addPara("Level: %s, successes: %s / %s, buffer: %s", 3f, h, 
+							"" + sd.getLevel(), "" + sd.getSuccessesThisLevel(),
+							"" + sd.getThresholdForLevel(sd.getLevel()), "" + sd.getBuffer());
 				}
 			}
 		}

@@ -193,6 +193,10 @@ public interface ShipVariantAPI {
 
 	JSONObject toJSONObject() throws JSONException;
 
+	void clearWings();
+
+	void clearWeapons();
+
 
 }
 

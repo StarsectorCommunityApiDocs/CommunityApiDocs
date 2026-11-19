@@ -258,7 +258,7 @@ public class HegemonyHostileActivityFactor extends BaseHostileActivityFactor imp
 		small = 8f;
 		
 		LabelAPI label = info.addPara("You've received intel that the Hegemony is planning "
-				+ "an AI insprection targeting %s. If the inspection arrives at your colony, "
+				+ "an AI inspection targeting %s. If the inspection arrives at your colony, "
 				+ "your options would include open hostilities with the Hegemony, or the loss of "
 				+ "at least some of your AI cores.",
 								small, c, target.getName());

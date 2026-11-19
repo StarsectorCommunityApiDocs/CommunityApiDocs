@@ -1,7 +1,8 @@
 package com.fs.starfarer.api.campaign;
 
-import java.awt.Color;
 import java.util.Random;
+
+import java.awt.Color;
 
 import org.lwjgl.util.vector.Vector3f;
 
@@ -59,4 +60,8 @@ public interface PlanetAPI extends SectorEntityToken {
 	void setDescriptionIdOverride(String descriptionIdOverride);
 
 	boolean isBlackHole();
+
+	void setShieldTextureJitter(float maxJitter, int numCopies);
+	float getAngle();
+	void setAngle(float angle);
 }

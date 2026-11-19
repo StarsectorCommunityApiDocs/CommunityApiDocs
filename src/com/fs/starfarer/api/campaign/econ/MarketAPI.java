@@ -1,11 +1,12 @@
 package com.fs.starfarer.api.campaign.econ;
 
-import java.awt.Color;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+
+import java.awt.Color;
 
 import org.lwjgl.util.vector.Vector2f;
 

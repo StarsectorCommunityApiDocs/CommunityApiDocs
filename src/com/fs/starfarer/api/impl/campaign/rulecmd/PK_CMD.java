@@ -21,6 +21,9 @@ import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.fleet.FleetMemberType;
+import com.fs.starfarer.api.impl.campaign.PlanetExplosionScript;
+import com.fs.starfarer.api.impl.campaign.fleets.PersonalFleetHoracioCaden;
+import com.fs.starfarer.api.impl.campaign.fleets.PersonalFleetScript;
 import com.fs.starfarer.api.impl.campaign.ids.Conditions;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.HullMods;
@@ -29,9 +32,12 @@ import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.ids.People;
 import com.fs.starfarer.api.impl.campaign.ids.Ranks;
 import com.fs.starfarer.api.impl.campaign.ids.Submarkets;
+import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.impl.campaign.intel.bases.LuddicPathBaseIntel;
+import com.fs.starfarer.api.impl.campaign.intel.events.sd.SDResolution;
 import com.fs.starfarer.api.impl.campaign.missions.RecoverAPlanetkiller;
 import com.fs.starfarer.api.impl.campaign.shared.SharedData;
+import com.fs.starfarer.api.loading.VariantSource;
 import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.api.util.Misc.Token;
 
@@ -72,6 +78,13 @@ public class PK_CMD extends BaseCommandPlugin {
 			return rightPostToTellAboutSentinel(dialog);
 		} else if ("giveExecutor".equals(action)) {
 			giveExecutor(dialog, params, memoryMap);
+		} else if ("blowUpSindria".equals(action)) {
+			MarketAPI market = Global.getSector().getEconomy().getMarket("sindria");
+			market.getPlanetEntity().addTag(Tags.PLANET_NO_COLONIZATION);
+			if (market != null && market.getPlanetEntity() != null) {
+				SDResolution.removeFleetCommander(PersonalFleetScript.getFleet(PersonalFleetHoracioCaden.class));
+				new PlanetExplosionScript(market.getPlanetEntity());
+			}
 		}
 		
 		return false;
@@ -153,6 +166,8 @@ public class PK_CMD extends BaseCommandPlugin {
 		boolean removeSpecial = params.get(1).getBoolean(memoryMap);
 		
 		ShipVariantAPI v = Global.getSettings().getVariant("executor_Hull").clone();
+		v.setSource(VariantSource.REFIT);
+		v.setHullVariantId(Misc.genUID());
 		if (removeSpecial) {
 			v.addSuppressedMod(HullMods.ANDRADA_MODS);
 		}
@@ -195,6 +210,7 @@ public class PK_CMD extends BaseCommandPlugin {
 			defenders.setCircularOrbit(dialog.getInteractionTarget().getOrbitFocus(), 90f, 100f, 20f);
 			defenders.getMemoryWithoutUpdate().set("$pkDefenderFleet", true);
 			defenders.getMemoryWithoutUpdate().set(MemFlags.FLEET_IGNORED_BY_OTHER_FLEETS, true);
+			defenders.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_NO_SHIP_DERELICTS_IN_POST_BATTLE_DEBRIS, true);
 			//Misc.addDefeatTrigger(defenders, "PK14thDefeated"); // handled elsewhere so the trigger is set in all cases
 			Misc.makeNoRepImpact(defenders, "pk");
 		}

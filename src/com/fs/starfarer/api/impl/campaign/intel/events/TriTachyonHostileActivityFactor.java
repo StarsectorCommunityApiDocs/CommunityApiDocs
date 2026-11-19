@@ -1,10 +1,11 @@
 package com.fs.starfarer.api.impl.campaign.intel.events;
 
-import java.awt.Color;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+
+import java.awt.Color;
 
 import org.lwjgl.util.vector.Vector2f;
 
@@ -366,7 +367,7 @@ public class TriTachyonHostileActivityFactor extends BaseHostileActivityFactor
 		for (MarketAPI market : Misc.getFactionMarkets(Factions.TRITACHYON)) {
 			int size = market.getSize();
 			int weight = size;
-			if (!Misc.isMilitary(market)) weight += size * 10;
+			if (Misc.isMilitary(market)) weight += size * 10;
 			if (market.hasIndustry(Industries.ORBITALWORKS)) weight += size;
 			if (market.hasIndustry(Industries.HEAVYINDUSTRY)) weight += size;
 			

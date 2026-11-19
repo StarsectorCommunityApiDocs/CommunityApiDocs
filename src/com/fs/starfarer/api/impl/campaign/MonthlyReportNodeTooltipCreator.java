@@ -1,8 +1,9 @@
 package com.fs.starfarer.api.impl.campaign;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CargoAPI;
@@ -12,6 +13,7 @@ import com.fs.starfarer.api.campaign.econ.CommodityOnMarketAPI;
 import com.fs.starfarer.api.campaign.econ.MonthlyReport;
 import com.fs.starfarer.api.campaign.econ.MonthlyReport.FDNode;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
+import com.fs.starfarer.api.impl.campaign.ids.Strings;
 import com.fs.starfarer.api.ui.Alignment;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI.TooltipCreator;
@@ -29,8 +31,23 @@ public class MonthlyReportNodeTooltipCreator implements TooltipCreator {
 		
 		int crewSalary = Global.getSettings().getInt("crewSalary");
 		int marineSalary = Global.getSettings().getInt("marineSalary");
+		
+		if (Misc.isExtended()) {
+			crewSalary *= Global.getSettings().getFloat("ext_crewSalaryMult");
+			crewSalary = (int) crewSalary;
+			marineSalary *= Global.getSettings().getFloat("ext_marineSalaryMult");
+			marineSalary = (int) marineSalary;
+		}
+		
 		int officerBase = Global.getSettings().getInt("officerSalaryBase");
 		int officerPerLevel = Global.getSettings().getInt("officerSalaryPerLevel");
+		
+		float mult = Misc.isExtended() ? Global.getSettings().getFloat("ext_officerSalaryMult") : 1f;
+		if (mult != 1f) {
+			officerBase *= mult;
+			officerPerLevel *= mult;
+		}
+		
 		float storageFreeFraction = Global.getSettings().getFloat("storageFreeFraction");
 		
 		Color h = Misc.getHighlightColor();
@@ -106,15 +123,62 @@ public class MonthlyReportNodeTooltipCreator implements TooltipCreator {
 			tooltip.addPara(
 					"Each officer receives a base salary of %s credits per month, plus %s credits per officer level.", 0,
 					h, Misc.getWithDGS(officerBase), Misc.getWithDGS(officerPerLevel));
+		} else if (MonthlyReport.COMBAT_PAY.equals(node.custom)) {
+			tooltip.addPara(
+					"Combat bonus pay owed to your officers that could not be paid immediately due to a lack of funds.", 0);
 		} else if (MonthlyReport.ADMIN.equals(node.custom)) {
 			float f = Global.getSettings().getFloat("idleAdminSalaryMult");
 			tooltip.addPara(
 					"Each administrator receives a salary that depends on their skills. " +
 					"When not assigned to govern a colony, their salary is reduced to %s.", 0, 
 					Misc.getHighlightColor(), "" + (int)Math.round(f * 100f) + "%");
-		} else if (MonthlyReport.CREW.equals(node.custom)) {
-			tooltip.addPara("Each crew member receives a monthly salary of %s credits.", 0,
+		} else if (MonthlyReport.CREW.equals(node.custom) || MonthlyReport.RESERVE_CREW.equals(node.custom)) {
+			tooltip.addPara("Each crew member receives a monthly salary based on the ship they are assigned to. "
+					+ "Reserve crew above that required for the operation of all ships in the fleet "
+					+ "receive a monthly salary of %s credits.", 0,
 					h, Misc.getWithDGS(crewSalary));
+//			tooltip.addPara("Each crew member receives a base monthly salary of %s credits.", 0,
+//					h, Misc.getWithDGS(crewSalary));
+//			tooltip.addPara("The salary of crew on certain ships, such as those with the Manual Systems hullmod, "
+//					+ "may be higher or lower than base.", opad,
+//					h, "Manual Systems");
+//			tooltip.addPara("When such ships are present, "
+//					+ "the salary of reserve crew - above and beyond that required to run"
+//					+ " all the ships in the fleet - is also affected, in proportion to the average salary "
+//					+ "for all crewed ships.", opad);
+		} else if (MonthlyReport.JUMP_PAY.equals(node.custom)) {
+			float jumpMult = Global.getSettings().getFloat("ext_jumpPayMult");
+			tooltip.addPara(
+					"Jump pay owed to your crew that could not be paid immediately due to a lack of funds.", 0);
+			tooltip.addPara("Long-standing spacer tradition holds that all crew receive a bonus equal to %s their "
+					+ "base monthly pay when jumping out of a populated star system into hyperspace.", 
+					opad, Misc.getHighlightColor(), Misc.getRoundedValueMaxOneAfterDecimal(jumpMult) + Strings.X);			
+		} else if (MonthlyReport.POSTPONE_RETIREMENT.equals(node.custom)) {
+			tooltip.addPara("Increasingly sophisticated (and expensive) rejuvenation treatments, cybernetics, transplants, "
+					+ "and the like.", 0);			
+		} else if (MonthlyReport.SPACER_SHARE.equals(node.custom)) {
+			float spacerShareMult = Global.getSettings().getFloat("ext_spacerSharePerMonth");
+			int spacerShareMonths = Global.getSettings().getInt("ext_spacerShareThresholdSalaryMonths");
+			int threshold = Misc.computeSpacerShareThreshold();
+
+			tooltip.addPara("Long-standing spacer tradition holds that %s of the liquid funds of an independent operation, "
+					+ "over and above %s months worth of pay for the crews and officers, "
+					+ "shall be distributed monthly among all the personnel involved, "
+					+ "whether they be found shipboard or planetside.", 0f, 
+					Misc.getHighlightColor(),
+					"" + (int) Math.round(spacerShareMult * 100f) + "%",
+					"" + spacerShareMonths);
+
+			tooltip.addPara("It is thought to encourage greater daring in their captains, "
+					+ "and a leader failing to abide by this custom would find themselves replaced "
+					+ "very rapidly indeed. Gambits such as stocking up on supplies or holding on to "
+					+ "particularly valuable cargo to reduce operating funds, "
+					+ "however, are accepted and even expected of a crafty captain worth following.", opad);
+				
+			tooltip.addPara("%s months worth of salary for your fleet's personnel is %s. Any credits "
+					+ "above that are subject to the Spacer's Share.", opad,
+					h, "" + spacerShareMonths, Misc.getDGSCredits(threshold));
+			
 		} else if (MonthlyReport.MARINES.equals(node.custom)) {
 			tooltip.addPara("Each marine receives a monthly salary of %s credits.", 0,
 					h, Misc.getWithDGS(marineSalary));
@@ -124,6 +188,8 @@ public class MonthlyReportNodeTooltipCreator implements TooltipCreator {
 			tooltip.addPara("Upkeep and income from industries and structures located at the outpost or colony.", 0);
 		} else if (MonthlyReport.INCENTIVES.equals(node.custom)) {
 			tooltip.addPara("Total spent on hazard pay and related growth incentives at the colony during the previous month.", 0);
+		} else if (MonthlyReport.CORRUPTION.equals(node.custom)) {
+			tooltip.addPara("The inevitable inefficiencies and outright graft that come with the growth of any enterprise.", 0);
 		} else if (MonthlyReport.EXPORTS.equals(node.custom)) {
 			tooltip.addPara("Income from out-of-faction exports by this outpost or colony. " +
 					"Smuggling and in-faction exports do not produce income.", 0);

@@ -6,11 +6,13 @@ import java.util.List;
 import org.lwjgl.util.vector.Vector2f;
 
 import com.fs.starfarer.api.Global;
+import com.fs.starfarer.api.combat.CombatEngineLayers;
 import com.fs.starfarer.api.combat.CombatEntityAPI;
 import com.fs.starfarer.api.combat.DamageAPI;
 import com.fs.starfarer.api.combat.DeployedFleetMemberAPI;
 import com.fs.starfarer.api.combat.MutableShipStatsAPI;
 import com.fs.starfarer.api.combat.ShipAPI;
+import com.fs.starfarer.api.combat.ViewportAPI;
 import com.fs.starfarer.api.combat.WeaponAPI;
 import com.fs.starfarer.api.loading.FighterWingSpecAPI;
 import com.fs.starfarer.api.loading.WeaponSpecAPI;
@@ -188,6 +190,23 @@ public class CombatListenerUtil {
 //				x.reportFleetMemberDeployed(member);
 //			}
 //		}
+	}
+	
+	
+	public static void reportRenderedShipSprite(ShipAPI ship, CombatEngineLayers layer, ViewportAPI viewport, boolean withModules) {
+		for (ShipRenderListener x : Global.getCombatEngine().getListenerManager().getListeners(ShipRenderListener.class)) {
+			x.reportRenderedShipSprite(ship, layer, viewport, withModules);
+		}
+	}
+	public static void reportRenderedDHullOverlay(ShipAPI ship, CombatEngineLayers layer, ViewportAPI viewport, boolean withModules) {
+		for (ShipRenderListener x : Global.getCombatEngine().getListenerManager().getListeners(ShipRenderListener.class)) {
+			x.reportRenderedDHullOverlay(ship, layer, viewport, withModules);
+		}
+	}
+	public static void reportRenderedExtraOverlay(ShipAPI ship, CombatEngineLayers layer, ViewportAPI viewport, boolean withModules) {
+		for (ShipRenderListener x : Global.getCombatEngine().getListenerManager().getListeners(ShipRenderListener.class)) {
+			x.reportRenderedExtraOverlay(ship, layer, viewport, withModules);
+		}
 	}
 }
 

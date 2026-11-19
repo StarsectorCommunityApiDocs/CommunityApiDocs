@@ -1124,7 +1124,7 @@ public class GAAtTheGates extends GABaseMission implements CurrentLocationChange
 	
 	protected void spawnKantaVengeanceFleetPirateArmada(SectorEntityToken spawnPoint) {
 		beginWithinHyperspaceRangeTrigger(magecGate, 3f, false, Stage.GO_TO_MAGEC_GATE);
-		triggerCreateFleet(FleetSize.HUGE, FleetQuality.HIGHER, Factions.PIRATES, FleetTypes.PATROL_LARGE, spawnPoint);
+		triggerCreateFleet(FleetSize.HUGE, FleetQuality.HIGHER, Factions.PIRATES, FleetTypes.RAIDER, spawnPoint);
 		triggerSetFleetFaction(Factions.PIRATES);
 		triggerSetFleetOfficers(OfficerNum.MORE, OfficerQuality.HIGHER);
 		triggerAutoAdjustFleetStrengthMajor();

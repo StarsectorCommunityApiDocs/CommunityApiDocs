@@ -309,6 +309,12 @@ public interface WeaponAPI {
 	Object getCustom();
 	void setCustom(Object custom);
 	boolean isForceNoFireOneFrame();
+	
+	/**
+	 * Method only works for projectile weapons, not beams. 
+	 */
+	void forceIdle();
+	float getPivotFacing();
 }
 
 

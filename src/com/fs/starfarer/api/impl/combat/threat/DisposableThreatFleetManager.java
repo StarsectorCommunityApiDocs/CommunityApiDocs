@@ -278,8 +278,8 @@ public class DisposableThreatFleetManager extends DisposableFleetManager impleme
 		case NONE:
 			break;
 		case LOW:
-			minOverseers = 0;
-			maxOverseers = 1;
+			minOverseers = 1;
+			maxOverseers = 2;
 			minDestroyers = 0;
 			maxDestroyers = 1;
 			minFrigates = 2;
@@ -291,8 +291,8 @@ public class DisposableThreatFleetManager extends DisposableFleetManager impleme
 		case MEDIUM:
 			minHives = 0;
 			maxHives = 1;
-			minOverseers = 1;
-			maxOverseers = 1;
+			minOverseers = 2;
+			maxOverseers = 3;
 			minCruisers = 0;
 			maxCruisers = 1;
 			minDestroyers = 1;
@@ -306,8 +306,8 @@ public class DisposableThreatFleetManager extends DisposableFleetManager impleme
 		case HIGH:
 			minHives = 2;
 			maxHives = 3;
-			minOverseers = 2;
-			maxOverseers = 2;
+			minOverseers = 3;
+			maxOverseers = 4;
 			minCruisers = 2;
 			maxCruisers = 3;
 			minDestroyers = 3;
@@ -319,8 +319,8 @@ public class DisposableThreatFleetManager extends DisposableFleetManager impleme
 		case MAXIMUM:
 			minHives = 3;
 			maxHives = 4;
-			minOverseers = 3;
-			maxOverseers = 3;
+			minOverseers = 4;
+			maxOverseers = 5;
 			minCruisers = 4;
 			maxCruisers = 5;
 			minDestroyers = 5;
