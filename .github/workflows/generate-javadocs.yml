@@ -33,17 +33,29 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: "temurin"
-          java-version: "8"
+          java-version: "26"
+
+      - name: Download annotations jar
+        run: |
+          # Global.java uses @NotNull and @Nullable.
+          mkdir -p extra-jars
+          curl -sSfL -o extra-jars/annotations-24.1.0.jar \
+            https://repo1.maven.org/maven2/org/jetbrains/annotations/24.1.0/annotations-24.1.0.jar
 
       - name: Generate Javadocs
         run: |
           mkdir -p javadocs
           javadoc -encoding ISO-8859-1 -docencoding UTF-8 -charset UTF-8 \
             -d javadocs -sourcepath src -subpackages com.fs.starfarer.api \
-            -classpath "StarsectorJarsPrivate/*" -quiet -Xdoclint:none \
-            -footer "<p class="legalCopy"><small><i>Copyright © 2013 Fractal Softworks, LLC. All Rights Reserved.</i></small></p>" \
-            -stylesheetfile dracula-javadoc8.css \
+            -classpath "StarsectorJarsPrivate/*:extra-jars/*" -quiet -Xdoclint:none \
+            -bottom "<p class="legalCopy"><small><i>Copyright © 2013 Fractal Softworks, LLC. All Rights Reserved.</i></small></p>" \
+            --add-script dark-theme-default.js \
             -linksource
+
+      - name: Make source pages dark
+        run: |
+          # The source pages from -linksource have no scripts, so they ignore the theme button and dark-theme-default.js.
+          find javadocs/src-html -name '*.html' -exec sed -i 's/<html lang="en">/<html lang="en" data-theme="theme-dark">/' {} +
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
