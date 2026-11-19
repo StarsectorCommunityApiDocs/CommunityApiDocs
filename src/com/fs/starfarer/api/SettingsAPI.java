@@ -366,6 +366,9 @@ public interface SettingsAPI {
 	List<HullModSpecAPI> getAllHullModSpecs();
 	List<FighterWingSpecAPI> getAllFighterWingSpecs();
 
+	/**
+	 * Does not include SYSTEM weapons. Use getAllWeaponSpecs() to include those.
+	 */
 	List<WeaponSpecAPI> getAllWeaponSpecs();
 	/**
 	 * Includes SYSTEM weapons and, well, everything.
