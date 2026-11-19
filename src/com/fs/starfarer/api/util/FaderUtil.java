@@ -109,6 +109,10 @@ public class FaderUtil  {
 				else state = State.IDLE;
 				return;
 			}
+			if (durationIn <= 0f) {
+				forceIn();
+				return;
+			}
 			float delta = amount / durationIn;
 			currBrightness += delta;
 			if (currBrightness > 1) { 
@@ -118,6 +122,10 @@ public class FaderUtil  {
 			if (currBrightness == 0) {
 				if (bounceUp) state = State.IN;
 				else state = State.IDLE;
+				return;
+			}
+			if (durationOut <= 0f) {
+				forceOut();
 				return;
 			}
 			float delta = amount / durationOut;

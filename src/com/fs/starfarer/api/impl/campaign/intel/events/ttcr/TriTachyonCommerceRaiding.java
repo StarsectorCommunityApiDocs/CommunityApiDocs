@@ -1,9 +1,10 @@
 package com.fs.starfarer.api.impl.campaign.intel.events.ttcr;
 
-import java.awt.Color;
 import java.util.EnumSet;
 import java.util.Random;
 import java.util.Set;
+
+import java.awt.Color;
 
 import org.lwjgl.util.vector.Vector2f;
 
@@ -120,7 +121,7 @@ public class TriTachyonCommerceRaiding extends BaseEventIntel {
 				info.addPara("Several bounty hunters were recently hired to eliminate you", tc, initPad);
 			}
 			if (esd.id == Stage.SUCCESS) {
-				info.addPara("You've convincied Tri-Tachyon to stop attacking your interests", tc, initPad);
+				info.addPara("You've convinced Tri-Tachyon to stop attacking your interests", tc, initPad);
 			}
 			return;
 		}

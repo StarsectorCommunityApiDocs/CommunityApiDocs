@@ -29,10 +29,19 @@ public interface CommoditySpecAPI extends WithSourceMod {
 	 */
 	String getLowerCaseName();
 	float getBasePrice();
+	
+	/**
+	 * Unmodified by ext mode.
+	 * @return
+	 */
+	float getUnmodifiedBasePrice();
 	Set<String> getTags();
 	boolean hasTag(String tag);
 	
 	void setBasePrice(float price);
+	
+	float getSellPriceMult();
+	void setSellPriceMult(float sellPriceMult);
 	
 	
 	/**

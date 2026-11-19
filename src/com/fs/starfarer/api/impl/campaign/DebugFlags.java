@@ -9,7 +9,7 @@ public class DebugFlags {
 	
 	public static boolean ALWAYS_ADD_POTENTIAL_CONTACT = false;
 	
-	public static boolean ALLOW_KNOWN_HULLMOD_DROPS = false;
+	public static boolean ALLOW_KNOWN_HULLMOD_DROPS = true;
 	
 	public static boolean WITH_HYPER_STATION = false;
 	

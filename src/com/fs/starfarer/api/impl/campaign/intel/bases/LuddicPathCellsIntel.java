@@ -1,5 +1,6 @@
 package com.fs.starfarer.api.impl.campaign.intel.bases;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -7,8 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-
-import java.awt.Color;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.BattleAPI;
@@ -423,7 +422,7 @@ public class LuddicPathCellsIntel extends BaseIntelPlugin implements RouteFleetS
 //					"need material support - smuggled in from the nearest Pather base - to carry them off."
 //					+ " The cells also provide intel to Pather fleets operating in-system.", opad);
 			info.addPara("They are engaged in planning acts of terror and industrial sabotage, but " +
-					"are unlikely to carry them off unless the overal level of hostile activity in the system "
+					"are unlikely to carry them off unless the overall level of hostile activity in the system "
 					+ "provides sufficient cover."
 					+ " The cells also provide intel to Pather fleets operating in-system.", opad);
 			
@@ -524,7 +523,7 @@ public class LuddicPathCellsIntel extends BaseIntelPlugin implements RouteFleetS
 					case REDUCED_STABILITY:
 						info.addPara("Multiple planned attacks against various industrial, " +
 								"military, and civilian targets " +
-								" were averted by the local security forces.", 
+								"were averted by the local security forces.", 
 								opad);
 						break;
 					case PLANETBUSTER:

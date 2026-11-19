@@ -316,6 +316,9 @@ public class BaseIntelPlugin implements IntelInfoPlugin, CallableEvent, EveryFra
 	}
 
 	public void setImportant(Boolean important) {
+//		if (important != null && important) {
+//			System.out.println("2380fhwejkfwef");
+//		}
 		this.important = important;
 		if (this.important != null && !this.important) {
 			this.important = null;
@@ -604,7 +607,8 @@ public class BaseIntelPlugin implements IntelInfoPlugin, CallableEvent, EveryFra
 			daysStr = "day";
 		}
 		if (c == null) c = Misc.getGrayColor();
-		info.addPara(before + pre + "%s " + daysStr + " " + after, pad, c,
+		if (after != null && !after.isBlank()) after = " " + after;
+		info.addPara(before + pre + "%s " + daysStr + after, pad, c,
 				Misc.getHighlightColor(), "" + d);
 	}
 

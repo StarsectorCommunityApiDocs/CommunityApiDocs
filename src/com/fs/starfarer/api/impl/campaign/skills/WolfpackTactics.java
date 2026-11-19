@@ -117,7 +117,7 @@ public class WolfpackTactics {
 			
 			return "+" + (int)Math.round(DAMAGE_TO_LARGER_BONUS) + "% damage to ships larger than frigates if frigate, " +
 				   "+" + (int)Math.round(DAMAGE_TO_LARGER_BONUS_DEST) + "% damage to capital ships and cruisers if destroyer\n" +
-				   "+" + (int)(PEAK_TIME_BONUS) + "% seconds peak operating time if frigate, " + 
+				   "+" + (int)(PEAK_TIME_BONUS) + "% peak operating time if frigate, " + 
 				   "+" + (int)(PEAK_TIME_BONUS_DEST) + "% if destroyer";
 //			return "+" + (int)Math.round(DAMAGE_TO_LARGER_BONUS) + "% damage to ships larger than frigates\n" +
 //			"+" + (int)(PEAK_TIME_BONUS) + " seconds peak operating time\n" +

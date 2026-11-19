@@ -84,6 +84,7 @@ import com.fs.starfarer.api.impl.campaign.terrain.DebrisFieldTerrainPlugin.Debri
 import com.fs.starfarer.api.impl.campaign.tutorial.TutorialMissionIntel;
 import com.fs.starfarer.api.loading.FighterWingSpecAPI;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
+import com.fs.starfarer.api.loading.VariantSource;
 import com.fs.starfarer.api.loading.WeaponSpecAPI;
 import com.fs.starfarer.api.util.IntervalUtil;
 import com.fs.starfarer.api.util.Misc;
@@ -377,9 +378,11 @@ public class CoreScript extends BaseCampaignEventListener implements EveryFrameS
 			//}
 			//}
 				
-			if (!otherFleet.getMemoryWithoutUpdate().getBoolean(MemFlags.MEMORY_KEY_LOW_REP_IMPACT) ||
-					otherFleet.getMemoryWithoutUpdate().getBoolean(MemFlags.SPREAD_TOFF_HOSTILITY_IF_LOW_IMPACT)) {
-				otherFleet.addScript(new TOffAlarm(otherFleet));
+			if (!otherFleet.getMemoryWithoutUpdate().getBoolean(MemFlags.MEMORY_KEY_NO_REP_IMPACT)) {
+				if (!otherFleet.getMemoryWithoutUpdate().getBoolean(MemFlags.MEMORY_KEY_LOW_REP_IMPACT) ||
+						otherFleet.getMemoryWithoutUpdate().getBoolean(MemFlags.SPREAD_TOFF_HOSTILITY_IF_LOW_IMPACT)) {
+					otherFleet.addScript(new TOffAlarm(otherFleet));
+				}
 			}
 			
 			
@@ -543,11 +546,16 @@ public class CoreScript extends BaseCampaignEventListener implements EveryFrameS
 			float fpForThisFleet = 0;
 			for (FleetMemberAPI loss : Misc.getSnapshotMembersLost(fleet)) {
 				//if (loss.getVariant().isStockVariant()) {
-				if (!loss.getVariant().hasTag(Tags.SHIP_RECOVERABLE)) { // was not recoverable by player
-					if (!loss.isStation() && !fleet.getMemoryWithoutUpdate().getBoolean(MemFlags.MEMORY_KEY_NO_SHIP_RECOVERY)) {
+				boolean noDerelict = loss.getHullSpec() != null && loss.getHullSpec().hasTag(Tags.NO_DERELICT);
+				if (!loss.getVariant().hasTag(Tags.SHIP_RECOVERABLE) && !noDerelict) { // was not recoverable by player
+					if (!loss.isStation() && 
+							!fleet.getMemoryWithoutUpdate().getBoolean(MemFlags.MEMORY_KEY_NO_SHIP_RECOVERY) &&
+							!fleet.getMemoryWithoutUpdate().getBoolean(MemFlags.MEMORY_KEY_NO_SHIP_DERELICTS_IN_POST_BATTLE_DEBRIS)) {
 						recoverySpecialChoices.add(loss);
 					}
 				}
+				if (loss.getHullSpec().hasTag(Tags.NO_BATTLE_SALVAGE)) continue;
+				
 				fpDestroyed += loss.getFleetPointCost();
 				fpForThisFleet += loss.getFleetPointCost();
 				if (allowDebris && !fleet.isPlayerFleet()) {
@@ -577,7 +585,8 @@ public class CoreScript extends BaseCampaignEventListener implements EveryFrameS
 			float fpForThisFleet = 0;
 			for (FleetMemberAPI loss : Misc.getSnapshotMembersLost(fleet)) {
 				//if (loss.getVariant().isStockVariant()) {
-				if (!loss.getVariant().hasTag(Tags.SHIP_RECOVERABLE)) { // was not recoverable by player
+				boolean noDerelict = loss.getHullSpec() != null && loss.getHullSpec().hasTag(Tags.NO_DERELICT);
+				if (!loss.getVariant().hasTag(Tags.SHIP_RECOVERABLE) && !noDerelict) { // was not recoverable by player
 					if (!loss.isStation() && !fleet.getMemoryWithoutUpdate().getBoolean(MemFlags.MEMORY_KEY_NO_SHIP_RECOVERY)) {
 						recoverySpecialChoices.add(loss);
 					}
@@ -585,6 +594,7 @@ public class CoreScript extends BaseCampaignEventListener implements EveryFrameS
 					loss.getVariant().removeTag(Tags.SHIP_RECOVERABLE);
 				}
 				
+				if (loss.getHullSpec().hasTag(Tags.NO_BATTLE_SALVAGE)) continue;
 				fpDestroyed += loss.getFleetPointCost();
 				fpForThisFleet += loss.getFleetPointCost();
 				if (allowDebris && !fleet.isPlayerFleet()) {
@@ -634,6 +644,10 @@ public class CoreScript extends BaseCampaignEventListener implements EveryFrameS
 				String variantId = member.getVariant().getHullVariantId();
 				if (!member.getVariant().isStockVariant()) variantId = member.getVariant().getOriginalVariant();
 				if (variantId == null) continue;
+				
+				boolean noDerelict = member.getHullSpec() != null && member.getHullSpec().hasTag(Tags.NO_DERELICT);
+				if (noDerelict) continue;
+				
 				DerelictShipData params = new DerelictShipData(new PerShipData(variantId,
 										DerelictShipEntityPlugin.pickBadCondition(null), 0f), false);
 				params.durationDays = DerelictShipEntityPlugin.getBaseDuration(member.getHullSpec().getHullSize());
@@ -904,6 +918,7 @@ public class CoreScript extends BaseCampaignEventListener implements EveryFrameS
 		p.persistent = false;
 		p.seed = random.nextLong();
 		p.timestamp = null;
+		p.blockHullmodsWithItemReqs = true;
 		
 		FleetInflater inflater = Misc.getInflater(ships, p);
 		ships.setInflater(inflater);
@@ -954,6 +969,11 @@ public class CoreScript extends BaseCampaignEventListener implements EveryFrameS
 		ships.inflateIfNeeded();
 		for (FleetMemberAPI member : ships.getFleetData().getMembersListCopy()) {
 			cargo.getMothballedShips().addFleetMember(member);
+			if (Misc.isExtended()) {
+				if (member.getVariant().getSource() == VariantSource.REFIT) {
+					member.getVariant().clear();
+				}
+			}
 			for (String wingId : member.getVariant().getNonBuiltInWings()) {
 				FighterWingSpecAPI spec = Global.getSettings().getFighterWingSpec(wingId);
 				weaponCost += spec.getBaseValue();
@@ -1055,6 +1075,7 @@ public class CoreScript extends BaseCampaignEventListener implements EveryFrameS
 			ProductionReportIntel intel = new ProductionReportIntel(gatheringPoint, data, 
 													totalCost + weaponCost, prod.getAccruedProduction(),
 													wantedToDoProduction && unableToDoProduction);
+			ListenerUtil.reportCustomProductionGenerated(report, intel);
 			Global.getSector().getIntelManager().addIntel(intel);
 		}
 		
@@ -1088,6 +1109,26 @@ public class CoreScript extends BaseCampaignEventListener implements EveryFrameS
 					}
 					market.setIncentiveCredits(0);
 				}
+			}
+		}
+		
+		if (Misc.isExtended()) {
+			report.computeTotals();
+			boolean useGross = Global.getSettings().getBoolean("ext_corruptionUsesGrossIncome");
+			float threshold = Global.getSettings().getFloat("ext_corruptionThreshold");
+			float exponent = Global.getSettings().getFloat("ext_corruptionExponent");
+			
+			float base = marketsNode.totalIncome;
+			if (!useGross) base -= marketsNode.totalUpkeep;
+			if (base > threshold) {
+				FDNode corruption = report.getNode(marketsNode, MonthlyReport.CORRUPTION);
+				corruption.name = "Corruption";
+				corruption.custom = MonthlyReport.CORRUPTION;
+				corruption.tooltipCreator = report.getMonthlyReportTooltip();
+				
+				float corruptionAmount = (float) ((1f - Math.pow(1f / (base / threshold), 1f / exponent)) * base);
+				
+				corruption.upkeep += corruptionAmount;
 			}
 		}
 		
@@ -1197,8 +1238,12 @@ public class CoreScript extends BaseCampaignEventListener implements EveryFrameS
 		}
 		
 		//for (int i = 0; i < 100; i++) {
-		int crewSalary = Global.getSettings().getInt("crewSalary");
 		int marineSalary = Global.getSettings().getInt("marineSalary");
+		
+		if (Misc.isExtended()) {
+			marineSalary *= Global.getSettings().getFloat("ext_marineSalaryMult");
+			marineSalary = (int) marineSalary;
+		}
 		
 		float numIter = Global.getSettings().getFloat("economyIterPerMonth");
 		float f = 1f / numIter;
@@ -1214,12 +1259,48 @@ public class CoreScript extends BaseCampaignEventListener implements EveryFrameS
 		fleetNode.custom = MonthlyReport.FLEET;
 		fleetNode.tooltipCreator = report.getMonthlyReportTooltip();
 		
-		int crewCost = playerFleet.getCargo().getCrew() * crewSalary;
+		//int crewCost = Misc.computeTotalCrewSalaryForPlayerFleet();
 		FDNode crewNode = report.getNode(fleetNode, MonthlyReport.CREW);
-		crewNode.upkeep += crewCost * f;
-		crewNode.name = "Crew payroll";
+		//crewNode.upkeep += crewCost * f;
+		crewNode.name = "Active-duty crew payroll";
 		crewNode.custom = MonthlyReport.CREW;
 		crewNode.tooltipCreator = report.getMonthlyReportTooltip();
+		
+		
+		int crewSalary = Global.getSettings().getInt("crewSalary");
+		if (Misc.isExtended()) {
+			crewSalary *= Global.getSettings().getFloat("ext_crewSalaryMult");
+			crewSalary = (int) crewSalary;
+		}
+		int totalCrew = playerFleet.getCargo().getCrew();
+		int alreadyPaidCrew = 0;
+		
+		for (FleetMemberAPI member : playerFleet.getFleetData().getMembersListCopy()) {
+			int crew = (int) Math.min(member.getMinCrew(), member.getCrewComposition().getCrewInt());
+			if (crew <= 0) continue;
+			int currSalary = Misc.computeFleetMemberCrewSalary(member, true);
+			alreadyPaidCrew += crew;
+			
+			if (currSalary > 0) {
+				FDNode mNode = report.getNode(crewNode, member.getId()); 
+				//mNode.name = "Crew of the " + member.getShipName();
+				mNode.name = "" + member.getShipName();
+				mNode.upkeep += currSalary * f;
+				mNode.custom = member;
+			}
+		}
+
+		if ((totalCrew - alreadyPaidCrew) * crewSalary > 0) {
+			//FDNode reserveCrewNode = report.getNode(crewNode, MonthlyReport.RESERVE_CREW);
+			FDNode reserveCrewNode = report.getNode(fleetNode, MonthlyReport.RESERVE_CREW);
+			reserveCrewNode.name = "Reserve crew payroll";
+			reserveCrewNode.custom = MonthlyReport.RESERVE_CREW;
+			reserveCrewNode.tooltipCreator = report.getMonthlyReportTooltip();
+			reserveCrewNode.upkeep += Math.max(0, totalCrew - alreadyPaidCrew) * crewSalary * f;
+		}
+		
+		
+		
 		
 		int marineCost = playerFleet.getCargo().getMarines() * marineSalary;
 		if (marineSalary > 0) {
@@ -1241,8 +1322,6 @@ public class CoreScript extends BaseCampaignEventListener implements EveryFrameS
 //			}
 //		}
 		
-		
-		
 		//FDNode officersNode = report.getNode(MonthlyReport.OFFICERS);
 		FDNode officersNode = report.getNode(fleetNode, MonthlyReport.OFFICERS);
 		officersNode.name = "Officer payroll";
@@ -1251,12 +1330,30 @@ public class CoreScript extends BaseCampaignEventListener implements EveryFrameS
 		
 		
 		for (OfficerDataAPI od : playerFleet.getFleetData().getOfficersCopy()) {
-			float salary = Misc.getOfficerSalary(od.getPerson());
+			float salary = Misc.getOfficerSalary(od.getPerson(), true);
 			FDNode oNode = report.getNode(officersNode, od.getPerson().getId()); 
 			oNode.name = od.getPerson().getName().getFullName();
 			oNode.upkeep += salary * f;
 			oNode.custom = od;
 		}
+		
+		
+		float spacerShareMult = Global.getSettings().getFloat("ext_spacerSharePerMonth");
+		if (spacerShareMult > 0f && Misc.isSpacerShareEnabled()) {
+			int threshold = Misc.computeSpacerShareThreshold();
+			float credits = playerFleet.getCargo().getCredits().get();
+			if (credits > threshold) {
+				float share = (credits - threshold) * spacerShareMult;
+				if (share > 0) {
+					FDNode spacerShareNode = report.getNode(fleetNode, MonthlyReport.SPACER_SHARE);
+					spacerShareNode.upkeep += share * f;
+					spacerShareNode.name = "Spacer's share";
+					spacerShareNode.custom = MonthlyReport.SPACER_SHARE;
+					spacerShareNode.tooltipCreator = report.getMonthlyReportTooltip();
+				}
+			}
+		}
+		
 		
 		FDNode marketsNode = report.getNode(MonthlyReport.OUTPOSTS);
 		marketsNode.name = "Colonies";

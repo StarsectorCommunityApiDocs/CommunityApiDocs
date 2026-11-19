@@ -167,7 +167,8 @@ public class CodexTextEntryLoader {
 		try {
 			String csvName = "data/codex/text_codex_entries.csv";
 			Global.getLogger(CodexTextEntryLoader.class).info("Loading [" + csvName + "]");
-			JSONArray rows = Global.getSettings().loadCSV(csvName, true);
+			//JSONArray rows = Global.getSettings().loadCSV(csvName, true);
+			JSONArray rows = Global.getSettings().getMergedSpreadsheetData("filename", csvName);
 			
 			for (int i = 0; i < rows.length(); i++) {
 				JSONObject row = rows.getJSONObject(i);

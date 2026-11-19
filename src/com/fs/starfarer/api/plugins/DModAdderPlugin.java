@@ -13,6 +13,7 @@ public interface DModAdderPlugin extends GenericPlugin {
 		public boolean own;
 		public boolean canAddDestroyedMods;
 		public int num;
+		public String excludeTag;
 		public CampaignFleetAPI recoverer;
 		public Random random;
 	}

@@ -116,9 +116,13 @@ public class ShipRecoverySpecial extends BaseSalvageSpecial {
 		public Boolean storyPointRecovery = null;
 		public Boolean notNowOptionExits = null;
 		public Boolean noDescriptionText = null;
+		//public Boolean canNotBeNegatedByExtendedMode = null;
 		
-		public ShipRecoverySpecialData(String desc) {
+		public ShipRecoverySpecialData(String desc) {//, boolean canBeNegatedByExtendedMode) {
 			this.desc = desc;
+//			if (!canBeNegatedByExtendedMode) {
+//				this.canNotBeNegatedByExtendedMode = true;
+//			}
 		}
 		
 		public void addShip(PerShipData ship) {
@@ -166,6 +170,15 @@ public class ShipRecoverySpecial extends BaseSalvageSpecial {
 		
 		data = (ShipRecoverySpecialData) specialData;
 		
+//		if (Misc.isExtended()) {
+//			if (data.canNotBeNegatedByExtendedMode == null || data.canNotBeNegatedByExtendedMode == false) {
+//				float p = Global.getSettings().getFloat("ext_derelictShipRecoverableFraction");
+//				if (random.nextFloat() >= p) {
+//					data.ships.clear();
+//				}
+//			}
+//		}
+		
 //		int max = Global.getSettings().getMaxShipsInFleet() - Global.getSector().getPlayerFleet().getFleetData().getMembersListCopy().size();
 //		while (data.ships.size() > max && !data.ships.isEmpty()) {
 //			data.ships.remove(0);
@@ -182,6 +195,9 @@ public class ShipRecoverySpecial extends BaseSalvageSpecial {
 	protected List<FleetMemberAPI> recovered = new ArrayList<FleetMemberAPI>();
 	protected void init() {
 		members.clear();
+		
+//		data.ships.get(0).variant.setSource(VariantSource.REFIT);
+//		data.ships.get(0).variant.setHullVariantId(Misc.genUID());
 		
 		for (PerShipData curr : data.ships) {
 			addMember(curr);
@@ -234,7 +250,6 @@ public class ShipRecoverySpecial extends BaseSalvageSpecial {
 	
 	
 	protected void addInitialText() {
-		
 		if (data.noDescriptionText != null && data.noDescriptionText) {
 			return;
 		}
@@ -373,7 +388,7 @@ public class ShipRecoverySpecial extends BaseSalvageSpecial {
 		int dmods = getDmodsForCondition(shipData.condition);
 		
 		int reduction = (int) playerFleet.getStats().getDynamic().getValue(Stats.SHIP_DMOD_REDUCTION, 0);
-		reduction = random.nextInt(reduction + 1);
+		reduction = random.nextInt(Math.abs(reduction) + 1) * (int)Math.signum(reduction);
 		dmods -= reduction;
 		
 		
@@ -452,6 +467,16 @@ public class ShipRecoverySpecial extends BaseSalvageSpecial {
 	
 	protected int getDmodsForCondition(ShipCondition condition) {
 		if (condition == ShipCondition.PRISTINE) return 0;
+		
+		boolean reduceQuality = Misc.isExtended() && Global.getSettings().getBoolean("ext_reduceDerelictQuality");
+		if (reduceQuality) {
+			switch (condition) {
+			case GOOD: return 1 + random.nextInt(1);
+			case AVERAGE: return 2 + random.nextInt(2);
+			case BATTERED: return 3 + random.nextInt(3);
+			case WRECKED: return 4 + random.nextInt(2);
+			}
+		}
 		
 		switch (condition) {
 		case GOOD: return 1;
@@ -591,9 +616,11 @@ public class ShipRecoverySpecial extends BaseSalvageSpecial {
 							
 							float hull = (float) Math.random() * (maxHull - minHull) + minHull;
 							hull = Math.max(hull, member.getStatus().getHullFraction());
+							if (hull > 1f) hull = 1f;
 							member.getStatus().setHullFraction(hull);
 							
 							float cr = (float) Math.random() * (maxCR - minCR) + minCR;
+							if (cr > 0.7f) cr = 0.7f;
 							member.getRepairTracker().setCR(cr);
 							
 							playerFleet.getFleetData().addFleetMember(member);

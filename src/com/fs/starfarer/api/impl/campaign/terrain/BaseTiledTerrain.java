@@ -260,7 +260,7 @@ public abstract class BaseTiledTerrain extends BaseTerrain {
 		
 		float xEnd = (int)((llx + vw - x + extra) / size) + 1;
 		if (xEnd >= tiles.length) xEnd = tiles.length - 1;
-		float yEnd = (int)((lly + vw - y + extra) / size) + 1;
+		float yEnd = (int)((lly + vh - y + extra) / size) + 1;
 		if (yEnd >= tiles.length) yEnd = tiles[0].length - 1;
 		
 		renderSubArea(xStart, xEnd, yStart, yEnd, 1f, 1, v.getAlphaMult());
@@ -298,7 +298,7 @@ public abstract class BaseTiledTerrain extends BaseTerrain {
 		
 		float xEnd = (int)((llx + vw - x + extra) / size) + 1;
 		if (xEnd >= tiles.length) xEnd = tiles.length - 1;
-		float yEnd = (int)((lly + vw - y + extra) / size) + 1;
+		float yEnd = (int)((lly + vh - y + extra) / size) + 1;
 		if (yEnd >= tiles.length) yEnd = tiles[0].length - 1;
 		
 		if (i < xStart) return false;

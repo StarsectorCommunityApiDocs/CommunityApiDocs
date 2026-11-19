@@ -49,4 +49,6 @@ public interface CombatUIAPI {
 
 	boolean isStrafeToggledOn();
 	void setStrafeToggledOn(boolean strafeToggledOn);
+	
+	public CombatViewOffsetAPI getViewMouseOffset();
 }

@@ -97,7 +97,7 @@ public class BaseDwellerShipCreator implements DwellerShipCreator {
 		//ship.setDoNotRender(true);
 				
 		//ship.setExplosionScale(0.75f);
-		ship.setExplosionScale(0.001f); // no 0 so the explosion sound plays
+		ship.setExplosionScale(0.001f); // not 0 so the explosion sound plays
 		ship.setHulkChanceOverride(0f);
 		ship.setImpactVolumeMult(IMPACT_VOLUME_MULT);
 		ship.getArmorGrid().clearComponentMap(); // no damage to weapons/engines

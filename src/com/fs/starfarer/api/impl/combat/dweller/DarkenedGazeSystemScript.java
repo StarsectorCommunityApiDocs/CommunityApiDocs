@@ -122,6 +122,17 @@ public class DarkenedGazeSystemScript extends BaseShipSystemScript implements Sh
 		
 		DwellerShroud shroud = DwellerShroud.getShroudFor(ship);
 		
+		//if (state == State.IN || state == State.ACTIVE || state == State.OUT) {
+		if (state == State.ACTIVE || state == State.OUT) {
+			ship.blockCommandForOneFrame(ShipCommand.ACCELERATE);
+//			ship.blockCommandForOneFrame(ShipCommand.ACCELERATE_BACKWARDS);
+//			ship.blockCommandForOneFrame(ShipCommand.STRAFE_LEFT);
+//			ship.blockCommandForOneFrame(ShipCommand.STRAFE_RIGHT);
+			if (ship.getVelocity().length() > ship.getMaxSpeedWithoutBoost() * 0.33f) {
+				ship.giveCommand(ShipCommand.DECELERATE, null, 0);
+			}
+		}
+		
 		if (state == State.IN) {
 			if (shield != null) {
 				float currOpening = effectLevel * SHIELD_OPENING;

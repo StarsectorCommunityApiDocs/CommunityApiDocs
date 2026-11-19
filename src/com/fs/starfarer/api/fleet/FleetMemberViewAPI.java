@@ -31,5 +31,7 @@ public interface FleetMemberViewAPI {
 	void setUseCircularJitter(boolean circular);
 	void setJitterDirection(Vector2f jitterDirection);
 	void setJitterLength(float jitterLength);
+	boolean isOffsetOverridden();
+	void setOffsetOverridden(boolean offsetOverridden);
 
 }

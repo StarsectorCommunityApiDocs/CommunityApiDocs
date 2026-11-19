@@ -43,6 +43,7 @@ public class CargoPods extends BaseCommandPlugin {
 	
 	
 	public static final float BREAK_KEEP_FRACTION = 0.5f;
+	public static int STABILIZE_DAYS = 500;
 	
 	
 	protected CampaignFleetAPI playerFleet;
@@ -121,7 +122,7 @@ public class CargoPods extends BaseCommandPlugin {
 		
 		memory.set("$stabilizeSupplies", (int) stabilizeSupplies, 0f);
 		
-		float stabilizeDays = 400;
+		float stabilizeDays = STABILIZE_DAYS;
 		memory.set("$stabilizeDays", (int) stabilizeDays, 0f);
 	}
 	
@@ -233,7 +234,7 @@ public class CargoPods extends BaseCommandPlugin {
 		
 		float daysLeft = plugin.getDaysLeft();
 		String atLeastTime = Misc.getAtLeastStringForDays((int) daysLeft);
-		text.addParagraph("Working with the cargo has destablized the orbit, but the pods should still be trackable for " + atLeastTime + ".");
+		text.addParagraph("Working with the cargo has destabilized the orbit, but the pods should still be trackable for " + atLeastTime + ".");
 		
 		memory.unset("$stabilized");
 	}

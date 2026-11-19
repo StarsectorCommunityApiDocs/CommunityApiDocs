@@ -482,7 +482,7 @@ public class NearbyEventsEvent extends BaseEventPlugin implements RouteFleetSpaw
 		NESpawnData data = (NESpawnData) route.getCustom();
 		
 		if (data.type == DistressEventType.PIRATE_AMBUSH_TRAP) {
-			float tf = PirateBaseManager.getInstance().getStandardTimeFactor();
+			float tf = PirateBaseManager.getStandardTimeFactor();
 			int points = (int) (10 + new Random().nextInt(20) * tf);
 			
 			CampaignFleetAPI fleet = PirateFleetManager.createPirateFleet(points, null, data.location.getLocation());
@@ -496,7 +496,7 @@ public class NearbyEventsEvent extends BaseEventPlugin implements RouteFleetSpaw
 			}
 			return fleet;
 		} else if (data.type == DistressEventType.PIRATE_AMBUSH) {
-			float tf = PirateBaseManager.getInstance().getStandardTimeFactor();
+			float tf = PirateBaseManager.getStandardTimeFactor();
 			int points = (int) (10 + new Random().nextInt(20) * tf);
 			
 			CampaignFleetAPI fleet = PirateFleetManager.createPirateFleet(points, null, data.location.getLocation());

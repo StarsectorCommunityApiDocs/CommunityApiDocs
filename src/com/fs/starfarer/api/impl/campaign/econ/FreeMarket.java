@@ -45,6 +45,7 @@ public class FreeMarket extends BaseMarketConditionPlugin implements MarketImmig
 			return;
 		}
 		if (amount <= 0) return;
+		if (Global.getSector().isPaused()) return;
 		
 		super.advance(amount);
 		

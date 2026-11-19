@@ -63,10 +63,16 @@ public class AbyssalGlareEffect implements BeamEffectPlugin {
 //			((ShipAPI)beam.getDamageTarget()).setSkipNextDamagedExplosion(true);
 //		}
 		
+		float mult = Global.getCombatEngine().getTimeMult().getModifiedValue();
+		if (mult < 0.1f) mult = 0.1f;
+		float lengthChangeThreshold = 180f/mult * amount +
+				Math.max(1f, beam.getSource().getMutableStats().getTimeMult().getModifiedValue()) * 10f;
+
 		boolean hasDamageTarget = beam.getDamageTarget() != null;
 		boolean lengthChanged = prevTo == null || 
-						Math.abs(Misc.getDistance(prevFrom, prevTo) - Misc.getDistance(from, to)) > 2f;
+						Math.abs(Misc.getDistance(prevFrom, prevTo) - Misc.getDistance(from, to)) > lengthChangeThreshold;
 		
+						
 		boolean forceRiftSpawn = (hasDamageTarget && !hadDamageTargetPrev) ||
 						(!lengthChanged && lengthChangedPrev);
 		if (!primary) forceRiftSpawn = false;

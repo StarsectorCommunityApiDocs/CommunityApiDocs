@@ -111,6 +111,7 @@ public class SalvageDefenderInteraction extends BaseCommandPlugin {
 						memory.unset("$defenderFleet");
 						memory.set("$defenderFleetDefeated", true);
 						entity.removeScriptsOfClass(FleetAdvanceScript.class);
+						dialog.setPromptText("You decide to...");
 						FireBest.fire(null, dialog, memoryMap, "BeatDefendersContinue");
 					} else {
 						boolean persistDefenders = false;
@@ -185,28 +186,36 @@ public class SalvageDefenderInteraction extends BaseCommandPlugin {
 							continue;
 						}
 					}
-					if (config.salvageRandom.nextFloat() < playerContribMult) {
-						DropData drop = new DropData();
-						drop.chances = 1;
-						drop.value = -1;
-						switch (data.getMember().getHullSpec().getHullSize()) {
-						case CAPITAL_SHIP:
-							drop.group = Drops.AI_CORES3;
-							drop.chances = 2;
-							break;
-						case CRUISER:
-							drop.group = Drops.AI_CORES3;
-							break;
-						case DESTROYER:
-							drop.group = Drops.AI_CORES2;
-							break;
-						case FIGHTER:
-						case FRIGATE:
-							drop.group = Drops.AI_CORES1;
-							break;
-						}
-						if (drop.group != null) {
-							dropRandom.add(drop);
+					
+					if (data.getMember() != null && context.getBattle() != null) {
+						CampaignFleetAPI fleet = context.getBattle().getSourceFleet(data.getMember());
+						if (fleet != null && 
+								(fleet.getFaction().getId().equals(Factions.OMEGA) ||
+								fleet.getFaction().getId().equals(Factions.DERELICT))) {
+							if (config.salvageRandom.nextFloat() < playerContribMult) {
+								DropData drop = new DropData();
+								drop.chances = 1;
+								drop.value = -1;
+								switch (data.getMember().getHullSpec().getHullSize()) {
+								case CAPITAL_SHIP:
+									drop.group = Drops.AI_CORES3;
+									drop.chances = 2;
+									break;
+								case CRUISER:
+									drop.group = Drops.AI_CORES3;
+									break;
+								case DESTROYER:
+									drop.group = Drops.AI_CORES2;
+									break;
+								case FIGHTER:
+								case FRIGATE:
+									drop.group = Drops.AI_CORES1;
+									break;
+								}
+								if (drop.group != null) {
+									dropRandom.add(drop);
+								}
+							}
 						}
 					}
 				}

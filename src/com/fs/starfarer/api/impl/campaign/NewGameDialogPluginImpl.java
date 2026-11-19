@@ -134,7 +134,11 @@ public class NewGameDialogPluginImpl implements InteractionDialogPlugin {
 				visual.showPersonInfo(data.getPerson(), true);
 				options.clearOptions();
 				state = State.CHOICES;
-				fireBest("BeginNewGameCreation");
+				if (data.isExtMode()) {
+					fireBest("BeginNewGameCreationExt");
+				} else {
+					fireBest("BeginNewGameCreation");
+				}
 				break;
 			}
 		}

@@ -23,6 +23,7 @@ import com.fs.starfarer.api.campaign.FactionSpecAPI;
 import com.fs.starfarer.api.campaign.LocationAPI;
 import com.fs.starfarer.api.campaign.PlanetSpecAPI;
 import com.fs.starfarer.api.campaign.SectorEntityToken;
+import com.fs.starfarer.api.campaign.SpecialItemPlugin.SpecialItemRendererAPI;
 import com.fs.starfarer.api.campaign.SpecialItemSpecAPI;
 import com.fs.starfarer.api.campaign.econ.CommoditySpecAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
@@ -53,7 +54,9 @@ import com.fs.starfarer.api.loading.EventSpecAPI;
 import com.fs.starfarer.api.loading.FighterWingSpecAPI;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
 import com.fs.starfarer.api.loading.IndustrySpecAPI;
+import com.fs.starfarer.api.loading.MissileSpecAPI;
 import com.fs.starfarer.api.loading.PersonMissionSpec;
+import com.fs.starfarer.api.loading.ProjectileSpecAPI;
 import com.fs.starfarer.api.loading.RoleEntryAPI;
 import com.fs.starfarer.api.loading.TerrainSpecAPI;
 import com.fs.starfarer.api.loading.WeaponSlotAPI;
@@ -62,9 +65,14 @@ import com.fs.starfarer.api.plugins.LevelupPlugin;
 import com.fs.starfarer.api.ui.ButtonAPI;
 import com.fs.starfarer.api.ui.ButtonAPI.UICheckboxSize;
 import com.fs.starfarer.api.ui.CustomPanelAPI;
+import com.fs.starfarer.api.ui.DataGridAPI;
 import com.fs.starfarer.api.ui.LabelAPI;
+import com.fs.starfarer.api.ui.PositionAPI;
+import com.fs.starfarer.api.ui.ScrollPanelAPI;
+import com.fs.starfarer.api.ui.SliderAPI;
 import com.fs.starfarer.api.ui.TextFieldAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
+import com.fs.starfarer.api.ui.UIPanelAPI;
 import com.fs.starfarer.api.util.ListMap;
 
 /**
@@ -74,6 +82,9 @@ import com.fs.starfarer.api.util.ListMap;
  */
 public interface SettingsAPI {
 	int getBattleSize();
+	void setBattleSize(int battleSize);
+	
+	float getTooltipDelay();
 	
 	boolean isShowingCodex();
 	
@@ -90,6 +101,7 @@ public interface SettingsAPI {
 	float getBonusXP(String key);
 	
 	float getFloat(String key);
+	float optFloat(String key, float defVal);
 	boolean getBoolean(String key);
 	boolean optBoolean(String key, boolean defaultValue);
 	ClassLoader getScriptClassLoader();
@@ -223,6 +235,8 @@ public interface SettingsAPI {
 	
 	
 	WeaponSpecAPI getWeaponSpec(String weaponId);
+	ProjectileSpecAPI getProjectileSpec(String projId);
+	MissileSpecAPI getMissileSpec(String missileId);
 
 	void loadTexture(String filename) throws IOException;
 
@@ -410,6 +424,7 @@ public interface SettingsAPI {
 
 	boolean fileExistsInCommon(String filename);
 	void deleteTextFileFromCommon(String filename);
+	void deleteEmptyFolderFromCommon(String filename);
 	
 	Color getBasePlayerColor();
 	Color getDesignTypeColor(String designType);
@@ -477,6 +492,7 @@ public interface SettingsAPI {
 	boolean isShowDamageFloaties();
 
 	float getFloatFromArray(String key, int index);
+	float optFloatFromArray(String key, int index, float defVal);
 
 	int getIntFromArray(String key, int index);
 
@@ -600,6 +616,29 @@ public interface SettingsAPI {
 			  Vector2f from, Vector2f to,
 			  float weaponSpeed, float burstFireDuration, float weaponRange);
 	public float getSafeMovementDir(ShipAPI ship);
+	
+	public SpecialItemRendererAPI createSpecialItemRenderer(CargoStackAPI stack);
+	
+	public float getMusicVolume();
+	public float getSoundVolume();
+	
+	/**
+	 * Intended for use with custom components wrapped by UIPanelAPI.wrapAndAdd().
+	 * @return
+	 */
+	public PositionAPI createPosition();
+	public DataGridAPI createDataGrid(String font, float width, float itemWidth, float forUnits, float rowHeight);
+	
+	public boolean hasKey(String key);
+	public int optIntFromArray(String key, int index, int defVal);
+	
+	public ScrollPanelAPI createScroller();
+	public SliderAPI createSlider(String text, float rangeMin, float rangeMax);
+	
+	public UIPanelAPI getScreenPanel();
+	public List<ProjectileSpecAPI> getAllProjectileSpecs();
+	public List<MissileSpecAPI> getAllMissileSpecs();
 }
+
 
 	

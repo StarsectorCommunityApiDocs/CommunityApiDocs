@@ -1,7 +1,8 @@
 package com.fs.starfarer.api.impl.campaign;
 
-import java.awt.Color;
 import java.util.List;
+
+import java.awt.Color;
 
 import org.lwjgl.opengl.GL11;
 
@@ -84,6 +85,8 @@ public class ExampleCustomUIPanel extends BaseCustomUIPanelPlugin {
 //		mouseY = Mouse.getY();
 		sprite.setAlphaMult(alphaMult);
 		sprite.renderAtCenter(mouseX, mouseY);
+		
+		//throw new RuntimeException("wefklhwefw");
 		
 	}
 

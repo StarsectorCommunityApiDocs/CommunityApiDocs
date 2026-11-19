@@ -108,6 +108,7 @@ public interface SoundPlayerAPI {
 	void pauseMusic();
 
 	void setNextLoopFadeInAndOut(float nextLoopFadeIn, float nextLoopFadeOut);
+	void stopCurrentMusicInstantly();
 }
 
 

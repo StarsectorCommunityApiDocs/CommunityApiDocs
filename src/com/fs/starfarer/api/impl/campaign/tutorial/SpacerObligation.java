@@ -21,6 +21,8 @@ public class SpacerObligation implements EconomyTickListener, TooltipCreator {
 	}
 	
 	public void reportEconomyTick(int iterIndex) {
+		if (Misc.isSpacerShareEnabled()) return;
+		
 		int lastIterInMonth = (int) Global.getSettings().getFloat("economyIterPerMonth") - 1;
 		if (iterIndex != lastIterInMonth) return;
 		
@@ -38,7 +40,8 @@ public class SpacerObligation implements EconomyTickListener, TooltipCreator {
 	}
 	
 	protected int getDebt() {
-		return DEBT_BASE + (Global.getSector().getPlayerStats().getLevel() - 1) * DEBT_PER_LEVEL;
+		int extraPerLevel = Misc.isExtended() ? Global.getSettings().getInt("ext_extraSpacerDebtPerLevel") : 0; 
+		return DEBT_BASE + (Global.getSector().getPlayerStats().getLevel() - 1) * (DEBT_PER_LEVEL + extraPerLevel);
 	}
 
 	public void reportEconomyMonthEnd() {

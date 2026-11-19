@@ -1,7 +1,8 @@
 package com.fs.starfarer.api.impl.campaign.intel.deciv;
 
-import java.awt.Color;
 import java.util.Set;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.FactionAPI;
@@ -29,6 +30,7 @@ public class DecivIntel extends BaseIntelPlugin {
 		this.warning = warning;
 		this.faction = market.getFaction();
 		name = market.getName();
+		
 	}
 	
 	protected void addBulletPoints(TooltipMakerAPI info, ListInfoMode mode) {
@@ -89,6 +91,8 @@ public class DecivIntel extends BaseIntelPlugin {
 		}
 		
 		addBulletPoints(info, ListInfoMode.IN_DESC);
+		
+		addDeleteButton(info, width);
 	}
 	
 	@Override

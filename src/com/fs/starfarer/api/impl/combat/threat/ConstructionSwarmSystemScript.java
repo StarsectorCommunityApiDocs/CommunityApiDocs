@@ -31,6 +31,8 @@ public class ConstructionSwarmSystemScript extends BaseShipSystemScript {
 //	public static float COOLDOWN_DP_MULT = 0.25f;
 	public static int BASE_FRAGMENTS = 50;
 	
+	public static float OTHER_SHIP_WEIGHT_PER_OVERSEER = 6f;
+	
 	public static float CONSTRUCTION_SWARM_SPEED_MULT = 0.33f;
 //	public static float BASE_CONSTRUCTION_TIME = 2f;
 //	public static float CONSTRUCTION_TIME_DP_MULT = 1f;
@@ -331,7 +333,7 @@ public class ConstructionSwarmSystemScript extends BaseShipSystemScript {
 		float combatWeight = getCombatWeightDeployed(manager);
 		
 		
-		int wantOverseers = (int) (combatWeight / 8f);
+		int wantOverseers = (int) Math.round(combatWeight / OTHER_SHIP_WEIGHT_PER_OVERSEER);
 		if (wantOverseers < 1) wantOverseers = 1;
 		
 		combatWeight += Math.max(0, fabricators - 1f) * 16f;

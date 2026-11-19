@@ -72,11 +72,17 @@ public class OrbitalStation extends BaseIndustry implements FleetEventListener {
 		demand(Commodities.CREW, size);
 		demand(Commodities.SUPPLIES, size);
 		
+		float mult = getDeficitMult(Commodities.SUPPLIES);
+		String extra = "";
+		if (mult != 1) {
+			String com = getMaxDeficit(Commodities.SUPPLIES).one;
+			extra = " (" + getDeficitText(com).toLowerCase() + ")";
+		}
 		float bonus = DEFENSE_BONUS_BASE;
 		if (battlestation) bonus = DEFENSE_BONUS_BATTLESTATION;
 		else if (starfortress) bonus = DEFENSE_BONUS_FORTRESS;
 		market.getStats().getDynamic().getMod(Stats.GROUND_DEFENSES_MOD)
-						.modifyMult(getModId(), 1f + bonus, getNameForModifier());
+						.modifyMult(getModId(), 1f + bonus * mult, getNameForModifier() + extra);
 		
 		matchCommanderToAICore(aiCoreId);
 		

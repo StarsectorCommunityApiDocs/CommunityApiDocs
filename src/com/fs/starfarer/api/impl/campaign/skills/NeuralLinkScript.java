@@ -18,6 +18,7 @@ import com.fs.starfarer.api.combat.DeployedFleetMemberAPI;
 import com.fs.starfarer.api.combat.ShipAIPlugin;
 import com.fs.starfarer.api.combat.ShipAPI;
 import com.fs.starfarer.api.combat.ShipCommand;
+import com.fs.starfarer.api.combat.ShipwideAIFlags.AIFlags;
 import com.fs.starfarer.api.combat.ViewportAPI;
 import com.fs.starfarer.api.combat.WeaponGroupAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Stats;
@@ -483,6 +484,13 @@ public class NeuralLinkScript extends BaseEveryFrameCombatPlugin {
 		
 		if (playerShipAI != null) {
 			playerShip.setShipAI(playerShipAI); // not the player ship anymore, the old ship
+		}
+		
+		if (playerShip.getShield() != null && playerShip.getShield().isOn()) {
+			playerShip.getAIFlags().setFlag(AIFlags.KEEP_SHIELDS_ON, 1f);
+		} else if (playerShip.isReallyPhaseShip() && playerShip.getPhaseCloak() != null &&
+				(playerShip.getPhaseCloak().isActive() || playerShip.getPhaseCloak().isChargeup())) {
+			playerShip.getAIFlags().setFlag(AIFlags.STAY_PHASED, 1f);
 		}
 		
 		boolean autopilot = engine.getCombatUI().isAutopilotOn();

@@ -813,12 +813,6 @@ public interface ShipAPI extends CombatEntityAPI {
 	 * Being mostly ignored by enemy ships due to the IGNORE order.
 	 * @return
 	 */
-	boolean isBeingIgnored();
-	
-	/**
-	 * Being mostly ignored by enemy ships due to the IGNORE order.
-	 * @return
-	 */
 	void setBeingIgnored(boolean beingIgnored);
 
 
@@ -826,6 +820,23 @@ public interface ShipAPI extends CombatEntityAPI {
 
 
 	void setFleetMember(FleetMemberAPI member);
+
+
+	boolean isWasHulk();
+	void setWasHulk(boolean wasHulk);
+
+
+	boolean isReallyPhaseShip();
+	
+	/**
+	 * Being mostly ignored by enemy ships due to the IGNORE order.
+	 * If byAlly == true, always returns false.
+	 * @return
+	 */
+	boolean isBeingIgnored(boolean byAlly);
+
+	List<ShipCommand> getCommands2();
+	List<ShipCommand> getBlockedCommands2();
 }
 
 

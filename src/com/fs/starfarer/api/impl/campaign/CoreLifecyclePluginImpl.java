@@ -442,6 +442,7 @@ import com.fs.starfarer.api.impl.campaign.velfield.SlipstreamTerrainPlugin2.Slip
 import com.fs.starfarer.api.impl.campaign.velfield.SlipstreamTerrainPlugin2.SlipstreamSegment;
 import com.fs.starfarer.api.impl.campaign.velfield.SlipstreamVisibilityManager;
 import com.fs.starfarer.api.impl.campaign.world.GateHaulerLocation;
+import com.fs.starfarer.api.impl.campaign.world.JuvenileDweller;
 import com.fs.starfarer.api.impl.campaign.world.Limbo;
 import com.fs.starfarer.api.impl.campaign.world.NamelessRock;
 import com.fs.starfarer.api.impl.campaign.world.TTBlackSite;
@@ -503,9 +504,12 @@ public class CoreLifecyclePluginImpl extends BaseModPlugin {
 			SectorProcGen.clearAbyssalHyperspaceAndSetSystemTags();
 		}
 		
+		
 		if (Global.getSector().getStarSystem("nameless_rock_location") == null) {
 			new NamelessRock().generate(Global.getSector());
 		}
+		
+		JuvenileDweller.spawnIfNeeded();
 		
 		// the token replacement generators don't get saved
 		// add them on every game load
@@ -537,6 +541,26 @@ public class CoreLifecyclePluginImpl extends BaseModPlugin {
 		if (People.getPerson(People.REYNARD_HANNAN) == null) {
 			People.addReynardHannan();
 		}
+		
+		if (People.getPerson(People.GALLU_BLANC) == null)
+			People.addGalluBlanc();
+		
+		if (People.getPerson(People.SIMISOLA) == null) {
+			People.addTobeSimisola();
+		}
+		
+		if (People.getPerson(People.BELLAMY_KANTA) == null) {
+			People.addBellamyKanta();
+		}
+		
+		if (People.getPerson(People.KO_JOVE) == null) {
+			People.addKOJove();
+		}
+		
+		if (People.getPerson(People.FARO_INESIS) == null) {
+			People.addFaroInesis();
+		}
+		
 	}
 	
 	public static void verifyFactionData() {
@@ -600,6 +624,11 @@ public class CoreLifecyclePluginImpl extends BaseModPlugin {
 		
 		if (Global.getSettings().isDevMode()) {
 			listeners.addListener(new TestIndustryOptionProvider(), true);
+		}
+		
+		
+		if (!listeners.hasListenerOfClass(DomainGradePartsPlugin.class)) {
+			listeners.addListener(new DomainGradePartsPlugin(), true);
 		}
 		
 		if (!listeners.hasListenerOfClass(StandardGroundRaidObjectivesCreator.class)) {
@@ -791,6 +820,13 @@ public class CoreLifecyclePluginImpl extends BaseModPlugin {
 			sector.addScript(new HasslePlayerScript());
 		}
 		
+		if (!sector.hasScript(RetirementScript.class)) {
+			sector.addScript(new RetirementScript());
+		}
+		if (!sector.hasScript(OfficerTracker.class)) {
+			sector.addScript(new OfficerTracker());
+		}
+		
 		PlaythroughLog.getInstance();
 		
 		sector.getListenerManager().addListener(new SkillsChangeRemoveExcessOPEffect(), true);
@@ -889,29 +925,38 @@ public class CoreLifecyclePluginImpl extends BaseModPlugin {
 		}
 		
 		// only leave bounties at ancyra, jangala, and one other market at game start
-		boolean first = true;
-		for (EveryFrameScript s : SystemBountyManager.getInstance().getActive()) {
-			SystemBountyIntel intel = (SystemBountyIntel) s;
-			if (intel.getMarket().getId().equals("ancyra_market") ||
-					intel.getMarket().getId().equals("jangala")) {
-				intel.setElapsedDays(intel.getElapsedDays() * (float) Math.random() * 0.25f);
-				continue;
+		if (!Misc.isExtended()) {
+			boolean first = true;
+			for (EveryFrameScript s : SystemBountyManager.getInstance().getActive()) {
+				SystemBountyIntel intel = (SystemBountyIntel) s;
+				if (intel.getMarket().getId().equals("ancyra_market") ||
+						intel.getMarket().getId().equals("jangala")) {
+					intel.setElapsedDays(intel.getElapsedDays() * (float) Math.random() * 0.25f);
+					continue;
+				}
+				
+				if (first) {
+					first = false;
+					intel.setElapsedDays(intel.getElapsedDays() * (float) Math.random() * 0.25f);
+					continue;
+				}
+				
+				intel.endImmediately();
 			}
 			
-			if (first) {
-				first = false;
-				intel.setElapsedDays(intel.getElapsedDays() * (float) Math.random() * 0.25f);
-				continue;
+			MarketAPI jangala = Global.getSector().getEconomy().getMarket("jangala");
+			if (jangala != null) {
+				SystemBountyManager.getInstance().addOrResetBounty(jangala);
 			}
-			
-			intel.endImmediately();
+		} else {
+			for (EveryFrameScript curr : SystemBountyManager.getInstance().getActive()) {
+				if (curr instanceof SystemBountyIntel intel) {
+					intel.setElapsedDays(intel.getElapsedDays() * (float) Math.random() * 0.25f);
+				}
+			}
 		}
 		
 		
-		MarketAPI jangala = Global.getSector().getEconomy().getMarket("jangala");
-		if (jangala != null) {
-			SystemBountyManager.getInstance().addOrResetBounty(jangala);
-		}
 		
 		
 //		CampaignEventManagerAPI eventManager = Global.getSector().getEventManager();
@@ -1071,8 +1116,32 @@ public class CoreLifecyclePluginImpl extends BaseModPlugin {
 		id = Missions.ABYSSAL_SPACE_ODDITY;
 		//Misc.makeStoryCritical("galatia_academy", id); // n/a
 		
-		id = Missions.KANTA_LIBRE; // Like, not a real mission. Yet? Set so Kanta's Den doesn't deciv and break Stuff. -dgb
+		id = Missions.KANTA_LIBRE; // Like, not a real mission. "Yet"? Set so Kanta's Den doesn't deciv and break Stuff. -dgb
 		Misc.makeStoryCritical("kantas_den", id);
+		
+		id = Missions.SEVEN_SONS;
+		Misc.makeStoryCritical("yesod", id);
+		Misc.makeStoryCritical("orthrus", id);
+		Misc.makeStoryCritical("nomios", id);
+		Misc.makeStoryCritical("qaras", id);
+		// kazeron, ragnar_complex, achaman_station ?
+		
+		id = Missions.SUPREME_EXECUTOR;
+		Misc.makeStoryCritical("sindria", id);
+		Misc.makeStoryCritical("volturn", id);
+		Misc.makeStoryCritical("umbra", id);
+		Misc.makeStoryCritical("nortia", id);
+		Misc.makeStoryCritical("cruor", id);
+		Misc.makeStoryCritical("kazeron", id);
+		Misc.makeStoryCritical("eochu_bres", id); // Arroyo is there and TT in general needs to exist -am
+		// ragnar?
+		
+		id = Missions.SPIDERS_WEB;
+		Misc.makeStoryCritical("qaras", id);
+		Misc.makeStoryCritical("salamanca", id);
+		Misc.makeStoryCritical("eventide", id);
+		Misc.makeStoryCritical("yesod", id);
+		Misc.makeStoryCritical("ilm", id);
 	}
 	
 	public void tagLuddicShrines() {
@@ -3127,7 +3196,7 @@ public class CoreLifecyclePluginImpl extends BaseModPlugin {
 		
 		
 		if (ship.getHullSpec().hasTag(Tags.THREAT)) {
-			ShipAIConfig config = new ShipAIConfig();
+			ShipAIConfig config = new ShipAIConfig(ship);
 			
 			//boolean overseer = ship.getHullSpec().getHullId().equals("overseer_unit");
 			
@@ -3156,7 +3225,7 @@ public class CoreLifecyclePluginImpl extends BaseModPlugin {
 		}
 		
 		if (ship.getHullSpec().hasTag(Tags.DWELLER)) {
-			ShipAIConfig config = new ShipAIConfig();
+			ShipAIConfig config = new ShipAIConfig(ship);
 			
 			if (ship.getHullSpec().hasTag(Tags.DWELLER_TIMID)) {
 				config.personalityOverride = Personalities.TIMID;
@@ -3197,7 +3266,7 @@ public class CoreLifecyclePluginImpl extends BaseModPlugin {
 		
 		//HullSize size = ship.getHullSize();
 		
-		ShipAIConfig config = new ShipAIConfig();
+		ShipAIConfig config = new ShipAIConfig(ship);
 		config.alwaysStrafeOffensively = true;
 		config.backingOffWhileNotVentingAllowed = false;
 		config.turnToFaceWithUndamagedArmor = false;

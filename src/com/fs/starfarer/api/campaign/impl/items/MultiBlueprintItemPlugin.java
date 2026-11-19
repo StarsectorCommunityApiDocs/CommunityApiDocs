@@ -14,10 +14,13 @@ import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CargoStackAPI;
 import com.fs.starfarer.api.campaign.CargoTransferHandlerAPI;
 import com.fs.starfarer.api.campaign.FactionAPI;
+import com.fs.starfarer.api.campaign.SpecialItemSpecAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.campaign.econ.SubmarketAPI;
 import com.fs.starfarer.api.combat.ShipHullSpecAPI;
 import com.fs.starfarer.api.graphics.SpriteAPI;
+import com.fs.starfarer.api.impl.SharedUnlockData;
+import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.loading.FighterWingSpecAPI;
 import com.fs.starfarer.api.loading.WeaponSpecAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
@@ -300,6 +303,13 @@ public class MultiBlueprintItemPlugin extends BaseSpecialItemPlugin implements B
 						"" + fCount, Misc.getHighlightColor());
 			}
 
+		}
+		
+		if (stack != null) {
+			SpecialItemSpecAPI spec = stack.getSpecialItemSpecIfSpecial();
+			if (spec != null && spec.hasTag(Tags.CODEX_UNLOCKABLE)) {
+				SharedUnlockData.get().reportPlayerAwareOfSpecialItem(spec.getId(), true);
+			}
 		}
 	}
 

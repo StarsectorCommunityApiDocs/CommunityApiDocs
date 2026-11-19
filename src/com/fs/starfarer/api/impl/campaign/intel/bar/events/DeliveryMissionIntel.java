@@ -1,7 +1,8 @@
 package com.fs.starfarer.api.impl.campaign.intel.bar.events;
 
-import java.awt.Color;
 import java.util.Set;
+
+import java.awt.Color;
 
 import org.apache.log4j.Logger;
 
@@ -184,7 +185,7 @@ public class DeliveryMissionIntel extends BaseMissionIntel {
 		stack.setSize(event.getQuantity());
 		tradeData.addToTrackedPlayerSold(stack, totalReward);
 		
-		Misc.affectAvailabilityWithinReason(getCommodity(), event.getQuantity());
+		Misc.affectAvailabilityWithinReason(getCommodity(), (int) (event.getQuantity() * 0.25f));
 	}
 	
 	

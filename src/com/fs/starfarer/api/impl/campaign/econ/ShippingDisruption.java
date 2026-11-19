@@ -1,16 +1,17 @@
 package com.fs.starfarer.api.impl.campaign.econ;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.econ.CommodityOnMarketAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.campaign.econ.MarketConditionAPI;
-import com.fs.starfarer.api.combat.MutableStatWithTempMods;
 import com.fs.starfarer.api.combat.MutableStat.StatMod;
+import com.fs.starfarer.api.combat.MutableStatWithTempMods;
 import com.fs.starfarer.api.impl.campaign.ids.Conditions;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.CountingMap;
@@ -19,7 +20,7 @@ import com.fs.starfarer.api.util.Misc;
 public class ShippingDisruption extends BaseMarketConditionPlugin {
 	
 	public static String COMMODITY_LOSS_PREFIX = "sh_loss";
-	public static float ACCESS_LOSS_DURATION = 90f;
+	public static float ACCESS_LOSS_DURATION = 120f;
 	
 	public static float ACCESS_PER_UNITS_LOST = 0.1f; // accessibility penalty per marketSize units lost
 	

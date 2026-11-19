@@ -43,6 +43,22 @@ public interface PositionAPI {
 	
 	void setSuspendRecompute(boolean suspendRecompute);
 	boolean isSuspendRecompute();
+	void recompute();
+	void setHeight(float height);
+	void setWidth(float width);
+	void setRoundCoordinates(boolean roundCoordinates);
+	
+	void add2(PositionAPI p);
+	void remove2(PositionAPI p);
+	void clearChildren();
+	PositionAPI getParent();
+	PositionAPI setParent2(PositionAPI parent);
+	void setWithSortRecurvsive(boolean withSort);
+	boolean intersects2(PositionAPI other);
+	void overlap2(PositionAPI other);
+	PositionAPI setOffset(float xOffset, float yOffset);
+	PositionAPI relativeTo2(UIComponentAPI base, float xAlignBase, float yAlignBase, float xAlignThis, float yAlignThis,
+							float xAlignOffset, float yAlignOffset);
 	
 	
 }

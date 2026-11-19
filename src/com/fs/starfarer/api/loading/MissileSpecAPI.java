@@ -84,5 +84,7 @@ public interface MissileSpecAPI {
 	void setPassThroughFightersOnlyWhenDestroyed(boolean passThroughFightersOnlyWhenDestroyed);
 	String getTypeString();
 	ShotBehaviorSpecAPI getBehaviorSpec();
+	boolean isExplodesWhenHittingFlares();
+	void setExplodesWhenHittingFlares(boolean explodesWhenHittingFlares);
 
 }

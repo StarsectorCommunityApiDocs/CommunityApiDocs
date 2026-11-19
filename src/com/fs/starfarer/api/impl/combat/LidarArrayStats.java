@@ -180,6 +180,7 @@ public class LidarArrayStats extends BaseShipSystemScript {
 			if (w.getType() == WeaponType.MISSILE) continue;
 			if (state == State.IN) {
 				if (!(w.isDecorative() && w.getSpec().hasTag(Tags.LIDAR))) {
+					w.forceIdle();
 					w.setForceNoFireOneFrame(true);
 				}
 			} else {

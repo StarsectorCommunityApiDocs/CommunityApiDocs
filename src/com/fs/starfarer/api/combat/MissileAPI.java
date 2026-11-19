@@ -1,6 +1,7 @@
 package com.fs.starfarer.api.combat;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 import java.awt.Color;
@@ -209,6 +210,8 @@ public interface MissileAPI extends DamagingProjectileAPI {
 	void addTag(String tag);
 	boolean hasTag(String tag);
 	void removeTag(String tag);
+	List<EngineSlotAPI> getEngineLocationsCopy();
+	boolean isExplodesWhenHittingFlares();
 	
 	// always null anyway
 	//MutableShipStatsAPI getStats();

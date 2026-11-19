@@ -1,9 +1,14 @@
 package com.fs.starfarer.api.impl.campaign.abilities.ai;
 
+import com.fs.starfarer.api.Global;
+import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
+import com.fs.starfarer.api.characters.AbilityPlugin;
 import com.fs.starfarer.api.impl.campaign.events.BaseEventPlugin.MarketFilter;
+import com.fs.starfarer.api.impl.campaign.ids.Abilities;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
+import com.fs.starfarer.api.impl.campaign.intel.misc.SupportFleetIntel;
 import com.fs.starfarer.api.util.IntervalUtil;
 import com.fs.starfarer.api.util.Misc;
 
@@ -20,6 +25,22 @@ public class TransponderAbilityAI extends BaseAbilityAI {
 		if (!interval.intervalElapsed()) return;
 		
 		MemoryAPI mem = fleet.getMemoryWithoutUpdate();
+		
+		boolean playerSupportFleet = Misc.isPlayerSupportFleet(fleet) && 
+				fleet.getMemoryWithoutUpdate().getBoolean(SupportFleetIntel.SUPPORT_FLEET_FOLLOW);
+		if (playerSupportFleet && fleet.isInCurrentLocation()) {
+			CampaignFleetAPI player = Global.getSector().getPlayerFleet();
+			//float dist = Misc.getDistance(player, fleet);
+			AbilityPlugin sb = player.getAbility(Abilities.TRANSPONDER);
+			if (sb != null) {
+				if (sb.isActive()) {
+					if (!ability.isActive()) ability.activate();
+				} else if (!sb.isActive()) {
+					if (ability.isActive()) ability.deactivate();
+				}
+			}
+			return;
+		}
 		
 //		if (fleet.isInCurrentLocation()) {
 //			float dist = Misc.getDistance(fleet.getLocation(), Global.getSector().getPlayerFleet().getLocation());

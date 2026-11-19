@@ -1,7 +1,8 @@
 package com.fs.starfarer.api.impl.combat;
 
-import java.awt.Color;
 import java.util.List;
+
+import java.awt.Color;
 
 import org.lwjgl.util.vector.Vector2f;
 
@@ -212,7 +213,7 @@ public class MineStrikeStats extends BaseShipSystemScript implements MineStrikeS
 	}
 	
 	
-	private Vector2f findClearLocation(ShipAPI ship, Vector2f dest) {
+	public Vector2f findClearLocation(ShipAPI ship, Vector2f dest) {
 		if (isLocationClear(dest)) return dest;
 		
 		float incr = 50f;
@@ -236,7 +237,7 @@ public class MineStrikeStats extends BaseShipSystemScript implements MineStrikeS
 		return tested.pick();
 	}
 	
-	private boolean isLocationClear(Vector2f loc) {
+	public boolean isLocationClear(Vector2f loc) {
 		for (ShipAPI other : Global.getCombatEngine().getShips()) {
 			if (other.isShuttlePod()) continue;
 			if (other.isFighter()) continue;

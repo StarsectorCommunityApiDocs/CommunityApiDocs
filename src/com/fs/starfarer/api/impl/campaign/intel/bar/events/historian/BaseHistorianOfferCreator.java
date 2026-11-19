@@ -76,7 +76,7 @@ public class BaseHistorianOfferCreator implements HistorianOfferCreator {
 			
 			for (PlanetAPI planet : system.getPlanets()) {
 				if (planet.isStar()) continue;
-				
+				if (planet.hasTag(Tags.NOT_RANDOM_MISSION_TARGET)) continue;
 				if (Misc.hasUnexploredRuins(planet.getMarket()) && 
 						planet.getStarSystem() != null && !planet.getStarSystem().isEnteredByPlayer()) {
 					float w = 1f;

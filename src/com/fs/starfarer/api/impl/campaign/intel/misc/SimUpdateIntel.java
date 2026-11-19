@@ -1,11 +1,10 @@
 package com.fs.starfarer.api.impl.campaign.intel.misc;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
-import java.awt.Color;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.FactionSpecAPI;
@@ -65,7 +64,7 @@ public class SimUpdateIntel extends FleetLogIntel {
 			info.addSpacer(0f);
 			info.addSectionHeading("Factions", Alignment.MID, opad);
 			info.addPara("New simulator factions available. New factions "
-					+ "are are made available by encountering their fleets, or deserters from the faction, in battle.", opad);
+					+ "are made available by encountering their fleets, or deserters from the faction, in battle.", opad);
 			//bullet(info);
 			float initPad = opad;
 			for (String fid : addedFactions) {

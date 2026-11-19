@@ -112,6 +112,9 @@ public class SurplusShipHull extends HubMissionWithBarEvent {
 		assignShipName(member, Factions.INDEPENDENT);
 		
 		float quality = ShipQuality.getShipQuality(market, person.getFaction().getId());
+		if (Misc.isExtended()) {
+			quality += Global.getSettings().getFloat("ext_shipForSaleQualityMod");
+		}
 		float averageDmods = DefaultFleetInflater.getAverageDmodsForQuality(quality);
 		int addDmods = DefaultFleetInflater.getNumDModsToAdd(variant, averageDmods, genRandom);
 		if (addDmods > 0) {
@@ -121,10 +124,13 @@ public class SurplusShipHull extends HubMissionWithBarEvent {
 		member.getCrewComposition().setCrew(100000);
 		member.getRepairTracker().setCR(0.7f);
 		
+		float extMult = Misc.isExtended() ? Global.getSettings().optFloatFromArray("ext_shipBuyPriceMult", variant.getHullSpec().getHullSize().ordinal() - 2, 1f) : 1f;
+		if (Misc.isExtended()) extMult *= Global.getSettings().getFloat("ext_surplusHullPriceMult");
+		
 		if (BASE_PRICE_MULT == 1f) {
-			price = (int) Math.round(variant.getHullSpec().getBaseValue());
+			price = (int) (Math.round(variant.getHullSpec().getBaseValue()) * extMult);
 		} else {
-			price = getRoundNumber(variant.getHullSpec().getBaseValue() * BASE_PRICE_MULT);
+			price = getRoundNumber(variant.getHullSpec().getBaseValue() * BASE_PRICE_MULT * extMult);
 		}
 		
 		setRepFactionChangesTiny();

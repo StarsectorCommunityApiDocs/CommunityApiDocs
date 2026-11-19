@@ -23,7 +23,7 @@ import com.fs.starfarer.api.util.Misc;
 
 public class ConvertedHangar extends BaseHullMod {
 
-	public static float FIGHTER_OP_PER_DP = 5;
+	public static float FIGHTER_OP_PER_DP = 6;
 	public static int MIN_DP = 1;
 	public static float REPLACEMENT_TIME_MULT = 1.5f;
 	public static int CREW_REQ = 20;

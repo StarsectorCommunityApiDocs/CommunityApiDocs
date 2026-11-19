@@ -21,6 +21,7 @@ import com.fs.starfarer.api.combat.ShipAPI;
 import com.fs.starfarer.api.combat.WeaponAPI;
 import com.fs.starfarer.api.combat.WeaponAPI.AIHints;
 import com.fs.starfarer.api.impl.campaign.ids.Stats;
+import com.fs.starfarer.api.impl.combat.dweller.DwellerShroud;
 import com.fs.starfarer.api.impl.combat.threat.RoilingSwarmEffect.SwarmMember;
 import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.api.util.WeightedRandomPicker;
@@ -44,6 +45,7 @@ public class VoltaicDischargeOnFireEffect implements OnFireEffectPlugin, EveryFr
 	
 	public static boolean isSwarmPhaseMode(ShipAPI ship) {
 		RoilingSwarmEffect swarm = RoilingSwarmEffect.getSwarmFor(ship);
+		if (swarm instanceof DwellerShroud) swarm = null;
 		return swarm != null && swarm.params.tags.contains(SWARM_TAG_PHASE_MODE);
 	}
 	public static void setSwarmPhaseMode(ShipAPI ship) {
@@ -73,8 +75,8 @@ public class VoltaicDischargeOnFireEffect implements OnFireEffectPlugin, EveryFr
 	public void advance(float amount, CombatEngineAPI engine, WeaponAPI weapon) {
 		ShipAPI ship = weapon.getShip();
 		if (ship == null) return;
-		
 		RoilingSwarmEffect swarm = RoilingSwarmEffect.getSwarmFor(ship);
+		if (swarm instanceof DwellerShroud) swarm = null;
 		int active = swarm == null ? 0 : swarm.getNumActiveMembers();
 		int required = getNumFragmentsToFire();
 		boolean disable = active < required;
@@ -94,6 +96,7 @@ public class VoltaicDischargeOnFireEffect implements OnFireEffectPlugin, EveryFr
 		float dam = projectile.getDamageAmount();
 		
 		RoilingSwarmEffect swarm = RoilingSwarmEffect.getSwarmFor(projectile.getSource());
+		if (swarm instanceof DwellerShroud) swarm = null;
 		if (swarm == null || swarm.getAttachedTo() == null) return;
 		
 		CombatEntityAPI target = findTarget(projectile, weapon, engine);

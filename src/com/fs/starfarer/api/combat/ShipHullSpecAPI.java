@@ -65,6 +65,7 @@ public interface ShipHullSpecAPI extends WithSourceMod {
 		UNDER_PARENT,
 		INDEPENDENT_ROTATION,
 		ALWAYS_PANIC,
+		DO_NOT_TURN_TO_ARMOR,
 		WEAPONS_FRONT_TO_BACK,
 		WEAPONS_BACK_TO_FRONT,
 		DO_NOT_SHOW_MODULES_IN_FLEET_LIST,
@@ -261,7 +262,20 @@ public interface ShipHullSpecAPI extends WithSourceMod {
 	void setCodexVariantId(String codexVariantId);
 
 	String getRestoredToHullId();
-	
+
+	float getMaxBurn();
+	void setMaxBurn(float maxBurn);
+	int getPartsPerDmod();
+	void setPartsPerDmod(int partsPerDmod);
+
+	void setPartsPerDmodExplicitlySet(boolean partsPerDmodExplicitlySet);
+	boolean isPartsPerDmodExplicitlySet();
+
+	int getCrewSalaryPerMonth();
+	void setCrewSalaryPerMonth(int crewSalaryPerMonth);
+
+	float getDefaultSalaryMult();
+	void setDefaultSalaryMult(float defaultSalaryMult);
 
 }
 

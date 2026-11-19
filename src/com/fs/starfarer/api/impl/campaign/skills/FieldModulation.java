@@ -10,7 +10,8 @@ public class FieldModulation {
 	public static float FLUX_SHUNT_DISSIPATION = 20f;
 	
 	public static float PHASE_FLUX_UPKEEP_REDUCTION = 25f;
-	public static float PHASE_COOLDOWN_REDUCTION = 50f;
+	//public static float PHASE_COOLDOWN_REDUCTION = 50f;
+	public static float PHASE_COOLDOWN_REDUCTION = 33.333f;
 	
 	public static float ELITE_DAMAGE_TO_SHIELDS_PERCENT = 5f;
 	public static float OVERLOAD_REDUCTION = 25f;

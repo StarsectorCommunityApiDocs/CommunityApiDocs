@@ -90,4 +90,8 @@ public interface FleetMemberStatusAPI {
 
 	void applyDamage(float hitStrength, float forceHullFractionDamage);
 
+	void updateNumStatusesFromMember();
+
+	float[][] getArmorCellFractions(int index);
+
 }

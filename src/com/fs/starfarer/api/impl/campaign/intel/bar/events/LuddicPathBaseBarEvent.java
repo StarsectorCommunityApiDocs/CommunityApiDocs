@@ -1,7 +1,8 @@
 package com.fs.starfarer.api.impl.campaign.intel.bar.events;
 
-import java.awt.Color;
 import java.util.Map;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
@@ -184,15 +185,15 @@ public class LuddicPathBaseBarEvent extends BaseBarEventWithPerson {
 		String id = "join_id";
 		options.addOption("Offer for " + getHimOrHer() + " to join your fleet instead", id);
 		
-		final CampaignFleetAPI playerFleet = Global.getSector().getPlayerFleet();
-		
-		int num = Misc.getNumNonMercOfficers(playerFleet);
-		int max = Misc.getMaxOfficers(playerFleet);
-		
-		if (num >= max) {
-			options.setEnabled(id, false);
-			options.setTooltip(id, "Maximum number of officers reached.");
-		}
+//		final CampaignFleetAPI playerFleet = Global.getSector().getPlayerFleet();
+//		
+//		int num = Misc.getNumNonMercOfficers(playerFleet);
+//		int max = Misc.getMaxOfficers(playerFleet);
+//		
+//		if (num >= max) {
+//			options.setEnabled(id, false);
+//			options.setTooltip(id, "Maximum number of officers reached.");
+//		}
 		
 		StoryOptionParams params = new StoryOptionParams(id, 1, "patherJoinFleet", Sounds.STORY_POINT_SPEND_LEADERSHIP,
 				"Allowed " + person.getNameString() + ", a Luddic Path defector, to join your fleet");

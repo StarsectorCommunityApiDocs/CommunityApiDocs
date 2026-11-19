@@ -5,9 +5,11 @@ import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.InteractionDialogAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Commodities;
+import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.rulecmd.AddRemoveCommodity;
 import com.fs.starfarer.api.impl.campaign.rulecmd.salvage.SalvageSpecialInteraction.SalvageSpecialData;
 import com.fs.starfarer.api.impl.campaign.rulecmd.salvage.SalvageSpecialInteraction.SalvageSpecialPlugin;
+import com.fs.starfarer.api.util.Misc;
 
 public class SleeperPodsSpecial extends BaseSalvageSpecial {
 
@@ -81,6 +83,18 @@ public class SleeperPodsSpecial extends BaseSalvageSpecial {
 			if (quantity < 1) quantity = 1;
 		}
 		
+		SleeperSpecialType type = data.type;
+		
+		if (Misc.isExtended()) {
+			if (type == SleeperSpecialType.CREW || type == SleeperSpecialType.MARINES) {
+				quantity = Math.round(quantity * Global.getSettings().getFloat("ext_sleeperPodsSpecialCrewFraction"));
+				if (quantity < 1f) quantity = 1;
+			} else if (type == SleeperSpecialType.ORGANS) {
+				quantity = Math.round(quantity * Global.getSettings().getFloat("ext_commoditySalvageDropFraction"));
+				if (quantity < 1f) quantity = 1;
+			}
+		}
+		
 		CampaignFleetAPI player = Global.getSector().getPlayerFleet();
 		
 		int crewBerths = (int) (player.getCargo().getMaxPersonnel() - player.getCargo().getTotalPersonnel());
@@ -89,7 +103,6 @@ public class SleeperPodsSpecial extends BaseSalvageSpecial {
 		if (crewBerths < 0) crewBerths = 0;
 //		if (officerBerths < 0) officerBerths = 0;
 		
-		SleeperSpecialType type = data.type;
 		
 		if (type == SleeperSpecialType.CREW) quantity = Math.min(crewBerths, quantity);
 		if (type == SleeperSpecialType.MARINES) quantity = Math.min(crewBerths, quantity);
@@ -198,7 +211,11 @@ public class SleeperPodsSpecial extends BaseSalvageSpecial {
 
 				playerFleet.getFleetData().addOfficer(data.officer);
 				AddRemoveCommodity.addOfficerGainText(data.officer, text);
-				CryopodOfficerGen.incrNumExceptionalCreated();
+				if (data != null && data.officer != null && 
+						data.officer.getMemoryWithoutUpdate().getBoolean(MemFlags.EXCEPTIONAL_SLEEPER_POD_OFFICER) &&
+						!data.officer.getMemoryWithoutUpdate().getBoolean(MemFlags.EXCEPTIONAL_SLEEPER_POD_OFFICER_MADE_ON_SECTOR_GEN)) {
+					CryopodOfficerGen.incrNumExceptionalCreated();
+				}
 				break;
 			case ADMIN:
 				addText("The thawing process completes, and the pod opens. " +

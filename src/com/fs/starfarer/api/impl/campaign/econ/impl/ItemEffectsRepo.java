@@ -52,11 +52,14 @@ public class ItemEffectsRepo {
 	public static int FUSION_LAMP_VOLATILES = 10;
 	public static float FUSION_LAMP_SHORTAGE_HAZARD = 0.5f;
 	public static List<String> FUSION_LAMP_CONDITIONS = new ArrayList<String>();
+	public static List<String> DRONE_REPLICATOR_CONDITIONS = new ArrayList<String>();
 	static {
 		FUSION_LAMP_CONDITIONS.add(Conditions.COLD);
 		FUSION_LAMP_CONDITIONS.add(Conditions.VERY_COLD);
 		FUSION_LAMP_CONDITIONS.add(Conditions.POOR_LIGHT);
 		FUSION_LAMP_CONDITIONS.add(Conditions.DARK);
+		
+		DRONE_REPLICATOR_CONDITIONS.add(Conditions.DECIVILIZED_SUBPOP);
 	}
 	
 	public static float CORRUPTED_NANOFORGE_QUALITY_BONUS = 0.2f;
@@ -487,13 +490,33 @@ public class ItemEffectsRepo {
 			public void apply(Industry industry) {
 				industry.getMarket().getStats().getDynamic().getMod(Stats.GROUND_DEFENSES_MOD)
 					.modifyMult(spec.getId(), DRONE_REPLICATOR_BONUS_MULT, Misc.ucFirst(spec.getName().toLowerCase()));
+				
+				for (String id : DRONE_REPLICATOR_CONDITIONS) {
+					industry.getMarket().suppressCondition(id);
+				}
 			}
 			public void unapply(Industry industry) {
 				industry.getMarket().getStats().getDynamic().getMod(Stats.GROUND_DEFENSES_MOD).unmodifyMult(spec.getId());
+				for (String id : DRONE_REPLICATOR_CONDITIONS) {
+					industry.getMarket().unsuppressCondition(id);
+				}
+			}
+			@Override
+			public String getSpecialNotesName() {
+				return "Counters";
+			}
+			@Override
+			public List<String> getSpecialNotes(Industry industry) {
+				List<String> conds = new ArrayList<String>();
+				for (String id : DRONE_REPLICATOR_CONDITIONS) {
+					MarketConditionSpecAPI mc = Global.getSettings().getMarketConditionSpec(id);
+					conds.add(mc.getName().toLowerCase());
+				}
+				return conds;
 			}
 			protected void addItemDescriptionImpl(Industry industry, TooltipMakerAPI text, SpecialItemData data,
 					InstallableItemDescriptionMode mode, String pre, float pad) {
-				text.addPara(pre + "Colony's ground defenses increased by %s.",
+				text.addPara(pre + "Colony's ground defenses increased by %s, and the effects of a decivilized subpopulation are suppressed.",
 						pad, Misc.getHighlightColor(), 
 						Strings.X + DRONE_REPLICATOR_BONUS_MULT);
 			}

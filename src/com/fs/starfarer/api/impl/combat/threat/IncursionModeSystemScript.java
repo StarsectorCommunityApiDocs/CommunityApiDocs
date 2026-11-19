@@ -11,6 +11,8 @@ import com.fs.starfarer.api.util.Misc;
 
 public class IncursionModeSystemScript extends BaseEnergyLashActivatedSystem {
 	
+	public static String INCURSION_MODE = "incursion_mode"; 
+	
 	public static float SPEED_BONUS = 100f;
 	public static float FLUX_DISSIPATION_MULT = 3f;
 	public static float AMMO_REGEN_MULT = 5f;
@@ -48,8 +50,12 @@ public class IncursionModeSystemScript extends BaseEnergyLashActivatedSystem {
 			}
 		}
 		
+		ship.removeTag(INCURSION_MODE);
+		
 		//if (state != State.IDLE && state != State.OUT) return;
 		if (effectLevel <= 0f) return;
+		
+		ship.addTag(INCURSION_MODE);
 		
 		ship.getEngineController().extendFlame(ship.getSystem(), 1f * effectLevel, 0f * effectLevel, 0.5f * effectLevel);
 		

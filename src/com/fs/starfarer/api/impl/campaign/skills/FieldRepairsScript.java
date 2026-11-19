@@ -28,7 +28,10 @@ import com.fs.starfarer.api.util.WeightedRandomPicker;
  */
 public class FieldRepairsScript implements EveryFrameScript {
 
+	public static int MAX_DMODS_FROM_DO = 5;
+	
 	public static int MONTHS_PER_DMOD_REMOVAL = 1;
+	
 	
 	public static float RATE_DP_MAX = 40f;
 	public static float RATE_DP_MIN = 4f;
@@ -40,6 +43,7 @@ public class FieldRepairsScript implements EveryFrameScript {
 	
 	protected IntervalUtil tracker = new IntervalUtil(10f, 20f);
 	protected IntervalUtil tracker2 = new IntervalUtil(3f, 5f);
+	protected IntervalUtil tracker3 = new IntervalUtil(20f, 40f);
 	
 	protected FleetMemberAPI pickedNew = null;
 	protected String dmodNew = null;
@@ -56,6 +60,9 @@ public class FieldRepairsScript implements EveryFrameScript {
 		if (tracker2 == null) {
 			tracker2 = new IntervalUtil(3f, 5f);
 		}
+		if (tracker3 == null) {
+			tracker3 = new IntervalUtil(20f, 40f);
+		}
 		if (newRandom == null) {
 			newRandom = new Random(Misc.genRandomSeed());
 		}
@@ -69,6 +76,14 @@ public class FieldRepairsScript implements EveryFrameScript {
 		
 		CampaignFleetAPI fleet = Global.getSector().getPlayerFleet();
 		if (fleet == null) return;
+		
+		if (Global.getSector().getPlayerStats().getSkillLevel(Skills.DERELICT_CONTINGENT) > 0) {
+			shuffleDMods(amount);
+		}
+		
+		if (Misc.usePartsBasedDModRepairs()) {
+			return;
+		}
 		
 		if (Global.getSector().getPlayerStats().getSkillLevel(Skills.HULL_RESTORATION) <= 0) {
 			picked = null;
@@ -224,6 +239,68 @@ public class FieldRepairsScript implements EveryFrameScript {
 
 	public boolean runWhilePaused() {
 		return false;
+	}
+	
+	
+	public void shuffleDMods(float amount) {
+		float days = Global.getSector().getClock().convertToDays(amount);
+		CampaignFleetAPI fleet = Global.getSector().getPlayerFleet();
+		
+		days *= Math.max(1f, Math.min(30f, fleet.getNumShips()));
+		
+		
+		tracker3.advance(days);
+		if (tracker3.intervalElapsed()) {
+			WeightedRandomPicker<FleetMemberAPI> picker = new WeightedRandomPicker<FleetMemberAPI>();
+			for (FleetMemberAPI member : fleet.getFleetData().getMembersListCopy()) {
+				if (member.getVariant().isStockVariant() || member.isMothballed() ||
+						member.getHullSpec().hasTag(Tags.HULL_UNRESTORABLE) ||
+						member.getVariant().hasTag(Tags.VARIANT_UNRESTORABLE)) {
+					continue;
+				}
+				if (member.isMothballed()) continue;
+//				if (!member.getHullId().contains("prometheus")) {
+//					System.out.println("wefjlwehfwe");
+//					continue;
+//				}
+				int dmods = DModManager.getNumNonBuiltInDMods(member.getVariant());
+				if (dmods > 0) {
+					picker.add(member, 1);
+				}
+			}
+			FleetMemberAPI pick = picker.pick();
+			if (pick != null) {
+				ShipVariantAPI variant = pick.getVariant();
+				int dmods = DModManager.getNumNonBuiltInDMods(variant);
+				WeightedRandomPicker<String> modPicker = new WeightedRandomPicker<String>();
+				if (dmods >= MAX_DMODS_FROM_DO) {
+					for (String id : variant.getHullMods()) {
+						if (DModManager.getMod(id).hasTag(Tags.HULLMOD_DO_CAN_NOT_REMOVE)) continue;
+						if (DModManager.getMod(id).hasTag(Tags.HULLMOD_DMOD)) {
+							if (variant.getHullSpec().getBuiltInMods().contains(id)) continue;
+							modPicker.add(id);
+						}
+					}
+				}
+				String dmod = modPicker.pick();
+				if (dmod != null) {
+					DModManager.removeDMod(variant, dmod);
+				}
+				
+				long seed = 0;
+				seed = pick.getId().hashCode() ^ (seed >>> 16);
+				seed *= Global.getSector().getClock().getDay() * 23324234L;
+				Random rand = new Random(seed);
+				DModManager.addDMods(variant, false, 1, Tags.HULLMOD_DO_CAN_NOT_ADD, false, rand);
+				if (dmods < MAX_DMODS_FROM_DO) {
+					int after = DModManager.getNumNonBuiltInDMods(variant);
+					if (after == dmods) {
+						DModManager.addDMods(variant, false, 1, Tags.HULLMOD_DO_CAN_NOT_ADD, true, rand);
+					}
+				}
+			}
+			
+		}
 	}
 
 	

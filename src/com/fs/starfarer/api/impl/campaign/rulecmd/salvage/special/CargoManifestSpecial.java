@@ -8,6 +8,7 @@ import com.fs.starfarer.api.campaign.econ.CommoditySpecAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Entities;
 import com.fs.starfarer.api.impl.campaign.rulecmd.salvage.SalvageSpecialInteraction.SalvageSpecialData;
 import com.fs.starfarer.api.impl.campaign.rulecmd.salvage.SalvageSpecialInteraction.SalvageSpecialPlugin;
+import com.fs.starfarer.api.util.Misc;
 
 public class CargoManifestSpecial extends BaseSalvageSpecial {
 
@@ -65,6 +66,12 @@ public class CargoManifestSpecial extends BaseSalvageSpecial {
 		
 		CargoAPI extra = Global.getFactory().createCargo(true); 
 		float quantity = data.min + (data.max - data.min) * random.nextFloat();
+		
+		if (Misc.isExtended()) {
+			quantity *= Global.getSettings().getFloat("ext_commoditySalvageDropFraction");
+			if (quantity < 1f) quantity = 1f;
+		}
+		
 		quantity = Math.round(quantity);
 		extra.addCommodity(data.commodityId, quantity);
 		addTempExtraSalvage(extra);

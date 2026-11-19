@@ -1,9 +1,10 @@
 package com.fs.starfarer.api.impl.campaign.missions;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import java.awt.Color;
 
 import org.lwjgl.util.vector.Vector2f;
 
@@ -125,8 +126,7 @@ public class TacticallyBombardColony extends HubMissionWithBarEvent implements C
 		connectWithHostilitiesEnded(Stage.BOMBARD, Stage.FAILED_NO_PENALTY, person, market);
 		setStageOnHostilitiesEnded(Stage.FAILED_NO_PENALTY, person, market);
 		
-		//setCreditReward(80000, 100000);
-		setCreditReward(CreditReward.VERY_HIGH, market.getSize());
+		setCreditReward(CreditReward.VERY_HIGH, market.getSize() + 5);
 		
 		if (market.getSize() <= 4) {
 			triggerCreateLargePatrolAroundMarket(market, Stage.BOMBARD, 0f);

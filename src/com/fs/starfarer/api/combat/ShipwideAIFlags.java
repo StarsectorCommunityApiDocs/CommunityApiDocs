@@ -149,6 +149,9 @@ public class ShipwideAIFlags {
 //		if (flag == AIFlags.BACK_OFF) {
 //			System.out.println("fwfwefew");
 //		}
+//		if (flag == AIFlags.DO_NOT_USE_SHIELDS) {
+//			System.out.println("fwfwefew");
+//		}
 		FlagData data = flags.get(flag);
 		if (data != null) {
 			data.elapsed = 0;

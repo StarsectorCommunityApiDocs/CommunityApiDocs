@@ -121,7 +121,7 @@ public class SkillsChangeOfficerEffect extends BaseSkillsChangeEffect {
 			PersonAPI person = data.getPerson();
 			MutableCharacterStatsAPI stats = person.getStats();
 			
-			if (Misc.isMercenary(person)) {
+			if (Misc.isMercenary(person) || !Misc.isOfficerActive(person)) {
 				continue;
 			}
 			
@@ -174,6 +174,12 @@ public class SkillsChangeOfficerEffect extends BaseSkillsChangeEffect {
 				Collections.reverse(eliteInOrderOfGain);
 				
 				int eliteToRemove = numElite - maxElitePost;
+				// if skill being removed entirely is elite, that also counts for removing an elite skill
+				for (String id : effect.removeSkills) {
+					if (stats.getSkillLevel(id) >= 2) {
+						eliteToRemove--;
+					}
+				}
 				for (int i = 0; i < eliteToRemove && !eliteInOrderOfGain.isEmpty(); i++) {
 					effect.removeElite.add(eliteInOrderOfGain.remove(0));
 				}
@@ -353,6 +359,7 @@ public class SkillsChangeOfficerEffect extends BaseSkillsChangeEffect {
 			} else {
 				if (data.unusable && data.member != null) {
 					data.member.setCaptain(Global.getFactory().createPerson());
+					data.data.setActivated(false);
 				}
 				MutableCharacterStatsAPI stats = data.data.getPerson().getStats();
 				for (String id : data.removeElite) {

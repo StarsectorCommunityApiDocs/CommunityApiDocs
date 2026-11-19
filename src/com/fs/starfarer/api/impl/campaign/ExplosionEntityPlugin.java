@@ -1,9 +1,10 @@
 package com.fs.starfarer.api.impl.campaign;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+
+import java.awt.Color;
 
 import org.lwjgl.util.vector.Vector2f;
 
@@ -35,8 +36,14 @@ public class ExplosionEntityPlugin extends BaseCustomEntityPlugin {
 		public ExplosionFleetDamage damage = ExplosionFleetDamage.NONE;
 		public float radius;
 		public float durationMult = 1f;
+		public float baseSizeMult = 1f;
+		public float initialRadiusMult = 1f;
+		public float initialHitGlowMult = 1f;
+		public float particleNumMult = 1f;
+		public boolean useInitialSqrtParticleDistribution = false;
 		public Vector2f loc;
 		public LocationAPI where;
+		public String explosionSoundId;
 		public ExplosionParams(Color color, LocationAPI where, Vector2f loc, float radius, float durationMult) {
 			this.color = color;
 			this.where = where;
@@ -135,16 +142,21 @@ public class ExplosionEntityPlugin extends BaseCustomEntityPlugin {
 		
 		
 		if (params.where.isCurrentLocation()) {
-			Global.getSoundPlayer().playSound("gate_explosion", 1f, 1f, params.loc, Misc.ZERO);
+			String soundId = params.explosionSoundId;
+			if (soundId == null) {
+				soundId = "gate_explosion";
+			}
+			Global.getSoundPlayer().playSound(soundId, 1f, 1f, params.loc, Misc.ZERO);
 		}
 		
-		float baseSize = params.radius * 0.08f;
+		float baseSize = params.radius * 0.08f * params.baseSizeMult;
 		maxParticleSize = baseSize * 2f;
 		
 		float fullArea = (float) (Math.PI * params.radius * params.radius);
 		float particleArea = (float) (Math.PI * baseSize * baseSize);
 		
 		int count = (int) Math.round(fullArea / particleArea * 1f);
+		count *= params.particleNumMult;
 		
 		float durMult = 2f;
 		durMult = params.durationMult;
@@ -161,7 +173,11 @@ public class ExplosionEntityPlugin extends BaseCustomEntityPlugin {
 						(0.25f + (float) Math.random()) * 2f * durMult, 3f);
 			
 			float r = (float) Math.random();
+			if (params.useInitialSqrtParticleDistribution) {
+				r = (float) Math.sqrt(r);
+			}
 			float dist = params.radius * 0.2f * (0.1f + r * 0.9f);
+			dist *= params.initialRadiusMult;
 			float dir = (float) Math.random() * 360f;
 			data.setOffset(dir, dist, dist);
 			
@@ -180,9 +196,9 @@ public class ExplosionEntityPlugin extends BaseCustomEntityPlugin {
 		loc.y += params.radius * 0.01f;
 		
 		float b = 1f;
-		params.where.addHitParticle(loc, new Vector2f(), params.radius * 1f, b, 1f * durMult, params.color);
+		params.where.addHitParticle(loc, new Vector2f(), params.radius * 1f * params.initialHitGlowMult, b, 1f * durMult, params.color);
 		loc = new Vector2f(params.loc);
-		params.where.addHitParticle(loc, new Vector2f(), params.radius * 0.4f, 0.5f, 1f * durMult, Color.white);
+		params.where.addHitParticle(loc, new Vector2f(), params.radius * 0.4f * params.initialHitGlowMult, 0.5f, 1f * durMult, Color.white);
 		
 		shockwaveAccel = baseSize * 70f / durMult;
 		//shockwaveRadius = -1500f;

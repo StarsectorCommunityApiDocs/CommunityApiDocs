@@ -14,6 +14,7 @@ import com.fs.starfarer.api.combat.ShipSystemAIScript;
 import com.fs.starfarer.api.combat.ShipSystemAPI;
 import com.fs.starfarer.api.combat.ShipwideAIFlags;
 import com.fs.starfarer.api.combat.ShipwideAIFlags.AIFlags;
+import com.fs.starfarer.api.impl.combat.dweller.DwellerShroud;
 import com.fs.starfarer.api.util.IntervalUtil;
 import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.api.util.WeightedRandomPicker;
@@ -78,6 +79,7 @@ public class EnergyLashSystemAI implements ShipSystemAIScript {
 			if (ship.getOwner() == other.getOwner()) {
 				if (ThreatSwarmAI.isAttackSwarm(other)) {
 					RoilingSwarmEffect swarm = RoilingSwarmEffect.getSwarmFor(other);
+					if (swarm instanceof DwellerShroud) swarm = null;
 					if (swarm != null && !VoltaicDischargeOnFireEffect.isSwarmPhaseMode(other)) {
 						w = 0.5f;
 					} else {

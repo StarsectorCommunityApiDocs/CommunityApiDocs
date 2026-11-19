@@ -9,6 +9,7 @@ import com.fs.starfarer.api.impl.campaign.ids.Conditions;
 import com.fs.starfarer.api.impl.campaign.ids.Sounds;
 import com.fs.starfarer.api.impl.campaign.intel.BaseIntelPlugin;
 import com.fs.starfarer.api.impl.campaign.intel.MessageIntel;
+import com.fs.starfarer.api.impl.campaign.rulecmd.KantaCMD;
 import com.fs.starfarer.api.util.Misc;
 
 public class PiracyRespiteScript implements EconomyUpdateListener {
@@ -69,7 +70,7 @@ public class PiracyRespiteScript implements EconomyUpdateListener {
 	
 	public void sendExpiredMessage() {
 		MessageIntel msg = new MessageIntel();
-		msg.addLine("Piracy Respite expired", Misc.getBasePlayerColor());
+		msg.addLine("Piracy Respite lost", Misc.getBasePlayerColor());
 		msg.setIcon(Global.getSettings().getSpriteName("events", "piracy_respite"));
 		msg.setSound(Sounds.REP_LOSS);
 		Global.getSector().getCampaignUI().addMessage(msg, MessageClickAction.COLONY_INFO);
@@ -127,6 +128,12 @@ public class PiracyRespiteScript implements EconomyUpdateListener {
 			cleanup();
 			return true;
 		}
+		
+		if (!PirateHostileActivityFactor.isDefeatedLargePirateRaid() && !KantaCMD.playerHasProtection()) {
+			cleanup();
+			return true;
+		}
+		
 		return false;
 	}
 

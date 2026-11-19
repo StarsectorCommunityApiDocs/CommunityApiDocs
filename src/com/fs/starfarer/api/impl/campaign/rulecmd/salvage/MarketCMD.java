@@ -49,6 +49,7 @@ import com.fs.starfarer.api.impl.campaign.FleetInteractionDialogPluginImpl.BaseF
 import com.fs.starfarer.api.impl.campaign.FleetInteractionDialogPluginImpl.FIDConfig;
 import com.fs.starfarer.api.impl.campaign.MilitaryResponseScript;
 import com.fs.starfarer.api.impl.campaign.MilitaryResponseScript.MilitaryResponseParams;
+import com.fs.starfarer.api.impl.campaign.OfficerTracker;
 import com.fs.starfarer.api.impl.campaign.RuleBasedInteractionDialogPluginImpl;
 import com.fs.starfarer.api.impl.campaign.econ.RecentUnrest;
 import com.fs.starfarer.api.impl.campaign.econ.impl.PopulationAndInfrastructure;
@@ -62,6 +63,7 @@ import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.ids.Sounds;
 import com.fs.starfarer.api.impl.campaign.ids.Stats;
 import com.fs.starfarer.api.impl.campaign.ids.Strings;
+import com.fs.starfarer.api.impl.campaign.ids.Submarkets;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.impl.campaign.intel.BaseIntelPlugin;
 import com.fs.starfarer.api.impl.campaign.intel.deciv.DecivTracker;
@@ -76,6 +78,7 @@ import com.fs.starfarer.api.impl.campaign.rulecmd.SetStoryOption.BaseOptionStory
 import com.fs.starfarer.api.impl.campaign.rulecmd.SetStoryOption.StoryOptionParams;
 import com.fs.starfarer.api.impl.campaign.rulecmd.ShowDefaultVisual;
 import com.fs.starfarer.api.impl.campaign.shared.SharedData;
+import com.fs.starfarer.api.impl.campaign.submarkets.StoragePlugin;
 import com.fs.starfarer.api.impl.campaign.terrain.HyperspaceTerrainPlugin;
 import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
@@ -87,7 +90,9 @@ import com.fs.starfarer.api.util.Misc.Token;
  * 
  */
 public class MarketCMD extends BaseCommandPlugin {
-
+	
+	//public static Logger log = Logger.getLogger(MarketCMD.class);
+	
 	public static enum RaidType {
 		CUSTOM_ONLY,
 		VALUABLE,
@@ -368,6 +373,10 @@ public class MarketCMD extends BaseCommandPlugin {
 			bombardResult();
 		} else if (command.equals("checkDebtEffect")) {
 			return checkDebtEffect();
+		} else if (command.equals("checkOfficerComplaints")) {
+			return checkOfficerComplaints();
+		} else if (command.equals("officerLeaves")) {
+			officerLeaves();
 		} else if (command.equals("applyDebtEffect")) {
 			applyDebtEffect();
 		} else if (command.equals("checkMercsLeaving")) {
@@ -376,14 +385,288 @@ public class MarketCMD extends BaseCommandPlugin {
 			convinceMercToStay();
 		} else if (command.equals("mercLeaves")) {
 			mercLeaves();
-		} else if (command.equals("assistVolturnInsurgents"))
-		{
-			MarketAPI volturn = Global.getSector().getEconomy().getMarket("volturn");
-			RecentUnrest.get(volturn).add(2, "The Luddic insurgency acquired unusually heavy weaponry somehow");
+		} else if (command.equals("makeNonStoryCritical")) {
+			String _marketId;
+			int paramsUsed = 1;
+			
+			if(params.size() > 1)  {
+				_marketId = params.get(1).getString(memoryMap);
+				market = Global.getSector().getEconomy().getMarket(_marketId);
+			}
+			
+			if(market != null) {
+				// read a valid market from params - so we don't use interaction entity.
+				paramsUsed++;
+				entity = market.getPrimaryEntity();
+			}
+			
+			if(params.size() > paramsUsed ) {
+				String missionID = params.get(paramsUsed).getString(memoryMap);
+				// make check if this is a valid mission?
+				Misc.makeNonStoryCritical(market.getMemoryWithoutUpdate(), missionID);
+			}
+				
+			return true;
+	
+		} else if (command.equals("makeUnimportant")) {
+			String _marketId;
+			int paramsUsed = 1;
+			
+			if(params.size() > 1)  {
+				_marketId = params.get(1).getString(memoryMap);
+				market = Global.getSector().getEconomy().getMarket(_marketId);
+			}
+			
+			if(market != null) {
+				// read a valid market from params - so we don't use interaction entity.
+				paramsUsed++;
+				entity = market.getPrimaryEntity();
+			}
+			
+			if(params.size() > paramsUsed ) {
+				String reason = params.get(paramsUsed).getString(memoryMap);
+				Misc.makeUnimportant(entity, reason);
+			}
+			else {
+				Misc.makeUnimportant(entity, "generic");
+			}
+			return true;
+		} else if (command.equals("makeImportant")) {
+			int paramsUsed = 1;
+			
+			if(params.size() > 1)  {
+				String _marketId = params.get(1).getString(memoryMap);
+				market = Global.getSector().getEconomy().getMarket(_marketId);
+			}
+			
+			if(market != null) {
+				// read a valid market from params - so we don't use interaction entity.
+				paramsUsed++;
+				entity = market.getPrimaryEntity();
+			}
+
+			if(params.size() > paramsUsed ) {
+				String reason = params.get(paramsUsed).getString(memoryMap);
+				Misc.makeImportant(entity, reason);
+			}
+			else {
+				Misc.makeImportant(entity, "generic");
+			}
+			return true;
+		} else if (command.equals("giveStorage")) {
+			// MarketCMD giveStorage MARKET
+			int paramsUsed = 1;
+			String _marketId;
+			
+			if(params.size() > 1)  {
+				_marketId = params.get(paramsUsed).getString(memoryMap);
+				market = Global.getSector().getEconomy().getMarket(_marketId);
+				//paramsUsed++;
+			}
+			
+			if(market == null) {
+				SectorEntityToken entity = dialog.getInteractionTarget();
+				market = entity.getMarket();
+				if(market == null) return false;
+			}
+			else {
+				paramsUsed++;
+			}
+			
+			StoragePlugin plugin = ((StoragePlugin)market.getSubmarket(Submarkets.SUBMARKET_STORAGE).getPlugin());
+			plugin.setPlayerPaidToUnlock(true);
+			
+			// TODO add notification?
+			//boolean doNotify = params.size() >= 2 && params.get(paramsUsed).getBoolean(memoryMap);
 		}
-		
+		else if (command.equals("addCommodityToStorage")) {
+			// MarketCMD addCommodityToStorage COMMODITY AMOUNT
+			
+			// I sure hope the player has unlocked storage here.
+			
+			int paramsUsed = 1;
+			String _marketId;
+			
+			if(params.size() > 1)  {
+				_marketId = params.get(paramsUsed).getString(memoryMap);
+				market = Global.getSector().getEconomy().getMarket(_marketId);
+			}
+			
+			if(market == null) {
+				SectorEntityToken entity = dialog.getInteractionTarget();
+				market = entity.getMarket();
+				if(market == null) return false;
+			}
+			else {
+				paramsUsed++;
+			}
+			
+			StoragePlugin plugin = ((StoragePlugin)market.getSubmarket(Submarkets.SUBMARKET_STORAGE).getPlugin());
+			if (plugin != null) {
+				plugin.setPlayerPaidToUnlock(true);
+				
+				CargoAPI cargo = plugin.getCargo();
+				
+				String _commodityId = params.get(paramsUsed).getString(memoryMap);
+				paramsUsed++;
+				// check that commodityId is valid?
+				
+				int _amount = params.get(paramsUsed).getInt(memoryMap);
+				paramsUsed++;
+				// check that amount is valid?
+				
+				cargo.addCommodity(_commodityId, _amount);
+				cargo.sort();
+				
+				boolean doNotify = params.size() > paramsUsed && params.get(paramsUsed).getBoolean(memoryMap);
+				if(doNotify) {
+					AddRemoveCommodity.addCommodityStorageGainText(_commodityId, _amount, text);
+//					CommoditySpecAPI spec = Global.getSettings().getCommoditySpec(_commodityId);
+//					String name = spec.getLowerCaseName();
+//					dialog.getTextPanel().setFontSmallInsignia();
+//					String _notification = Misc.getWithDGS(_amount) + " " + name + " added to local storage";
+//					dialog.getTextPanel().addParagraph(_notification, Misc.getHighlightColor()); 
+//					dialog.getTextPanel().setFontInsignia();
+				}
+				return true;
+			} else {
+				return false;
+			}
+		}
+		else if(command.equals("isOwnedBy") || command.equals("isNotOwnedBy")) {
+			
+			int paramsUsed = 1;
+			String _marketId = params.get(paramsUsed).getString(memoryMap);
+			market = Global.getSector().getEconomy().getMarket(_marketId);
+			
+			if(market == null) {
+				SectorEntityToken entity = dialog.getInteractionTarget();
+				market = entity.getMarket();
+				if(market == null) return false;
+			}
+			else {
+				paramsUsed++;
+			}
+				
+			String _factionId = params.get(paramsUsed).getString(memoryMap);
+			
+			if(command.equals("isOwnedBy")) {
+				if( market.getFactionId().equals(_factionId)) {
+					//log.info("isOwnedBy, marketId: " + _marketId + " faction: " + _factionId + " returns TRUE");
+					return true;
+				}
+				else {
+					//log.info("isOwnedBy, marketId: " + _marketId + " faction: " + _factionId + " returns FALSE");
+					return false;
+				}
+					
+			}
+			else if (command.equals("isNotOwnedBy")) {
+				if( !market.getFactionId().equals(_factionId)) {
+					//log.info("isNotOwnedBy, marketId: " + _marketId + " faction: " + _factionId + " returns TRUE");
+					return true;
+				}
+				else {
+					//log.info("isNotOwnedBy, marketId: " + _marketId + " faction: " + _factionId + " returns FALSE");
+					return false;
+				}
+			}
+			return false;
+		}
+		else if (command.equals("isNotDecivilized")) {
+
+			String _marketId = params.get(1).getString(memoryMap);
+			market = Global.getSector().getEconomy().getMarket(_marketId);
+			
+			if(market == null) {
+				SectorEntityToken entity = dialog.getInteractionTarget();
+				market = entity.getMarket();
+				if(market == null) return false;
+			}
+			
+			if(market.hasCondition(Conditions.DECIVILIZED)) {
+				return false;
+			}
+			return true;
+		}
+		else if(command.equals("addUnrest")) {
+			// MarketCMD addUnrest marketID amountInt tooltipDescription 
+			int paramsUsed = 1;
+			String _marketId = params.get(paramsUsed).getString(memoryMap);
+			market = Global.getSector().getEconomy().getMarket(_marketId);
+			
+			if(market == null) {
+				SectorEntityToken entity = dialog.getInteractionTarget();
+				market = entity.getMarket();
+				if(market == null) return false;
+			}
+			else {
+				paramsUsed++;
+			}
+				
+			int _amount = params.get(paramsUsed).getInt(memoryMap);
+			paramsUsed++;
+			String _description = params.get(paramsUsed).getString(memoryMap);
+			paramsUsed++;
+			
+			RecentUnrest.get(market).add(_amount, _description);
+			return true;
+		}
+		else if (command.equals("countColonyPopulation")) {
+			int _popCount = 0;
+			for (MarketAPI market : Misc.getPlayerMarkets(false)) {
+				_popCount += market.getSize();
+			}
+			// Misc.isMilitary(market) if we wanted to get zany about it...
+			Global.getSector().getPlayerMemoryWithoutUpdate().set("$colonyPopulationCount", _popCount);
+			return true;
+		}
+		/*else if ("notifyCapitalVolturn".equals(command)) {
+			// Fired if the SD is forced to move its capital to Volturn.
+			// This requires that Sindria is blown up.
+			PersonAPI person = Global.getSector().getImportantPeople().getPerson(People.ACHILLES);
+			if (person == null) {
+				System.out.println("Achilles is null!!");
+			}
+			else {
+				System.out.println("found Achilles!!!");
+			}
+				
+			if(Global.getSector().getMemoryWithoutUpdate().getBoolean("sdse_achillesWonPL")) {
+				
+				MessageIntel intel = new MessageIntel();
+				
+				if (person != null) {
+					intel.addLine( person.getNameString() + " has accepted Persean League membership and declared Volturn his new capital.", null, 
+								 new String[] {"Persean League", "Volturn"}, Global.getSector().getFaction(Factions.PERSEAN).getColor()); 
+					
+					intel.setIcon(person.getPortraitSprite());
+					//intel.setIcon(Global.getSettings().getSpriteName("intel_categories", "reputation"));
+					Global.getSector().getCampaignUI().addMessage(intel);
+				}
+				return false;
+			}
+			
+			if(Global.getSector().getMemoryWithoutUpdate().getBoolean("sdse_achillesWon")) {
+				
+				MessageIntel intel = new MessageIntel();
+				if (person != null) {
+					intel.addLine( person.getNameString() + " has declared Volturn the new capital of the Sindrian Diktat.", null, 
+								 new String[] {"Volturn", "Sindrian Diktat"}, Global.getSector().getFaction(Factions.DIKTAT).getColor()); 
+					
+					intel.setIcon(person.getPortraitSprite());
+					//intel.setIcon(Global.getSettings().getSpriteName("intel_categories", "reputation"));
+					Global.getSector().getCampaignUI().addMessage(intel);
+				}
+				return false;
+			}
+		}*/
+
 		return true;
 	}
+	
+	
+	
 
 	protected void showDefenses(boolean withText) {
 		CampaignFleetAPI primary = getInteractionTargetForFIDPI();
@@ -1683,7 +1966,7 @@ public class MarketCMD extends BaseCommandPlugin {
 		Random random = getRandom();
 		//random = new Random();
 		
-		if (!DebugFlags.MARKET_HOSTILITIES_DEBUG) {
+		if (!DebugFlags.MARKET_HOSTILITIES_DEBUG && market != null && !temp.nonMarket) {
 			Misc.increaseMarketHostileTimeout(market, HOSTILE_ACTIONS_TIMEOUT_DAYS);
 		}
 		
@@ -1736,6 +2019,13 @@ public class MarketCMD extends BaseCommandPlugin {
 			randomizedLosses = Math.round(randomizedLosses);
 			losses = (int) randomizedLosses;
 			
+			// if the losses are minor, add a chance to have no losses
+			if (losses <= 5) {
+				if (random.nextFloat() < 1f - (0.25f + losses * 0.1f)) {
+					losses = 0;
+				}
+			}
+			
 			if (losses < 0) losses = 0;
 			if (losses > marines) losses = marines;
 		}
@@ -1746,7 +2036,7 @@ public class MarketCMD extends BaseCommandPlugin {
 			text.addPara("Your forces have not suffered any casualties.");
 			temp.marinesLost = 0;
 		} else {
-			text.addPara("You forces have suffered casualties during the raid.", Misc.getHighlightColor(), "" + losses);
+			text.addPara("Your forces have suffered casualties during the raid.", Misc.getHighlightColor(), "" + losses);
 			playerFleet.getCargo().removeMarines(losses);
 			temp.marinesLost = losses;
 			AddRemoveCommodity.addCommodityLossText(Commodities.MARINES, losses, text);
@@ -3060,6 +3350,40 @@ public class MarketCMD extends BaseCommandPlugin {
 					}
 				}
 			}
+		}
+	}
+	
+	
+	protected boolean checkOfficerComplaints() {
+		if (market.isHidden()) return false;
+		if (market.getSize() <= 3) return false;
+		
+		List<OfficerDataAPI> officers = playerFleet.getFleetData().getOfficersCopy();
+		if (officers.isEmpty()) return false;
+		
+		for (OfficerDataAPI od : officers) {
+			if (od.getPerson() != null && od.getPerson().getMemoryWithoutUpdate().getBoolean(OfficerTracker.HAS_REASSIGNMENT_COMPLAINT)) {
+				dialog.getInteractionTarget().setActivePerson(od.getPerson());
+				((RuleBasedInteractionDialogPluginImpl)dialog.getPlugin()).notifyActivePersonChanged();
+				return true;
+			}
+		}
+		return false;
+	}
+	
+
+	protected void officerLeaves() {
+		PersonAPI officer = dialog.getInteractionTarget().getActivePerson();
+		dialog.getInteractionTarget().setActivePerson(null);
+		
+		if (officer != null) {
+			FleetMemberAPI member = playerFleet.getFleetData().getMemberWithCaptain(officer);
+			if (member != null) {
+				member.setCaptain(null);
+			}
+			playerFleet.getFleetData().removeOfficer(officer);
+			
+			AddRemoveCommodity.addOfficerLossText(officer, text);
 		}
 	}
 	

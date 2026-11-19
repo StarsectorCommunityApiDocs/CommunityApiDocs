@@ -29,6 +29,7 @@ public interface HullModEffect {
 	 * @param id
 	 */
 	void applyEffectsAfterShipCreation(ShipAPI ship, String id);
+	default void applyEffectsAfterShipCreation2ndPass(ShipAPI ship, String id) {};
 	String getDescriptionParam(int index, HullSize hullSize);
 	String getDescriptionParam(int index, HullSize hullSize, ShipAPI ship);
 

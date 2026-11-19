@@ -56,6 +56,8 @@ public interface SpecialItemSpecAPI extends WithSourceMod {
 	void setBasePrice(float baseValue);
 
 	void setOrder(float displayNumber);
+
+	void setCargoSpace(float cargoSpace);
 	
 }
 

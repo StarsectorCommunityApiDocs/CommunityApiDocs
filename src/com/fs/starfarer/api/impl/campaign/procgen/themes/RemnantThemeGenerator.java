@@ -1,10 +1,11 @@
 package com.fs.starfarer.api.impl.campaign.procgen.themes;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import java.awt.Color;
 
 import org.lwjgl.util.vector.Vector2f;
 
@@ -128,6 +129,7 @@ public class RemnantThemeGenerator extends BaseThemeGenerator {
 			Constellation c = constellations.get(i);
 			if (random.nextFloat() < skipProb) {
 				if (DEBUG) System.out.println("Skipping constellation " + c.getName());
+				skipProb -= 0.05f;
 				continue;
 			}
 			

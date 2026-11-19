@@ -24,6 +24,7 @@ import com.fs.starfarer.api.campaign.SectorEntityToken.VisibilityLevel;
 import com.fs.starfarer.api.campaign.econ.Industry;
 import com.fs.starfarer.api.campaign.econ.Industry.IndustryTooltipMode;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
+import com.fs.starfarer.api.campaign.econ.MonthlyReport;
 import com.fs.starfarer.api.campaign.econ.SubmarketAPI;
 import com.fs.starfarer.api.campaign.listeners.GroundRaidObjectivesListener.RaidResultData;
 import com.fs.starfarer.api.campaign.listeners.IndustryOptionProvider.IndustryOptionData;
@@ -31,6 +32,7 @@ import com.fs.starfarer.api.campaign.listeners.SubmarketInteractionListener.Subm
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
 import com.fs.starfarer.api.combat.CollisionGridAPI;
 import com.fs.starfarer.api.combat.MutableStat;
+import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.combat.ViewportAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.BattleAutoresolverPluginImpl.FleetAutoresolveData;
@@ -40,11 +42,13 @@ import com.fs.starfarer.api.impl.campaign.graid.GroundRaidObjectivePlugin;
 import com.fs.starfarer.api.impl.campaign.intel.FactionCommissionIntel;
 import com.fs.starfarer.api.impl.campaign.intel.bases.LuddicPathCellsIntel;
 import com.fs.starfarer.api.impl.campaign.intel.events.HostileActivityEventIntel;
+import com.fs.starfarer.api.impl.campaign.intel.misc.ProductionReportIntel;
 import com.fs.starfarer.api.impl.campaign.rulecmd.salvage.MarketCMD.RaidType;
 import com.fs.starfarer.api.impl.campaign.rulecmd.salvage.MarketCMD.TempData;
 import com.fs.starfarer.api.impl.campaign.velfield.SlipstreamManager;
 import com.fs.starfarer.api.input.InputEventAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
+import com.fs.starfarer.api.util.Pair;
 import com.fs.starfarer.api.util.WeightedRandomPicker;
 
 public class ListenerUtil {
@@ -341,6 +345,12 @@ public class ListenerUtil {
 		}
 	}
 	
+	public static void reportOpenedCoreTab(CoreUITabId tab, Object param) {
+		for (CoreUITabListener x : Global.getSector().getListenerManager().getListeners(CoreUITabListener.class)) {
+			x.reportOpenedCoreTab(tab, param);
+		}
+	}
+	
 	
 	public static void reportAboutToRefreshCharacterStatEffects() {
 		for (CharacterStatsRefreshListener x : Global.getSector().getListenerManager().getListeners(CharacterStatsRefreshListener.class)) {
@@ -395,6 +405,13 @@ public class ListenerUtil {
 		
 		for (IndustryOptionProvider x : Global.getSector().getListenerManager().getListeners(IndustryOptionProvider.class)) {
 			x.addToIndustryTooltip(ind, mode, tooltip, width, expanded);
+		}
+	}
+	
+	
+	public static void addToIndustryTooltipIfIndustryNotPresent(Industry ind, IndustryTooltipMode mode, TooltipMakerAPI tooltip, float width, boolean expanded) {
+		for (IndustryOptionProvider x : Global.getSector().getListenerManager().getListeners(IndustryOptionProvider.class)) {
+			x.addToIndustryTooltipIfIndustryNotPresent(ind, mode, tooltip, width, expanded);
 		}
 	}
 	
@@ -463,6 +480,25 @@ public class ListenerUtil {
 		}
 	}
 	
+	public static void modifyIndustryMaxDeficit(Industry ind, Pair<String, Integer> deficit, String ... commodityIds) {
+		for (IndustryMaxDeficitModifierListener x : 
+			Global.getSector().getListenerManager().getListeners(IndustryMaxDeficitModifierListener.class)) {
+			x.modifyIndustryMaxDeficit(ind, deficit, commodityIds);
+		}
+	}
+	
+	
+	public static void reportIndustryAboutToBeApplied(Industry ind) {
+		for (IndustryApplyListener x : Global.getSector().getListenerManager().getListeners(IndustryApplyListener.class)) {
+			x.reportIndustryAboutToBeApplied(ind);
+		}
+	}
+	public static void reportIndustryApplied(Industry ind) {
+		for (IndustryApplyListener x : Global.getSector().getListenerManager().getListeners(IndustryApplyListener.class)) {
+			x.reportIndustryApplied(ind);
+		}
+	}
+	
 	public static void reportFleetMemberVariantSaved(FleetMemberAPI member, MarketAPI dockedAt) {
 		for (RefitScreenListener x : Global.getSector().getListenerManager().getListeners(RefitScreenListener.class)) {
 			x.reportFleetMemberVariantSaved(member, dockedAt);
@@ -473,6 +509,26 @@ public class ListenerUtil {
 	public static void modifyDataForFleet(FleetAutoresolveData data) {
 		for (CoreAutoresolveListener x : Global.getSector().getListenerManager().getListeners(CoreAutoresolveListener.class)) {
 			x.modifyDataForFleet(data);
+		}
+	}
+	
+
+	public static void reportDModsRepaired(FleetMemberAPI member, ShipVariantAPI variant, int parts) {
+		for (DModRepairListener x : Global.getSector().getListenerManager().getListeners(DModRepairListener.class)) {
+			x.reportDModsRepaired(member, variant, parts);
+		}
+	}
+	
+	public static void reportCustomProductionGenerated(MonthlyReport report, ProductionReportIntel intel) {
+		for (CustomProductionListener x : Global.getSector().getListenerManager().getListeners(CustomProductionListener.class)) {
+			x.reportCustomProductionGenerated(report, intel);
+		}
+	}
+	
+	public static void appliedPostCombatCRLossToFleetMember(FleetMemberAPI member) {
+		for (AppliedPostCombatCRLossToPlayerFleetMemberListener x : 
+				Global.getSector().getListenerManager().getListeners(AppliedPostCombatCRLossToPlayerFleetMemberListener.class)) {
+			x.appliedPostCombatCRLossToFleetMember(member);
 		}
 	}
 	

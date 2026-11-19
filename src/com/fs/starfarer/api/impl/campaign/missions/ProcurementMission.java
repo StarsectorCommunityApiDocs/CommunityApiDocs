@@ -1,7 +1,8 @@
 package com.fs.starfarer.api.impl.campaign.missions;
 
-import java.awt.Color;
 import java.util.Map;
+
+import java.awt.Color;
 
 import org.lwjgl.util.vector.Vector2f;
 
@@ -27,7 +28,7 @@ public class ProcurementMission extends HubMissionWithBarEvent {
 
 	public static float PROB_COMPLICATIONS = 0.5f;
 	
-	public static float MISSION_DAYS = 60f;
+	public static float MISSION_DAYS = 180f;
 	
 	public static float MIN_BASE_VALUE = 10000;
 	public static float MAX_BASE_VALUE = 100000;

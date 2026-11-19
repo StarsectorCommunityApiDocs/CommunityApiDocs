@@ -12,6 +12,7 @@ import com.fs.starfarer.api.impl.campaign.ids.Conditions;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.Industries;
 import com.fs.starfarer.api.impl.campaign.ids.People;
+import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.impl.campaign.intel.events.LuddicChurchHostileActivityFactor;
 import com.fs.starfarer.api.impl.campaign.population.PopulationComposition;
 import com.fs.starfarer.api.loading.IndustrySpecAPI;
@@ -203,7 +204,11 @@ public class LuddicMajority extends BaseMarketConditionPlugin implements MarketI
 			if (market.getAdmin() != null && market.getAdmin().getId().equals(People.DARDAN_KATO)) {
 				tooltip.addPara("Dardan Kato's \"policies\"", opad);
 				opad = 0f;
+			} else if (market.getAdmin() != null && market.getAdmin().hasTag(Tags.ANTI_LUDDIC_ADMIN)) {
+				tooltip.addPara("Administration policies", opad);
+				opad = 0f;
 			}
+			
 			if (madeDeal) {
 				tooltip.addPara("Deal made with Luddic Church to curtail immigration", opad);
 				opad = 0f;
@@ -252,6 +257,10 @@ public class LuddicMajority extends BaseMarketConditionPlugin implements MarketI
 		
 		if (market.getAdmin() != null && market.getAdmin().getId().equals(People.DARDAN_KATO)) {
 			// he's that dumb about it
+			return false;
+		}
+		
+		if (market.getAdmin() != null && market.getAdmin().hasTag(Tags.ANTI_LUDDIC_ADMIN)) {
 			return false;
 		}
 		

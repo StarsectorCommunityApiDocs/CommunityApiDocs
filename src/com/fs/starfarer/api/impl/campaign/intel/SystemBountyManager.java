@@ -75,6 +75,15 @@ public class SystemBountyManager extends BaseEventManager {
 		}
 	}
 	
+	protected transient boolean alwaysPickAMarketIfPossible = false;
+	public boolean isAlwaysPickAMarketIfPossible() {
+		return alwaysPickAMarketIfPossible;
+	}
+
+	public void setAlwaysPickAMarketIfPossible(boolean alwaysPickAMarketIfPossible) {
+		this.alwaysPickAMarketIfPossible = alwaysPickAMarketIfPossible;
+	}
+
 	protected MarketAPI pickMarket() {
 		Set<MarketAPI> already = new HashSet<MarketAPI>();
 		for (EveryFrameScript s : getActive()) {
@@ -149,7 +158,7 @@ public class SystemBountyManager extends BaseEventManager {
 		
 		float probMult = 1f / (getOngoing() + 1f);
 		
-		if ((float) Math.random() > w * 0.01f * probMult) {
+		if (!alwaysPickAMarketIfPossible && (float) Math.random() > w * 0.01f * probMult) {
 			market = null;
 		}
 		

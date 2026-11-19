@@ -21,6 +21,8 @@ import com.fs.starfarer.api.campaign.CargoAPI;
 import com.fs.starfarer.api.campaign.FactionAPI;
 import com.fs.starfarer.api.campaign.InteractionDialogAPI;
 import com.fs.starfarer.api.campaign.PlayerMarketTransaction;
+import com.fs.starfarer.api.campaign.SectorEntityToken;
+import com.fs.starfarer.api.campaign.SkillSelectorDialogDelegate;
 import com.fs.starfarer.api.campaign.TextPanelAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.campaign.listeners.ColonyInteractionListener;
@@ -33,6 +35,7 @@ import com.fs.starfarer.api.characters.OfficerDataAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.characters.SkillSpecAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
+import com.fs.starfarer.api.impl.campaign.ids.Industries;
 import com.fs.starfarer.api.impl.campaign.ids.Personalities;
 import com.fs.starfarer.api.impl.campaign.ids.Ranks;
 import com.fs.starfarer.api.impl.campaign.ids.Skills;
@@ -40,6 +43,7 @@ import com.fs.starfarer.api.impl.campaign.ids.Stats;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.impl.campaign.rulecmd.AddRemoveCommodity;
 import com.fs.starfarer.api.impl.campaign.rulecmd.CallEvent.CallableEvent;
+import com.fs.starfarer.api.impl.campaign.rulecmd.FireBest;
 import com.fs.starfarer.api.plugins.OfficerLevelupPlugin;
 import com.fs.starfarer.api.util.IntervalUtil;
 import com.fs.starfarer.api.util.Misc;
@@ -103,6 +107,8 @@ public class OfficerManagerEvent extends BaseEventPlugin implements CallableEven
 	}
 	
 	public void reportPlayerClosedMarket(MarketAPI market) {}
+	
+	public static float OFFICER_MAX_PROB = Global.getSettings().getFloat("officerMaxProb");
 
 	public void reportPlayerOpenedMarket(MarketAPI market) {
 		if (recentlyChecked.contains(market.getId())) return;
@@ -116,10 +122,19 @@ public class OfficerManagerEvent extends BaseEventPlugin implements CallableEven
 		pruneFromRemovedMarkets();
 		
 		float officerProb = market.getStats().getDynamic().getMod(Stats.OFFICER_PROB_MOD).computeEffective(0f);
+		if (officerProb > OFFICER_MAX_PROB) officerProb = OFFICER_MAX_PROB;
+		
 		float additionalProb = market.getStats().getDynamic().getMod(Stats.OFFICER_ADDITIONAL_PROB_MULT_MOD).computeEffective(0f);
 		float mercProb = market.getStats().getDynamic().getMod(Stats.OFFICER_IS_MERC_PROB_MOD).computeEffective(0f);
 		float adminProb = market.getStats().getDynamic().getMod(Stats.ADMIN_PROB_MOD).computeEffective(0f);
 		//adminProb = 1f;
+		//mercProb = 1f;
+		
+		if (Misc.isExtended()) {
+			officerProb *= Global.getSettings().getFloat("ext_officersAvailableFraction");
+			adminProb *= Global.getSettings().getFloat("ext_adminAvailableFraction");
+		}
+		
 		
 		log.info("Spawning officers/admins at " + market.getId());
 		log.info("    officerProb: " + officerProb);
@@ -144,7 +159,7 @@ public class OfficerManagerEvent extends BaseEventPlugin implements CallableEven
 			AvailableOfficer officer = createOfficer(merc, market, random);
 			//officer.person.setPortraitSprite(pickPortraitPreferNonDuplicate(officer.person.getFaction(), officer.person.getGender()));
 			// always independent at this point
-			officer.person.setPortraitSprite(pickPortraitPreferNonDuplicate(market.getFaction(), officer.person.getGender()));
+			officer.person.setPortraitSprite(pickPortraitPreferNonDuplicate(market.getFaction(), officer.person.getGender(), random));
 			officer.timeRemaining = dur;
 			addAvailable(officer);
 			log.info("Added officer at " + officer.marketId + "");
@@ -153,7 +168,7 @@ public class OfficerManagerEvent extends BaseEventPlugin implements CallableEven
 				merc = random.nextFloat() < mercProb;
 				officer = createOfficer(merc, market, random);
 				//officer.person.setPortraitSprite(pickPortraitPreferNonDuplicate(officer.person.getFaction(), officer.person.getGender()));
-				officer.person.setPortraitSprite(pickPortraitPreferNonDuplicate(market.getFaction(), officer.person.getGender()));
+				officer.person.setPortraitSprite(pickPortraitPreferNonDuplicate(market.getFaction(), officer.person.getGender(), random));
 				officer.timeRemaining = dur;
 				addAvailable(officer);
 				log.info("Added officer at [" + officer.marketId + "]");
@@ -164,7 +179,7 @@ public class OfficerManagerEvent extends BaseEventPlugin implements CallableEven
 			AvailableOfficer officer = createAdmin(market, random);
 			officer.timeRemaining = dur;
 			//officer.person.setPortraitSprite(pickPortraitPreferNonDuplicate(officer.person.getFaction(), officer.person.getGender()));
-			officer.person.setPortraitSprite(pickPortraitPreferNonDuplicate(market.getFaction(), officer.person.getGender()));
+			officer.person.setPortraitSprite(pickPortraitPreferNonDuplicate(market.getFaction(), officer.person.getGender(), random));
 			addAvailableAdmin(officer);
 			log.info("Added admin at [" + officer.marketId + "]");
 		}
@@ -266,7 +281,7 @@ public class OfficerManagerEvent extends BaseEventPlugin implements CallableEven
 		officer.person.getMemoryWithoutUpdate().unset("$ome_salary");
 	}
 	
-	public static String pickPortraitPreferNonDuplicate(FactionAPI faction, Gender gender) {
+	public static String pickPortraitPreferNonDuplicate(FactionAPI faction, Gender gender, Random random) {
 		if (faction == null) {
 			faction = Global.getSector().getFaction(Factions.INDEPENDENT);
 		}
@@ -289,6 +304,9 @@ public class OfficerManagerEvent extends BaseEventPlugin implements CallableEven
 		}
 		if (picker.isEmpty()) {
 			picker = all;
+		}
+		if (random != null) {
+			return picker.pick(random);
 		}
 		return picker.pick();
 	}
@@ -373,8 +391,10 @@ public class OfficerManagerEvent extends BaseEventPlugin implements CallableEven
 		
 		//FactionAPI faction = Global.getSector().getFaction(Factions.INDEPENDENT);
 
+		if (random == null) random = Misc.random;
+		
 		int level = 1;
-		if ((float) Math.random() > 0.75f) level = 2;
+		if ((float) random.nextFloat() > 0.75f) level = 2;
 		
 		float payMult = 1f;
 		
@@ -384,7 +404,7 @@ public class OfficerManagerEvent extends BaseEventPlugin implements CallableEven
 			
 			int minLevel = Global.getSettings().getInt("officerMercMinLevel");
 			int maxLevel = Global.getSettings().getInt("officerMercMaxLevel");
-			level = minLevel + Misc.random.nextInt(maxLevel + 1 - minLevel);
+			level = minLevel + random.nextInt(maxLevel + 1 - minLevel);
 			
 			int numElite = 1;
 			if (level == maxLevel) numElite = 2;
@@ -402,9 +422,9 @@ public class OfficerManagerEvent extends BaseEventPlugin implements CallableEven
 		
 		
 		
-		int salary = (int) Misc.getOfficerSalary(person);
+		int salary = (int) Misc.getOfficerSalary(person, false);
 		AvailableOfficer result = new AvailableOfficer(person, market.getId(), 
-							(int) (person.getStats().getLevel() * 2000* payMult), salary);
+							(int) (person.getStats().getLevel() * 2000 * payMult), salary);
 		return result;
 	}
 	
@@ -676,7 +696,115 @@ public class OfficerManagerEvent extends BaseEventPlugin implements CallableEven
 		CampaignFleetAPI playerFleet = Global.getSector().getPlayerFleet();
 		CargoAPI cargo = playerFleet.getCargo();
 		
-		if (action.equals("printSkills")) {
+		if (action.equals("showSkillPicker")) {
+			dialog.showSkillPickerDialog(new SkillSelectorDialogDelegate() {
+				@Override
+				public void skillsSelected(List<SkillSpecAPI> selectedSkills) {
+					int num = 2;
+					SectorEntityToken target = dialog.getInteractionTarget();
+					if (target == null || target.getMarket() == null) {
+						return;
+					}
+					
+					MarketAPI market = target.getMarket();
+					long seed = Misc.getSalvageSeed(market.getPrimaryEntity());
+					seed *= Global.getSector().getClock().getMonth() * 13293232352523L;
+					Random random = Misc.getRandom(seed, 11);
+					
+					if (market.hasIndustry(Industries.PATROLHQ)) {
+						num = 1 + random.nextInt(2);
+					} else if (market.hasIndustry(Industries.MILITARYBASE)) {
+						num = 2 + random.nextInt(2);
+					} else if (market.hasIndustry(Industries.HIGHCOMMAND)) {
+						num = 3 + random.nextInt(3);
+					}
+					
+					String personalityId = null;
+					if (target.getActivePerson() != null) {
+						String p = target.getActivePerson().getMemoryWithoutUpdate().getString("$pickedPersonalityId");
+						if (Personalities.TIMID.equals(p)) personalityId = Personalities.TIMID;
+						if (Personalities.CAUTIOUS.equals(p)) personalityId = Personalities.CAUTIOUS;
+						if (Personalities.STEADY.equals(p)) personalityId = Personalities.STEADY;
+						if (Personalities.AGGRESSIVE.equals(p)) personalityId = Personalities.AGGRESSIVE;
+						if (Personalities.RECKLESS.equals(p)) personalityId = Personalities.RECKLESS;
+						
+					}
+					
+					int level = getMaxSelectable();
+					for (int i = 0; i < num; i++) {
+						PersonAPI officer = createOfficer(Global.getSector().getPlayerFaction(),
+								level, SkillPickPreference.ANY, false,
+								null, false, false, -1, random);
+						officer.setPostId(Ranks.POST_OFFICER_FOR_HIRE);
+						if (personalityId != null) officer.setPersonality(personalityId);
+						OUTER: for (SkillSpecAPI curr : new ArrayList<SkillSpecAPI>(selectedSkills)) {
+							
+							for (SkillLevelAPI sl : officer.getStats().getSkillsCopy()) {
+								if (sl.getLevel() >= 1 && curr.getId().equals(sl.getSkill().getId())) {
+									// officer already has this skill
+									continue OUTER;
+								}
+							}
+							
+							// officer does not have skill we want - find an unwanted skill and replace it
+							for (SkillLevelAPI sl : officer.getStats().getSkillsCopy()) {
+								if (sl.getLevel() > 0 && !selectedSkills.contains(sl.getSkill())) {
+									officer.getStats().setSkillLevel(sl.getSkill().getId(), 0);
+									break;
+								}
+							}
+							officer.getStats().setSkillLevel(curr.getId(), 1);
+						}
+						
+						float payMult = 1f;
+						int salary = (int) Misc.getOfficerSalary(officer, false);
+						AvailableOfficer result = new AvailableOfficer(officer, market.getId(), 
+											(int) (officer.getStats().getLevel() * 2000 * payMult), salary);
+						addAvailable(result);
+					}
+					
+					if (target.getActivePerson() != null) {
+						float timeout = 30f + random.nextFloat() * 30f;
+						target.getActivePerson().getMemoryWithoutUpdate().set("$personnelOfficerTimeout", true, timeout);
+					}
+					
+					FireBest.fire(null, dialog, memoryMap, "PersonnelOfficerPicksMade");
+				}
+				@Override
+				public void skillSelectionCancelled() {
+				}
+				@Override
+				public String getTitle() {
+					return null;
+				}
+				@Override
+				public List<SkillSpecAPI> getSkills() {
+					List<SkillSpecAPI> skills = new ArrayList<>();
+					List<String> allSpecIds = Global.getSettings().getSortedSkillIds();
+					for (String id : allSpecIds) {
+						SkillSpecAPI spec = Global.getSettings().getSkillSpec(id);
+						if (!spec.isCombatOfficerSkill()) continue;
+						if (spec.hasTag(Skills.TAG_DEPRECATED)) continue;
+						if (spec.hasTag(Skills.TAG_NPC_ONLY) && !spec.hasTag(Skills.TAG_AI_CORE)) continue;
+						if (spec.hasTag(Skills.TAG_NO_AI_CORE)) continue;
+						if (spec.hasTag(Skills.TAG_PLAYER_ONLY)) continue;
+						skills.add(spec);
+					}
+					return skills;
+				}
+				@Override
+				public int getMaxSelectable() {
+					SectorEntityToken target = dialog.getInteractionTarget();
+					if (target != null && target.getMarket() != null) {
+						MarketAPI market = target.getMarket();
+						if (market.hasIndustry(Industries.PATROLHQ)) return Global.getSettings().getInt("personnelOfficerMaxSkillsPatrolHQ");
+						if (market.hasIndustry(Industries.MILITARYBASE)) return Global.getSettings().getInt("personnelOfficerMaxSkillsMilitaryBase");
+						if (market.hasIndustry(Industries.HIGHCOMMAND)) return Global.getSettings().getInt("personnelOfficerMaxSkillsHighCommand");
+					}
+					return 3;
+				}
+			} );
+		} else if (action.equals("printSkills")) {
 			String personId = params.get(1).getString(memoryMap);
 			AvailableOfficer officer = getOfficer(personId);
 			boolean admin = false;
@@ -768,6 +896,23 @@ public class OfficerManagerEvent extends BaseEventPlugin implements CallableEven
 				if (playerFleet.getCargo().getCredits().get() <= 0) {
 					playerFleet.getCargo().getCredits().set(0);
 				}
+			}
+		} else if (action.equals("printActive")) {
+			int num = Misc.getNumActiveNonMercOfficers(playerFleet);
+			int mercs = Misc.getMercs(playerFleet).size();
+			int total = Misc.getNumNonMercOfficers(playerFleet) + mercs;
+			int inactive = total - num - mercs;
+			//int max = (int) Global.getSettings().getFloat("officerPlayerMax");
+			int max = (int) playerFleet.getCommander().getStats().getOfficerNumber().getModifiedValue();
+			if (dialog.getTextPanel() != null) {
+				
+				dialog.getTextPanel().addPara("This officer will receive their full salary only when outside of "
+						+ "the populated systems. When operating in civilized space, they will "
+						+ "receive %s of their salary.",
+						Misc.getHighlightColor(),
+						"" + (int)Math.round(100f * Global.getSettings().getFloat("officerSalaryMultInPopulatedSystems")) + "%");
+				
+				dialog.getTextPanel().addPara("Active duty officers: %s", Misc.getHighlightColor(), "" + num + " / " + max);
 			}
 		} else if (action.equals("atLimit")) {
 			//int max = (int) Global.getSettings().getFloat("officerPlayerMax");

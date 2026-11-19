@@ -71,6 +71,7 @@ public class SDFHegemony extends SDFBase {
 		m.triggerSetFleetMemoryValue(MemFlags.MEMORY_KEY_SOURCE_MARKET, coatl);
 		//m.triggerFleetSetNoFactionInName();
 		m.triggerFleetSetName("Core Worlds Armada");
+		m.triggerFleetSetNoFactionInName();
 		m.triggerPatrolAllowTransponderOff();
 		//m.triggerFleetSetPatrolActionText("patrolling");
 		m.triggerOrderFleetPatrol(coatl.getStarSystem());

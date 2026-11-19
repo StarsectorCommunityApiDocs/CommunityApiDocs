@@ -1,7 +1,8 @@
 package com.fs.starfarer.api.impl.campaign.graid;
 
-import java.awt.Color;
 import java.util.Random;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CargoAPI;
@@ -32,6 +33,8 @@ public class CommodityGroundRaidObjectivePluginImpl extends BaseGroundRaidObject
 	public static float QUANTITY_MULT_EXCESS = 1f; 
 	public static float QUANTITY_MULT_DEFICIT = -0.1f; 
 	public static float QUANTITY_MULT_OVERALL = 0.1f;
+	
+	public static int MAX_EXCESS_UNITS = 2;
 	
 	protected CommodityOnMarketAPI com;
 	private int deficitActuallyCaused;
@@ -150,6 +153,10 @@ public class CommodityGroundRaidObjectivePluginImpl extends BaseGroundRaidObject
 		CommodityIconCounts counts = new CommodityIconCounts(com);
 		
 		float result = 0f;
+		
+		if (counts.extra > MAX_EXCESS_UNITS) {
+			counts.extra = MAX_EXCESS_UNITS;
+		}
 		
 		if (forDeficit) {
 			result += Math.max(0, counts.available - counts.extra) * unit * QUANTITY_MULT_NORMAL_FOR_DEFICIT;

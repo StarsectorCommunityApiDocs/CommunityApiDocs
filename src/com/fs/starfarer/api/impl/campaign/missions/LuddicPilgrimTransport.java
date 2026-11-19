@@ -6,23 +6,19 @@ import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.PersonImportance;
 import com.fs.starfarer.api.campaign.SectorEntityToken;
 import com.fs.starfarer.api.campaign.StarSystemAPI;
-import com.fs.starfarer.api.campaign.econ.CommodityOnMarketAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.Ranks;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
-import com.fs.starfarer.api.impl.campaign.missions.academy.GACelestialObject.Variation;
-import com.fs.starfarer.api.impl.campaign.missions.askonia.TheUsurpers.Stage;
 import com.fs.starfarer.api.impl.campaign.missions.hub.HubMissionWithBarEvent;
-import com.fs.starfarer.api.impl.campaign.missions.hub.ReqMode;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 
 public class LuddicPilgrimTransport extends HubMissionWithBarEvent {
 
 	//graphics/icons/missions/luddic_pilgrim_transport.png
-	public static float MISSION_DAYS = 60f;
+	public static float MISSION_DAYS = 75f;
 	public static float MIN_VALUE = 10000f;
 	public static float MAX_VALUE = 20000f;
 	public static float PROB_RICH = 0.5f;
@@ -44,6 +40,8 @@ public class LuddicPilgrimTransport extends HubMissionWithBarEvent {
 	protected SectorEntityToken destination_entity;
 	protected int quantity;
 	protected String destination_shrine;
+	protected String visit_target_name;
+	protected String visit_target_name_short;
 	protected Variation variation;
 	
 	@Override
@@ -60,6 +58,7 @@ public class LuddicPilgrimTransport extends HubMissionWithBarEvent {
 		source_market = createdAt;
 		
 		// let's just whitelist core worlds. Should be based on places that plausibly have a significant/interesting Luddic population
+		// eh, I added a bunch more -dgb
 		if ( !( source_market.getId().equals("chicomoztoc") ||
 				source_market.getId().equals("mazalot") ||
 				source_market.getId().equals("ilm") ||
@@ -69,11 +68,19 @@ public class LuddicPilgrimTransport extends HubMissionWithBarEvent {
 				source_market.getId().equals("cibola") ||
 				source_market.getId().equals("madeira") ||
 				source_market.getId().equals("chalcedon") ||
-				source_market.getId().equals("tartessus") ||
+				//source_market.getId().equals("tartessus") ||
 				source_market.getId().equals("hesperus") ||
 				source_market.getId().equals("fikenhild") ||
 				source_market.getId().equals("athulf") ||
+				source_market.getId().equals("orthrus") ||
+				source_market.getId().equals("yesod") ||
+				source_market.getId().equals("yama") ||
+				source_market.getId().equals("new_maxios") ||
+				source_market.getId().equals("ailmar") ||
+				source_market.getId().equals("tigra_city") ||
+				source_market.getId().equals("salamanca") ||
 				source_market.getId().equals("suddene")) ) {
+			
 			return false;
 			}
 		
@@ -107,29 +114,50 @@ public class LuddicPilgrimTransport extends HubMissionWithBarEvent {
 		setIconName("campaignMissions", "luddic_pilgrim_transport");
 		
 		// Maybe handle non-"public" shrines later.
-		destination_shrine = pickOne("gilead", "beholder_station");
+		destination_shrine = pickOne("gilead", "beholder_station", "tartessus");
 		
 		if (destination_shrine.equals("gilead"))
 		{
+			visit_target_name = "Shrine of Gilead";
+			visit_target_name_short = "shrine";
 			destination_system = Global.getSector().getStarSystem("canaan");
 			destination_entity = Global.getSector().getEconomy().getMarket("gilead").getPlanetEntity();
+			//.getMemoryWithoutUpdate().set("$lpt_targetMarket", true);
 			if (destination_entity == null) return false;
 			if (!destination_entity.getMarket().getFactionId().equals(Factions.LUDDIC_CHURCH)) return false;
+			
+			makeImportant(Global.getSector().getEconomy().getMarket("gilead"), "$lpt_target", Stage.TRANSPORT);
+		}
+		else if (destination_shrine.equals("tartessus"))
+		{
+			visit_target_name = "Cathedral of Holy Exodus";
+			visit_target_name_short = "cathedral";
+			destination_entity = Global.getSector().getEconomy().getMarket("tartessus").getPlanetEntity();
+			destination_system = destination_entity.getStarSystem();
+			
+			//.getMemoryWithoutUpdate().set("$lpt_targetMarket", true);
+			if (destination_entity == null) return false;
+			if (!destination_entity.getMarket().getFactionId().equals(Factions.LUDDIC_CHURCH)) return false;
+			
+			makeImportant(destination_entity, "$lpt_target", Stage.TRANSPORT);
 		}
 		else if (destination_shrine.equals("beholder_station"))
 		{
+			visit_target_name = "Shrine of Kumari Aru";
+			visit_target_name_short = "shrine";
 			destination_system = Global.getSector().getStarSystem("kumari kandam");
 			for (SectorEntityToken beholder_station : destination_system.getEntitiesWithTag(Tags.LUDDIC_SHRINE)) {
 				destination_entity = beholder_station;
 				break;
 			}
+			makeImportant(destination_entity, "$lpt_target", Stage.TRANSPORT);
 		}
 		
 		if (!setEntityMissionRef(destination_entity, "$lpt_ref")) {
 			return false;
 		}
 		
-		makeImportant(destination_entity, "$lpt_target", Stage.TRANSPORT);
+		
 		
 		setStartingStage(Stage.TRANSPORT);
 		setSuccessStage(Stage.COMPLETED);
@@ -168,7 +196,9 @@ public class LuddicPilgrimTransport extends HubMissionWithBarEvent {
 		set("$lpt_systemName", destination_system.getNameWithLowercaseTypeShort());
 		set("$lpt_entityName", destination_entity.getName());
 		set("$lpt_sourceName", source_market.getName());
-		
+		set("$lpt_visitTargetName",visit_target_name);
+		set("$lpt_visitTargetNameShort",visit_target_name_short);
+
 		//if (destination_entity.m)
 		//set("$lpt_marketOnOrAt", destination_entity.getOnOrAt());
 		
@@ -184,7 +214,9 @@ public class LuddicPilgrimTransport extends HubMissionWithBarEvent {
 					" in the " + destination_system.getNameWithLowercaseTypeShort() + ".", opad,
 					h, Misc.getWithDGS(quantity));
 			
-			info.addPara("The pilgrims will expect to arrive at the shrine within " + MISSION_DAYS + " days.", opad);
+			//info.addPara("The pilgrims will expect to arrive at the shrine within " + MISSION_DAYS + " days.", opad);
+			info.addPara("The pilgrims will expect to arrive at the shrine within %s days.", opad,
+					h, "" + (int) MISSION_DAYS);
 		}
 	}
 

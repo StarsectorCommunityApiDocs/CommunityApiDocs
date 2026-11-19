@@ -27,9 +27,13 @@ public class ShroudedMantleHullmod extends HumanShipShroudedHullmod {
 	public static float LUNGE_DUR = 4f;
 	public static float LUNGE_SPEED = 250f;
 	
+	public static final float HULL_BONUS = 25f;
+	
 	@Override
 	public void applyEffectsBeforeShipCreation(HullSize hullSize, MutableShipStatsAPI stats, String id) {
 		super.applyEffectsBeforeShipCreation(hullSize, stats, id);
+		
+		stats.getHullBonus().modifyPercent(id, HULL_BONUS);
 		
 		boolean sMod = isSMod(stats);
 		if (sMod) {
@@ -38,7 +42,8 @@ public class ShroudedMantleHullmod extends HumanShipShroudedHullmod {
 	}
 
 	public String getDescriptionParam(int index, HullSize hullSize) {
-		if (index == 0) return "" + (int) CREW_CASUALTIES + "%";
+		if (index == 0) return "" + (int) HULL_BONUS + "%";
+		if (index == 1) return "" + (int) CREW_CASUALTIES + "%";
 		return null;
 	}
 	
@@ -109,12 +114,14 @@ public class ShroudedMantleHullmod extends HumanShipShroudedHullmod {
 		if ((data.interval.intervalElapsed() || forceUse) && !data.lunging) {
 			float hull = ship.getHullLevel();
 			data.hullAtPrevLunge = Math.max(hull, data.hullAtPrevLunge);
-			if (hull <= data.hullAtPrevLunge - ConvulsiveLungeSystemAI.HULL_LOSS_FOR_PULLBACK || forceUse) {
-				data.lunging = true;
-				data.lungeElapsed = 0f;
-				data.lungeDest = null;
-				data.fadedFlash = false;
-				data.hullAtPrevLunge = hull;
+			if (ship.getFullTimeDeployed() > 1f) {
+				if (hull <= data.hullAtPrevLunge - ConvulsiveLungeSystemAI.HULL_LOSS_FOR_PULLBACK || forceUse) {
+					data.lunging = true;
+					data.lungeElapsed = 0f;
+					data.lungeDest = null;
+					data.fadedFlash = false;
+					data.hullAtPrevLunge = hull;
+				}
 			}
 		}
 		

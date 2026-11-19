@@ -9,7 +9,10 @@ import com.fs.starfarer.api.campaign.SectorEntityToken;
 import com.fs.starfarer.api.campaign.ai.FleetAIFlags;
 import com.fs.starfarer.api.campaign.ai.ModularFleetAIAPI;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
+import com.fs.starfarer.api.characters.AbilityPlugin;
+import com.fs.starfarer.api.impl.campaign.ids.Abilities;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
+import com.fs.starfarer.api.impl.campaign.intel.misc.SupportFleetIntel;
 import com.fs.starfarer.api.util.IntervalUtil;
 import com.fs.starfarer.api.util.Misc;
 
@@ -36,6 +39,22 @@ public class SustainedBurnAbilityAI extends BaseAbilityAI {
 		boolean smuggler = mem.getBoolean(MemFlags.MEMORY_KEY_SMUGGLER);
 		if (smuggler) {
 			if (ability.isActive()) ability.deactivate();
+			return;
+		}
+		
+		boolean playerSupportFleet = Misc.isPlayerSupportFleet(fleet) && 
+				fleet.getMemoryWithoutUpdate().getBoolean(SupportFleetIntel.SUPPORT_FLEET_FOLLOW);
+		if (playerSupportFleet && fleet.isInCurrentLocation()) {
+			CampaignFleetAPI player = Global.getSector().getPlayerFleet();
+			float dist = Misc.getDistance(player, fleet);
+			AbilityPlugin sb = player.getAbility(Abilities.SUSTAINED_BURN);
+			if (sb != null) {
+				if (sb.isActive()) {
+					if (!ability.isActive()) ability.activate();
+				} else if (!sb.isActive() && dist < 500f) {
+					if (ability.isActive()) ability.deactivate();
+				}
+			}
 			return;
 		}
 		

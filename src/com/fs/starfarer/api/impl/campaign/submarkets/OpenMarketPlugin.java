@@ -11,6 +11,7 @@ import com.fs.starfarer.api.campaign.FactionAPI.ShipPickMode;
 import com.fs.starfarer.api.campaign.econ.CommodityOnMarketAPI;
 import com.fs.starfarer.api.campaign.econ.SubmarketAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Commodities;
+import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.ids.Submarkets;
 import com.fs.starfarer.api.util.Highlights;
@@ -81,6 +82,39 @@ public class OpenMarketPlugin extends BaseSubmarketPlugin {
 					null,
 					null,
 					4);
+			
+			
+			if (Misc.isMilitary(market)) {
+				addShips(market.getFactionId(),
+						40f, // combat
+						0f, // freighter 
+						0f, // tanker
+						0f, // transport
+						0f, // liner
+						0f, // utilityPts
+						null, // qualityOverride
+						-1f, // qualityMod
+						null,
+						null,
+						3, // min ship size
+						4);
+			}
+			
+			if (Misc.hasHeavyIndustry(market)) {
+				addShips(Factions.INDEPENDENT,
+						40f, // combat
+						0f, // freighter 
+						0f, // tanker
+						0f, // transport
+						0f, // liner
+						0f, // utilityPts
+						null, // qualityOverride
+						-1f, // qualityMod
+						null,
+						null,
+						3, // min ship size
+						4);
+			}
 			
 			float tankers = 20f;
 			com = market.getCommodityData(Commodities.FUEL);
@@ -216,6 +250,15 @@ public class OpenMarketPlugin extends BaseSubmarketPlugin {
 	@Override
 	public PlayerEconomyImpactMode getPlayerEconomyImpactMode() {
 		return PlayerEconomyImpactMode.PLAYER_SELL_ONLY;
+	}
+
+
+	@Override
+	public float getTariff() {
+		if (Misc.isExtended()) {
+			return Global.getSettings().getFloat("ext_normalTariff") * getMarketTariffMult(market);
+		}		
+		return super.getTariff() * getMarketTariffMult(market);
 	}
 
 

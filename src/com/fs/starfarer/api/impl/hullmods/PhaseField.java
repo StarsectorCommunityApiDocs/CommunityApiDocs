@@ -92,10 +92,10 @@ public class PhaseField extends BaseHullMod implements HullModFleetEffect {
 		int numProfileShips = Global.getSettings().getInt("maxSensorShips");
 		tooltip.addPara("In addition, the fleet's detected-at range is reduced by a multiplier based on the total "
 				+ "sensor profile of the %s highest-profile ships in the fleet, and the total sensor strength of the %s "
-				+ "phase ships with the highest sensor strength values. This effect only applies when the "
+				+ "ships with Phase Field with the highest sensor strength values. This effect only applies when the "
 				+ "fleet's transponder is turned off.", opad,
 				h,
-				"" + numProfileShips, "" + numProfileShips);
+				"" + numProfileShips, "" + numProfileShips, "Phase Field");
 		
 		tooltip.addPara("Fleetwide sensor strength increases - such as from High Resolution Sensors - do not factor into "
 				+ "this calculation.", opad);

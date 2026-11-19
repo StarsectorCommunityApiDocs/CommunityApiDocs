@@ -1103,7 +1103,7 @@ public class HyperspaceTerrainPlugin extends BaseTiledTerrain { // implements Ne
 		
 		float xEnd = (int)((llx + vw - x + extra) / size) + 1;
 		if (xEnd >= tiles.length) xEnd = tiles.length - 1;
-		float yEnd = (int)((lly + vw - y + extra) / size) + 1;
+		float yEnd = (int)((lly + vh - y + extra) / size) + 1;
 		if (yEnd >= tiles.length) yEnd = tiles[0].length - 1;
 		
 		xStart = (int) Math.floor(xStart / samples) * samples;
@@ -1516,6 +1516,8 @@ public class HyperspaceTerrainPlugin extends BaseTiledTerrain { // implements Ne
 		
 		float strikeDamage = crPerDep * strikeValue / suppliesPerDep;
 		if (strikeDamage < STORM_MIN_STRIKE_DAMAGE) strikeDamage = STORM_MIN_STRIKE_DAMAGE;
+		
+		if (Misc.isExtended()) strikeDamage *= Global.getSettings().getFloat("ext_environmentalDamageMult");
 		
 		float resistance = member.getStats().getDynamic().getValue(Stats.CORONA_EFFECT_MULT);
 		strikeDamage *= resistance;

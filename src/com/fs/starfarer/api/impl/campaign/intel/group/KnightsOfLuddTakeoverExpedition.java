@@ -444,6 +444,11 @@ public class KnightsOfLuddTakeoverExpedition extends BlockadeFGI implements Econ
 		target.setFreePort(false);
 		target.setUseStockpilesForShortages(false);
 		
+		CampaignFleetAPI station = Misc.getStationFleet(target);
+		if (station != null) {
+			station.setFaction(Factions.LUDDIC_CHURCH, true);
+		}
+		
 		for (SectorEntityToken curr : target.getConnectedEntities()) {
 			curr.setFaction(Factions.LUDDIC_CHURCH);
 		}

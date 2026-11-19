@@ -481,7 +481,7 @@ public class PunitiveExpeditionManager implements EveryFrameScript {
 		
 		//float fp = from.getSize() * 20 + threshold * 0.5f;
 		float fp = 50 + curr.threshold * 0.5f;
-		fp = Math.max(50, fp - 50);
+		fp = Math.max(50, fp - 50) + 150;
 		//fp = 500;
 //		if (from.getFaction().isHostileTo(target.getFaction())) {
 //			fp *= 1.25f;

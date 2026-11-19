@@ -11,6 +11,7 @@ public class DamagedWeaponMounts extends BaseHullMod {
 
 	public static float ROTATE_MULT = 0.75f;
 	public static float RECOIL_PERCENT = 30f;
+	public static float HEALTH_PERCENT = 25f;
 	
 	public void applyEffectsBeforeShipCreation(HullSize hullSize, MutableShipStatsAPI stats, String id) {
 		float effect = stats.getDynamic().getValue(Stats.DMOD_EFFECT_MULT);
@@ -20,6 +21,11 @@ public class DamagedWeaponMounts extends BaseHullMod {
 		stats.getBeamWeaponTurnRateBonus().modifyMult(id, rotMult);
 		stats.getMaxRecoilMult().modifyPercent(id, RECOIL_PERCENT * effect);
 		stats.getRecoilPerShotMult().modifyPercent(id, RECOIL_PERCENT * effect);
+		
+		stats.getWeaponHealthBonus().modifyPercent(id, -HEALTH_PERCENT);
+		
+//		stats.getBallisticAmmoBonus().modifyPercent(id, AMMO_BONUS);
+//		stats.getEnergyAmmoBonus().modifyPercent(id, AMMO_BONUS);
 		
 		CompromisedStructure.modifyCost(hullSize, stats, id);
 	}
@@ -32,9 +38,11 @@ public class DamagedWeaponMounts extends BaseHullMod {
 		
 		if (index == 0) return "" + (int)Math.round((1f - rotMult) * 100f) + "%";
 		if (index == 1) return "" + (int) Math.round(RECOIL_PERCENT * effect) + "%";
-		if (index >= 2) return CompromisedStructure.getCostDescParam(index, 2);
+		if (index == 2) return "" + (int) Math.round(HEALTH_PERCENT * effect) + "%";
+		if (index >= 3) return CompromisedStructure.getCostDescParam(index, 3);
 		return null;
 	}
-
-
 }
+
+
+

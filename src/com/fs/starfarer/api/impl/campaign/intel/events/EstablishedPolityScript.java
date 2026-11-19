@@ -41,7 +41,11 @@ public class EstablishedPolityScript implements EconomyUpdateListener {
 	
 	public void sendGainedMessage() {
 		MessageIntel msg = new MessageIntel();
-		msg.addLine("Established Polity gained", Misc.getBasePlayerColor());
+		if (PerseanLeagueMembership.isLeagueMember()) {
+			msg.addLine("Gained access to League development programs", Misc.getBasePlayerColor());
+		} else {
+			msg.addLine("Established Polity gained", Misc.getBasePlayerColor());
+		}
 		msg.addLine(BaseIntelPlugin.BULLET + "Colonies receive %s accessibility", Misc.getTextColor(),
 				new String [] {"+" + (int)Math.round(PiracyRespite.ACCESSIBILITY_BONUS * 100f) + "%"},
 				Misc.getHighlightColor());

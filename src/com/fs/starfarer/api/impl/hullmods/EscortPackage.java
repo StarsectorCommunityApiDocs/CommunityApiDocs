@@ -34,7 +34,8 @@ public class EscortPackage extends BaseHullMod {
 	}
 	
 	public String getSModDescriptionParam(int index, HullSize hullSize) {
-		if (index == 0) return "" + (int)Math.round(SHIELD_BONUS) + "%";
+		if (index == 0) return "" + (int)Math.round(SHIELD_BONUS * 2f) + "%";
+		if (index == 1) return "" + (int)Math.round(SHIELD_BONUS) + "%";
 		return null;
 	}
 
@@ -58,8 +59,8 @@ public class EscortPackage extends BaseHullMod {
 	
 	public static String EP_DATA_KEY = "core_escort_package_data_key";
 	public static class EscortPackageData {
-		IntervalUtil interval = new IntervalUtil(0.9f, 1.1f);
-		float mag = 0;
+		public IntervalUtil interval = new IntervalUtil(0.9f, 1.1f);
+		public float mag = 0;
 	}
 	
 	public void applyEPEffect(ShipAPI ship, ShipAPI other, float mag) {
@@ -82,9 +83,10 @@ public class EscortPackage extends BaseHullMod {
 			stats.getBallisticWeaponRangeBonus().modifyPercent(id, range);
 			stats.getEnergyWeaponRangeBonus().modifyPercent(id, range);
 			
-			if (sMod && ship.isDestroyer()) {
+			if (sMod) { //) && ship.isDestroyer()) {
 				float shields = SHIELD_BONUS * mag;
 				stats.getShieldDamageTakenMult().modifyMult(id, 1f - shields / 100f);
+				stats.getArmorDamageTakenMult().modifyMult(id, 1f - shields / 100f);
 			}
 		} else {
 			stats.getAcceleration().unmodify(id);
@@ -98,6 +100,7 @@ public class EscortPackage extends BaseHullMod {
 			stats.getEnergyWeaponRangeBonus().unmodify(id);
 			
 			stats.getShieldDamageTakenMult().unmodify(id);
+			stats.getArmorDamageTakenMult().unmodify(id);
 		}
 		
 	}

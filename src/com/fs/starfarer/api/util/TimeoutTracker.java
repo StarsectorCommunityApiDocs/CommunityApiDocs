@@ -28,6 +28,7 @@ public class TimeoutTracker<T> {
 	}
 	
 	public void add(T item, float time) {
+		if (item == null) return;
 		getData(item).remaining += time;
 	}
 	

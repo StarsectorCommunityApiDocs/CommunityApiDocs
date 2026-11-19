@@ -149,9 +149,24 @@ public class MiscellaneousThemeGenerator extends BaseThemeGenerator {
 		if (DEBUG) System.out.println("Finished generating misc derelicts\n\n\n\n\n");
 		
 		
-		addDerelicts(context, "legion_xiv_Elite", 2, 3, 1, 2, Tags.THEME_REMNANT);
-		addDerelicts(context, "phantom_Elite", 1, 2, 0, 1, Tags.THEME_REMNANT, Tags.THEME_RUINS, Tags.THEME_DERELICT, Tags.THEME_UNSAFE);
-		addDerelicts(context, "revenant_Elite", 1, 2, 0, 1, Tags.THEME_REMNANT, Tags.THEME_RUINS, Tags.THEME_DERELICT, Tags.THEME_UNSAFE);
+		int minLegionsNonRec = 2;
+		int maxLegionsNonRec = 3;
+		int minLegionsRec = 1;
+		int maxLegionsRec = 2;
+		if (Misc.isExtended() && Global.getSettings().getBoolean("ext_reduceLegionXIVSpawns")) {
+			minLegionsNonRec = 1;
+			maxLegionsNonRec = 2;
+			minLegionsRec = 1;
+			maxLegionsRec = 1;
+		}
+
+		boolean badCondition = Misc.isExtended() && Global.getSettings().getBoolean("ext_reduceDerelictQuality");
+		
+		addDerelicts(context, "legion_xiv_Elite", minLegionsNonRec, maxLegionsNonRec, minLegionsRec, maxLegionsRec, badCondition, Tags.THEME_REMNANT);
+		
+		
+		addDerelicts(context, "phantom_Elite", 1, 2, 0, 1, badCondition, Tags.THEME_REMNANT, Tags.THEME_RUINS, Tags.THEME_DERELICT, Tags.THEME_UNSAFE);
+		addDerelicts(context, "revenant_Elite", 1, 2, 0, 1, badCondition, Tags.THEME_REMNANT, Tags.THEME_RUINS, Tags.THEME_DERELICT, Tags.THEME_UNSAFE);
 		
 		
 		addRedPlanet(context);
@@ -258,8 +273,16 @@ public class MiscellaneousThemeGenerator extends BaseThemeGenerator {
 	}
 	
 	protected void addDerelicts(ThemeGenContext context, String variant,
+			int minNonSalvageable, int maxNonSalvageable, 
+			int minSalvageable, int maxSalvageable, 
+			String ... allowedThemes) {
+		addDerelicts(context, variant, minNonSalvageable, maxNonSalvageable, minSalvageable,
+						maxSalvageable, false, allowedThemes);
+	}
+	protected void addDerelicts(ThemeGenContext context, String variant,
 					int minNonSalvageable, int maxNonSalvageable, 
-					int minSalvageable, int maxSalvageable, 
+					int minSalvageable, int maxSalvageable,
+					boolean badCondition,
 					String ... allowedThemes) {
 		if (Global.getSettings().getVariant(variant) != null) {
 			if (DEBUG) System.out.println("Adding " + variant + " to star systems");
@@ -268,6 +291,14 @@ public class MiscellaneousThemeGenerator extends BaseThemeGenerator {
 			
 			int numSalvageable = minSalvageable + random.nextInt(maxSalvageable - minSalvageable + 1);
 			int numNonSalvageable = minNonSalvageable + random.nextInt(maxNonSalvageable - minNonSalvageable + 1);
+			
+			if (Misc.isExtended()) {
+				float f = Misc.getDerelictRecoverableFraction();
+				int keep = (int) Math.round(numSalvageable * f);
+				if (keep == 0 && numSalvageable > 0) keep = 1;
+				numNonSalvageable += numSalvageable - keep;
+				numSalvageable = keep;
+			}
 			
 			List<Constellation> list = new ArrayList<Constellation>(context.constellations);
 			Collections.shuffle(list, random);
@@ -296,7 +327,7 @@ public class MiscellaneousThemeGenerator extends BaseThemeGenerator {
 				if (ae != null) {
 					if (numSalvageable > 0) {
 						numSalvageable--;
-						ShipRecoverySpecialCreator creator = new ShipRecoverySpecialCreator(random, 0, 0, false, null, null);
+						ShipRecoverySpecialCreator creator = new ShipRecoverySpecialCreator(random, 0, 0, badCondition, null, null);
 						Object specialData = creator.createSpecial(ae.entity, new SpecialCreationContext());
 						if (specialData != null) {
 							Misc.setSalvageSpecial(ae.entity, specialData);
@@ -644,15 +675,19 @@ public class MiscellaneousThemeGenerator extends BaseThemeGenerator {
 		}
 		
 		
-		if (tapSystems.isEmpty()) {
-			tapSystems.addAll(backup);
-		}
+//		if (tapSystems.isEmpty()) {
+//			tapSystems.addAll(backup);
+//		}
 		
 		int numTaps = 2 + random.nextInt(2);
 		numTaps = 2;
 		int added = 0;
-		while (added < numTaps && !tapSystems.isEmpty()) {
+		while (added < numTaps && (!tapSystems.isEmpty() || !backup.isEmpty())) {
 			StarSystemAPI pick = tapSystems.pickAndRemove();
+			if (pick == null) {
+				pick = backup.pickAndRemove();
+			}
+			if (pick == null) break;
 			AddedEntity tap = addCoronalTap(pick);
 			if (tap != null) {
 				added++;
@@ -844,6 +879,7 @@ public class MiscellaneousThemeGenerator extends BaseThemeGenerator {
 
 	protected void setUpPKSystem(StarSystemAPI system) {
 		system.addTag(Tags.THEME_SPECIAL);
+		system.addTag(Tags.SYSTEM_ALREADY_USED_FOR_STORY);
 		system.addTag(Tags.PK_SYSTEM);
 		
 		Global.getSector().getPersistentData().put(PK_SYSTEM_KEY, system);
@@ -1257,7 +1293,7 @@ public class MiscellaneousThemeGenerator extends BaseThemeGenerator {
 					if (curr.getMarket().hasCondition(Conditions.DECIVILIZED_SUBPOP)) continue;
 					if (curr.getMarket().hasCondition(Conditions.WATER_SURFACE)) continue; // don't want to write around this.
 					if (curr.isGasGiant()) continue;
-					if (!( curr.getMarket().hasCondition(Conditions.VOLATILES_PLENTIFUL) || 
+					if ( !( curr.getMarket().hasCondition(Conditions.VOLATILES_PLENTIFUL) || 
 							curr.getMarket().hasCondition(Conditions.ORGANICS_PLENTIFUL) ||
 							curr.getMarket().hasCondition(Conditions.RARE_ORE_ULTRARICH) ) ) continue;	
 					//		curr.getMarket().hasCondition(Conditions.ORE_ULTRARICH) ) ) continue;	

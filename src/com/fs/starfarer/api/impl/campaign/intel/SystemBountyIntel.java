@@ -1,8 +1,9 @@
 package com.fs.starfarer.api.impl.campaign.intel;
 
-import java.awt.Color;
 import java.util.List;
 import java.util.Set;
+
+import java.awt.Color;
 
 import org.apache.log4j.Logger;
 
@@ -234,6 +235,10 @@ public class SystemBountyIntel extends BaseIntelPlugin implements EveryFrameScri
 		int payment = 0;
 		float fpDestroyed = 0;
 		for (CampaignFleetAPI otherFleet : battle.getNonPlayerSideSnapshot()) {
+			if (otherFleet.getFaction() != null && otherFleet.getFaction().getCustomBoolean(Factions.CUSTOM_NO_BOUNTY_FOR_DEFEATING)) {
+				continue;
+			}
+			
 			if (commerceMode) {
 				if (!market.getFaction().isHostileTo(otherFleet.getFaction()) && 
 						!otherFleet.getFaction().isHostileTo(Factions.INDEPENDENT)) continue;

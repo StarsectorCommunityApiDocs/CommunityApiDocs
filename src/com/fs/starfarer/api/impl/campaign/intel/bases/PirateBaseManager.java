@@ -28,6 +28,7 @@ public class PirateBaseManager extends BaseEventManager {
 	}
 	
 	protected long start = 0;
+	protected int unadjstedDaysMod = 0;
 	protected float extraDays = 0;
 	
 	protected int numDestroyed = 0;
@@ -101,13 +102,17 @@ public class PirateBaseManager extends BaseEventManager {
 		return picker.pick();
 	}
 	
+	public void setUnadjustedDaysSinceStart(int days) {
+		unadjstedDaysMod = days;
+	}
+	
 	public float getUnadjustedDaysSinceStart() {
-		float days = Global.getSector().getClock().getElapsedDaysSince(start);
+		float days = Global.getSector().getClock().getElapsedDaysSince(start) + unadjstedDaysMod;
 		return days;
 	}
 	
 	public float getDaysSinceStart() {
-		float days = Global.getSector().getClock().getElapsedDaysSince(start) + extraDays;
+		float days = Global.getSector().getClock().getElapsedDaysSince(start) + unadjstedDaysMod + extraDays;
 		if (Misc.isFastStartExplorer()) {
 			days += Tuning.FAST_START_EXTRA_DAYS - 30f;
 		} else if (Misc.isFastStart()) {
@@ -120,11 +125,21 @@ public class PirateBaseManager extends BaseEventManager {
 	 * 0 at six months (depending on start option chosen), goes up to 1 two years later.
 	 * @return
 	 */
-	public float getStandardTimeFactor() {
-		float timeFactor = (PirateBaseManager.getInstance().getDaysSinceStart() - Tuning.FAST_START_EXTRA_DAYS) / (Tuning.DAYS_UNTIL_FULL_TIME_FACTOR);
+	public static float getStandardTimeFactor() {
+		float f = Tuning.getExtDelayFactor();
+		float timeFactor = (PirateBaseManager.getInstance().getDaysSinceStart() - 
+								Tuning.FAST_START_EXTRA_DAYS * f) / (Tuning.DAYS_UNTIL_FULL_TIME_FACTOR * f);
 		if (timeFactor < 0) timeFactor = 0;
 		if (timeFactor > 1) timeFactor = 1;
 		return timeFactor;
+	}
+	
+	public static float getEarlyTimeFactor() {
+		float f = Tuning.getExtDelayFactor();
+		float earlyTimeFactor = (PirateBaseManager.getInstance().getDaysSinceStart() - 60f * f) / (120f * f);
+		if (earlyTimeFactor < 0) earlyTimeFactor = 0;
+		if (earlyTimeFactor > 1) earlyTimeFactor = 1;
+		return earlyTimeFactor;
 	}
 	
 	public float getExtraDays() {

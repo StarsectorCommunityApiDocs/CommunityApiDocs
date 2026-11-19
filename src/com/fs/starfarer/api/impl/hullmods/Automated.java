@@ -17,7 +17,7 @@ public class Automated extends BaseHullMod {
 		stats.getMinCrewMod().modifyMult(id, 0);
 		stats.getMaxCrewMod().modifyMult(id, 0);
 		
-		if (isInPlayerFleet(stats) && !isAutomatedNoPenalty(stats)) {
+		if ((isInPlayerFleet(stats) && !isAutomatedNoPenalty(stats)) || isAutomatedPenalty(stats)) {
 			stats.getMaxCombatReadiness().modifyFlat(id, -MAX_CR_PENALTY, "Automated ship penalty");
 		}
 	}
@@ -78,6 +78,29 @@ public class Automated extends BaseHullMod {
 		return member.getHullSpec().hasTag(Tags.TAG_AUTOMATED_NO_PENALTY) ||
 				member.getVariant().hasTag(Tags.TAG_AUTOMATED_NO_PENALTY);
 	}
+	
+	
+	public static boolean isAutomatedPenalty(MutableShipStatsAPI stats) {
+		if (stats == null) return false;
+		FleetMemberAPI member = stats.getFleetMember();
+		if (member == null) return false;
+		return member.getHullSpec().hasTag(Tags.TAG_AUTOMATED_PENALTY) ||
+				member.getVariant().hasTag(Tags.TAG_AUTOMATED_PENALTY);
+	}
+	
+//	public static boolean isAutomatedPenalty(ShipAPI ship) {
+//		if (ship == null) return false;
+//		FleetMemberAPI member = ship.getFleetMember();
+//		if (member == null) return false;
+//		return member.getHullSpec().hasTag(Tags.TAG_AUTOMATED_PENALTY) ||
+//				member.getVariant().hasTag(Tags.TAG_AUTOMATED_PENALTY);
+//	}
+//	
+//	public static boolean isAutomatedPenalty(FleetMemberAPI member) {
+//		if (member == null) return false;
+//		return member.getHullSpec().hasTag(Tags.TAG_AUTOMATED_PENALTY) ||
+//				member.getVariant().hasTag(Tags.TAG_AUTOMATED_PENALTY);
+//	}
 	
 	
 //	@Override

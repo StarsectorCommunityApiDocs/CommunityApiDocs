@@ -5,6 +5,7 @@ import java.util.Random;
 import org.apache.log4j.Logger;
 
 import com.fs.starfarer.api.Global;
+import com.fs.starfarer.api.campaign.CampaignUIAPI.CoreUITradeMode;
 import com.fs.starfarer.api.campaign.CargoAPI;
 import com.fs.starfarer.api.campaign.CargoStackAPI;
 import com.fs.starfarer.api.campaign.CoreUIAPI;
@@ -53,7 +54,7 @@ public class BlackMarketPlugin extends BaseSubmarketPlugin {
 //				extraShipSize = 1;
 //			}
 			
-			WeightedRandomPicker<String> factionPicker = new WeightedRandomPicker<String>();
+			WeightedRandomPicker<String> factionPicker = new WeightedRandomPicker<String>(itemGenRandom);
 			factionPicker.add(market.getFactionId(), 15f - stability);
 			factionPicker.add(Factions.INDEPENDENT, 4f);
 			factionPicker.add(submarket.getFaction().getId(), 6f);
@@ -135,7 +136,23 @@ public class BlackMarketPlugin extends BaseSubmarketPlugin {
 					null,
 					null,
 					3 // no capital ships, max size cruiser
-					); 
+					);
+			
+			if (Misc.hasHeavyIndustry(market)) {
+				addShips(Factions.INDEPENDENT,
+						40f, // combat
+						0f, // freighter 
+						0f, // tanker
+						0f, // transport
+						0f, // liner
+						0f, // utilityPts
+						null, // qualityOverride
+						-0.5f, // qualityMod
+						null,
+						null,
+						3, // min ship size
+						4);
+			}			
 			
 			addHullMods(4, 1 + itemGenRandom.nextInt(3));
 		}
@@ -265,8 +282,39 @@ public class BlackMarketPlugin extends BaseSubmarketPlugin {
 		return false;
 	}
 	
+//	public boolean isIllegalOnSubmarket(String commodityId, TransferAction action) {
+//		return market.isIllegal(commodityId);
+//	}
+//
+//	public boolean isIllegalOnSubmarket(CargoStackAPI stack, TransferAction action) {
+//		if (!stack.isCommodityStack()) return false;
+//		return isIllegalOnSubmarket((String) stack.getData(), action);
+//	}
+//	
+//	public String getIllegalTransferText(CargoStackAPI stack, TransferAction action) {
+//		return "Illegal to trade on the " + submarket.getNameOneLine().toLowerCase() + " here";
+//	}
+	
+	
 	public float getTariff() {
+		if (Misc.isExtended()) {
+			CoreUIAPI core = Global.getSector().getCampaignUI().getCore2();
+			boolean tradingTOff = core != null && core.getTradeMode() != CoreUITradeMode.NONE &&
+					Global.getSector().getPlayerFleet() != null && !Global.getSector().getPlayerFleet().isTransponderOn(); 
+			if (core != null && core.getTradeMode() != CoreUITradeMode.SNEAK && !market.isFreePort() && !tradingTOff) {
+				return Global.getSettings().getFloat("ext_blackMarketTariff") * getMarketTariffMult(market);
+			}
+			return Global.getSettings().getFloat("ext_blackMarketTariffSneak") * getMarketTariffMult(market);
+		}
 		return 0f;
+	}
+
+	@Override
+	public String getTariffTextOverride() {
+		if (getTariff() > 0f) {
+			return "Bribes (" + (int)Math.round(getTariff() * 100f) + "%)";
+		}
+		return super.getTariffTextOverride();
 	}
 
 
@@ -282,22 +330,36 @@ public class BlackMarketPlugin extends BaseSubmarketPlugin {
 //			EventProbabilityAPI ep = manager.getProbability(Events.INVESTIGATION_SMUGGLING, market);
 //			float p = ep.getProbability();
 			
+			String pre = "";
+			if (Misc.isExtended()) {
+				CoreUIAPI core = Global.getSector().getCampaignUI().getCore2();
+				boolean tradingTOff = core != null && core.getTradeMode() != CoreUITradeMode.NONE &&
+						Global.getSector().getPlayerFleet() != null && !Global.getSector().getPlayerFleet().isTransponderOn();
+				if (core != null && core.getTradeMode() != CoreUITradeMode.SNEAK && !market.isFreePort() && !tradingTOff) {
+					if (Global.getSettings().getFloat("ext_blackMarketTariffSneak") > 0f) {
+						pre = "Sneak into port with the transponder off to pay reduced bribes to allow black market trade\n\n";
+					} else {
+						pre = "Sneak into port with the transponder off to avoid having to pay bribes to allow black market trade\n\n";
+					}
+				}
+			}
+			
 			float p = CoreCampaignPluginImpl.computeSmugglingSuspicionLevel(market);
-			if (p < 0.05f) return "Suspicion level: none";
+			if (p < 0.05f) return pre + "Suspicion level: none";
 			
 			if (p < 0.1f) {
-				return "Suspicion level: minimal";
+				return pre + "Suspicion level: minimal";
 			}
 			if (p < 0.2f) {
-				return "Suspicion level: medium";
+				return pre + "Suspicion level: medium";
 			}
 			if (p < 0.3f) {
-				return "Suspicion level: high";
+				return pre + "Suspicion level: high";
 			}
 			if (p < 0.5f) {
-				return "Suspicion level: very high";
+				return pre + "Suspicion level: very high";
 			}
-			return "Suspicion level: extreme";
+			return pre + "Suspicion level: extreme";
 		}
 
 		return null;

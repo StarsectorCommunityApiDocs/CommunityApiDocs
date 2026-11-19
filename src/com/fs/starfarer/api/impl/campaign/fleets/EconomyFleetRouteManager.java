@@ -751,6 +751,7 @@ public class EconomyFleetRouteManager extends BaseRouteFleetManager implements F
 						ShippingDisruption.ACCESS_LOSS_DURATION,
 						ShippingDisruption.COMMODITY_LOSS_PREFIX + Misc.genUID(), "Recent incoming shipment lost", -penalty2);
 				
+				ShippingDisruption.getDisruption(data.to).addShippingLost(penalty2);
 				ShippingDisruption.getDisruption(data.to).notifyDisrupted(ShippingDisruption.ACCESS_LOSS_DURATION);
 			}
 		}
@@ -763,7 +764,7 @@ public class EconomyFleetRouteManager extends BaseRouteFleetManager implements F
 			com.getAvailableStat().addTemporaryModFlat(
 					ShippingDisruption.ACCESS_LOSS_DURATION, 
 					ShippingDisruption.COMMODITY_LOSS_PREFIX + Misc.genUID(), "Recent incoming shipment lost", -penalty2);
-			
+			ShippingDisruption.getDisruption(data.from).addShippingLost(penalty2);			
 			ShippingDisruption.getDisruption(data.from).notifyDisrupted(ShippingDisruption.ACCESS_LOSS_DURATION);
 		}
 	}

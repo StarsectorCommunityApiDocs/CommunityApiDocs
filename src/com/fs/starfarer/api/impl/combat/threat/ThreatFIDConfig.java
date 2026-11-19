@@ -45,6 +45,9 @@ public class ThreatFIDConfig implements FIDConfigGen {
 				float p = Global.getSettings().getFloat("salvageHullmodProb");
 				float pItem = Global.getSettings().getFloat("salvageHullmodRequiredItemProb");
 				
+				float hullmodMult = Misc.isExtended() ? Global.getSettings().getFloat("ext_hullmodDropFraction") : 1f;
+				p *= hullmodMult;
+				
 				CampaignFleetAPI fleet = (CampaignFleetAPI) dialog.getInteractionTarget();
 
 				DataForEncounterSide data = context.getDataFor(fleet);
@@ -118,6 +121,8 @@ public class ThreatFIDConfig implements FIDConfigGen {
 			public void battleContextCreated(InteractionDialogAPI dialog, BattleCreationContext bcc) {
 				bcc.aiRetreatAllowed = false;
 				bcc.fightToTheLast = true;
+				
+				bcc.extraMapHeight = 6000f;
 				
 				if (bcc.getOtherFleet() != null) {
 					for (FleetMemberAPI curr : bcc.getOtherFleet().getMembersWithFightersCopy()) {

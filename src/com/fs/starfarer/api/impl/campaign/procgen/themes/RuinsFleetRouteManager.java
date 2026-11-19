@@ -19,6 +19,7 @@ import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.FleetTypes;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
+import com.fs.starfarer.api.impl.campaign.rulecmd.salvage.SellToFleet;
 import com.fs.starfarer.api.impl.campaign.tutorial.TutorialMissionIntel;
 import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.api.util.WeightedRandomPicker;
@@ -202,6 +203,8 @@ public class RuinsFleetRouteManager extends BaseRouteFleetManager {
 		fleet.setFaction(Factions.INDEPENDENT, true);
 		
 		fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_SCAVENGER, true);
+		fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_FLEET_BUYS_STUFF, true);
+		fleet.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_FLEET_BUYS_STUFF_RATE, SellToFleet.SCAVENGER_SELL_VALUE_MULT);
 		
 		if (pirate || true) {
 			Misc.makeLowRepImpact(fleet, "scav");

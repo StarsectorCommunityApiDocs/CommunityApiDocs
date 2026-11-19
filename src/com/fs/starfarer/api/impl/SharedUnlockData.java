@@ -65,6 +65,7 @@ public class SharedUnlockData extends BaseSharedJSONFile {
 	}
 	
 	public boolean isPlayerAwareOfShip(String hullId) {
+		//getSet(SHIPS).clear();
 		return getSet(SHIPS).contains(hullId);
 	}
 	

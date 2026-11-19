@@ -172,13 +172,19 @@ public class DModManager {
 		ShipVariantAPI variant = member.getVariant();
 		addDMods(variant, canAddDestroyedMods, num, random);
 	}
+	
 	public static void addDMods(ShipVariantAPI variant, boolean canAddDestroyedMods, int num, Random random) {
+		addDMods(variant, canAddDestroyedMods, num, null, false, random);
+	}
+	public static void addDMods(ShipVariantAPI variant, boolean canAddDestroyedMods, int num, 
+												String excludeTag, boolean allowNonCivOnCiv, Random random) {
 		if (random == null) random = new Random();
 		
 		DModAdderParams params = new DModAdderParams();
 		params.variant = variant;
 		params.canAddDestroyedMods = canAddDestroyedMods;
 		params.num = num;
+		params.excludeTag = excludeTag;
 		params.random = random;
 		DModAdderPlugin plugin = Global.getSector().getGenericPlugins().pickPlugin(DModAdderPlugin.class, params);
 		if (plugin != null) {
@@ -198,7 +204,7 @@ public class DModManager {
 		List<HullModSpecAPI> potentialMods = getModsWithTags(Tags.HULLMOD_DAMAGE);
 		if (canAddDestroyedMods) potentialMods.addAll(getModsWithTags(Tags.HULLMOD_DESTROYED_ALWAYS));
 		
-		removeUnsuitedMods(variant, potentialMods);
+		removeUnsuitedMods(variant, potentialMods, allowNonCivOnCiv);
 		
 		boolean hasStructDamage = getNumDMods(variant, Tags.HULLMOD_DAMAGE_STRUCT) > 0;
 		if (hasStructDamage) {
@@ -216,6 +222,10 @@ public class DModManager {
 		
 		if (variant.isCarrier()) {
 			potentialMods.addAll(getModsWithTags(Tags.HULLMOD_CARRIER_ALWAYS));
+		}
+		
+		if (excludeTag != null) {
+			potentialMods.removeIf(mod -> mod.hasTag(excludeTag));
 		}
 		
 		potentialMods = new ArrayList<HullModSpecAPI>(potentialMods);
@@ -249,6 +259,9 @@ public class DModManager {
 	public static boolean assumeAllShipsAreAutomated = false;
 
 	public static void removeUnsuitedMods(ShipVariantAPI variant, List<HullModSpecAPI> mods) {
+		removeUnsuitedMods(variant, mods, false);
+	}
+	public static void removeUnsuitedMods(ShipVariantAPI variant, List<HullModSpecAPI> mods, boolean allowNonCivOnCiv) {
 		//boolean auto = variant.hasHullMod(HullMods.AUTOMATED);
 		boolean auto = Misc.isAutomated(variant);
 		if (assumeAllShipsAreAutomated) auto = true;
@@ -278,7 +291,7 @@ public class DModManager {
 				iter.remove();
 				continue;
 			}
-			if (civ && !curr.hasTag(Tags.HULLMOD_CIV) && !curr.hasTag(Tags.HULLMOD_CIV_ONLY)) {
+			if (!allowNonCivOnCiv && civ && !curr.hasTag(Tags.HULLMOD_CIV) && !curr.hasTag(Tags.HULLMOD_CIV_ONLY)) {
 				iter.remove();
 				continue;
 			}

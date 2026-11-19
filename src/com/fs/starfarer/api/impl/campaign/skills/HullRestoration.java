@@ -2,6 +2,9 @@ package com.fs.starfarer.api.impl.campaign.skills;
 
 import java.awt.Color;
 
+import com.fs.starfarer.api.Global;
+import com.fs.starfarer.api.campaign.econ.CommoditySpecAPI;
+import com.fs.starfarer.api.characters.CharacterStatsSkillEffect;
 import com.fs.starfarer.api.characters.FleetStatsSkillEffect;
 import com.fs.starfarer.api.characters.MutableCharacterStatsAPI;
 import com.fs.starfarer.api.characters.ShipSkillEffect;
@@ -11,7 +14,9 @@ import com.fs.starfarer.api.combat.ShipAPI.HullSize;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.fleet.MutableFleetStatsAPI;
 import com.fs.starfarer.api.impl.campaign.DModManager;
+import com.fs.starfarer.api.impl.campaign.ids.Commodities;
 import com.fs.starfarer.api.impl.campaign.ids.Stats;
+import com.fs.starfarer.api.impl.campaign.ids.Strings;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 
@@ -30,6 +35,8 @@ public class HullRestoration {
 	
 	public static float DP_REDUCTION = 0.1f;
 	public static float DP_REDUCTION_MAX = 5f;
+	
+	public static float PARTS_DROP_RATE_INCREASE_MULT = 4;
 	
 	
 	/**
@@ -55,6 +62,28 @@ public class HullRestoration {
 		}
 	}
 	
+	public static class Level1B implements CharacterStatsSkillEffect {
+		public void apply(MutableCharacterStatsAPI stats, String id, float level) {
+			stats.getDynamic().getMod(Stats.ALLOW_RESTORE_ANYWHERE).modifyFlat(id, 1);
+		}
+
+		public void unapply(MutableCharacterStatsAPI stats, String id) {
+			stats.getDynamic().getMod(Stats.ALLOW_RESTORE_ANYWHERE).unmodify(id);
+		}
+		
+		public String getEffectDescription(float level) {
+			return "Repairing d-mods no longer requires being docked at a spaceport";
+		}
+		
+		public String getEffectPerLevelDescription() {
+			return null;
+		}
+
+		public ScopeDescription getScopeDescription() {
+			return ScopeDescription.NONE;
+		}
+	}	
+	
 	public static class Level2 implements ShipSkillEffect {
 		public void apply(MutableShipStatsAPI stats, HullSize hullSize, String id, float level) {
 			float dp = DMOD_AVOID_MIN_DP;
@@ -66,6 +95,9 @@ public class HullRestoration {
 			if (mult < 0f) mult = 0f;
 			
 			float probAvoid = DMOD_AVOID_MIN + (DMOD_AVOID_MAX - DMOD_AVOID_MIN) * mult;
+			if (Misc.usePartsBasedDModRepairs()) {
+				probAvoid = DMOD_AVOID_MIN;
+			}
 			
 			stats.getDynamic().getMod(Stats.DMOD_ACQUIRE_PROB_MOD).modifyMult(id, 1f - probAvoid);
 		}
@@ -79,6 +111,9 @@ public class HullRestoration {
 			String highDP = "" + (int) DMOD_AVOID_MAX_DP;
 			String lowChance = "" + (int) Math.round(DMOD_AVOID_MIN * 100f) + "%";
 			String highChance = "" + (int) Math.round(DMOD_AVOID_MAX * 100f) + "%";
+			if (Misc.usePartsBasedDModRepairs()) {
+				return "Ships lost in combat have a " + lowChance + " chance to avoid d-mods";
+			}
 			return "Ships lost in combat have a " + lowChance + " (if " + highDP + " deployment points or higher) to " + highChance + " (" + lowDP + " DP or lower) chance to avoid d-mods";
 			//"Ships lost in combat have a 90% (if 5 deployment points or lower) to 75% (50 DP or higher) chance to avoid d-mods
 			//return "+" + (int)(CR_PER_SMOD) + "% maximum combat readiness per s-mod built into the hull";
@@ -156,19 +191,28 @@ public class HullRestoration {
 	
 	public static class Level4A implements FleetStatsSkillEffect {
 		public void apply(MutableFleetStatsAPI stats, String id, float level) {
+			stats.getDynamic().getStat(Stats.DOMAIN_GRADE_PARTS_DROP_RATE_MULT).modifyMult(id, PARTS_DROP_RATE_INCREASE_MULT);
+			//stats.getDynamic().getStat(Stats.FUEL_USE_NOT_SHOWN_ON_MAP_MULT).unmodify(id);
 		}
 		
 		public void unapply(MutableFleetStatsAPI stats, String id) {
+			stats.getDynamic().getStat(Stats.DOMAIN_GRADE_PARTS_DROP_RATE_MULT).unmodify(id);
 		}
 		
 		public String getEffectDescription(float level) {
-			if (FieldRepairsScript.MONTHS_PER_DMOD_REMOVAL == 1) {
-				return "Chance to remove one d-mod per month from a randomly selected ship in your fleet; faster for low-DP ships";
-			} else if (FieldRepairsScript.MONTHS_PER_DMOD_REMOVAL == 2) {
-				return "Chance to remove a d-mod from a randomly selected ship in your fleet every two months";
+			if (Misc.usePartsBasedDModRepairs()) {
+				CommoditySpecAPI parts = Global.getSettings().getCommoditySpec(Commodities.PARTS);
+				String name = Misc.ucFirst(parts.getName().toLowerCase());
+				return "Increases the chance to find " + name + " during post-battle salvage operations by " + (int)Math.round(PARTS_DROP_RATE_INCREASE_MULT) + Strings.X;
 			} else {
-				return "Chance to remove a d-mod from a randomly selected ship in your fleet every " +
-							FieldRepairsScript.MONTHS_PER_DMOD_REMOVAL + " months";
+				if (FieldRepairsScript.MONTHS_PER_DMOD_REMOVAL == 1) {
+					return "Chance to remove one d-mod per month from a randomly selected ship in your fleet; faster for low-DP ships";
+				} else if (FieldRepairsScript.MONTHS_PER_DMOD_REMOVAL == 2) {
+					return "Chance to remove a d-mod from a randomly selected ship in your fleet every two months";
+				} else {
+					return "Chance to remove a d-mod from a randomly selected ship in your fleet every " +
+								FieldRepairsScript.MONTHS_PER_DMOD_REMOVAL + " months";
+				}
 			}
 		}
 		public String getEffectPerLevelDescription() {
@@ -187,6 +231,9 @@ public class HullRestoration {
 		}
 		
 		public String getEffectDescription(float level) {
+			if (Misc.usePartsBasedDModRepairs()) {
+				return null;
+			}
 			return "Chance to quickly remove one d-mod from newly acquired ships; higher for ships with more d-mods";
 		}
 		public String getEffectPerLevelDescription() {

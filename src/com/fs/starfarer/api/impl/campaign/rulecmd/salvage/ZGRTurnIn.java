@@ -85,6 +85,8 @@ public class ZGRTurnIn extends BaseCommandPlugin {
 	protected void selectSellableItems() {
 		CargoAPI copy = getSellableItems();
 		
+		float valueMult = Misc.isExtended() ? Global.getSettings().getFloat("ext_ZGRTurnInValueMult") : 1f;
+		
 		final float width = 310f;
 		dialog.showCargoPickerDialog("Select items to turn in", "Confirm", "Cancel", true, width, copy, new CargoPickerListener() {
 			public void pickedCargo(CargoAPI cargo) {
@@ -104,9 +106,9 @@ public class ZGRTurnIn extends BaseCommandPlugin {
 					int num = (int) stack.getSize();
 					AddRemoveCommodity.addStackLossText(stack, text);
 					if (isThreatStack(stack)) {
-						bountyThreat += num * stack.getBaseValuePerUnit() * VALUE_MULT;
+						bountyThreat += num * stack.getBaseValuePerUnit() * VALUE_MULT * valueMult;
 					} else if (isMonsterStack(stack)) {
-						bountyMonster += num * stack.getBaseValuePerUnit() * VALUE_MULT;
+						bountyMonster += num * stack.getBaseValuePerUnit() * VALUE_MULT * valueMult;
 					}
 				}
 				
@@ -163,7 +165,7 @@ public class ZGRTurnIn extends BaseCommandPlugin {
 				float bounty = 0f;
 				for (CargoStackAPI stack : combined.getStacksCopy()) {
 					int num = (int) stack.getSize();
-					bounty += num * stack.getBaseValuePerUnit() * VALUE_MULT;
+					bounty += num * stack.getBaseValuePerUnit() * VALUE_MULT * valueMult;
 				}
 				
 				float repChange = computeReputationValue(combined);

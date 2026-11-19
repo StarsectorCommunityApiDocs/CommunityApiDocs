@@ -69,6 +69,7 @@ public class SDFLuddicChurch extends SDFBase {
 		m.triggerSetFleetMemoryValue(MemFlags.MEMORY_KEY_SOURCE_MARKET, hesperus);
 		//m.triggerFleetSetNoFactionInName();
 		m.triggerFleetSetName("Armada of the Ecumene");
+		m.triggerFleetSetNoFactionInName();
 		m.triggerPatrolAllowTransponderOff();
 		//m.triggerFleetSetPatrolActionText("patrolling");
 		m.triggerOrderFleetPatrol(hesperus.getStarSystem());

@@ -1,5 +1,6 @@
 package com.fs.starfarer.api.impl.campaign.rulecmd.salvage;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -8,6 +9,7 @@ import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.AICoreOfficerPlugin;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.FactionAPI;
+import com.fs.starfarer.api.campaign.FactionAPI.ShipPickMode;
 import com.fs.starfarer.api.campaign.FactionAPI.ShipPickParams;
 import com.fs.starfarer.api.campaign.GenericPluginManagerAPI.GenericPlugin;
 import com.fs.starfarer.api.campaign.InteractionDialogAPI;
@@ -67,6 +69,7 @@ public class SalvageGenFromSeed extends BaseCommandPlugin {
 		void reportDefeated(SDMParams p, SectorEntityToken entity, CampaignFleetAPI fleet);
 	}
 	
+	public static final String DEFEATED_HYPERSHUNT_COUNT = "$defeatedHypershuntCount";
 	public static final String DEFEATED_DERELICT_STR = "$defeatedDerelictStr";
 	public static final float DEFEATED_TO_ADDED_FACTOR = 0.2f;
 	public static final float DEFEATED_TO_QUALITY_FACTOR = 0.005f;
@@ -148,8 +151,13 @@ public class SalvageGenFromSeed extends BaseCommandPlugin {
 					total += member.getFleetPointCost();
 				}
 				Global.getSector().getMemoryWithoutUpdate().set(DEFEATED_DERELICT_STR, total);
+			} else if (Factions.OMEGA.equals(p.factionId) && entity != null && entity.hasTag(Tags.CORONAL_TAP)) {
+				float num = Global.getSector().getMemoryWithoutUpdate().getFloat(DEFEATED_HYPERSHUNT_COUNT);
+				num++;
+				Global.getSector().getMemoryWithoutUpdate().set(DEFEATED_HYPERSHUNT_COUNT, num);
 			}
 		}
+		
 		public void modifyFleet(SDMParams p, CampaignFleetAPI fleet, Random random, boolean withOverride) {
 			if (Factions.OMEGA.equals(fleet.getFaction().getId())) {
 				for (FleetMemberAPI member : fleet.getFleetData().getMembersListCopy()) {
@@ -163,13 +171,66 @@ public class SalvageGenFromSeed extends BaseCommandPlugin {
 				d.chances = 5;
 				d.maxChances = 7;
 				d.group = "omega_weapons_small";
+				d.unaffectedByExtMode = true;
 				fleet.addDropRandom(d);
 				
 				d = new DropData();
 				d.chances = 3;
 				d.maxChances = 4;
 				d.group = "omega_weapons_medium";
+				d.unaffectedByExtMode = true;
 				fleet.addDropRandom(d);
+				
+//				float n = Global.getSector().getMemoryWithoutUpdate().getFloat(DEFEATED_HYPERSHUNT_COUNT);
+//				n++;
+//				Global.getSector().getMemoryWithoutUpdate().set(DEFEATED_HYPERSHUNT_COUNT, n);
+				
+				float num = Global.getSector().getMemoryWithoutUpdate().getFloat(DEFEATED_HYPERSHUNT_COUNT);
+				if (num > 0) {
+					ShipPickParams params = new ShipPickParams(ShipPickMode.PRIORITY_THEN_ALL);
+					FactionAPI faction = Global.getSector().getFaction(Factions.REMNANTS);
+					AICoreOfficerPlugin plugin = Misc.getAICoreOfficerPlugin(Commodities.ALPHA_CORE);
+					List<String> roles = new ArrayList<>();
+					//roles.add(ShipRoles.COMBAT_CAPITAL);
+					//roles.add(ShipRoles.COMBAT_CAPITAL);
+					
+					//random = new Random();
+					int large = 1 + random.nextInt(2);
+					int medium = 2 + random.nextInt(2) + Math.max(0, 2 - large) * 2;
+					int small = 3 + random.nextInt(2);
+					
+					for (int i = 0; i < large; i++) {
+						roles.add(ShipRoles.COMBAT_LARGE);
+					}
+					for (int i = 0; i < medium; i++) {
+						roles.add(ShipRoles.COMBAT_MEDIUM);
+					}
+					for (int i = 0; i < small; i++) {
+						roles.add(ShipRoles.COMBAT_SMALL);
+					}
+					
+					for (String role : roles) {
+						List<ShipRolePick> picks = faction.pickShip(role, params, null, random);
+						for (ShipRolePick pick : picks) {
+							FleetMemberAPI member = fleet.getFleetData().addFleetMember(pick.variantId);
+							PersonAPI person = plugin.createPerson(Commodities.ALPHA_CORE, fleet.getFaction().getId(), random);
+							member.setCaptain(person);
+							RemnantOfficerGeneratorPlugin.integrateAndAdaptCoreForAIFleet(member);
+						}
+					}
+					
+					if (fleet.getInflater() instanceof DefaultFleetInflater) {
+						DefaultFleetInflater dfi = (DefaultFleetInflater) fleet.getInflater();
+						((DefaultFleetInflaterParams)dfi.getParams()).allWeapons = true;
+						((DefaultFleetInflaterParams)dfi.getParams()).factionId = Factions.REMNANTS;
+					}
+					
+					for (FleetMemberAPI member : fleet.getFleetData().getMembersListCopy()) {
+						member.getRepairTracker().setCR(member.getRepairTracker().getMaxCR());
+					}
+				}
+				
+				
 				
 				long seed = Misc.getSalvageSeed(p.entity);
 				fleet.getMemoryWithoutUpdate().set(MemFlags.SALVAGE_SEED, Misc.getRandom(seed, 11).nextLong());

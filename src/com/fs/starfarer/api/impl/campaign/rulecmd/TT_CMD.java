@@ -57,6 +57,21 @@ public class TT_CMD extends BaseCommandPlugin {
 		} else if ("givePhaeton".equals(action)) {
 			givePhaeton(dialog, params, memoryMap);
 			return true;
+		/* probably covered by MiscCMD loseContact
+		 * } else if ("loseArroyoContact".equals(action)) {
+			
+			PersonAPI person = People.getPerson(ARROYO); 
+			ContactIntel intel = (ContactIntel) person;
+			
+			CustomRepImpact impact = new CustomRepImpact();
+			impact.delta = -0.75f;
+			Global.getSector().adjustPlayerReputation(
+					new RepActionEnvelope(RepActions.CUSTOM, 
+							impact, null, text, true, true),
+							person);
+			
+			intel.loseContact(dialog);
+			return true;*/
 		}
 		
 		return false;

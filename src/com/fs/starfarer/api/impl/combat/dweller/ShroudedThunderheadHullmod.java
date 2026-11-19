@@ -38,7 +38,9 @@ public class ShroudedThunderheadHullmod extends HumanShipShroudedHullmod {
 	public static float RECENT_HIT_DUR = 5f;
 	public static float MAX_TIME_SINCE_RECENT_HIT = 0.1f;
 	public static float WEIGHT_PER_RECENT_HIT = 1f;
-	public static float MISFIRE_WEIGHT = 10f;
+	public static float MIN_TOTAL_RECENT_HIT_WEIGHT = 20f;
+	public static float MAX_TOTAL_RECENT_HIT_WEIGHT = 100f;
+	public static float MISFIRE_WEIGHT = 100f;
 	
 	public static float MIN_REFIRE_DELAY = 0.22f;
 	public static float MAX_REFIRE_DELAY = 0.44f;
@@ -118,18 +120,35 @@ public class ShroudedThunderheadHullmod extends HumanShipShroudedHullmod {
 			return false;
 		}
 		
+		// this is only used for how much the shroud glows, not ACTUALLY the hit probability
 		float getHitProbability() {
 			float recent = recentHits.getItems().size() * WEIGHT_PER_RECENT_HIT;
-			return recent / (recent + MISFIRE_WEIGHT);
+			if (recent > MAX_TOTAL_RECENT_HIT_WEIGHT) {
+				recent = MAX_TOTAL_RECENT_HIT_WEIGHT;
+			}
+			return recent / (recent + MAX_TOTAL_RECENT_HIT_WEIGHT * 0.5f);
 		}
 		
 		RecentHitData pickRecentHit() {
 			if (!hasRecentEnoughHits()) return null;
 			WeightedRandomPicker<RecentHitData> picker = new WeightedRandomPicker<>();
+			float totalHitFrequency = recentHits.getItems().size() * WEIGHT_PER_RECENT_HIT;
+			if (totalHitFrequency < MIN_TOTAL_RECENT_HIT_WEIGHT) {
+				totalHitFrequency = MIN_TOTAL_RECENT_HIT_WEIGHT;
+			}
+			if (totalHitFrequency > MAX_TOTAL_RECENT_HIT_WEIGHT) {
+				totalHitFrequency = MAX_TOTAL_RECENT_HIT_WEIGHT;
+			}
 			for (RecentHitData curr : recentHits.getItems()) {
 				float remaining = recentHits.getRemaining(curr);
 				if (remaining < RECENT_HIT_DUR - MAX_TIME_SINCE_RECENT_HIT * 2f) continue;
-				picker.add(curr, WEIGHT_PER_RECENT_HIT);
+				picker.add(curr, 1f);
+			}
+			float numRecentEnoughHits = picker.getItems().size();
+			if (numRecentEnoughHits > 0f) {
+				for (int i = 0; i < picker.getItems().size(); i++) {
+					picker.setWeight(i, totalHitFrequency / numRecentEnoughHits);
+				}
 			}
 			RecentHitData misfire = new RecentHitData();
 			picker.add(misfire, MISFIRE_WEIGHT);
@@ -160,6 +179,7 @@ public class ShroudedThunderheadHullmod extends HumanShipShroudedHullmod {
 		
 		float prob = data.getHitProbability();
 		DwellerShroud shroud = DwellerShroud.getShroudFor(ship);
+		if (shroud == null) return; // failsafe
 		shroud.getParams().flashProbability = Math.min(0.1f + prob * 1.4f, 1f);
 		//shroud.getParams().alphaMult = 0.5f; 
 		

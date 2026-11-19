@@ -26,6 +26,7 @@ import com.fs.starfarer.api.impl.campaign.DModManager;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.loading.FighterWingSpecAPI;
+import com.fs.starfarer.api.loading.HullModSpecAPI;
 import com.fs.starfarer.api.loading.VariantSource;
 import com.fs.starfarer.api.loading.WeaponSlotAPI;
 import com.fs.starfarer.api.loading.WeaponSpecAPI;
@@ -252,6 +253,15 @@ public class DefaultFleetInflater implements FleetInflater, AutofitPluginDelegat
 		//this.faction = Global.getSector().getFaction(Factions.HEGEMONY);
 		
 		hullmods = new ArrayList<String>(faction.getKnownHullMods());
+		if (p.blockHullmodsWithItemReqs != null && p.blockHullmodsWithItemReqs) {
+			List<String> filtered = new ArrayList<>();
+			for (String id : hullmods) {
+				HullModSpecAPI spec = Global.getSettings().getHullModSpec(id);
+				if (spec.getEffect() != null && spec.getEffect().getRequiredItem() != null) continue;
+				filtered.add(id);
+			}
+			hullmods = filtered; 
+		}
 		
 //		fighters = new ArrayList<AvailableFighter>();
 //		for (String wingId : faction.getKnownFighters()) {
@@ -368,6 +378,7 @@ public class DefaultFleetInflater implements FleetInflater, AutofitPluginDelegat
 						}
 						
 						boolean tierAvailable = random.nextFloat() < p;
+						if (this.p.maxTier != null && this.p.maxTier < tier) tierAvailable = false;
 						if (!tierAvailable && foundSome) continue;
 						//if (random.nextFloat() >= p) continue;
 						

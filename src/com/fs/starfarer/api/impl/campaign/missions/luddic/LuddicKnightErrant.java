@@ -173,9 +173,9 @@ public class LuddicKnightErrant extends HubMissionWithSearch {
 		if ("postMissionCleanup".equals(action)) {
 			// clean up any unneeded memory things.
 			//Global.getSector().getMemoryWithoutUpdate().unset("$lpp_didHesperusFirstShrineAttempt");
-			Global.getSector().getMemoryWithoutUpdate().unset("$global.lke_foundBornanew");
+			Global.getSector().getMemoryWithoutUpdate().unset("$lke_foundBornanew");
 			
-			mazalot.getMemoryWithoutUpdate().unset("$market.dardanWontTalkLKE");
+			mazalot.getMemoryWithoutUpdate().unset("$dardanWontTalkLKE");
 			
 			return true;
 		}

@@ -45,7 +45,7 @@ public class PromoteOfficerIntel extends BaseIntelPlugin {
 		
 		person = OfficerManagerEvent.createOfficer(Global.getSector().getFaction(Factions.PLAYER), 1,
 									SkillPickPreference.ANY, true, null, false, false, -1, null);
-		person.setPortraitSprite(OfficerManagerEvent.pickPortraitPreferNonDuplicate(person.getFaction(), person.getGender()));
+		person.setPortraitSprite(OfficerManagerEvent.pickPortraitPreferNonDuplicate(person.getFaction(), person.getGender(), null));
 		if (text != null) {
 			text.addPara(getDescText());
 		}
@@ -134,19 +134,23 @@ public class PromoteOfficerIntel extends BaseIntelPlugin {
 		info.addPara(person.getPersonalityAPI().getDescription(), opad);
 		
 		
-		int max = Misc.getMaxOfficers(Global.getSector().getPlayerFleet());
-		int curr = Misc.getNumNonMercOfficers(Global.getSector().getPlayerFleet());
 		
 		float days = DURATION - getDaysSincePlayerVisible();
 		info.addPara("This opportunity will be available for %s more " + getDaysString(days) + ".", 
 				opad, tc, h, getDays(days));
 		addLogTimestamp(info, tc, opad);
 		
+		CampaignFleetAPI fleet = Global.getSector().getPlayerFleet();
+		int max = Misc.getMaxOfficers(fleet);
+		int active = Misc.getNumActiveNonMercOfficers(fleet);
+		int mercs = Misc.getMercs(fleet).size();
+		int total = Misc.getNumNonMercOfficers(fleet) + mercs;
+		int inactive = total - active - mercs;
 		
 		Color hNum = h;
-		if (curr >= max) hNum = Misc.getNegativeHighlightColor();
-		LabelAPI label = info.addPara("Officers already under your command: %s %s %s", opad, tc, h, 
-				"" + curr, "/", "" + max);
+		//if (curr >= max) hNum = Misc.getNegativeHighlightColor();
+		LabelAPI label = info.addPara("Officers: %s active, %s inactive.", opad, tc, h, 
+				"" + active + " / " + max, "" + inactive);
 		label.setHighlightColors(hNum, h, h);
 		
 		
@@ -162,10 +166,10 @@ public class PromoteOfficerIntel extends BaseIntelPlugin {
 //		ButtonAPI delete = addGenericButton(info, width, "Disregard", BUTTON_DELETE);
 //		delete.setShortcut(Keyboard.KEY_G, true);
 		
-		if (curr >= max) {
-			button.setEnabled(false);
-			//info.addPara("Maximum number of officers reached.", tc, opad);
-		}
+//		if (curr >= max) {
+//			button.setEnabled(false);
+//			//info.addPara("Maximum number of officers reached.", tc, opad);
+//		}
 		
 	}
 	

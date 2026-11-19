@@ -8,4 +8,6 @@ public interface SubmarketSpecAPI {
 	String getDesc();
 	String getIcon();
 	String getFactionId();
+	String getScriptClass();
+	void setScriptClass(String scriptClass);
 }

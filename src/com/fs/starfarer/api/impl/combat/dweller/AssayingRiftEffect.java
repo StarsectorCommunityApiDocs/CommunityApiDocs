@@ -107,7 +107,7 @@ public class AssayingRiftEffect implements OnFireEffectPlugin, OnHitEffectPlugin
 //				source.setHitpoints(Math.min(source.getMaxHitpoints(), source.getHitpoints() + HEAL_AMOUNT));
 //			}
 			
-			if (!targetShip.isHulk()) {
+			if (!targetShip.isWasHulk()) {
 				WeightedRandomPicker<ShipAPI> healTargets = new WeightedRandomPicker<>();
 				WeightedRandomPicker<ShipAPI> healNeedLess = new WeightedRandomPicker<>();
 				for (ShipAPI other : Global.getCombatEngine().getShips()) {
@@ -117,7 +117,7 @@ public class AssayingRiftEffect implements OnFireEffectPlugin, OnHitEffectPlugin
 					
 					if (getHealMult(other) <= 0) continue;
 					
-					DwellerShroud otherShroud = DwellerShroud.getShroudFor(source);
+					DwellerShroud otherShroud = DwellerShroud.getShroudFor(other);
 					if (otherShroud == null) continue;
 					
 					float missingHp = other.getMaxHitpoints() - other.getHitpoints();

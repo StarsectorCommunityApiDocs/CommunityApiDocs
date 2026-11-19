@@ -411,6 +411,10 @@ public class PerseanLeagueHostileActivityFactor extends BaseHostileActivityFacto
 	}
 
 	public void reportTacticalBombardmentFinished(InteractionDialogAPI dialog, MarketAPI market, TempData actionData) {
+		if (PerseanLeagueMembership.isDefeatedBlockadeOrPunEx()) {
+			return;
+		}
+		
 		MarketAPI kazeron = getKazeron(false);
 		if (market != null && market == kazeron) {
 			EventStageData stage = intel.getDataFor(Stage.HA_EVENT);

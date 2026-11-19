@@ -297,7 +297,10 @@ public interface FleetEncounterContextPlugin {
 	float computePlayerContribFraction();
 	//boolean isLowRepImpact();
 	
-	//void applyPostEngagementOption(EngagementResultAPI result); 
+	//void applyPostEngagementOption(EngagementResultAPI result);
+	
+	default int getAccruedCombatPay() { return 0; };
+	default void setAccruedCombatPay(int accruedCombatPay) {};
 	
 }
 

@@ -1,5 +1,6 @@
 package com.fs.starfarer.api.impl.campaign.econ.impl;
 
+import java.util.List;
 import java.util.Random;
 
 import java.awt.Color;
@@ -10,6 +11,7 @@ import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.BattleAPI;
 import com.fs.starfarer.api.campaign.CampaignEventListener.FleetDespawnReason;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
+import com.fs.starfarer.api.campaign.PersonImportance;
 import com.fs.starfarer.api.campaign.PlanetAPI;
 import com.fs.starfarer.api.campaign.econ.CommodityOnMarketAPI;
 import com.fs.starfarer.api.campaign.econ.CommoditySpecAPI;
@@ -17,7 +19,10 @@ import com.fs.starfarer.api.campaign.econ.Industry;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.campaign.listeners.FleetEventListener;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
+import com.fs.starfarer.api.characters.ImportantPeopleAPI;
+import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.impl.campaign.DebugFlags;
+import com.fs.starfarer.api.impl.campaign.events.OfficerManagerEvent;
 import com.fs.starfarer.api.impl.campaign.fleets.FleetFactory.PatrolType;
 import com.fs.starfarer.api.impl.campaign.fleets.FleetFactoryV3;
 import com.fs.starfarer.api.impl.campaign.fleets.FleetParamsV3;
@@ -34,6 +39,8 @@ import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.ids.Ranks;
 import com.fs.starfarer.api.impl.campaign.ids.Stats;
 import com.fs.starfarer.api.impl.campaign.ids.Strings;
+import com.fs.starfarer.api.impl.campaign.ids.Tags;
+import com.fs.starfarer.api.impl.campaign.procgen.StarSystemGenerator;
 import com.fs.starfarer.api.impl.campaign.rulecmd.salvage.MarketCMD.RaidDangerLevel;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.IntervalUtil;
@@ -45,9 +52,12 @@ import com.fs.starfarer.api.util.WeightedRandomPicker;
 
 public class MilitaryBase extends BaseIndustry implements RouteFleetSpawner, FleetEventListener {
 
-	public static float OFFICER_PROB_MOD_PATROL_HQ = 0.1f;
-	public static float OFFICER_PROB_MOD_MILITARY_BASE = 0.2f;
-	public static float OFFICER_PROB_MOD_HIGH_COMMAND = 0.3f;
+	public static float PATROL_IGNORE_OTHER_FLEETS_DELAY_DAYS = 1f;
+	public static float PATROL_NO_SPAWN_AFTER_RETURN_TIMEOUT_DAYS = 2f;
+	
+	public static float OFFICER_PROB_MOD_PATROL_HQ = 0.2f;
+	public static float OFFICER_PROB_MOD_MILITARY_BASE = 0.3f;
+	public static float OFFICER_PROB_MOD_HIGH_COMMAND = 0.4f;
 	
 	
 	public static float DEFENSE_BONUS_PATROL = 0.1f;
@@ -55,6 +65,13 @@ public class MilitaryBase extends BaseIndustry implements RouteFleetSpawner, Fle
 	public static float DEFENSE_BONUS_COMMAND = 0.3f;
 	
 	public static int IMPROVE_NUM_PATROLS_BONUS = 1;
+	
+	/**
+	 * Personnel officer.
+	 */
+	protected PersonAPI saved = null;
+	
+	protected PersonAPI savedCommander = null;
 	
 	public void apply() {
 		
@@ -196,6 +213,16 @@ public class MilitaryBase extends BaseIndustry implements RouteFleetSpawner, Fle
 			supply.clear();
 			unapply();
 		}
+		
+		if (market.isPlayerOwned()) {
+			if (isFunctional()) {
+				addPersonnelOfficer();
+				addBaseCommander();
+			} else {
+				removePersonnelOfficer();
+				removeBaseCommander();
+			}
+		}
 
 	}
 
@@ -219,8 +246,21 @@ public class MilitaryBase extends BaseIndustry implements RouteFleetSpawner, Fle
 		market.getStats().getDynamic().getMod(Stats.GROUND_DEFENSES_MOD).unmodifyMult(getModId());
 		
 		market.getStats().getDynamic().getMod(Stats.OFFICER_PROB_MOD).unmodifyFlat(getModId(0));
+		
+		if (market.isPlayerOwned()) {
+			removePersonnelOfficer();
+			removeBaseCommander();
+		}
 	}
 	
+	
+	
+	@Override
+	protected void addPostDescriptionSection(TooltipMakerAPI tooltip, IndustryTooltipMode mode) {
+		tooltip.addPara("Adds a personnel officer to the comm directory. The officer can be contacted to "
+				+ "inquire about officer candidates with specific skills.", 10f);
+	}
+
 	protected boolean hasPostDemandSection(boolean hasDemand, IndustryTooltipMode mode) {
 		return mode != IndustryTooltipMode.NORMAL || isFunctional();
 	}
@@ -325,6 +365,7 @@ public class MilitaryBase extends BaseIndustry implements RouteFleetSpawner, Fle
 													  Global.getSettings().getFloat("averagePatrolSpawnInterval") * 1.3f);
 	
 	protected float returningPatrolValue = 0f;
+	protected float sinceReturn = PATROL_NO_SPAWN_AFTER_RETURN_TIMEOUT_DAYS;
 	
 	@Override
 	protected void buildingFinished() {
@@ -353,6 +394,9 @@ public class MilitaryBase extends BaseIndustry implements RouteFleetSpawner, Fle
 //		float stability = market.getPrevStability();
 //		float spawnRate = 1f + (stability - 5) * 0.2f;
 //		if (spawnRate < 0.5f) spawnRate = 0.5f;
+		
+		sinceReturn += days;
+		if (sinceReturn < PATROL_NO_SPAWN_AFTER_RETURN_TIMEOUT_DAYS) return;
 		
 		float spawnRate = 1f;
 		float rateMult = market.getStats().getDynamic().getStat(Stats.COMBAT_FLEET_SPAWN_RATE_MULT).getModifiedValue();
@@ -492,6 +536,7 @@ public class MilitaryBase extends BaseIndustry implements RouteFleetSpawner, Fle
 				if (custom.spawnFP > 0) {
 					float fraction  = fleet.getFleetPoints() / custom.spawnFP;
 					returningPatrolValue += fraction;
+					sinceReturn = 0f;
 				}
 			}
 		}
@@ -533,7 +578,9 @@ public class MilitaryBase extends BaseIndustry implements RouteFleetSpawner, Fle
 		
 		fleet.addScript(new PatrolAssignmentAIV4(fleet, route));
 		
-		fleet.getMemoryWithoutUpdate().set(MemFlags.FLEET_IGNORES_OTHER_FLEETS, true, 0.3f);
+		fleet.getMemoryWithoutUpdate().set(MemFlags.FLEET_IGNORES_OTHER_FLEETS, true, PATROL_IGNORE_OTHER_FLEETS_DELAY_DAYS);
+		fleet.getStats().addTemporaryModMult(PATROL_IGNORE_OTHER_FLEETS_DELAY_DAYS, "preparingForPatrol", "Preparing for patrol duty", 0f, 
+				fleet.getStats().getSensorRangeMod());
 		
 		//market.getContainingLocation().addEntity(fleet);
 		//fleet.setLocation(market.getPrimaryEntity().getLocation().x, market.getPrimaryEntity().getLocation().y);
@@ -732,7 +779,122 @@ public class MilitaryBase extends BaseIndustry implements RouteFleetSpawner, Fle
 		return level.next();
 	}
 
+
+	public void addPersonnelOfficer() {
+		PersonAPI person = null;
+		
+		if (saved != null) {
+			person = saved;
+		} else {
+			person = market.getFaction().createRandomPerson(StarSystemGenerator.random);
+			person.setRankId(Ranks.SPACE_CAPTAIN);
+			person.setPostId(Ranks.POST_PERSONNEL_OFFICER);
+			
+			person.setImportanceAndVoice(PersonImportance.MEDIUM, StarSystemGenerator.random);
+			person.addTag(Tags.CONTACT_MILITARY);
+			
+		}
+		
+		List<OfficerManagerEvent> listeners = Global.getSector().getListenerManager().getListeners(OfficerManagerEvent.class);
+		if (!listeners.isEmpty()) {
+			person.getMemoryWithoutUpdate().set("$ome_eventRef", listeners.get(0));
+		}
+		
+		removePersonnelOfficer();
+		
+		if (market.getCommDirectory().getEntryForPerson(person) == null) {
+			market.getCommDirectory().addPerson(person);
+		}
+		if (!market.getPeopleCopy().contains(person)) {
+			market.addPerson(person);
+		}
+		
+		saved = person;
+		
+		ImportantPeopleAPI ip = Global.getSector().getImportantPeople();
+		if (!ip.containsPerson(person)) {
+			ip.addPerson(person);
+			ip.getData(person).getLocation().setMarket(market);
+			ip.checkOutPerson(person, "permanent_staff");
+		}
+	}
 	
+	public void removePersonnelOfficer() {
+		PersonAPI officer = null;
+		ImportantPeopleAPI ip = Global.getSector().getImportantPeople();
+		
+		for (PersonAPI person : market.getPeopleCopy()) {
+			if (Ranks.POST_PERSONNEL_OFFICER.equals(person.getPostId())) {
+				market.removePerson(person);
+				market.getCommDirectory().removePerson(person);
+				ip.removePerson(person);
+				if (officer == null) officer = person;
+			}
+		}
+
+		if (officer != null) {
+			saved = officer;
+		}
+		//return null;
+	}
+	
+	public void addBaseCommander() {
+		PersonAPI person = null;
+		
+		if (savedCommander != null) {
+			person = savedCommander;
+		} else {
+			person = market.getFaction().createRandomPerson(StarSystemGenerator.random);
+			person.setRankId(Ranks.SPACE_ADMIRAL);
+			person.setPostId(Ranks.POST_BASE_COMMANDER);
+			
+			person.setImportanceAndVoice(PersonImportance.VERY_HIGH, StarSystemGenerator.random);
+			person.addTag(Tags.CONTACT_MILITARY);
+			
+		}
+		
+		List<OfficerManagerEvent> listeners = Global.getSector().getListenerManager().getListeners(OfficerManagerEvent.class);
+		if (!listeners.isEmpty()) {
+			person.getMemoryWithoutUpdate().set("$ome_eventRef", listeners.get(0));
+		}
+		
+		removeBaseCommander();
+		
+		if (market.getCommDirectory().getEntryForPerson(person) == null) {
+			market.getCommDirectory().addPerson(person);
+		}
+		if (!market.getPeopleCopy().contains(person)) {
+			market.addPerson(person);
+		}
+		
+		savedCommander = person;
+		
+		ImportantPeopleAPI ip = Global.getSector().getImportantPeople();
+		if (!ip.containsPerson(person)) {
+			ip.addPerson(person);
+			ip.getData(person).getLocation().setMarket(market);
+			ip.checkOutPerson(person, "permanent_staff");
+		}
+	}
+	
+	public void removeBaseCommander() {
+		PersonAPI officer = null;
+		ImportantPeopleAPI ip = Global.getSector().getImportantPeople();
+		
+		for (PersonAPI person : market.getPeopleCopy()) {
+			if (Ranks.POST_BASE_COMMANDER.equals(person.getPostId())) {
+				market.removePerson(person);
+				market.getCommDirectory().removePerson(person);
+				ip.removePerson(person);
+				if (officer == null) officer = person;
+			}
+		}
+		
+		if (officer != null) {
+			savedCommander = officer;
+		}
+		//return null;
+	}
 }
 
 

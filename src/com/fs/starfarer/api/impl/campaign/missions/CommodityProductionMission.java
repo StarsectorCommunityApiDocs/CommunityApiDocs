@@ -1,10 +1,11 @@
 package com.fs.starfarer.api.impl.campaign.missions;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import java.awt.Color;
 
 import org.lwjgl.util.vector.Vector2f;
 
@@ -38,7 +39,7 @@ public class CommodityProductionMission extends HubMissionWithBarEvent implement
 	
 	public static float PROB_UNDERWORLD_BAR = 0.25f;
 	
-	public static float MISSION_DAYS = 365f * 2f;
+	public static float MISSION_DAYS = 365f * 3f;
 	public static int MISSION_CYCLES = (int) Math.round(MISSION_DAYS / 365f);
 	public static int CONTRACT_DAYS = (int) Math.round(365f * 5f);
 	public static int CONTRACT_MONTHS = (int) Math.round(CONTRACT_DAYS * 12f / 365f);

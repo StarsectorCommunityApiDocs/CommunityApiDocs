@@ -2600,10 +2600,15 @@ public abstract class HubMissionWithTriggers extends BaseHubMission {
 //		triggerSetFleetFlag(MemFlags.MEMORY_KEY_MAKE_AGGRESSIVE_ONE_BATTLE_ONLY);
 //	}
 	public void triggerMakeHostileAndAggressive() {
+		triggerMakeHostileAndAggressive(true);
+	}
+	public void triggerMakeHostileAndAggressive(boolean oneBattleOnly) {
 		triggerSetFleetFlagsWithReason(MemFlags.MEMORY_KEY_MAKE_HOSTILE, 
 							 //MemFlags.MEMORY_KEY_MAKE_HOSTILE_WHILE_TOFF,
 							 MemFlags.MEMORY_KEY_MAKE_AGGRESSIVE);
-		triggerSetFleetFlag(MemFlags.MEMORY_KEY_MAKE_AGGRESSIVE_ONE_BATTLE_ONLY);
+		if (oneBattleOnly) {
+			triggerSetFleetFlag(MemFlags.MEMORY_KEY_MAKE_AGGRESSIVE_ONE_BATTLE_ONLY);
+		}
 	}
 	
 	public void triggerMakeFleetIgnoreOtherFleetsExceptPlayer() {
@@ -2735,6 +2740,12 @@ public abstract class HubMissionWithTriggers extends BaseHubMission {
 //	}
 	public void triggerFleetUnsetAllowLongPursuit() {
 		triggerUnsetFleetFlag(MemFlags.MEMORY_KEY_ALLOW_LONG_PURSUIT);
+	}
+	public void triggerFleetSetFleeFromPlayer() {
+		triggerSetFleetFlag(MemFlags.MEMORY_KEY_MAKE_FLEE_PLAYER);
+	}
+	public void triggerFleetUnsetFleeFromPlayer() {
+		triggerUnsetFleetFlag(MemFlags.MEMORY_KEY_MAKE_FLEE_PLAYER);
 	}
 	public void triggerFleetSetAvoidPlayerSlowly() {
 		triggerSetFleetFlag(MemFlags.MEMORY_KEY_AVOID_PLAYER_SLOWLY);

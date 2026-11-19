@@ -17,11 +17,14 @@ import com.fs.starfarer.api.campaign.InteractionDialogAPI;
 import com.fs.starfarer.api.campaign.InteractionDialogPlugin;
 import com.fs.starfarer.api.campaign.JumpPointAPI;
 import com.fs.starfarer.api.campaign.JumpPointAPI.JumpDestination;
+import com.fs.starfarer.api.campaign.LocationAPI;
 import com.fs.starfarer.api.campaign.OptionPanelAPI;
 import com.fs.starfarer.api.campaign.SectorEntityToken;
 import com.fs.starfarer.api.campaign.TextPanelAPI;
 import com.fs.starfarer.api.campaign.VisualPanelAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
+import com.fs.starfarer.api.campaign.econ.MonthlyReport;
+import com.fs.starfarer.api.campaign.econ.MonthlyReport.FDNode;
 import com.fs.starfarer.api.campaign.impl.items.WormholeScannerPlugin;
 import com.fs.starfarer.api.campaign.rules.MemKeys;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
@@ -31,8 +34,11 @@ import com.fs.starfarer.api.impl.campaign.abilities.TransponderAbility;
 import com.fs.starfarer.api.impl.campaign.ids.Abilities;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
+import com.fs.starfarer.api.impl.campaign.ids.Strings;
+import com.fs.starfarer.api.impl.campaign.intel.MessageIntel;
 import com.fs.starfarer.api.impl.campaign.rulecmd.DumpMemory;
 import com.fs.starfarer.api.impl.campaign.rulecmd.salvage.MiscCMD;
+import com.fs.starfarer.api.impl.campaign.shared.SharedData;
 import com.fs.starfarer.api.impl.campaign.shared.WormholeManager;
 import com.fs.starfarer.api.impl.campaign.tutorial.TutorialMissionIntel;
 import com.fs.starfarer.api.loading.Description;
@@ -301,6 +307,26 @@ public class JumpPointInteractionDialogPluginImpl implements InteractionDialogPl
 						}
 						textPanel.highlightInLastPara(Misc.getNegativeHighlightColor(), "" + (int)fuelCost, "" + fuel);
 					}
+					
+					if (!isWormhole() && (Misc.isExtended() || !Global.getSettings().getBoolean("jumpPayEnabledExtModeOnly"))) {
+						if (!jumpPoint.isInHyperspace() && jumpPoint.getContainingLocation() != null) {
+							if (isPopulatedForJumpPay(jumpPoint.getContainingLocation())) {
+								float jumpMult = Global.getSettings().getFloat("ext_jumpPayMult");
+								if (jumpMult > 0) {
+									int jumpPay = computeJumpPay();
+									textPanel.addPara("Long-standing spacer tradition holds that all "
+											+ "crew receive a bonus equal to %s their "
+											+ "base monthly pay when \"crossing the threshold\" - "
+											+ "jumping out of a populated star system into hyperspace.", 
+											Misc.getHighlightColor(), Misc.getRoundedValueMaxOneAfterDecimal(jumpMult) + Strings.X);
+									textPanel.addPara("In the case of your fleet, this amounts to %s. If there is any shortfall " +
+											"it will be added to your monthly expenses.",
+											Misc.getHighlightColor(), Misc.getDGSCredits(jumpPay));
+											
+								}		
+							}
+						}
+					}
 				}
 				
 				if (canAfford) {
@@ -450,6 +476,9 @@ public class JumpPointInteractionDialogPluginImpl implements InteractionDialogPl
 				dialog.dismiss();
 				
 				Global.getSector().setPaused(false);
+				if (dest != null && dest.getDestination() != null) {
+					computeAndApplyJumpPay(playerFleet.getContainingLocation(), dest.getDestination().getContainingLocation());
+				}
 				Global.getSector().doHyperspaceTransition(playerFleet, jumpPoint, dest);
 				
 				playerFleet.getCargo().removeFuel(fuelCost);
@@ -508,7 +537,7 @@ public class JumpPointInteractionDialogPluginImpl implements InteractionDialogPl
 										  Misc.getNegativeHighlightColor(), whereHL);
 			
 			text.addPara("A disposable probe sends back a microburst of information: forces " +
-					"near the exit are assesed likely hostile and a possible threat to your fleet.",
+					"near the exit are assessed likely hostile and a possible threat to your fleet.",
 					 Misc.getNegativeHighlightColor(), "hostile", "threat");
 		}
 	}
@@ -636,6 +665,94 @@ public class JumpPointInteractionDialogPluginImpl implements InteractionDialogPl
 	public boolean isWormhole() {
 		return jumpPoint.isWormhole();
 	}
+	
+	
+	public static boolean hasJumpPay(LocationAPI from, LocationAPI to) {
+		if (!(Misc.isExtended() || !Global.getSettings().getBoolean("jumpPayEnabledExtModeOnly"))) {
+			return false;
+		}
+		float jumpMult = Global.getSettings().getFloat("ext_jumpPayMult");
+		if (jumpMult <= 0f) return false;
+		
+		if (from == null) return false;
+		if (to == null) return false;
+		
+		if (from.isHyperspace()) return false;
+		if (!to.isHyperspace()) return false;
+		
+		//if (!from.hasTag(Tags.THEME_CORE_POPULATED)) return false;
+		//if (Misc.getMarketsInLocation(from).isEmpty()) return false;
+		if (isPopulatedForJumpPay(from)) return true;
+		
+		return false;
+	}
+	
+	public static boolean isPopulatedForJumpPay(LocationAPI location) {
+		for (MarketAPI market : Misc.getMarketsInLocation(location)) {
+			if (market.isHidden()) continue;
+			return true;
+		}
+		return false;
+	}
+	
+	public static int computeJumpPay() {
+		float jumpMult = Global.getSettings().getFloat("ext_jumpPayMult");
+		
+		CampaignFleetAPI fleet = Global.getSector().getPlayerFleet();
+		if (fleet == null) {
+			return 0;
+		}
+		
+		int payout = (int) Math.round(Misc.computeTotalCrewSalaryForPlayerFleet() * jumpMult);
+		return payout;
+	}
+	
+	public static void computeAndApplyJumpPay(LocationAPI from, LocationAPI to) {
+		if (!hasJumpPay(from, to)) return;
+		
+		CampaignFleetAPI fleet = Global.getSector().getPlayerFleet();
+		if (fleet == null) {
+			return;
+		}
+		
+		int payout = computeJumpPay();
+		
+		int credits = (int) fleet.getCargo().getCredits().get();
+		int owed = Math.max(0, payout - credits);
+		if (owed > 0) payout -= owed;
+		
+		if (payout > 0) {
+			fleet.getCargo().getCredits().subtract(payout);
+			if (fleet.getCargo().getCredits().get() < 0) {
+				fleet.getCargo().getCredits().set(0);
+			}
+		}
+		
+		if (owed > 0) {
+			MonthlyReport report = SharedData.getData().getCurrentReport();
+			
+			FDNode backpayNode = report.getNode(MonthlyReport.FLEET, MonthlyReport.CREW, MonthlyReport.JUMP_PAY);
+			backpayNode.name = "Owed jump pay";
+			backpayNode.custom = MonthlyReport.JUMP_PAY;
+			backpayNode.tooltipCreator = report.getMonthlyReportTooltip();
+			backpayNode.upkeep += owed;
+		}
+		
+		if (payout > 0) {
+			String payStr = "" + Misc.getDGSCredits(Math.abs(payout));
+			MessageIntel intel = new MessageIntel("Jump pay: " + payStr,
+					Misc.getBasePlayerColor(), new String[] {payStr},
+					Misc.getNegativeHighlightColor());
+			Global.getSector().getCampaignUI().addMessage(intel);
+		}
+		if (owed > 0) {
+			String owedStr = "" + Misc.getDGSCredits(Math.abs(owed));
+			MessageIntel intel = new MessageIntel("Owed jump pay: " + owedStr,
+					Misc.getBasePlayerColor(), new String[] {owedStr},
+					Misc.getNegativeHighlightColor());
+			Global.getSector().getCampaignUI().addMessage(intel);
+		}
+	}	
 }
 
 

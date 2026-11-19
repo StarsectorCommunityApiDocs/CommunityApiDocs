@@ -368,8 +368,8 @@ public class CoreImmigrationPluginImpl implements ImmigrationPlugin {
 	}
 	
 	public static float getWeightForMarketSizeStatic(float size) {
-		//return (float) (100f * Math.pow(2, size - 3));
-		return (float) (300f * Math.pow(2, size - 3));
+		float mult = Misc.isExtended() ? Global.getSettings().getFloat("ext_colonyGrowthRequiredMult") : 1f;
+		return (float) (300f * mult * Math.pow(2, size - 3));
 	}
 	public float getWeightForMarketSize(float size) {
 		return getWeightForMarketSizeStatic(size);

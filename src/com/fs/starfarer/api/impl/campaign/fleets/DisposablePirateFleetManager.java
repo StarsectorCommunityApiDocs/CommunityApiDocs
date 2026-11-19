@@ -129,13 +129,8 @@ public class DisposablePirateFleetManager extends DisposableFleetManager {
 		float bonus = tierMult + bountyMult; 
 		
 		
-		float timeFactor = (PirateBaseManager.getInstance().getDaysSinceStart() - 180f) / (365f * 2f);
-		if (timeFactor < 0) timeFactor = 0;
-		if (timeFactor > 1) timeFactor = 1;
-		
-		float earlyTimeFactor = (PirateBaseManager.getInstance().getDaysSinceStart() - 60f) / 120f;
-		if (earlyTimeFactor < 0) earlyTimeFactor = 0;
-		if (earlyTimeFactor > 1) earlyTimeFactor = 1;
+		float timeFactor = PirateBaseManager.getStandardTimeFactor();
+		float earlyTimeFactor = PirateBaseManager.getEarlyTimeFactor();
 		
 		//timeFactor = 1f;
 		

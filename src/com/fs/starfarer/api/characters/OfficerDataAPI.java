@@ -25,5 +25,6 @@ public interface OfficerDataAPI {
 	void addXP(long xp, TextPanelAPI textPanel, boolean clampXP);
 	void makeSkillPicks(Random random);
 	void levelUp(String skillId, Random random);
-
+	void setActivated(boolean activated);
+	boolean isActivated();
 }

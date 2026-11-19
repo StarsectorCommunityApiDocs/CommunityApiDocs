@@ -56,7 +56,7 @@ public class GATransverseJump extends GABaseMission {
 		// expanded from just THEME_MISC
 		// since the various jump point-related requirements narrows down the valid options
 		requireSystemTags(ReqMode.ANY, Tags.THEME_MISC, Tags.THEME_MISC_SKIP, Tags.THEME_RUINS);
-		requireSystemTags(ReqMode.NOT_ANY, Tags.THEME_UNSAFE, Tags.THEME_CORE);
+		requireSystemTags(ReqMode.NOT_ANY, Tags.THEME_UNSAFE, Tags.THEME_CORE, Tags.SYSTEM_ALREADY_USED_FOR_STORY);
 		requireSystemNotAlreadyUsedForStory();
 		requireSystemNotHasPulsar();
 		requireSystemHasAtLeastNumJumpPoints(2);
@@ -200,7 +200,7 @@ public class GATransverseJump extends GABaseMission {
 		triggerMakeHostileAndAggressive();
 		triggerMakeNoRepImpact();
 		triggerFleetAllowLongPursuit();
-		triggerSetFleetAlwaysPursue();
+		//triggerSetFleetAlwaysPursue(); // maybe a bit too aggro if they attack w/ just a tanker or w/e -dgb
 		
 		triggerPickLocationAroundEntity(patrolPoint, 1000f);
 		triggerSpawnFleetAtPickedLocation("$gaTJ_merc", null);

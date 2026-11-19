@@ -95,6 +95,10 @@ public class CommRelayCondition extends BaseMarketConditionPlugin {
 	public boolean showIcon() {
 		return false;
 	}
+	
+	public boolean isTransient() {
+		return false; // to save the list of relays
+	}
 }
 
 

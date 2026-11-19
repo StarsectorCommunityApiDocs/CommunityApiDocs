@@ -13,6 +13,7 @@ import com.fs.starfarer.api.impl.campaign.ids.Industries;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.ids.People;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
+import com.fs.starfarer.api.impl.campaign.intel.events.sd.SDResolution;
 import com.fs.starfarer.api.impl.campaign.missions.FleetCreatorMission;
 import com.fs.starfarer.api.impl.campaign.missions.hub.HubMissionWithTriggers.FleetQuality;
 import com.fs.starfarer.api.impl.campaign.missions.hub.HubMissionWithTriggers.FleetSize;
@@ -81,6 +82,10 @@ public class PersonalFleetHoracioCaden extends PersonalFleetScript {
 		if (sindria == null || sindria.hasCondition(Conditions.DECIVILIZED)) return false;
 		if (!sindria.hasIndustry(Industries.LIONS_GUARD)) return false;
 		if (!sindria.getFactionId().equals(Factions.DIKTAT)) return false;
+		if (SDResolution.get() != null) return SDResolution.get().allowPersonalFleetRewpawns();
+		if (SDResolution.isAskoniaStandoffCompleted()) {
+			return false;
+		}
 		return true;
 	}
 

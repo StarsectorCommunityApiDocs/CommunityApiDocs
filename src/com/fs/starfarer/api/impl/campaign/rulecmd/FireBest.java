@@ -30,6 +30,11 @@ public class FireBest extends BaseCommandPlugin {
 
 	public boolean execute(String ruleId, InteractionDialogAPI dialog, List<Token> params, Map<String, MemoryAPI> memoryMap) {
 		
+//		MemoryAPI mem = memoryMap.get(MemKeys.LOCAL);
+//		if (mem != null) {
+//			mem.unset("$personnelOfficerTimeout");
+//		}
+		
 		this.ruleId = ruleId;
 		this.dialog = dialog;
 		this.params = params;

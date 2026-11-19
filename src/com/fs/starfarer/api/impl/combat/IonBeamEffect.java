@@ -13,6 +13,9 @@ import com.fs.starfarer.api.util.IntervalUtil;
 
 public class IonBeamEffect implements BeamEffectPlugin {
 
+	public static float ARC_DAMAGE_MULT_NORMAL = 1f;
+	public static float ARC_DAMAGE_MULT_PIERCED = 1f;
+	
 	private IntervalUtil fireInterval = new IntervalUtil(0.25f, 1.75f);
 	private boolean wasZero = true;
 	
@@ -24,6 +27,7 @@ public class IonBeamEffect implements BeamEffectPlugin {
 			// needed because when the ship is in fast-time, dpsDuration will not be reset every frame as it should be
 			if (!wasZero) dur = 0;
 			wasZero = beam.getDamage().getDpsDuration() <= 0;
+			//dur *= 2f;
 			fireInterval.advance(dur);
 			
 			if (fireInterval.intervalElapsed()) {
@@ -37,8 +41,12 @@ public class IonBeamEffect implements BeamEffectPlugin {
 				
 				if (!hitShield || piercedShield) {
 					Vector2f point = beam.getRayEndPrevFrame();
-					float emp = beam.getDamage().getFluxComponent() * 1f;
-					float dam = beam.getDamage().getDamage() * 1f;
+					float mult = ARC_DAMAGE_MULT_NORMAL;
+					if (hitShield) {
+						mult = ARC_DAMAGE_MULT_PIERCED;
+					}
+					float emp = beam.getDamage().getFluxComponent() * mult;
+					float dam = beam.getDamage().getDamage() * mult;
 					engine.spawnEmpArcPierceShields(
 									   beam.getSource(), point, beam.getDamageTarget(), beam.getDamageTarget(),
 									   DamageType.ENERGY, 

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
+import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.Industries;
 import com.fs.starfarer.api.impl.campaign.ids.Ranks;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
@@ -38,6 +39,9 @@ public class DisruptHeavyIndustry extends BaseDisruptIndustry {
 	
 	@Override
 	protected boolean availableAtMarket(MarketAPI createdAt) {
+		if (createdAt != null && createdAt.getFaction().getCustomBoolean(Factions.CUSTOM_DECENTRALIZED)) {
+			return false;
+		}
 		return Misc.isMilitary(createdAt);
 	}
 	

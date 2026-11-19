@@ -23,6 +23,8 @@ public interface CampaignUIAPI {
 		void dialogDismissed();
 	}
 	
+	CoreUIAPI getCore2();
+	
 	MessageDisplayAPI getMessageDisplay();
 	
 	void addMessage(String text);

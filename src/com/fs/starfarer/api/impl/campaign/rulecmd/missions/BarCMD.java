@@ -103,6 +103,7 @@ public class BarCMD extends BaseCommandPlugin implements InteractionDialogPlugin
 		if (command.equals("returnFromEvent")) {
 			MemoryAPI mem = getEntityMemory(memoryMap);
 			BarCMD cmd = (BarCMD) mem.get("$BarCMD");
+			if (cmd == null) return false;
 			mem.unset("$BarCMD");
 			//mem.unset("$currMission_ref");
 			

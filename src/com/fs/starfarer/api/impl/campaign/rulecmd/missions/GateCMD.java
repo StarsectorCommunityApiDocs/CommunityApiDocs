@@ -1,9 +1,10 @@
 package com.fs.starfarer.api.impl.campaign.rulecmd.missions;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.BaseCampaignEntityPickerListener;
@@ -147,7 +148,7 @@ public class GateCMD extends BaseCommandPlugin {
 					info.setGridFontSmallInsignia();
 					info.addToGrid(0, 0, "    Fuel required:", Misc.getWithDGS(cost), reqColor);
 					info.addToGrid(1, 0, "    Fuel available:", Misc.getWithDGS(available), availableColor);
-					info.addGrid(0);;
+					info.addGrid(0);
 				}
 				public boolean canConfirmSelection(SectorEntityToken entity) {
 					int cost = computeFuelCost(entity);

@@ -10,6 +10,7 @@ import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.FleetTypes;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.ids.People;
+import com.fs.starfarer.api.impl.campaign.intel.events.sd.SDResolution;
 import com.fs.starfarer.api.impl.campaign.missions.FleetCreatorMission;
 import com.fs.starfarer.api.impl.campaign.missions.hub.HubMissionWithTriggers.FleetQuality;
 import com.fs.starfarer.api.impl.campaign.missions.hub.HubMissionWithTriggers.FleetSize;
@@ -41,7 +42,7 @@ public class PersonalFleetOxanaHyder extends PersonalFleetScript {
 		Vector2f loc = sindria.getLocationInHyperspace();
 		
 		m.triggerCreateFleet(FleetSize.HUGE, FleetQuality.DEFAULT, Factions.DIKTAT, FleetTypes.PATROL_LARGE, loc);
-		m.triggerSetFleetOfficers( OfficerNum.MORE, OfficerQuality.DEFAULT);
+		m.triggerSetFleetOfficers(OfficerNum.MORE, OfficerQuality.DEFAULT);
 		m.triggerSetFleetCommander(getPerson());
 		m.triggerSetFleetFaction(Factions.DIKTAT);
 		m.triggerSetPatrol();
@@ -66,6 +67,10 @@ public class PersonalFleetOxanaHyder extends PersonalFleetScript {
 		MarketAPI sindria = Global.getSector().getEconomy().getMarket("sindria");
 		if (sindria == null || sindria.hasCondition(Conditions.DECIVILIZED)) return false;
 		if (!sindria.getFactionId().equals(Factions.DIKTAT)) return false;
+		if (SDResolution.get() != null) return SDResolution.get().allowPersonalFleetRewpawns();
+		if (SDResolution.isAskoniaStandoffCompleted()) {
+			return false;
+		}
 		return true;
 	}
 

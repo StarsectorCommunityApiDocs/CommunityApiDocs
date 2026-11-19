@@ -218,6 +218,7 @@ public class TransponderAbility extends BaseToggleAbility {
 			MemoryAPI mem = other.getMemoryWithoutUpdate();
 			
 			if (mem.getBoolean(MemFlags.MEMORY_KEY_LOW_REP_IMPACT)) continue;
+			if (mem.getBoolean(MemFlags.MEMORY_KEY_NO_REP_IMPACT)) continue;
 			
 			if (!result.contains(other.getFaction()) && 
 					mem.getBoolean(MemFlags.MEMORY_KEY_MAKE_HOSTILE_WHILE_TOFF) &&

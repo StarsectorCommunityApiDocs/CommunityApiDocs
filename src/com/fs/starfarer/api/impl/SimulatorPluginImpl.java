@@ -18,7 +18,6 @@ import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.BattleAPI;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.CargoAPI;
-import com.fs.starfarer.api.campaign.CargoAPI.CargoItemType;
 import com.fs.starfarer.api.campaign.FactionAPI;
 import com.fs.starfarer.api.campaign.FactionAPI.ShipPickMode;
 import com.fs.starfarer.api.campaign.FactionDoctrineAPI;
@@ -34,6 +33,7 @@ import com.fs.starfarer.api.combat.ShipCommand;
 import com.fs.starfarer.api.combat.ShipHullSpecAPI.ShipTypeHints;
 import com.fs.starfarer.api.combat.ShipSystemSpecAPI;
 import com.fs.starfarer.api.combat.ShipVariantAPI;
+import com.fs.starfarer.api.combat.listeners.AdvanceableListener;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.DModManager;
 import com.fs.starfarer.api.impl.campaign.fleets.DefaultFleetInflater;
@@ -134,11 +134,13 @@ public class SimulatorPluginImpl implements SimulatorPlugin, AutofitPluginDelega
 		
 	
 	public static boolean isShowDevCategories() {
+		//if (true) return true;
 		return (Global.getSettings().isDevMode() && !Global.getSettings().getBoolean("playtestingMode")) ||
 				!(Global.getCombatEngine().isInCampaignSim() || Global.getCombatEngine().isInMissionSim());
 	}
 	
 	public static boolean isSimFullyUnlocked() {
+		//if (true) return true;
 		return (Global.getSettings().isDevMode() && !Global.getSettings().getBoolean("playtestingMode")) ||
 				!(Global.getCombatEngine().isInCampaignSim() || Global.getCombatEngine().isInMissionSim());
 	}
@@ -209,7 +211,8 @@ public class SimulatorPluginImpl implements SimulatorPlugin, AutofitPluginDelega
 	public boolean coreReqsMet(String coreId) {
 		if (!REQUIRE_AI_CORES || !Global.getCombatEngine().isInCampaignSim()) return true;
 		if (isSimFullyUnlocked()) return true;
-		return Global.getSector().getPlayerFleet().getCargo().getQuantity(CargoItemType.RESOURCES, coreId) > 0;
+		//return Global.getSector().getPlayerFleet().getCargo().getQuantity(CargoItemType.RESOURCES, coreId) > 0;
+		return getAvailableAICores().getCount(coreId) > 0;
 	}
 	
 	public boolean isRequireAICoresInCargo() {
@@ -277,6 +280,7 @@ public class SimulatorPluginImpl implements SimulatorPlugin, AutofitPluginDelega
 	public void resetToDefaults(boolean withSave) {
 		uiStateData.settings.clear();
 		uiStateData.settings.put(AGGRO_ID, AGGRO_DEFAULT);
+		uiStateData.settings.put(AGGRO_ID_CORES_ONLY, AGGRO_DEFAULT);
 		uiStateData.settings.put(OFFICERS_CUSTOM_ID, OFFICERS_NONE);
 		uiStateData.settings.put(OFFICERS_ID, OFFICERS_NONE);
 		uiStateData.settings.put(QUALITY_ID, QUALITY_NO_DMODS);
@@ -1088,10 +1092,14 @@ public class SimulatorPluginImpl implements SimulatorPlugin, AutofitPluginDelega
 					if (ship.getOwner() == 0) continue;
 					
 					ship.getLocation().y -= 2000f;
-					Global.getCombatEngine().addPlugin(new BaseEveryFrameCombatPlugin() {
+//					Global.getCombatEngine().addPlugin(new BaseEveryFrameCombatPlugin() {
+//						protected float elapsed = 0f;
+//						@Override
+//						public void advance(float amount, List<InputEventAPI> events) {
+					ship.addListener(new AdvanceableListener() {
 						protected float elapsed = 0f;
 						@Override
-						public void advance(float amount, List<InputEventAPI> events) {
+						public void advance(float amount) {
 							elapsed += amount;
 							if (ship.getTravelDrive() != null && ship.getTravelDrive().isActive()) {
 								ship.getTravelDrive().deactivate();
@@ -1108,6 +1116,7 @@ public class SimulatorPluginImpl implements SimulatorPlugin, AutofitPluginDelega
 								if (aggro2.equals(AGGRO_DEFENSES)) {
 									curr.setHoldFire(true);
 								}
+								
 								curr.giveCommand(ShipCommand.DECELERATE, null, 0);
 								
 								curr.blockCommandForOneFrame(ShipCommand.ACCELERATE);
@@ -1141,7 +1150,8 @@ public class SimulatorPluginImpl implements SimulatorPlugin, AutofitPluginDelega
 							}
 							
 							if (ship.isHulk()) {
-								Global.getCombatEngine().removePlugin(this);
+								ship.removeListener(this);
+//								Global.getCombatEngine().removePlugin(this);
 							}
 						}
 						

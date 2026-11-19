@@ -83,6 +83,7 @@ public class SDFLeague extends SDFBase {
 		m.triggerSetFleetMemoryValue(MemFlags.MEMORY_KEY_SOURCE_MARKET, kazeron);
 		//m.triggerFleetSetNoFactionInName();
 		m.triggerFleetSetName("All-League Aegis"); // Defense Fleet");
+		m.triggerFleetSetNoFactionInName();
 		m.triggerPatrolAllowTransponderOff();
 		//m.triggerFleetSetPatrolActionText("patrolling");
 		m.triggerOrderFleetPatrol(kazeron.getStarSystem());

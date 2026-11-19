@@ -29,6 +29,7 @@ import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.impl.campaign.rulecmd.AddRemoveCommodity;
 import com.fs.starfarer.api.impl.campaign.rulecmd.salvage.special.BreadcrumbSpecial;
+import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.ui.SectorMapAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
@@ -36,7 +37,12 @@ import com.fs.starfarer.api.util.Misc.Token;
 import com.fs.starfarer.api.util.WeightedRandomPicker;
 
 public class AnalyzeEntityMissionIntel extends BaseMissionIntel {
+	public static int MIN_SENSOR_STRENGTH = 
+				(int) (Global.getSettings().getFloat("ext_analyzeMissionSensorStrengthAboveBaseRequired") + 
+					   Global.getSettings().getFloat("sensorRangeBase"));
+	
 	public static Logger log = Global.getLogger(AnalyzeEntityMissionIntel.class);
+	
 	
 	protected int reward;
 	protected FactionAPI faction;
@@ -159,6 +165,8 @@ public class AnalyzeEntityMissionIntel extends BaseMissionIntel {
 			setMissionResult(new MissionResult(reward, result));
 			setMissionState(MissionState.COMPLETED);
 			endMission();
+		} else if (action.equals("canDoScan")) {
+			return canDoScan();
 		}
 		
 		return true;
@@ -291,6 +299,18 @@ public class AnalyzeEntityMissionIntel extends BaseMissionIntel {
 		String loc = BreadcrumbSpecial.getLocatedString(entity, true);
 		info.addPara("The " + shortName + " " + isOrAre + " " + loc + ".", opad);
 		
+		int baseStr = getPlayerSensorStrength();
+		boolean canDoScan = canDoScan();
+		Color pStrColor = canDoScan ? h : Misc.getNegativeHighlightColor();
+		
+		if (requiresSensorStrength()) {
+			LabelAPI para = info.addPara("Performing the scan to the requirements of the contract requires a base sensor strength (without modifiers)"
+					+ " of %s. Your fleet's base sensor strength is %s.", opad, h,
+					"" + MIN_SENSOR_STRENGTH, "" + baseStr);
+			para.setHighlight("" + MIN_SENSOR_STRENGTH, "" + baseStr);
+			para.setHighlightColors(h, pStrColor);
+		}
+		
 		if (isPosted() || isAccepted()) {
 			addBulletPoints(info, ListInfoMode.IN_DESC);
 			
@@ -302,7 +322,19 @@ public class AnalyzeEntityMissionIntel extends BaseMissionIntel {
 			
 			addBulletPoints(info, ListInfoMode.IN_DESC);
 		}
-
+	}
+	
+	protected boolean canDoScan() {
+		if (!requiresSensorStrength()) return true;
+		return getPlayerSensorStrength() >= MIN_SENSOR_STRENGTH;
+	}
+	
+	protected int getPlayerSensorStrength() {
+		return (int) Math.round(Global.getSector().getPlayerFleet().getSensorStrength());
+	}
+	
+	protected boolean requiresSensorStrength() {
+		return Misc.isExtended() && Global.getSettings().getBoolean("ext_analyzeMissionRequiresSensorStrength");
 	}
 	
 	public String getIcon() {

@@ -15,7 +15,6 @@ import com.fs.starfarer.api.campaign.rules.MemoryAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.impl.campaign.intel.misc.LuddicShrineIntel;
-import com.fs.starfarer.api.impl.campaign.missions.academy.GACelestialObject.Variation;
 import com.fs.starfarer.api.impl.campaign.missions.hub.HubMissionWithSearch;
 import com.fs.starfarer.api.ui.IntelUIAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
@@ -41,20 +40,12 @@ public class LuddicPilgrimsPath extends HubMissionWithSearch {
 	protected int xpRewardIncrease = 2000;
 	protected int num_rewards_given = 0;
 	
-	//protected PersonAPI robed_man;
-	//protected PersonAPI some_kid; 
-	//protected PersonAPI robot; 
-	
 	protected MarketAPI volturn;
 	protected MarketAPI gilead;
 	protected MarketAPI jangala;
 	protected MarketAPI hesperus;
 	protected SectorEntityToken killa;
 	protected SectorEntityToken beholder_station;
-	//public static float MISSION_DAYS = 120f;
-	
-	//protected int payment;
-	//protected int paymentHigh;
 	
 	@Override
 	protected boolean create(MarketAPI createdAt, boolean barEvent) {
@@ -66,7 +57,6 @@ public class LuddicPilgrimsPath extends HubMissionWithSearch {
 		volturn = Global.getSector().getEconomy().getMarket("volturn");
 		if (volturn == null) return false;
 		//if (!volturn.getFactionId().equals("sindrian_diktat")) return false;
-		
 		
 		gilead = Global.getSector().getEconomy().getMarket("gilead");
 		if (gilead == null) return false;
@@ -98,20 +88,13 @@ public class LuddicPilgrimsPath extends HubMissionWithSearch {
 		
 		setStoryMission();
 		//addTag(Tags.INTEL_SHRINES);
-		
-		// yes, these exact numbers.
-		//payment = 10000;
-		//paymentHigh = 17000; 
-		
-		
-		// TODO - makeImportant all the shrines!
+	
 		setStageOnGlobalFlag(Stage.RETURN_TO_GILEAD, "$lpp_visitedAllShrines");
 		
 		makeImportant(gilead, "$lpp_finishPilgrimage", Stage.RETURN_TO_GILEAD);
 		//setStageOnMemoryFlag(Stage.COMPLETED, gilead, "$lpp_completed");
 		
 		setStageOnGlobalFlag(Stage.COMPLETED, "$lpp_completed");
-		
 		
 		
 		setName("The Pilgrim's Path");
@@ -123,30 +106,16 @@ public class LuddicPilgrimsPath extends HubMissionWithSearch {
 		triggerSetGlobalMemoryValue("$lpp_missionCompleted", true);
 		endTrigger();
 		
-		
-		//makeImportant(coureuse, null, Stage.TALK_TO_COUREUSE);
-//		Global.getSector().getMemoryWithoutUpdate().unset("$gaFC_triedToSeeCavin");
 		return true;
 	}
 	
 	protected void updateInteractionDataImpl() {
 			set("$lpp_stage", getCurrentStage());
-			//set("$anh_robedman", robed_man);
 	}
 
 	@Override
 	protected boolean callAction(String action, String ruleId, final InteractionDialogAPI dialog,
 								 List<Token> params, final Map<String, MemoryAPI> memoryMap) {
-//		if ("THEDUEL".equals(action)) {
-//			TextPanelAPI text = dialog.getTextPanel();
-//			text.setFontOrbitronUnnecessarilyLarge();
-//			Color color = Misc.getBasePlayerColor();
-//			color = Global.getSector().getFaction(Factions.HEGEMONY).getBaseUIColor();
-//			text.addPara("THE DUEL", color);
-//			text.setFontInsignia();
-//			text.addImage("misc", "THEDUEL");
-//			return true;
-//		}
 		
 		if ("giveVisitXP".equals(action))
 		{
@@ -178,7 +147,7 @@ public class LuddicPilgrimsPath extends HubMissionWithSearch {
 			
 			int visited_shrines = getNumberOfShrinesVisited();
 			int numberOfShrinesToComplete = 6;
-			System.out.print("checkShrinesVisited = " + Integer.toString(visited_shrines));
+			//System.out.print("checkShrinesVisited = " + Integer.toString(visited_shrines));
 			
 			if( visited_shrines >= numberOfShrinesToComplete) {
 				Global.getSector().getMemoryWithoutUpdate().set("$lpp_visitedAllShrines", true);
@@ -218,16 +187,7 @@ public class LuddicPilgrimsPath extends HubMissionWithSearch {
 	public void addDescriptionForNonEndStage(TooltipMakerAPI info, float width, float height) {
 		float opad = 10f;
 		Color h = Misc.getHighlightColor();
-		//Color h2 = Misc.getDarkHighlightColor();
-		//FactionAPI church = Global.getSector().getFaction(Factions.LUDDIC_CHURCH);
-		
-		//info.addImage(robed_man.getPortraitSprite(), width, 128, opad);
-		/*
-		if (Global.getSector().getMemoryWithoutUpdate().getBoolean(VISITED_SHRINE_JANGALA)) {
-			
-		}
-		*/
-		
+
 		if (currentStage == Stage.VISIT_SHRINES) {
 			info.addPara("Visit the six shrines of the Pilgrim's Path. The pilgrimage is traditionally completed by returning to Gilead, in the Canaan system.", opad);
 		}

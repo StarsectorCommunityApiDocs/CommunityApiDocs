@@ -5,6 +5,7 @@ import java.awt.Color;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.combat.MutableShipStatsAPI;
 import com.fs.starfarer.api.combat.ShipAPI;
+import com.fs.starfarer.api.impl.campaign.ids.Stats;
 
 public class TemporalShellStats extends BaseShipSystemScript {
 	public static final float MAX_TIME_MULT = 3f;
@@ -48,7 +49,8 @@ public class TemporalShellStats extends BaseShipSystemScript {
 		ship.setJitterUnder(this, JITTER_UNDER_COLOR, jitterLevel, 25, 0f, 7f + jitterRangeBonus);
 		
 	
-		float shipTimeMult = 1f + (MAX_TIME_MULT - 1f) * effectLevel;
+		
+		float shipTimeMult = 1f + (stats.getDynamic().getValue(Stats.TEMPORAL_SHELL_MODIFIER, MAX_TIME_MULT) - 1f) * effectLevel;
 		stats.getTimeMult().modifyMult(id, shipTimeMult);
 		if (player) {
 			Global.getCombatEngine().getTimeMult().modifyMult(id, 1f / shipTimeMult);

@@ -16,10 +16,10 @@ import com.fs.starfarer.api.campaign.CoreUIAPI;
 import com.fs.starfarer.api.campaign.PlayerMarketTransaction;
 import com.fs.starfarer.api.campaign.econ.CommodityOnMarketAPI;
 import com.fs.starfarer.api.campaign.econ.CommoditySpecAPI;
-import com.fs.starfarer.api.campaign.econ.MonthlyReport;
-import com.fs.starfarer.api.campaign.econ.SubmarketAPI;
 import com.fs.starfarer.api.campaign.econ.EconomyAPI.EconomyUpdateListener;
+import com.fs.starfarer.api.campaign.econ.MonthlyReport;
 import com.fs.starfarer.api.campaign.econ.MonthlyReport.FDNode;
+import com.fs.starfarer.api.campaign.econ.SubmarketAPI;
 import com.fs.starfarer.api.campaign.listeners.EconomyTickListener;
 import com.fs.starfarer.api.combat.MutableStat;
 import com.fs.starfarer.api.combat.MutableStat.StatMod;
@@ -96,6 +96,7 @@ public class LocalResourcesSubmarketPlugin extends BaseSubmarketPlugin implement
 	
 	@Override
 	public boolean isIllegalOnSubmarket(CargoStackAPI stack, TransferAction action) {
+		if (Commodities.PARTS.equals(stack.getCommodityId())) return false;
 		if (stack.getCommodityId() == null) return true;
 		if (stack.getResourceIfResource().hasTag(Commodities.TAG_NON_ECONOMIC)) return true;
 		return false;
@@ -112,6 +113,10 @@ public class LocalResourcesSubmarketPlugin extends BaseSubmarketPlugin implement
 	public int getStockpileLimit(CommodityOnMarketAPI com) {
 		
 		int demand = com.getMaxDemand();
+		
+//		if (market.getId().toLowerCase().contains("ed1:planet_2") && com.getId().equals(Commodities.METALS)) {
+//			System.out.println("wflwefwefwe");
+//		}
 		
 		int shippingGlobal = com.getCommodityMarketData().getMaxShipping(com.getMarket(), false);
 		//int shippingInFaction = com.getCommodityMarketData().getMaxShipping(com.getMarket(), true);
@@ -143,7 +148,9 @@ public class LocalResourcesSubmarketPlugin extends BaseSubmarketPlugin implement
 		production -= extra;
 		
 		float unit = com.getCommodity().getEconUnit();
-		
+//		if (com.getId().equals("supplies") && getMarket().isPlayerOwned()) {
+//			System.out.println("fwewfwefwefwe");
+//		}
 		float limit = 0f;
 		limit += STOCKPILE_MULT_EXCESS * BaseIndustry.getSizeMult(extra) * unit;
 		limit += STOCKPILE_MULT_PRODUCTION * BaseIndustry.getSizeMult(production) * unit;
@@ -157,7 +164,11 @@ public class LocalResourcesSubmarketPlugin extends BaseSubmarketPlugin implement
 		//limit *= com.getMarket().getStockpileMult().getModifiedValue();
 		limit *= STOCKPILE_MAX_MONTHS;
 		
-		if (deficit > 0) {
+//		if (Misc.isExtended()) {
+//			limit *= Global.getSettings().getFloat("ext_localResourcesStockpileMult");
+//		}
+		
+		if (deficit > 0 || Math.max(0f, demand) + Math.max(0f, production) <= 0) {
 			limit = 0;
 		}
 		

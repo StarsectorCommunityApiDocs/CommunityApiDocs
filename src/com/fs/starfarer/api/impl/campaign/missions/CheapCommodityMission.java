@@ -1,7 +1,8 @@
 package com.fs.starfarer.api.impl.campaign.missions;
 
-import java.awt.Color;
 import java.util.Map;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.InteractionDialogAPI;
@@ -24,11 +25,11 @@ public class CheapCommodityMission extends HubMissionWithBarEvent {
 
 	public static boolean SAME_CONTACT_DEBUG = false;
 	
-	public static float MISSION_DAYS = 60f;
+	public static float MISSION_DAYS = 120f;
 	
-	public static float MIN_BASE_VALUE = 10000;
+	public static float MIN_BASE_VALUE = 30000;
 	public static float MAX_BASE_VALUE = 100000;
-	public static float BASE_PRICE_MULT = 0.75f;
+	public static float BASE_PRICE_MULT = 0.33f;
 	
 	public static float PROB_REMOTE = 0.5f;
 	

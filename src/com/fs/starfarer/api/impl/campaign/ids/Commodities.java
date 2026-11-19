@@ -5,6 +5,7 @@ public class Commodities {
 	public static final String FUEL = "fuel";
 	public static final String CREW = "crew";
 	public static final String MARINES = "marines";
+	public static final String PARTS = "parts";
 
 	public static final String FOOD = "food";
 	public static final String ORGANICS = "organics";

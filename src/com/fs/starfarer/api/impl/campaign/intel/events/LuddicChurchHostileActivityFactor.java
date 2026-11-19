@@ -1,7 +1,8 @@
 package com.fs.starfarer.api.impl.campaign.intel.events;
 
-import java.awt.Color;
 import java.util.Random;
+
+import java.awt.Color;
 
 import org.lwjgl.util.vector.Vector2f;
 
@@ -389,6 +390,8 @@ public class LuddicChurchHostileActivityFactor extends BaseHostileActivityFactor
 	}
 
 	public void reportTacticalBombardmentFinished(InteractionDialogAPI dialog, MarketAPI market, TempData actionData) {
+		if (isDefeatedExpedition() || isMadeDeal()) return;
+		
 		MarketAPI hesperus = getHesperus(false);
 		if (market != null && market == hesperus) {
 			EventStageData stage = intel.getDataFor(Stage.HA_EVENT);

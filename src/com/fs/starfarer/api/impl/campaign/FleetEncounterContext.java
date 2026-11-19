@@ -33,6 +33,8 @@ import com.fs.starfarer.api.campaign.TextPanelAPI;
 import com.fs.starfarer.api.campaign.ai.CampaignFleetAIAPI.PursuitOption;
 import com.fs.starfarer.api.campaign.ai.ModularFleetAIAPI;
 import com.fs.starfarer.api.campaign.econ.CommoditySpecAPI;
+import com.fs.starfarer.api.campaign.econ.MonthlyReport;
+import com.fs.starfarer.api.campaign.econ.MonthlyReport.FDNode;
 import com.fs.starfarer.api.campaign.listeners.ListenerUtil;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
 import com.fs.starfarer.api.characters.MutableCharacterStatsAPI;
@@ -55,11 +57,15 @@ import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.ids.Stats;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
+import com.fs.starfarer.api.impl.campaign.intel.MessageIntel;
 import com.fs.starfarer.api.impl.campaign.intel.PromoteOfficerIntel;
 import com.fs.starfarer.api.impl.campaign.procgen.SalvageEntityGenDataSpec.DropData;
+import com.fs.starfarer.api.impl.campaign.rulecmd.AddRemoveCommodity;
 import com.fs.starfarer.api.impl.campaign.rulecmd.salvage.SalvageEntity;
 import com.fs.starfarer.api.impl.campaign.rulecmd.salvage.special.BaseSalvageSpecial;
+import com.fs.starfarer.api.impl.campaign.shared.SharedData;
 import com.fs.starfarer.api.impl.campaign.tutorial.TutorialMissionIntel;
+import com.fs.starfarer.api.impl.hullmods.RecoveryShuttles;
 import com.fs.starfarer.api.loading.FighterWingSpecAPI;
 import com.fs.starfarer.api.loading.HullModSpecAPI;
 import com.fs.starfarer.api.loading.VariantSource;
@@ -82,6 +88,7 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 	protected boolean ongoingBattle = false;
 	
 	protected boolean isAutoresolve = false;
+	protected int accruedCombatPay = 0;
 	
 	
 	protected CombatDamageData runningDamageTotal = null;
@@ -91,6 +98,15 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 	public FleetEncounterContext() {
 		
 	}
+	
+	public int getAccruedCombatPay() {
+		return accruedCombatPay;
+	}
+
+	public void setAccruedCombatPay(int accruedCombatPay) {
+		this.accruedCombatPay = accruedCombatPay;
+	}
+
 	public boolean isAutoresolve() {
 		return isAutoresolve;
 	}
@@ -527,7 +543,7 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 		return DisengageHarryAvailability.AVAILABLE;
 	}
 	
-	public float getDeployCost(FleetMemberAPI member) {
+	public static float getDeployCost(FleetMemberAPI member) {
 		return member.getDeployCost();
 	}
 	
@@ -753,6 +769,73 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 		this.noHarryBecauseOfStation = noHarryBecauseOfStation;
 	}
 	
+	public void giveOutCombatPay() {
+		int payout = accruedCombatPay;
+		accruedCombatPay = 0;
+		
+		if (payout <= 0) {
+			return;
+		}
+		
+		CampaignFleetAPI fleet = Global.getSector().getPlayerFleet();
+		if (fleet == null) {
+			return;
+		}
+		
+		int credits = (int) fleet.getCargo().getCredits().get();
+		int owed = Math.max(0, payout - credits);
+		if (owed > 0) payout -= owed;
+		
+//		owed = payout;
+//		payout = 0;
+
+		if (payout > 0) {
+			fleet.getCargo().getCredits().subtract(payout);
+			if (fleet.getCargo().getCredits().get() < 0) {
+				fleet.getCargo().getCredits().set(0);
+			}
+		}
+		
+		if (owed > 0) {
+			MonthlyReport report = SharedData.getData().getCurrentReport();
+			
+			FDNode backpayNode = report.getNode(MonthlyReport.FLEET, MonthlyReport.OFFICERS, MonthlyReport.COMBAT_PAY);
+			backpayNode.name = "Owed combat bonus pay";
+			backpayNode.custom = MonthlyReport.COMBAT_PAY;
+			backpayNode.tooltipCreator = report.getMonthlyReportTooltip();
+			backpayNode.upkeep += owed;
+		}
+		
+		if (textPanelForXPGain != null) {
+			if (payout > 0) {
+				textPanelForXPGain.addPara("Combat bonus pay bonuses are distributed among the officers that participated "
+						+ "in the battle.");
+				AddRemoveCommodity.addCreditsLossText(payout, textPanelForXPGain);
+			}
+			if (owed > 0) {
+				textPanelForXPGain.addPara("Due to insufficient funds, %s in combat bonus pay is owed to your officers "
+						+ "and will be added to your monthly expenses.", 
+						Misc.getHighlightColor(), Misc.getDGSCredits(owed));
+			}
+		} else {
+			if (payout > 0) {
+				String payStr = "" + Misc.getDGSCredits(Math.abs(payout));
+				MessageIntel intel = new MessageIntel("Officer combat bonus pay: " + payStr,
+						Misc.getBasePlayerColor(), new String[] {payStr},
+						Misc.getNegativeHighlightColor());
+				Global.getSector().getCampaignUI().addMessage(intel);
+			}
+			if (owed > 0) {
+				String owedStr = "" + Misc.getDGSCredits(Math.abs(owed));
+				MessageIntel intel = new MessageIntel("Owed officer combat bonus pay: " + owedStr,
+						Misc.getBasePlayerColor(), new String[] {owedStr},
+						Misc.getNegativeHighlightColor());
+				Global.getSector().getCampaignUI().addMessage(intel);
+			}
+		}
+		
+	}
+	
 	public void applyAfterBattleEffectsIfThereWasABattle() {
 		if (!hasWinnerAndLoser() || !engagedInHostilities) {
 			for (FleetMemberAPI member : Global.getSector().getPlayerFleet().getFleetData().getMembersListCopy()) {
@@ -775,6 +858,7 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 		
 		gainXP();
 		addPotentialOfficer();
+		giveOutCombatPay();
 		
 //		CampaignFleetAPI winner = getWinnerData().getFleet();
 //		CampaignFleetAPI loser = getLoserData().getFleet();
@@ -1036,6 +1120,36 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 	
 	public int getCreditsLooted() {
 		return creditsLooted;
+	}
+	
+	public float getSalvageResourceMult(FleetMemberData data) {
+		if (data == null) return 1f;
+		return getSalvageResourceMult(data.getMember());
+	}
+	public float getSalvageResourceMult(FleetMemberAPI member) {
+		if (battle == null) return 1f;
+		CampaignFleetAPI fleet = battle.getSourceFleet(member);
+		if (fleet == null) return 1f;
+		
+		float mult = 1f;
+		if (fleet.getMemoryWithoutUpdate().contains(MemFlags.FLEET_RESOURCE_SALVAGE_MULT)) {
+			mult *= fleet.getMemoryWithoutUpdate().getFloat(MemFlags.FLEET_RESOURCE_SALVAGE_MULT);
+		}
+		if (Misc.isExtended() && fleet.getFaction() != null && Factions.THREAT.equals(fleet.getFaction().getId())) {
+			mult *= Global.getSettings().getFloat("ext_threatResourceSalvageMult");
+		}
+		return mult;
+	}
+	public float getNonSalvageResourceMult(FleetMemberAPI member) {
+		if (battle == null) return 1f;
+		CampaignFleetAPI fleet = battle.getSourceFleet(member);
+		if (fleet == null) return 1f;
+		
+		float mult = 1f;
+		if (Misc.isExtended() && fleet.getFaction() != null && Factions.THREAT.equals(fleet.getFaction().getId())) {
+			mult *= Global.getSettings().getFloat("ext_threatNonResourceDropMult");
+		}
+		return mult;
 	}
 	
 	public float getSalvageMult(Status status) {
@@ -1331,69 +1445,6 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 		//member.getCrewComposition().removeAll(result.getDefenderLosses());
 	}
 	
-	
-	protected void applyBoardingSelfDestruct(FleetMemberAPI member, 
-			 CrewCompositionAPI boardingParty, BoardingAttackType attackType,
-			 List<FleetMemberAPI> boardingTaskForce,
-			 CampaignFleetAPI attacker, CampaignFleetAPI defender,
-			 BoardingResult result) {
-		
-		DataForEncounterSide attackerSide = getDataFor(attacker);
-		DataForEncounterSide defenderSide = getDataFor(defender);
-		
-		attackerSide.changeEnemy(member, Status.DESTROYED);
-		defenderSide.changeOwn(member, Status.DESTROYED);
-
-		
-		CrewCompositionAPI total = Global.getFactory().createCrewComposition();
-		
-		if (attackType == BoardingAttackType.SHIP_TO_SHIP) {
-			for (FleetMemberAPI fm : boardingTaskForce) {
-				float damage = member.getStats().getFluxCapacity().getModifiedValue() * (1f + (float) Math.random() * 0.5f);
-				float hull = fm.getStatus().getHullFraction();
-				float hullDamageFactor = 0f;
-				fm.getStatus().applyDamage(damage);
-				if (fm.getStatus().getHullFraction() <= 0) {
-					fm.getStatus().disable();
-					attacker.getFleetData().removeFleetMember(fm);
-					attackerSide.addOwn(fm, Status.DESTROYED);
-					//total.addAll(fm.getCrewComposition());
-					
-					attackerSide.getRetreatedFromLastEngagement().remove(fm);
-					attackerSide.getInReserveDuringLastEngagement().remove(fm);
-					attackerSide.getDeployedInLastEngagement().remove(fm);
-					attackerSide.getDestroyedInLastEngagement().add(fm);
-					
-					result.getLostInSelfDestruct().add(fm);
-					
-					hullDamageFactor = 1f;
-				} else {
-					float newHull = fm.getStatus().getHullFraction();
-					float diff = hull - newHull;
-					if (diff < 0) diff = 0;
-					hullDamageFactor = diff;
-				}
-				CrewCompositionAPI temp = Global.getFactory().createCrewComposition();
-				temp.addAll(fm.getCrewComposition());
-				float lossFraction = computeLossFraction(fm, null, fm.getStatus().getHullFraction(), hullDamageFactor);
-				temp.multiplyBy(lossFraction);
-				total.addAll(temp);
-			}
-			//total.removeAll(boardingParty);
-		}
-		
-		float lossFraction = computeLossFraction(null, null, 0f, 1f);
-		total.setMarines(Math.round(Math.max(total.getMarines(), boardingParty.getMarines() * lossFraction)));
-		total.setCrew(Math.round(Math.max(total.getCrew(), boardingParty.getCrew() * lossFraction)));
-		
-		//result.getAttackerLosses().addAll(boardingParty);
-//		float lossFraction = computeLossFraction(boardingTaskForce.get(0), 0f, 1f);
-//		total.multiplyBy(lossFraction);
-		
-		result.getAttackerLosses().addAll(total);
-		result.getDefenderLosses().addAll(member.getCrewComposition());
-	}
-	
 	public void letBoardableGo(FleetMemberAPI toBoard, CampaignFleetAPI fleetItBelongsTo, CampaignFleetAPI attackingFleet) {
 		DataForEncounterSide attackerSide = getDataFor(attackingFleet);
 		attackerSide.removeEnemyCasualty(toBoard);
@@ -1426,6 +1477,10 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 	protected List<FleetMemberAPI> recoverableShips = new ArrayList<FleetMemberAPI>();
 	protected List<FleetMemberAPI> storyRecoverableShips = new ArrayList<FleetMemberAPI>();
 	public List<FleetMemberAPI> getRecoverableShips(BattleAPI battle, CampaignFleetAPI winningFleet, CampaignFleetAPI otherFleet) {
+		return getRecoverableShips(battle, winningFleet, otherFleet, false);
+	}
+	public List<FleetMemberAPI> getRecoverableShips(BattleAPI battle, 
+				CampaignFleetAPI winningFleet, CampaignFleetAPI otherFleet, boolean playerSideOnly) {
 		
 		storyRecoverableShips.clear();
 		
@@ -1493,8 +1548,9 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 			sortedEnemy.add(enemyPicker.pickAndRemove());
 		}
 		
-		
-		all.addAll(sortedEnemy);
+		if (!playerSideOnly) {
+			all.addAll(sortedEnemy);
+		}
 		
 //		for (FleetMemberData curr : all) {
 //			System.out.println(curr.getMember().getHullId());
@@ -1502,10 +1558,12 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 		
 		CampaignFleetAPI playerFleet = Global.getSector().getPlayerFleet();
 		
-		int maxRecoverablePerType = 24;
+		int maxRecoverablePerType = Global.getSettings().getInt("maxRecoverableShipsNormalOrStory");
 		
 		float probLessDModsOnNext = Global.getSettings().getFloat("baseProbLessDModsOnRecoverableEnemyShip");
 		float lessDmodsOnNextMult = Global.getSettings().getFloat("lessDModsOnRecoverableEnemyShipMultNext");
+		
+		float recFraction = Misc.isExtended() ? Global.getSettings().getFloat("ext_shipRecoverableFraction") : 1f;
 		
 		int count = 0;
 		for (FleetMemberData data : all) {
@@ -1544,7 +1602,14 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 					noRecovery = true;
 				}
 			}
+			
+			boolean alwaysRec = data.getMember().getVariant().hasTag(Tags.VARIANT_ALWAYS_RECOVERABLE);
 	
+			if (!own && !alwaysRec && random.nextFloat() >= recFraction) {
+				noRecovery = true;
+				//System.out.println("efwefew");
+			}
+			
 //			if (data.getMember().getHullId().startsWith("cerberus")) {
 //				System.out.println("wefwefew");
 //			}
@@ -1552,8 +1617,6 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 						Misc.isShipRecoverable(data.getMember(), playerFleet, own, useOfficerRecovery, 1f * mult);
 			boolean storyRecovery = !noRecovery && !normalRecovery;
 		
-			boolean alwaysRec = data.getMember().getVariant().hasTag(Tags.VARIANT_ALWAYS_RECOVERABLE);
-
 			float shipRecProb = data.getMember().getStats().getDynamic().getMod(Stats.INDIVIDUAL_SHIP_RECOVERY_MOD).computeEffective(0f);
 			if (!own && !alwaysRec && (storyRecovery || normalRecovery) && shipRecProb < 1f) {
 				float per = Global.getSettings().getFloat("probNonOwnNonRecoverablePerDMod");
@@ -1692,8 +1755,6 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 		return result;
 	}
 	
-
-	
 	
 	public static void recoverShips(List<FleetMemberAPI> ships, FleetEncounterContext context, CampaignFleetAPI winningFleet, CampaignFleetAPI otherFleet) {
 		
@@ -1743,8 +1804,16 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 			float cr = (float) Math.random() * (maxCR - minCR) + minCR;
 			if (cr < 0 || member.isMothballed()) cr = 0;
 			float max = member.getRepairTracker() == null ? 1f : member.getRepairTracker().getMaxCR();
+			if (context != null) {
+				max = Math.min(max, member.getRepairTracker().getCrWhenDisabledOrDestroyed() - getDeployCost(member));
+				if (max < 0f) max = 0f;
+			}
 			if (cr > max) cr = max;
-			member.getRepairTracker().setCR(cr);
+			if (cr > 0) {
+				member.getRepairTracker().applyCREvent(cr, "effective ship recovery procedures");	
+			} else {
+				member.getRepairTracker().setCR(cr);
+			}
 			
 			if (winnerData != null) winnerData.getInReserveDuringLastEngagement().add(member);
 			playerFleet.getFleetData().addFleetMember(member);
@@ -2166,13 +2235,20 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 		float probMult = Global.getSettings().getFloat("officerPromoteProbMult");
 		int max = Misc.getMaxOfficers(Global.getSector().getPlayerFleet());
 		int curr = Misc.getNumNonMercOfficers(Global.getSector().getPlayerFleet());
-
+		if (max < 1) max = 1;
+		if (curr > max) curr = max;
+		
 		float prob = fpDestroyed / (Math.max(1f, fpInFleet));
+		prob = (0.2f + 0.8f * (1f - (float) curr / (float) max)) * prob;
 		//prob /= 5f;
 		prob *= probMult;
 		
 		if (curr >= max) prob *= 0.5f;
 		if (prob > maxProb) prob = maxProb;
+		
+		if (Misc.isExtended()) {
+			prob *= Global.getSettings().getFloat("ext_officersAvailableFraction");
+		}
 		
 		Random random = Misc.random;
 		if (salvageRandom != null) {
@@ -2228,6 +2304,10 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 		long extraSeed = 1340234324325L;
 		if (origSalvageRandom != null) extraSeed = origSalvageRandom.nextLong();
 		
+		float wepMult = Misc.isExtended() ? Global.getSettings().getFloat("ext_weaponDropFraction") : 1f;
+		float fighterMult = Misc.isExtended() ? Global.getSettings().getFloat("ext_fighterDropFraction") : 1f;
+		float hullmodMult = Misc.isExtended() ? Global.getSettings().getFloat("ext_hullmodDropFraction") : 1f;
+		
 		for (FleetMemberData data : winner.getEnemyCasualties()) {
 			if (data.getStatus() == Status.REPAIRED) {
 				continue;
@@ -2262,9 +2342,11 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 			}
 			
 			float mult = getSalvageMult(data.getStatus()) * playerContribMult;
-			lootWeapons(data.getMember(), data.getMember().getVariant(), false, mult, false);
-			lootHullMods(data.getMember(), data.getMember().getVariant(), mult);
-			lootWings(data.getMember(), data.getMember().getVariant(), false, mult);
+			lootWeapons(data.getMember(), data.getMember().getVariant(), false, mult * wepMult, false);
+			lootHullMods(data.getMember(), data.getMember().getVariant(), mult * hullmodMult);
+			lootWings(data.getMember(), data.getMember().getVariant(), false, mult * fighterMult);
+			
+			mult *= getSalvageResourceMult(data);
 			adjustedFPSalvage += (float) data.getMember().getFleetPointCost() * mult;
 		}
 		
@@ -2288,12 +2370,14 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 			lootWeapons(data.getMember(), data.getMember().getVariant(), true, mult, false);
 			lootWings(data.getMember(), data.getMember().getVariant(), true, mult);
 			
+			mult *= getSalvageResourceMult(data);
 			adjustedFPSalvage += (float) data.getMember().getFleetPointCost() * mult;
 		}
 		
 		if (recoveredShips != null) {
 			for (FleetMemberAPI member : recoveredShips) {
 				float mult = getSalvageMult(Status.CAPTURED);
+				mult *= getSalvageResourceMult(member);
 				adjustedFPSalvage += (float) member.getFleetPointCost() * mult;
 			}
 		}
@@ -2378,7 +2462,9 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 			other.getDropValue().clear();
 			
 			CargoAPI extra = BaseSalvageSpecial.getCombinedExtraSalvage(other);
-			loot.addAll(extra);
+			if (!extra.isEmpty()) {
+				loot.addAll(extra);
+			}
 			
 			BaseSalvageSpecial.clearExtraSalvage(other);
 			if (!extra.isEmpty()) {
@@ -2511,10 +2597,17 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 		if (maxFuel < 1) maxFuel = 1;
 		
 		float recoveryFraction = Global.getSettings().getFloat("salvageCargoFraction");
+		float extraFuelRecoveryFraction = Global.getSettings().getFloat("salvageFuelFraction");
+		if (Misc.isExtended()) {
+			recoveryFraction = Global.getSettings().getFloat("ext_salvageCargoFractionPostCombat");
+			extraFuelRecoveryFraction = Global.getSettings().getFloat("salvageFuelFractionPostCombat");
+		}
+		
 		
 		if (battle.isPlayerSide(battle.getSideFor(winner.getFleet()))) {
 			float playerContribMult = computePlayerContribFraction();
 			recoveryFraction *= playerContribMult;
+			extraFuelRecoveryFraction *= playerContribMult;
 		}
 		
 		float cargoFractionLost = lostCargo / maxCargo;
@@ -2530,6 +2623,22 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 		for (CampaignFleetAPI curr : losers) {
 			for (CargoStackAPI stack : curr.getCargo().getStacksCopy()) {
 				stacks.add(new LootableCargoStack(curr.getCargo(), stack));
+			}
+		}
+		
+		if (extraFuelRecoveryFraction > 0) {
+			float max = 0f;
+			float totalFuelLost = 0f;
+			for (LossFraction curr : fractions.values()) {
+				totalFuelLost += curr.lostFuel;
+				max += curr.maxFuel;
+			}
+			if (max < 1f) max = 1f;
+			float fraction = Math.max(totalFuelLost / max, fuelFractionLost);
+			int fuel = (int) (Math.max(max, maxFuel) * extraFuelRecoveryFraction * fraction);
+			fuel = Math.round(fuel * (0.5f + random.nextFloat() * 0.5f));
+			if (fuel > 0) {
+				loot.addFuel(fuel);
 			}
 		}
 		
@@ -2605,6 +2714,8 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 		Random random = Misc.random;
 		if (salvageRandom != null) random = salvageRandom;
 		
+		//mult *= getNonSalvageResourceMult(member);
+		
 		float p = Global.getSettings().getFloat("salvageHullmodProb");
 		float pItem = Global.getSettings().getFloat("salvageHullmodRequiredItemProb");
 		
@@ -2660,6 +2771,8 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 		Random random = Misc.random;
 		if (salvageRandom != null) random = salvageRandom;
 		
+		mult *= getNonSalvageResourceMult(member);
+		
 		float p = Global.getSettings().getFloat("salvageWingProb");
 		if (own) {
 			p = Global.getSettings().getFloat("salvageOwnWingProb");
@@ -2695,6 +2808,7 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 		if (variant == null) return;
 		if (member.isFighterWing()) return;
 		
+		mult *= getNonSalvageResourceMult(member);
 //		if (own) {
 //			System.out.println("238034wefwef");
 //		}
@@ -2721,10 +2835,13 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 				member.getCaptain().getMemoryWithoutUpdate().contains("$aiCoreIdForPossibleRecovery")) {
 			coreIdOverride = member.getCaptain().getMemoryWithoutUpdate().getString("$aiCoreIdForPossibleRecovery");
 		}
+		
+		
 		if (!own && !lootingModule && 
 				(member.getCaptain().isAICore() || coreIdOverride != null) &&
 				!variant.hasTag(Tags.VARIANT_DO_NOT_DROP_AI_CORE_FROM_CAPTAIN)) {
 			String cid = member.getCaptain().getAICoreId();
+			float coreDropMult = Misc.isExtended() ? Global.getSettings().getFloat("ext_aiCoreDropFraction") : 1f;
 			if (coreIdOverride != null) {
 				cid = coreIdOverride;
 			}
@@ -2743,6 +2860,7 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 					} else if (member.isCapital()) {
 						prob *= Global.getSettings().getFloat("drop_prob_mult_ai_core_capital");
 					}
+					prob *= coreDropMult;
 					if (prob > 0 && random.nextFloat() < prob) {
 						loot.addItems(CargoItemType.RESOURCES, cid, 1);
 					}
@@ -2990,6 +3108,13 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 			if (mult < 1) {
 				applyDeployCostTo.add(member);
 			}
+			
+			DeployedFleetMemberAPI dfm = getDataFor(result.getFleet()).getMemberToDeployedMap().get(member);
+			if (dfm != null) {
+				float deployCost = getDeployCost(member);
+				float endOfCombatCR = dfm.getShip().getCurrentCR() - deployCost;
+				member.getRepairTracker().setCrWhenDisabledOrDestroyed(endOfCombatCR);
+			}
 		}
 		for (FleetMemberAPI member : result.getDestroyed()) {
 //			if (member.getHullId().equals("vanguard_pirates")) {
@@ -3003,6 +3128,13 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 			if (mult < 1) {
 				applyDeployCostTo.add(member);
 			}
+			
+			DeployedFleetMemberAPI dfm = getDataFor(result.getFleet()).getMemberToDeployedMap().get(member);
+			if (dfm != null) {
+				float deployCost = getDeployCost(member);
+				float endOfCombatCR = dfm.getShip().getCurrentCR() - deployCost;
+				member.getRepairTracker().setCrWhenDisabledOrDestroyed(endOfCombatCR);
+			}
 		}
 		
 		for (FleetMemberAPI member : applyDeployCostTo) {
@@ -3013,7 +3145,17 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 				member.getRepairTracker().applyCREvent(-deployCost, "deployed in combat");
 			}
 			
+			// only non-zero for player ships / officers
+			float combatPay = Misc.getCombatPay(member.getCaptain(), member);
+			if (combatPay > 0) {
+				accruedCombatPay += combatPay;
+			}
+			
 			applyExtendedCRLossIfNeeded(result, member);
+			
+			if (member.getOwner() == 0 && !member.isAlly()) {
+				ListenerUtil.appliedPostCombatCRLossToFleetMember(member);
+			}
 		}
 		
 		//float retreatLossMult = StarfarerSettings.getCRLossMultForRetreatInLoss();
@@ -3026,6 +3168,12 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 				member.getRepairTracker().applyCREvent(-deployCost, "deployed in combat");
 			}
 			
+			// only non-zero for player ships / officers
+			float combatPay = Misc.getCombatPay(member.getCaptain(), member);
+			if (combatPay > 0) {
+				accruedCombatPay += combatPay;
+			}
+			
 			applyExtendedCRLossIfNeeded(result, member);
 			
 			if (!wonBattle && result.getGoal() != FleetGoal.ESCAPE) {
@@ -3033,6 +3181,10 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 				if (retreatCost > 0) {
 					member.getRepairTracker().applyCREvent(-retreatCost, "retreated from lost engagement");
 				}
+			}
+			
+			if (member.getOwner() == 0 && !member.isAlly()) {
+				ListenerUtil.appliedPostCombatCRLossToFleetMember(member);
 			}
 		}
 		
@@ -3175,12 +3327,30 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 //		cargo.removeMarines((int) crewLosses.getMarines());
 //	}
 
-	protected float computeLossFraction(FleetMemberAPI member, EngagementResultForFleetAPI result, float hullFraction, float hullDamage) {
+	public static class CrewLossFraction {
+		public float total;
+		public float notFromFighters;
+		public float fromFighters;
+		public CrewLossFraction(float total) {
+			this.total = total;
+		}
+		public CrewLossFraction(float total, float fromFighters) {
+			this.total = total;
+			this.fromFighters = fromFighters;
+			if (total > 1f) {
+				this.notFromFighters = (total - fromFighters) / total;
+				this.fromFighters = fromFighters / total;
+			}
+		}
+	}
+	
+	protected CrewLossFraction computeLossFraction(FleetMemberAPI member, EngagementResultForFleetAPI result, float hullFraction, float hullDamage) {
+		if (hullFraction < 0) hullFraction = 0;
 		if (member == null && hullFraction == 0) {
-			return (0.75f + (float) Math.random() * 0.25f);
+			return new CrewLossFraction(0.75f + (float) Math.random() * 0.25f);
 		}
 		
-		//System.out.println("hullDamage: " + hullDamage);
+		// unused as fighter wings are LPCs now etc
 		if (member.isFighterWing() && result != null) {
 			//System.out.println("Fighter hullDamage: " + hullDamage);
 			float extraLossMult = hullDamage;
@@ -3198,9 +3368,8 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 					}
 				}
 			}
-			return (0.25f + (float) Math.random() * 0.75f * (float) Math.random()) * member.getStats().getCrewLossMult().getModifiedValue() * extraLossMult;
+			return new CrewLossFraction((0.25f + (float) Math.random() * 0.75f * (float) Math.random()) * member.getStats().getCrewLossMult().getModifiedValue() * extraLossMult);
 		}
-		
 		
 		float extraFromFighters = 0f;
 		if (!member.isFighterWing() && result != null) {
@@ -3240,19 +3409,39 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 			}
 		}
 		
-		if (hullFraction == 0) {
-			return Math.min(1f, (0.75f + (float) Math.random() * 0.25f) * member.getStats().getCrewLossMult().getModifiedValue() + extraFromFighters); 
+		float extraFromSOTypeStuff = 0f;
+		DeployedFleetMemberAPI dfm = getDataFor(result.getFleet()).getMemberToDeployedMap().get(member);
+		float soFactor = member.getStats().getDynamic().getMod(Stats.SAFETY_OVERRIDES_CREW_LOSS_MOD).computeEffective(0f);
+		if (dfm != null && dfm.getShip() != null && soFactor > 0) {
+			ShipAPI ship = dfm.getShip();
+			float peakTimeSpent = ship.getTimeDeployedForCRReduction();
+			float noLossTime = ship.getMutableStats().getPeakCRDuration().computeEffective(ship.getHullSpec().getNoCRLossTime());
+			
+			if (noLossTime > 0 && noLossTime < 10000) {
+				float f = peakTimeSpent / noLossTime;
+				extraFromSOTypeStuff = f * soFactor;
+				extraFromSOTypeStuff *= 0.5f + (float) Math.random() * 0.5f;
+				extraFromSOTypeStuff *= member.getStats().getCrewLossMult().getModifiedValue();
+			}
 		}
-		return Math.min(1f, hullDamage * hullDamage * (0.5f + (float) Math.random() * 0.5f) * member.getStats().getCrewLossMult().getModifiedValue() + extraFromFighters);
+		
+		// baseline crew loss fraction, including from fighters, can't be >1
+		// handled in CrewLossFraction constructor
+		if (hullFraction == 0) {
+			return new CrewLossFraction((0.75f + (float) Math.random() * 0.25f) * 
+							member.getStats().getCrewLossMult().getModifiedValue() + extraFromFighters + extraFromSOTypeStuff, extraFromFighters); 
+		}
+		return new CrewLossFraction(hullDamage * hullDamage * (0.5f + (float) Math.random() * 0.5f) * 
+							member.getStats().getCrewLossMult().getModifiedValue() + extraFromFighters + extraFromSOTypeStuff, extraFromFighters);
 	}
 	
 	
 	
-	protected float computeRecoverableFraction(FleetMemberAPI member, EngagementResultForFleetAPI result, float hullFraction, float hullDamage) {
-		float f = 1f - computeLossFraction(member, result, hullFraction, hullDamage);
-		if (f < 0) f = 0;
-		return f;
-	}
+//	protected float computeRecoverableFraction(FleetMemberAPI member, EngagementResultForFleetAPI result, float hullFraction, float hullDamage) {
+//		float f = 1f - computeLossFraction(member, result, hullFraction, hullDamage);
+//		if (f < 0) f = 0;
+//		return f;
+//	}
 	
 	public void calculateAndApplyCrewLosses(EngagementResultForFleetAPI result, boolean playerInvolved) {
 		boolean wonBattle = result.isWinner(); 
@@ -3278,6 +3467,9 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 		CrewCompositionAPI crewLosses = Global.getFactory().createCrewComposition();
 		crewLosses.removeAllCrew();
 		
+		int recoverablePlayerFighterLosses = RecoveryShuttles.getFighterPilotsRecoveredForPlayerShips();
+		float maxExtraRecoverableFighterLossFraction = RecoveryShuttles.MAX_RECOVERED;
+		
 		CampaignFleetAPI playerFleet = null;
 		//float maxExtraLoss = 0f;
 		float playerCapacityLost = 0f;
@@ -3299,7 +3491,16 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 //				System.out.println("HERE");
 //			}
 			
-			float f1 = computeLossFraction(member, result, hullFraction, hullDamage);
+			CrewLossFraction clf = computeLossFraction(member, result, hullFraction, hullDamage);
+			float fLost = clf.total;
+			float fromFighters = clf.fromFighters;
+			
+			if (player && recoverablePlayerFighterLosses > 0 && fromFighters > 0f) {
+				int lostPilots = (int) (fromFighters * c.getCrew());
+				int recoverPilots = (int) Math.min(lostPilots * maxExtraRecoverableFighterLossFraction, recoverablePlayerFighterLosses);
+				recoverablePlayerFighterLosses -= recoverPilots;
+				recoverable.addCrew(recoverPilots);
+			}
 			
 			// ship is disabled or destroyed, lose all crew for now, but it may be recovered later
 			if (result.getDisabled().contains(member) || result.getDestroyed().contains(member)) {
@@ -3308,8 +3509,8 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 					playerDidSeriousDamage = true;
 				}
 				if (player) {
-					if (f1 < 1) {
-						recoverable.addCrew((1f - f1) * c.getCrew());
+					if (fLost < 1) {
+						recoverable.addCrew((1f - fLost) * c.getCrew());
 					}
 					playerLosses.addCrew(c.getCrew() * 1f);
 					playerCapacityLost += member.getMaxCrew();
@@ -3323,18 +3524,19 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 				
 			} else {
 				// the ship is still ok, only lose the non-recoverable casualties
+				
 				// for fighters, which can lose more than their actual max crew 
-				if (f1 > 1) {
-					crewLosses.addCrew((f1 - 1) * c.getCrew());
+				if (fLost > 1) {
+					crewLosses.addCrew((fLost - 1) * c.getCrew());
 				}
 				
-				float lost = c.getCrew() * f1;
+				float lost = c.getCrew() * fLost;
 				// both fighters and normal ships
 				c.transfer(lost, crewLosses);
 				
 				if (player) {
 					playerLosses.addCrew(lost);
-					playerCapacityLost += member.getMaxCrew() * f1;
+					playerCapacityLost += member.getMaxCrew() * fLost;
 				}
 			}
 			
@@ -3510,6 +3712,7 @@ public class FleetEncounterContext implements FleetEncounterContextPlugin {
 		for (OfficerDataAPI od : Global.getSector().getPlayerFleet().getFleetData().getOfficersCopy()) {
 			if (seenOfficers.contains(od.getPerson())) continue;
 			if (od.getPerson().isPlayer()) continue;
+			if (!od.isActivated()) continue;
 			if (unofficeredShips <= 0) break;
 			unofficeredShips--;
 			scorePlayer += officerBase + officerPerLevel * Math.max(1f, od.getPerson().getStats().getLevel());

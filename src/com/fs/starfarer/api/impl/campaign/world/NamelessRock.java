@@ -17,6 +17,7 @@ import com.fs.starfarer.api.impl.campaign.enc.AbyssalRogueStellarObjectEPEC;
 import com.fs.starfarer.api.impl.campaign.ids.Conditions;
 import com.fs.starfarer.api.impl.campaign.ids.Entities;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
+import com.fs.starfarer.api.impl.campaign.ids.HullMods;
 import com.fs.starfarer.api.impl.campaign.ids.Planets;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.impl.campaign.procgen.StarSystemGenerator;
@@ -28,12 +29,14 @@ import com.fs.starfarer.api.impl.campaign.procgen.themes.BaseThemeGenerator.Loca
 import com.fs.starfarer.api.impl.campaign.rulecmd.salvage.special.ShipRecoverySpecial.PerShipData;
 import com.fs.starfarer.api.impl.campaign.rulecmd.salvage.special.ShipRecoverySpecial.ShipCondition;
 import com.fs.starfarer.api.impl.campaign.rulecmd.salvage.special.ShipRecoverySpecial.ShipRecoverySpecialData;
+import com.fs.starfarer.api.loading.VariantSource;
 import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.api.util.WeightedRandomPicker;
 
 public class NamelessRock {
 
 	public static String ONESLAUGHT_SENSOR_ARRAY = "$oneslaughtSensorArray";
+	public static String ONESLAUGHT_SENSOR_ARRAY_SYSTEM = "oneslaughtSensorArraySystem";
 	public static String NAMELESS_ROCK_LOCATION_ID = "nameless_rock_location";
 	
 	public void generate(SectorAPI sector) {
@@ -137,9 +140,27 @@ public class NamelessRock {
 		DerelictShipEntityPlugin dsep = (DerelictShipEntityPlugin) entity.getCustomPlugin();
 		PerShipData copy = (PerShipData) dsep.getData().ship.clone();
 		copy.variant = Global.getSettings().getVariant(copy.variantId).clone();
+		copy.variant.setSource(VariantSource.REFIT);
+		copy.variant.setHullVariantId(Misc.genUID());
 		copy.variantId = null;
 		copy.variant.addTag(Tags.SHIP_CAN_NOT_SCUTTLE);
 		copy.variant.addTag(Tags.SHIP_UNIQUE_SIGNATURE);
+		
+		if (Misc.isExtended()) {
+			copy.condition = ShipCondition.PRISTINE; // so it doesn't get any random d-mods
+			copy.variant.addPermaMod(HullMods.GLITCHED_SENSORS);
+			copy.variant.addPermaMod(HullMods.FAULTY_GRID);
+			copy.variant.addPermaMod(HullMods.DEGRADED_ENGINES);
+			copy.variant.addPermaMod(HullMods.DEGRADED_DRIVE_FIELD);
+			copy.variant.addPermaMod(HullMods.COMP_STRUCTURE);
+			copy.variant.addPermaMod(HullMods.COMP_HULL);
+			copy.variant.addPermaMod(HullMods.COMP_ARMOR);
+			copy.variant.addPermaMod(HullMods.ERRATIC_INJECTOR);
+			copy.variant.addPermaMod(HullMods.INCREASED_MAINTENANCE);
+			
+			data.storyPointRecovery = true;
+		}
+		
 		copy.nameAlwaysKnown = true;
 		//copy.addDmods = false;
 		copy.pruneWeapons = false;
@@ -165,7 +186,12 @@ public class NamelessRock {
 		for (StarSystemAPI curr : Global.getSector().getStarSystems()) {
 			if (curr == rockSystem) continue;
 			if (Misc.getAbyssalDepth(curr.getLocation()) > 0f) continue;
-			if (curr.getType() == StarSystemType.DEEP_SPACE) continue; 
+			if (curr.getType() == StarSystemType.DEEP_SPACE) continue;
+			if (curr.hasTag(Tags.THEME_HIDDEN)) continue;
+			if (curr.hasTag(Tags.THEME_SPECIAL)) continue;
+			if (curr.hasTag(Tags.TEMPORARY_LOCATION)) continue;
+			if (curr.hasTag(Tags.SYSTEM_ABYSSAL)) continue;
+			
 			float dist = Misc.getDistance(curr.getLocation(), rockSystem.getLocation());
 			if (dist < minDist) {
 				closest = curr;
@@ -200,11 +226,15 @@ public class NamelessRock {
 		// always find something if STAR_ORBIT/OUTER_SYSTEM are supplied in the weights
 		if (sensor == null) return;
 		
+		closest.addTag(Tags.GADHO_ARRAY_SYSTEM);
 		sensor.getMemoryWithoutUpdate().set(ONESLAUGHT_SENSOR_ARRAY, true);
 		Global.getSector().getPersistentData().put(ONESLAUGHT_SENSOR_ARRAY, sensor);
 
 		// to get it:
 		//SectorEntityToken sensor = (SectorEntityToken) Global.getSector().getPersistentData().get(ONESLAUGHT_SENSOR_ARRAY);
+		
+//		system.addTag(Tags.THEME_SPECIAL);
+//		system.addTag(Tags.SYSTEM_ALREADY_USED_FOR_STORY);		
 	}
 }
 

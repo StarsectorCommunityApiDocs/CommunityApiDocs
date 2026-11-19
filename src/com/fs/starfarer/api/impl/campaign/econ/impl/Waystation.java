@@ -26,6 +26,10 @@ public class Waystation extends BaseIndustry {
 	
 	public static float ALPHA_CORE_ACCESSIBILITY = 0.2f;
 	
+	public static float GAMMA_CORE_STOCKPILES = 0.1f;
+	public static float BETA_CORE_STOCKPILES = 0.2f;
+	public static float ALPHA_CORE_STOCKPILES = 0.5f;
+	
 	
 	public void apply() {
 		super.apply(true);
@@ -167,15 +171,31 @@ public class Waystation extends BaseIndustry {
 	}
 
 	@Override
+	protected void applyGammaCoreModifiers() {
+		applyStockpilingModifiers(GAMMA_CORE_STOCKPILES);
+	}
+	@Override
+	protected void applyBetaCoreModifiers() {
+		applyStockpilingModifiers(BETA_CORE_STOCKPILES);
+	}
+	
+	@Override
 	protected void applyAlphaCoreModifiers() {
+		applyStockpilingModifiers(ALPHA_CORE_STOCKPILES);
+	}
+	
+	protected void applyStockpilingModifiers(float mult) {
 		if (market.isPlayerOwned()) {
 			SubmarketPlugin sub = Misc.getLocalResources(market);
 			if (sub instanceof LocalResourcesSubmarketPlugin) {
-				float bonus = market.getSize() * Global.getSettings().getFloat("stockpileMultExcess");
+				//float bonus = market.getSize() * Global.getSettings().getFloat("stockpileMultExcess");
+				float bonus = market.getSize() * mult;
 				LocalResourcesSubmarketPlugin lr = (LocalResourcesSubmarketPlugin) sub;
 				lr.getStockpilingBonus(Commodities.FUEL).modifyFlat(getModId(1), bonus);
 				lr.getStockpilingBonus(Commodities.SUPPLIES).modifyFlat(getModId(1), bonus);
 				lr.getStockpilingBonus(Commodities.CREW).modifyFlat(getModId(1), bonus);
+				lr.getStockpilingBonus(Commodities.RARE_METALS).modifyFlat(getModId(1), bonus * 0.2f);
+				lr.getStockpilingBonus(Commodities.VOLATILES).modifyFlat(getModId(1), bonus * 0.2f);
 			}
 		}
 	}
@@ -189,14 +209,21 @@ public class Waystation extends BaseIndustry {
 				lr.getStockpilingBonus(Commodities.FUEL).unmodifyFlat(getModId(1));
 				lr.getStockpilingBonus(Commodities.SUPPLIES).unmodifyFlat(getModId(1));
 				lr.getStockpilingBonus(Commodities.CREW).unmodifyFlat(getModId(1));
+				lr.getStockpilingBonus(Commodities.RARE_METALS).unmodifyFlat(getModId(1));
+				lr.getStockpilingBonus(Commodities.VOLATILES).unmodifyFlat(getModId(1));
 			}
 		}
 	}
 	
 	@Override
 	protected void applyAlphaCoreSupplyAndDemandModifiers() {
-		demandReduction.modifyFlat(getModId(0), DEMAND_REDUCTION, "Alpha core");
 	}
+	@Override
+	protected void applyBetaCoreSupplyAndDemandModifiers() {
+	}
+	@Override
+	protected void applyGammaCoreSupplyAndDemandModifiers() {
+	}	
 	
 	protected void addAlphaCoreDescription(TooltipMakerAPI tooltip, AICoreDescriptionMode mode) {
 		float opad = 10f;
@@ -206,26 +233,70 @@ public class Waystation extends BaseIndustry {
 		if (mode == AICoreDescriptionMode.MANAGE_CORE_DIALOG_LIST || mode == AICoreDescriptionMode.INDUSTRY_TOOLTIP) {
 			pre = "Alpha-level AI core. ";
 		}
-		float a = ALPHA_CORE_ACCESSIBILITY;
-		String aStr = "" + (int)Math.round(a * 100f) + "%";
-		
 		if (mode == AICoreDescriptionMode.INDUSTRY_TOOLTIP) {
 			CommoditySpecAPI coreSpec = Global.getSettings().getCommoditySpec(aiCoreId);
 			TooltipMakerAPI text = tooltip.beginImageWithText(coreSpec.getIconName(), 48);
-			text.addPara(pre + "Reduces upkeep cost by %s. Reduces demand by %s unit. " +
+			text.addPara(pre + "Reduces upkeep cost by %s. " +
 					"Greatly increases stockpiles.", 0f, highlight,
-					"" + (int)((1f - UPKEEP_MULT) * 100f) + "%", "" + DEMAND_REDUCTION,
-					aStr);
+					"" + (int)((1f - UPKEEP_MULT) * 100f) + "%");
 			tooltip.addImageWithText(opad);
 			return;
 		}
-		
-		tooltip.addPara(pre + "Reduces upkeep cost by %s. Reduces demand by %s unit. " +
+		tooltip.addPara(pre + "Reduces upkeep cost by %s. " +
 				"Greatly increases stockpiles.", opad, highlight,
-				"" + (int)((1f - UPKEEP_MULT) * 100f) + "%", "" + DEMAND_REDUCTION,
-				aStr);
-		
+				"" + (int)((1f - UPKEEP_MULT) * 100f) + "%");
 	}
+	
+	protected void addBetaCoreDescription(TooltipMakerAPI tooltip, AICoreDescriptionMode mode) {
+		float opad = 10f;
+		Color highlight = Misc.getHighlightColor();
+		
+		String pre = "Beta-level AI core currently assigned. ";
+		if (mode == AICoreDescriptionMode.MANAGE_CORE_DIALOG_LIST || mode == AICoreDescriptionMode.INDUSTRY_TOOLTIP) {
+			pre = "Beta-level AI core. ";
+		}
+		if (mode == AICoreDescriptionMode.INDUSTRY_TOOLTIP) {
+			CommoditySpecAPI coreSpec = Global.getSettings().getCommoditySpec(aiCoreId);
+			TooltipMakerAPI text = tooltip.beginImageWithText(coreSpec.getIconName(), 48);
+			text.addPara(pre + "Reduces upkeep cost by %s. " +
+					"Moderately increases stockpiles.", 0f, highlight,
+					"" + (int)((1f - UPKEEP_MULT) * 100f) + "%");
+			tooltip.addImageWithText(opad);
+			return;
+		}
+		tooltip.addPara(pre + "Reduces upkeep cost by %s. " +
+				"Moderately increases stockpiles.", opad, highlight,
+				"" + (int)((1f - UPKEEP_MULT) * 100f) + "%");
+	}
+	protected void addGammaCoreDescription(TooltipMakerAPI tooltip, AICoreDescriptionMode mode) {
+		float opad = 10f;
+//		Color highlight = Misc.getHighlightColor();
+		
+		String pre = "Gamma-level AI core currently assigned. ";
+		if (mode == AICoreDescriptionMode.MANAGE_CORE_DIALOG_LIST || mode == AICoreDescriptionMode.INDUSTRY_TOOLTIP) {
+			pre = "Gamma-level AI core. ";
+		}
+		if (mode == AICoreDescriptionMode.INDUSTRY_TOOLTIP) {
+			CommoditySpecAPI coreSpec = Global.getSettings().getCommoditySpec(aiCoreId);
+			TooltipMakerAPI text = tooltip.beginImageWithText(coreSpec.getIconName(), 48);
+			text.addPara(pre + "Slightly increases stockpiles.", 0f);
+			tooltip.addImageWithText(opad);
+			return;
+		}
+		tooltip.addPara(pre + "Slightly increases stockpiles.", opad);
+//		if (mode == AICoreDescriptionMode.INDUSTRY_TOOLTIP) {
+//			CommoditySpecAPI coreSpec = Global.getSettings().getCommoditySpec(aiCoreId);
+//			TooltipMakerAPI text = tooltip.beginImageWithText(coreSpec.getIconName(), 48);
+//			text.addPara(pre + "Reduces upkeep cost by %s. " +
+//					"Slightly increases stockpiles.", 0f, highlight,
+//					"" + (int)((1f - UPKEEP_MULT) * 100f) + "%");
+//			tooltip.addImageWithText(opad);
+//			return;
+//		}
+//		tooltip.addPara(pre + "Reduces upkeep cost by %s. " +
+//				"Slightly increases stockpiles.", opad, highlight,
+//				"" + (int)((1f - UPKEEP_MULT) * 100f) + "%");
+	}	
 	
 	
 	public boolean isAvailableToBuild() {

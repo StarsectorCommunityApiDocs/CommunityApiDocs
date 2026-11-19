@@ -27,11 +27,11 @@ public interface CustomProductionPickerDelegate {
 	
 	
 	/**
-	 * Only works for weapon picking.
+	 * Should work for ships and fighters now, in addition to weapons.
 	 */
 	public boolean isUseCreditSign();
 	/**
-	 * Only works for weapon picking.
+	 * Should work for ships and fighters now, in addition to weapons.
 	 */
 	public int getCostOverride(Object item);
 }

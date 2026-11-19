@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 
 import com.fs.starfarer.api.campaign.SectorAPI;
 import com.fs.starfarer.api.combat.CombatEngineAPI;
+import com.fs.starfarer.api.ui.FocusManagerAPI;
 
 /**
  * @author Alex Mosolov
@@ -17,6 +18,7 @@ public class Global {
 	public static boolean LOADING_SAVE = false;
 	
 	
+	private static FocusManagerAPI focusManagerAPI;
 	private static SettingsAPI settingsAPI;
 	private static SectorAPI sectorAPI;
 	private static FactoryAPI factory;
@@ -34,6 +36,15 @@ public class Global {
 		return log;
 	}
 	
+	
+	public static FocusManagerAPI getFocusManager() {
+		return focusManagerAPI;
+	}
+
+	public static void setFocusManager(FocusManagerAPI focusManagerAPI) {
+		Global.focusManagerAPI = focusManagerAPI;
+	}
+
 	/**
 	 * Should only be used in the campaign.
 	 * @return

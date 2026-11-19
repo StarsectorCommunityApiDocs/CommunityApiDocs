@@ -10,6 +10,8 @@ import com.fs.starfarer.api.impl.campaign.terrain.HyperspaceAbyssPluginImpl.Abys
 
 public class AbyssalLightDwellerEPEC extends AbyssalLightEPEC {
 	
+	public static Color DWELLER_LIGHT_COLOR = new Color(225,200,255,255);
+	
 	public float getFrequencyForPoint(EncounterManager manager, EncounterPoint point) {
 		return AbyssalFrequencies.getAbyssalLightDwellerFrequency(manager, point);
 	}
@@ -20,7 +22,7 @@ public class AbyssalLightDwellerEPEC extends AbyssalLightEPEC {
 	
 	protected void modifySpawnedLight(EncounterManager manager, EncounterPoint point, 
 									  AbyssalLightParams params, SectorEntityToken light) {
-		params.color = new Color(225,200,255,255);
+		params.color = DWELLER_LIGHT_COLOR;
 		light.addTag(Tags.DWELLER_LIGHT);
 		
 		AbyssalEPData data = (AbyssalEPData) point.custom;

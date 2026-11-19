@@ -96,5 +96,7 @@ public interface FactionSpecAPI {
 	WeightedRandomPicker<String> getVoicePickerMedium();
 	WeightedRandomPicker<String> getVoicePickerHigh();
 	List<String> getAllVariantsForRole(String roleId);
+	LinkedHashSet<String> getMalePortraitForNewGame();
+	LinkedHashSet<String> getFemalePortraitForNewGame();
 
 }

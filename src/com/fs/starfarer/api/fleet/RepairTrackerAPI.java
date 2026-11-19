@@ -119,5 +119,8 @@ public interface RepairTrackerAPI {
 
 	float getCRPriorToMothballing();
 	void setCRPriorToMothballing(float crPriorToMothballing);
+	
+	float getCrWhenDisabledOrDestroyed();
+	void setCrWhenDisabledOrDestroyed(float crWhenDisabledOrDestroyed);
 
 }

@@ -1,11 +1,12 @@
 package com.fs.starfarer.api.impl.campaign.intel.bar.events;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CargoAPI;
@@ -42,6 +43,7 @@ public class DeliveryBarEvent extends BaseGetCommodityBarEvent {
 	public static float ACCEPTED_AT_THIS_MARKET_DURATION = 90f;
 	
 	public static float PROB_TO_SHOW = 0.5f;
+	public static float BASE_REWARD = 15000;
 	
 	protected MarketAPI destination;
 	protected int reward;
@@ -243,7 +245,9 @@ public class DeliveryBarEvent extends BaseGetCommodityBarEvent {
 			quantity = (int) cargo.getMaxFuel();
 		}
 		
-		if (random.nextFloat() < PROB_HIGHER_CAPACITY) {
+		float pMult = Misc.isExtended() ? Global.getSettings().getFloat("ext_deliveryMissionHighQuantityChanceMult") : 1f;
+		
+		if (random.nextFloat() < PROB_HIGHER_CAPACITY * pMult) {
 			quantity *= 1f + random.nextFloat() * 3f;
 			quantity = (int) quantity;
 		}
@@ -314,6 +318,8 @@ public class DeliveryBarEvent extends BaseGetCommodityBarEvent {
 		
 		reward = reward / 1000 * 1000;
 		if (reward < 4000) reward = 4000;
+		
+		reward += BASE_REWARD;
 		
 		
 		if (Global.getSector().getMemoryWithoutUpdate().getBoolean(KEY_FAILED_RECENTLY)) {

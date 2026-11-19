@@ -1,11 +1,12 @@
 package com.fs.starfarer.api.impl.campaign.intel;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+
+import java.awt.Color;
 
 import org.apache.log4j.Logger;
 
@@ -25,11 +26,13 @@ import com.fs.starfarer.api.campaign.econ.MonthlyReport.FDNode;
 import com.fs.starfarer.api.campaign.listeners.EconomyTickListener;
 import com.fs.starfarer.api.campaign.listeners.FleetEventListener;
 import com.fs.starfarer.api.campaign.listeners.ListenerUtil;
+import com.fs.starfarer.api.characters.OfficerDataAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.CoreReputationPlugin;
 import com.fs.starfarer.api.impl.campaign.CoreReputationPlugin.CustomRepImpact;
 import com.fs.starfarer.api.impl.campaign.CoreReputationPlugin.RepActionEnvelope;
 import com.fs.starfarer.api.impl.campaign.CoreReputationPlugin.RepActions;
+import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.MemFlags;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.impl.campaign.rulecmd.missions.Commission;
@@ -44,6 +47,7 @@ public class FactionCommissionIntel extends BaseMissionIntel implements EveryFra
 	public static Logger log = Global.getLogger(FactionCommissionIntel.class);
 	
 	public static String UPDATE_PARAM_ACCEPTED = "update_param_accepted";
+	public static String UPDATE_PARAM_ANNULLED = "update_param_anulled";
 	
 	public static class CommissionBountyResult extends MissionResult {
 		public float fraction;
@@ -69,11 +73,14 @@ public class FactionCommissionIntel extends BaseMissionIntel implements EveryFra
 	
 	public FactionCommissionIntel(FactionAPI faction) {
 		this.faction = faction;
-		baseBounty = Global.getSettings().getFloat("factionCommissionBounty");
+		
+		float mult = Misc.isExtended() ? Global.getSettings().getFloat("ext_commissionBountyMult") : 1f;
+		baseBounty = Global.getSettings().getFloat("factionCommissionBounty") * mult;
 	}
 	
 	protected Object readResolve() {
-		baseBounty = Global.getSettings().getFloat("factionCommissionBounty");
+		float mult = Misc.isExtended() ? Global.getSettings().getFloat("ext_commissionBountyMult") : 1f;
+		baseBounty = Global.getSettings().getFloat("factionCommissionBounty") * mult;
 		return this;
 	}
 	
@@ -119,6 +126,9 @@ public class FactionCommissionIntel extends BaseMissionIntel implements EveryFra
 		
 		Global.getSector().getCharacterData().getMemoryWithoutUpdate().unset(MemFlags.FCM_FACTION);
 		Global.getSector().getCharacterData().getMemoryWithoutUpdate().unset(MemFlags.FCM_EVENT);
+		
+		//sendUpdate(new Object(), dialog == null ? null : dialog.getTextPanel());
+		//sendUpdateIfPlayerHasIntel(new Object(), false, true);
 		
 		undoAllRepChanges(dialog);
 		
@@ -211,10 +221,20 @@ public class FactionCommissionIntel extends BaseMissionIntel implements EveryFra
 	
 
 	public float computeStipend() {
-		float level = Global.getSector().getPlayerPerson().getStats().getLevel();
+		int officers = 0;
+		CampaignFleetAPI playerFleet = Global.getSector().getPlayerFleet();
+		if (playerFleet != null) {
+			for (OfficerDataAPI od : playerFleet.getFleetData().getOfficersCopy()) {
+				if (!od.isActivated()) continue;
+				if (Misc.isMercenary(od.getPerson())) continue;
+				officers++;
+			}
+		}
 		
-		return Global.getSettings().getFloat("factionCommissionStipendBase") +
-			   Global.getSettings().getFloat("factionCommissionStipendPerLevel") * level;
+		float mult = Misc.isExtended() ? Global.getSettings().getFloat("ext_commissionMonthlyIncomeMult") : 1f;
+		
+		return (Global.getSettings().getFloat("factionCommissionStipendBase") +
+			   Global.getSettings().getFloat("factionCommissionStipendPerOfficer") * officers) * mult;
 	}
 	
 	public void reportFleetDespawnedToListener(CampaignFleetAPI fleet, FleetDespawnReason reason, Object param) {
@@ -229,6 +249,9 @@ public class FactionCommissionIntel extends BaseMissionIntel implements EveryFra
 		float fpDestroyed = 0;
 		for (CampaignFleetAPI otherFleet : battle.getNonPlayerSideSnapshot()) {
 			if (!faction.isHostileTo(otherFleet.getFaction())) continue;
+			if (otherFleet.getFaction() != null && otherFleet.getFaction().getCustomBoolean(Factions.CUSTOM_NO_BOUNTY_FOR_DEFEATING)) {
+				continue;
+			}
 			
 			float bounty = 0;
 			for (FleetMemberAPI loss : Misc.getSnapshotMembersLost(otherFleet)) {
@@ -268,6 +291,9 @@ public class FactionCommissionIntel extends BaseMissionIntel implements EveryFra
 		boolean isUpdate = getListInfoParam() != null;
 		
 		if (getListInfoParam() == UPDATE_PARAM_ACCEPTED) {
+			return;
+		}
+		if (getListInfoParam() == UPDATE_PARAM_ANNULLED) {
 			return;
 		}
 		
@@ -334,6 +360,9 @@ public class FactionCommissionIntel extends BaseMissionIntel implements EveryFra
 		if (isSendingUpdate() && getListInfoParam() == UPDATE_PARAM_ACCEPTED) {
 			//return prefix + " Accepted";
 			return prefix + " - Accepted";
+		}
+		if (isSendingUpdate() && getListInfoParam() == UPDATE_PARAM_ANNULLED) {
+			return prefix + " - Annulled";
 		}
 		return prefix;
 	}

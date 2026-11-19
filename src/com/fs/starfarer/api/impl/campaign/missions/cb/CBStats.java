@@ -39,6 +39,10 @@ public class CBStats {
 	public static float REMNANT_PLUS_MULT = 3f;
 	public static float ENEMY_STATION_MULT = 2f;
 	
+	// bounty mult
+	public static float TRADER_MULT = 1.2f;
+	public static float PATROL_MULT = 1f;
+	
 	// difficulty thresholds, maps to a Pair
 	// if difficulty is >= Pair.one: the bounty is unavailable as a "more challenging" option
 	// if difficulty is >= Pair.two: the bounty is only available as an "easier" option
@@ -73,11 +77,6 @@ public class CBStats {
 	// offer frequency
 	public static float TRADER_FREQ = 1f;
 	public static float PATROL_FREQ = 1f;
-	
-	// bounty mult
-	public static float TRADER_MULT = 0.5f;
-	public static float PATROL_MULT = 0.67f;
-	
 	
 	
 	public static int getBaseBounty(int difficulty, float mult, BaseHubMission mission) {

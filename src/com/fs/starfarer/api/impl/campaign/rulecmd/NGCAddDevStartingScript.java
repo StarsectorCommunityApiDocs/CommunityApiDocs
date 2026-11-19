@@ -73,7 +73,12 @@ public class NGCAddDevStartingScript extends BaseCommandPlugin {
 				PersonAPI mainContact = TutorialMissionIntel.createMainContact(ancyra);
 				PersonAPI jangalaContact = TutorialMissionIntel.getJangalaContact();
 				
-				TutorialMissionIntel.endGalatiaPortionOfMission(true, false);
+				boolean withStipend = true;
+				if (data.isExtMode() && 
+						Global.getSettings().getBoolean("ext_removeGalatiaStipend")) {
+					withStipend = false;
+				}
+				TutorialMissionIntel.endGalatiaPortionOfMission(withStipend, false);
 					
 				mainContact.getRelToPlayer().setRel(0.2f);
 				jangalaContact.getRelToPlayer().setRel(0.1f);

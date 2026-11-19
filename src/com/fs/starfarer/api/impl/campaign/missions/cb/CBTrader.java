@@ -27,7 +27,7 @@ public class CBTrader extends BaseCustomBountyCreator {
 	
 	@Override
 	public float getBountyDays() {
-		return 30f;
+		return 45f;
 	}
 
 	@Override

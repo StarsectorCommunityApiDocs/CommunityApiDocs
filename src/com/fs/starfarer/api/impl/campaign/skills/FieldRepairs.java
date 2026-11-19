@@ -63,7 +63,7 @@ public class FieldRepairs {
 		}
 		
 		public String getEffectDescription(float level) {
-			return "Recovered ships start with " + (int) MIN_CR + "-" + (int)MAX_CR + "% combat readiness";
+			return "Recovered ships start with " + (int) MIN_CR + "-" + (int)MAX_CR + "% combat readiness; capped to pre-combat CR minus deployment cost";
 		}
 		
 		public String getEffectPerLevelDescription() {

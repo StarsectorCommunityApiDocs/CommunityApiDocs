@@ -37,4 +37,5 @@ public interface CampaignClockAPI {
 	String getShortDate();
 	String getCycleString();
 	GregorianCalendar getCal();
+	void set(int cycle, int month, int day);
 }

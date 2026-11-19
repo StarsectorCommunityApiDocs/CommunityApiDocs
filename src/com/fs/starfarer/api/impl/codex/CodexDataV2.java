@@ -269,7 +269,7 @@ public class CodexDataV2 {
 		//populateFactions(factions);
 		populateGallery(gallery);
 		addUnknownEntry();
-		
+
 		if (WITH_GAME_MECHANICS_CAT) {
 			CodexTextEntryLoader.loadTextEntries();
 		}
@@ -1138,6 +1138,7 @@ public class CodexDataV2 {
 						}
 						
 						String sizeTag = null;
+						if (size == HullSize.FIGHTER) sizeTag = ALL_SIZES;
 						if (size == HullSize.FRIGATE) sizeTag = FRIGATES;
 						if (size == HullSize.DESTROYER) sizeTag = DESTROYERS;
 						if (size == HullSize.CRUISER) sizeTag = CRUISERS;
@@ -1873,7 +1874,9 @@ public class CodexDataV2 {
 				spec.getName(), spec.getIconName(), spec) {
 					@Override
 					public void createTitleForList(TooltipMakerAPI info, float width, ListMode mode) {
-						info.addPara(spec.getName(), Misc.getBasePlayerColor(), 0f);
+						String text = info.shortenString(spec.getName(), width - 10f);
+						info.addPara(text, Misc.getBasePlayerColor(), 0f);
+						//info.addPara(spec.getName(), Misc.getBasePlayerColor(), 0f);
 						if (mode == ListMode.RELATED_ENTRIES) {
 							info.addPara("Special item", Misc.getGrayColor(), 0f);
 						}
@@ -3101,6 +3104,7 @@ public class CodexDataV2 {
 		ShipHullSpecAPI spec = member.getHullSpec();
 		ShipVariantAPI variant = member.getVariant();
 		CodexEntryPlugin hullEntry = getEntry(getFleetMemberEntryId(member));
+		entry.addRelatedEntry(hullEntry);
 		if (hullEntry != null) {
 			for (CodexEntryPlugin rel : hullEntry.getRelatedEntries()) {
 				if (rel.hasTag(TAG_EMPTY_MODULE)) continue;

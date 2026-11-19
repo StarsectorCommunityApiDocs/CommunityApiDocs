@@ -103,6 +103,16 @@ public class DerelictShipEntityPlugin extends BaseCustomEntityPlugin {
 		picker.add(ShipCondition.GOOD, 5f);
 		picker.add(ShipCondition.PRISTINE, 1f);
 		
+		boolean reduceQuality = Misc.isExtended() && Global.getSettings().getBoolean("ext_reduceDerelictQuality");
+		if (reduceQuality) {
+			picker.clear();
+			picker.add(ShipCondition.WRECKED, 50f);
+			picker.add(ShipCondition.BATTERED, 25f);
+			picker.add(ShipCondition.AVERAGE, 7f);
+			picker.add(ShipCondition.GOOD, 3f);
+			picker.add(ShipCondition.PRISTINE, 1f);
+		}
+		
 		return picker.pick();
 	}
 	
@@ -113,6 +123,13 @@ public class DerelictShipEntityPlugin extends BaseCustomEntityPlugin {
 		picker.add(ShipCondition.WRECKED, 10f);
 		picker.add(ShipCondition.BATTERED, 10f);
 		picker.add(ShipCondition.AVERAGE, 3f);
+		
+		boolean reduceQuality = Misc.isExtended() && Global.getSettings().getBoolean("ext_reduceDerelictQuality");
+		if (reduceQuality) {
+			picker.clear();
+			picker.add(ShipCondition.WRECKED, 50f);
+			picker.add(ShipCondition.BATTERED, 25f);
+		}
 		
 		return picker.pick();
 	}

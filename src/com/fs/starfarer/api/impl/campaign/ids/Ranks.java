@@ -32,6 +32,9 @@ public class Ranks {
 	public static String SISTER = "sister";
 	public static String MOTHER = "mother";
 	public static String ELDER = "elder";
+	public static String AI_CORE = "artificialIntelligence";
+	public static String CRIMINAL = "criminal";
+	public static String FUGITIVE = "fugitive";
 	
 	public static String KNIGHT_CAPTAIN = "knightCaptain";
 	
@@ -56,6 +59,8 @@ public class Ranks {
 	public static String POST_FACTION_LEADER = "factionLeader";
 	public static String POST_PROVOST = "provost";
 	public static String POST_ACADEMICIAN = "academician";
+	public static String POST_ASSOCIATE_ACADEMICIAN = "associate_academician";
+	public static String POST_ASSISTANT_ACADEMICIAN = "assistant_academician";
 	public static String POST_SCIENTIST = "scientist";
 	
 	
@@ -70,6 +75,7 @@ public class Ranks {
 	public static String POST_BASE_COMMANDER = "baseCommander";
 	public static String POST_OUTPOST_COMMANDER = "outpostCommander";
 	public static String POST_PORTMASTER = "portmaster";
+	public static String POST_PERSONNEL_OFFICER = "personnelOfficer";
 	
 	public static String POST_STATION_COMMANDER = "stationCommander";
 	public static String POST_SUPPLY_OFFICER = "supplyOfficer";
@@ -110,6 +116,7 @@ public class Ranks {
 	public static String POST_MINORCRIMINAL = "minorCriminal";
 	public static String POST_ARMS_DEALER = "armsDealer";
 	public static String POST_SPACER = "spacer";
+	public static String POST_UNDERWORLD_BOSS = "underworldBoss";
 	
 	public static String POST_SECURITY_CHIEF = "securityChief";
 	public static String POST_DOCTOR = "doctor";
@@ -130,6 +137,11 @@ public class Ranks {
 	public static String POST_INITIATE = "initiate";
 	public static String POST_NOVICE = "novice";
 	public static String POST_PILGRIM = "pilgrim";
+	public static String POST_EXILE = "exile";
+	
+	public static String POST_GAMMA_CORE = "gammaCore";
+	public static String POST_BETA_CORE = "betaCore";
+	public static String POST_ALPHA_CORE = "alphaCore";
 
 	//public static String POST_ = "";
 	

@@ -1,8 +1,9 @@
 package com.fs.starfarer.api.impl.campaign.intel.contacts;
 
-import java.awt.Color;
 import java.util.Random;
 import java.util.Set;
+
+import java.awt.Color;
 
 import org.lwjgl.input.Keyboard;
 
@@ -16,6 +17,7 @@ import com.fs.starfarer.api.campaign.TextPanelAPI;
 import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
+import com.fs.starfarer.api.characters.ImportantPeopleAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.impl.campaign.DebugFlags;
 import com.fs.starfarer.api.impl.campaign.ids.Conditions;
@@ -82,6 +84,7 @@ public class ContactIntel extends BaseIntelPlugin {
 	
 	protected boolean hadMissionHub;
 	protected boolean marketWasDeciv;
+	protected boolean wasInImportantPeople = true;
 	
 	protected IntervalUtil tracker = new IntervalUtil(0.75f, 1.25f);
 	protected int numPriorityInARow = 0;
@@ -95,6 +98,8 @@ public class ContactIntel extends BaseIntelPlugin {
 		if (!Global.getSector().getScripts().contains(this)) {
 			Global.getSector().addScript(this);
 		}
+		ImportantPeopleAPI ip = Global.getSector().getImportantPeople();
+		wasInImportantPeople = ip != null && ip.containsPerson(person);
 		
 		//setImportant(true);
 	}
@@ -175,11 +180,21 @@ public class ContactIntel extends BaseIntelPlugin {
 		unsetFlags();
 		
 		if (state != ContactState.LOST_CONTACT_DECIV && state != ContactState.LOST_CONTACT && market != null) {
-			if (!marketWasDeciv && (market.hasCondition(Conditions.DECIVILIZED) || !market.isInEconomy())) {
+			boolean isInImportant = true;
+			ImportantPeopleAPI ip = Global.getSector().getImportantPeople();
+			isInImportant = ip != null && ip.containsPerson(person);
+			boolean removedFromImportant = wasInImportantPeople && !isInImportant;
+			if (!marketWasDeciv && (market.hasCondition(Conditions.DECIVILIZED) || !market.isInEconomy()) ||
+					removedFromImportant) {
 				MarketAPI other = findMarketToRelocateTo();
+				if (removedFromImportant) other = null;
+				
 				if (other == null) {
 					endAfterDelay();
 					state = ContactState.LOST_CONTACT_DECIV;
+					if (removedFromImportant) {
+						state = ContactState.LOST_CONTACT;
+					}
 					sendUpdateIfPlayerHasIntel(UPDATE_LOST_CONTACT, false);
 				} else {
 					relocateToMarket(other, true);

@@ -71,7 +71,7 @@ public class GenerateSlipsurgeAbility extends DurationAbilityWithCost2 {
 	public static float TRANSIT_MUSIC_SUPPRESSION = 1f;
 	public static String TRANSIT_SOUND_LOOP = "ui_slipsurge_travel_loop";
 	
-	public static float FUEL_COST_MULT = 5f;
+	public static float FUEL_COST_MULT = 3f;
 	public static float CR_COST_MULT = 0.25f;
 	public static float SENSOR_RANGE_MULT = 0.1f;
 	

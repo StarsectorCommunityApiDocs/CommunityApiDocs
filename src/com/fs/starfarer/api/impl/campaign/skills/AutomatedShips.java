@@ -143,7 +143,7 @@ public class AutomatedShips {
 		public void createCustomDescription(MutableCharacterStatsAPI stats, SkillSpecAPI skill, 
 				TooltipMakerAPI info, float width) {
 			init(stats, skill);
-			info.addPara("Enables the recovery of some automated ships, such as derelict drones", hc, 0f);
+			info.addPara("Enables effective maintenance of some automated ships, such as derelict drones", hc, 0f);
 			info.addPara("Automated ships can only be captained by AI cores", hc, 0f);
 			info.addSpacer(5f);
 		}

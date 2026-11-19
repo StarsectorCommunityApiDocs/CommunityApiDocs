@@ -622,15 +622,19 @@ public class HA_CMD extends BaseCommandPlugin {
 			}
 			return true;
 		} else if ("stopPayingHouseHannan".equals(action)) {
-			PerseanLeagueMembership.stopPayingHouseHannan(params.get(1).getBoolean(memoryMap), dialog);
+			PerseanLeagueMembership.stopPayingHouseHannan(
+					params.get(1).getBoolean(memoryMap),
+					params.get(2).getBoolean(memoryMap),
+					dialog);
 //			PerseanLeagueMembership.setPayingHouseHannan(false);
 //			Misc.incrUntrustwortyCount();
+		//} else if ("stopHannanPayments".equals(action)) {
 		} else if ("leaveLeague".equals(action)) {
 			PerseanLeagueMembership m = PerseanLeagueMembership.get();
 			if (m != null) {
 				// do this here so that the intel is shown; would also happen automatically
 				// when the membership is ended
-				PerseanLeagueMembership.stopPayingHouseHannan(false, dialog);
+				PerseanLeagueMembership.stopPayingHouseHannan(false, false, dialog);
 				
 				m.endMembership(AgreementEndingType.ENDED, dialog);
 				//m.sendUpdate(new Object(), dialog.getTextPanel());

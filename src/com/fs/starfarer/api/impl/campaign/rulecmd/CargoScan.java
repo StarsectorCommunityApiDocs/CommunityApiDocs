@@ -1,10 +1,11 @@
 package com.fs.starfarer.api.impl.campaign.rulecmd;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import java.awt.Color;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
@@ -101,7 +102,7 @@ public class CargoScan extends BaseCommandPlugin {
 		float shieldedMult = (0.25f + 0.75f * unshieldedFraction);
 		
 		MarketAPI market = Misc.getSourceMarket(other);
-		float level = market.getMemory().getFloat(MemFlags.MEMORY_MARKET_SMUGGLING_SUSPICION_LEVEL);
+		float level = market == null ? 0 : market.getMemory().getFloat(MemFlags.MEMORY_MARKET_SMUGGLING_SUSPICION_LEVEL);
 		float suspicionMult = 0f;
 		if (market != null) {
 			if (level >= 0.05f) {
@@ -162,6 +163,7 @@ public class CargoScan extends BaseCommandPlugin {
 				chanceToFind *= guiltMult;
 				chanceToFind *= shieldedMult;
 				chanceToFind *= CHANCE_TO_FIND_ILLEGAL_MULT;
+				chanceToFind *= Misc.isExtended() ? Global.getSettings().getFloat("ext_cargoScanFindContrabandMult") : 1f;
 				
 //				if (chanceToFind > 0 && !legal) {
 //					System.out.println("fwefwef");
@@ -191,12 +193,22 @@ public class CargoScan extends BaseCommandPlugin {
 				suspicious = false;
 			} else {
 				float totalDamage = Math.min(playerFleet.getFleetPoints(), other.getFleetPoints()) * INSPECTION_DAMAGE_MULT;
+				if (Misc.isExtended()) {
+					totalDamage *= Global.getSettings().getFloat("ext_cargoScanNumShipsMult");
+				}
 				float picked = 0f;
 				while (picked < totalDamage && !picker.isEmpty()) {
 					FleetMemberAPI pick = picker.pickAndRemove();
 					result.shipsToDamage.add(pick);
 					picked += pick.getFleetPointCost();
 				}
+				
+//				if (Misc.isExtended()) {
+//					float supplies = playerFleet.getCargo().getSupplies();
+//					float fuel = playerFleet.getCargo().getFuel();
+//					illegalFound.addCommodity(Commodities.SUPPLIES, ((int) Math.min(supplies * 0.1f, 100f)));
+//					illegalFound.addCommodity(Commodities.FUEL, ((int) Math.min(fuel * 0.1f, 200f)));
+//				}
 			}
 		}
 		

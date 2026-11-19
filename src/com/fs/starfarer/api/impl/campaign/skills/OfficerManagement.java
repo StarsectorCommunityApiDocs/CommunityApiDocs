@@ -10,7 +10,7 @@ import com.fs.starfarer.api.util.Misc;
 
 public class OfficerManagement {
 	
-	public static float NUM_OFFICERS_BONUS = 2;
+	public static float NUM_OFFICERS_BONUS = 3;
 	public static float CP_BONUS = 2f;
 	
 	public static class Level0 implements DescriptionSkillEffect {

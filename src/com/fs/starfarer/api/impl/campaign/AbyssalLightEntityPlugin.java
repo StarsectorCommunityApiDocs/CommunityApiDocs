@@ -143,6 +143,7 @@ public class AbyssalLightEntityPlugin extends BaseCustomEntityPlugin {
 		public float detectedRange;
 		public float bonusMult;
 		public float durationDays;
+		public Boolean permanent = null;
 		public int pointsOverride = 0;
 		
 		public AbyssalLightParams() {
@@ -321,11 +322,13 @@ public class AbyssalLightEntityPlugin extends BaseCustomEntityPlugin {
 		
 		//boolean dweller = isDespawning(); 
 		
-		float days = Misc.getDays(amount);
-		params.durationDays -= days;
-		if (params.durationDays <= 0f || Misc.getAbyssalDepth(entity) < 1f) {
-			despawn(DespawnType.FADE_OUT);
-			return;
+		if (params.permanent == null) {
+			float days = Misc.getDays(amount);
+			params.durationDays -= days;
+			if (params.durationDays <= 0f || Misc.getAbyssalDepth(entity) < 1f) {
+				despawn(DespawnType.FADE_OUT);
+				return;
+			}
 		}
 		
 		updateFrequency(amount);

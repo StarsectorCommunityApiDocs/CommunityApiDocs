@@ -264,6 +264,51 @@ public class ProductionReportIntel extends FleetLogIntel {
 	}
 
 
+	public ProductionData getData() {
+		return data;
+	}
+
+
+	public MarketAPI getGatheringPoint() {
+		return gatheringPoint;
+	}
+
+
+	public void setGatheringPoint(MarketAPI gatheringPoint) {
+		this.gatheringPoint = gatheringPoint;
+	}
+
+
+	public int getTotalCost() {
+		return totalCost;
+	}
+
+
+	public void setTotalCost(int totalCost) {
+		this.totalCost = totalCost;
+	}
+
+
+	public int getAccrued() {
+		return accrued;
+	}
+
+
+	public void setAccrued(int accrued) {
+		this.accrued = accrued;
+	}
+
+
+	public boolean isNoProductionThisMonth() {
+		return noProductionThisMonth;
+	}
+
+
+	public void setNoProductionThisMonth(boolean noProductionThisMonth) {
+		this.noProductionThisMonth = noProductionThisMonth;
+	}
+
+
 }
 
 

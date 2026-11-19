@@ -7,6 +7,7 @@ import java.util.Random;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.FactionAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
+import com.fs.starfarer.api.impl.campaign.ids.Ranks;
 import com.fs.starfarer.api.impl.campaign.ids.Skills;
 import com.fs.starfarer.api.impl.campaign.procgen.themes.SalvageSpecialAssigner;
 import com.fs.starfarer.api.plugins.OfficerLevelupPlugin;
@@ -50,6 +51,9 @@ public class CryopodOfficerGen {
 				officer.setPersonality(personality);
 			}
 			
+			officer.setRankId(Ranks.SPACE_CAPTAIN);
+			officer.setPostId(Ranks.POST_OFFICER);
+			
 			int level = base.size() + elite.size();
 			officer.getStats().setLevel(level);
 			
@@ -89,6 +93,17 @@ public class CryopodOfficerGen {
 		t = new CryopodOfficerTemplate();
 		t.elite.add(Skills.HELMSMANSHIP);
 		t.elite.add(Skills.ENERGY_WEAPON_MASTERY);
+		t.elite.add(Skills.FIELD_MODULATION);
+		t.elite.add(Skills.GUNNERY_IMPLANTS);
+		t.elite.add(Skills.ORDNANCE_EXPERTISE);
+		t.base.add(Skills.TARGET_ANALYSIS);
+		t.base.add(Skills.COMBAT_ENDURANCE);
+		TEMPLATES_EXCEPTIONAL.add(t, 10f);
+		
+		// slow low tech ship
+		t = new CryopodOfficerTemplate();
+		t.elite.add(Skills.HELMSMANSHIP);
+		t.elite.add(Skills.BALLISTIC_MASTERY);
 		t.elite.add(Skills.FIELD_MODULATION);
 		t.elite.add(Skills.GUNNERY_IMPLANTS);
 		t.elite.add(Skills.ORDNANCE_EXPERTISE);
