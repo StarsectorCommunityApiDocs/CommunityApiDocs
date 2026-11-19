@@ -367,7 +367,7 @@ public interface SettingsAPI {
 	List<FighterWingSpecAPI> getAllFighterWingSpecs();
 
 	/**
-	 * Does not include SYSTEM weapons. Use getAllWeaponSpecs() to include those.
+	 * Does not include SYSTEM weapons. Use getActuallyAllWeaponSpecs() to include those.
 	 */
 	List<WeaponSpecAPI> getAllWeaponSpecs();
 	/**
