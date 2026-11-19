@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - ci
+  workflow_dispatch:
 
 permissions:
   contents: write  # Needed to update the gh-pages branch
